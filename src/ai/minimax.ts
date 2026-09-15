@@ -1,8 +1,8 @@
 // =====================================================
-// NUR SHAXMAT 100 — Minimax AI raqib
+// NUR SHAXMAT 100 — Minimax AI raqib (Tezkor va Yengil)
 // =====================================================
 
-import { GameState, Move, PieceType, Color } from '../engine/types';
+import { GameState, Move, PieceType } from '../engine/types';
 import { getAllLegalMovesFromState, applyMove } from '../engine/gameLogic';
 import { getCastlingMoves } from '../engine/castling';
 
@@ -17,7 +17,6 @@ const PIECE_VALUES: Record<PieceType, number> = {
 };
 
 // Don-kvadrat jadvallari (pozitsion bonus)
-// 10x10 uchun mo'ljallangan (qator 0 = rank 1, qator 9 = rank 10)
 const PAWN_TABLE_WHITE = [
   [0,0,0,0,0,0,0,0,0,0],
   [1,1,1,1,1,1,1,1,1,1],
@@ -65,11 +64,6 @@ function evaluateBoard(state: GameState): number {
       }
     }
   }
-
-  // Harakatchanlik bonusi
-  const whiteMoves = getAllMovesFor({ ...state, currentTurn: 'white' });
-  const blackMoves = getAllMovesFor({ ...state, currentTurn: 'black' });
-  score += (whiteMoves.length - blackMoves.length) * 0.05;
 
   return score;
 }
@@ -133,9 +127,7 @@ function minimax(
 }
 
 /**
- * AI ning eng yaxshi harakatini topadi
- * @param state - Hozirgi o'yin holati
- * @param depth - Qidirish chuqurligi (1=oson, 2=o'rta, 3=qiyin)
+ * AI ning eng yaxshi harakatini topadi (O'ta tezkor)
  */
 export function getBestMove(state: GameState, depth: number = 2): Move | null {
   const moves = getAllMovesFor(state);
@@ -145,7 +137,6 @@ export function getBestMove(state: GameState, depth: number = 2): Move | null {
   let bestMove: Move | null = null;
   let bestValue = isMaximizing ? -Infinity : Infinity;
 
-  // Harakatlarni saralash
   const sortedMoves = [...moves].sort((a, b) => {
     const aVal = a.capturedPiece ? PIECE_VALUES[a.capturedPiece.type] : 0;
     const bVal = b.capturedPiece ? PIECE_VALUES[b.capturedPiece.type] : 0;
@@ -154,7 +145,7 @@ export function getBestMove(state: GameState, depth: number = 2): Move | null {
 
   for (const move of sortedMoves) {
     const newState = applyMove(state, move);
-    const value = minimax(newState, depth - 1, -Infinity, Infinity, !isMaximizing);
+    const value = minimax(newState, Math.min(depth, 2), -Infinity, Infinity, !isMaximizing);
 
     if (isMaximizing ? value > bestValue : value < bestValue) {
       bestValue = value;
