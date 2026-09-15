@@ -2,15 +2,44 @@
 // NUR SHAXMAT 100 — O'yin Yakuni Ekrani (Game Over Modal)
 // =====================================================
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useGame } from '../store/gameStore';
+import { saveGameResult } from '../services/dbService';
 
 export default function GameOverModal() {
   const { state, dispatch } = useGame();
-  const { game, gameMode, aiColor } = state;
+  const { game, gameMode, aiColor, aiDepth } = state;
   const { status, moveHistory } = game;
 
   const [dismissed, setDismissed] = useState(false);
+  const [saved, setSaved] = useState(false);
+
+  useEffect(() => {
+    if (status !== 'playing' && status !== 'check' && !saved) {
+      let winnerName = 'Durang';
+      if (status === 'checkmate') {
+        winnerName = game.currentTurn === 'white' ? 'Qora' : 'Oq';
+      } else if (status === 'white_resigned') {
+        winnerName = 'Qora';
+      } else if (status === 'black_resigned') {
+        winnerName = 'Oq';
+      }
+
+      const whiteName = 'Oq O\'yinchi';
+      const blackName = gameMode === 'vsAI' ? `AI (Daraja: ${aiDepth})` : 'Qora O\'yinchi';
+
+      saveGameResult({
+        white_player: whiteName,
+        black_player: blackName,
+        winner: winnerName,
+        game_mode: gameMode === 'vsAI' ? 'vs AI' : '2 Kishi',
+        total_moves: Math.ceil(moveHistory.length / 2),
+        status,
+      }).then(() => {
+        setSaved(true);
+      });
+    }
+  }, [status, saved, game.currentTurn, gameMode, aiDepth, moveHistory.length]);
 
   // O'yin davom etayotgan bo'lsa yoki modal vaqtincha yopilgan bo'lsa
   if (status === 'playing' || status === 'check' || dismissed) {

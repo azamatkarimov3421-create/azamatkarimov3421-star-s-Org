@@ -12,6 +12,8 @@ import GameStatusBar from './components/GameStatusBar';
 import PromotionModal from './components/PromotionModal';
 import GameOverModal from './components/GameOverModal';
 
+import LeaderboardModal from './components/LeaderboardModal';
+
 const THEMES: Array<{ id: BoardTheme; name: string; dot: string }> = [
   { id: 'wood', name: 'Klassik Yogʻoch', dot: 'bg-[#b37a4c]' },
   { id: 'emerald', name: 'Zumrad Turniri', dot: 'bg-[#779954]' },
@@ -22,6 +24,7 @@ const THEMES: Array<{ id: BoardTheme; name: string; dot: string }> = [
 function AppContent() {
   const { state, dispatch } = useGame();
   const { isFlipped, boardTheme, soundEnabled } = state;
+  const [showLeaderboard, setShowLeaderboard] = React.useState(false);
 
   return (
     <div className="min-h-screen bg-[#070b12] bg-[radial-gradient(ellipse_80%_80%_at_50%_-20%,rgba(120,70,20,0.15),rgba(255,255,255,0))] text-slate-100 flex flex-col font-sans">
@@ -51,6 +54,15 @@ function AppContent() {
 
         {/* Dosqa Mavzulari va Sozlamalar */}
         <div className="flex items-center gap-3">
+          {/* Peshqadamlar va Baza Tugmasi */}
+          <button
+            onClick={() => setShowLeaderboard(true)}
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-amber-500/20 hover:bg-amber-500/30 border border-amber-500/40 text-amber-300 text-xs font-bold transition-all shadow-sm active:scale-95"
+          >
+            <span>🏆</span>
+            <span className="hidden sm:inline">Natijalar & Baza</span>
+          </button>
+
           {/* Mavzu tanlagich */}
           <div className="hidden md:flex items-center gap-1 bg-slate-900/90 border border-slate-800 p-1 rounded-xl shadow-inner">
             {THEMES.map((th) => (
@@ -145,6 +157,10 @@ function AppContent() {
       {/* ── MODALLAR ────────────────────────────────────────── */}
       <PromotionModal />
       <GameOverModal />
+      <LeaderboardModal
+        isOpen={showLeaderboard}
+        onClose={() => setShowLeaderboard(false)}
+      />
     </div>
   );
 }
