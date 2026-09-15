@@ -344,4 +344,17 @@ export function getAllLegalMoves(state: GameState): Move[] {
   return moves;
 }
 
+export function hasAnyLegalMove(state: GameState): boolean {
+  for (let r = 0; r < 10; r++) {
+    for (let f = 0; f < 10; f++) {
+      const piece = state.board[r][f];
+      if (piece && piece.color === state.currentTurn) {
+        const moves = getLegalMoves(state, { rank: r, file: f });
+        if (moves.length > 0) return true;
+      }
+    }
+  }
+  return false;
+}
+
 export { applyMoveToBoard, enemy };

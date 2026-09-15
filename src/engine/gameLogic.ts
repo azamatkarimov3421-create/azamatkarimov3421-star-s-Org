@@ -4,7 +4,7 @@
 
 import { GameState, Move, Piece, PieceType, Square, Color, squaresEqual } from './types';
 import { cloneBoard, getPiece, setPiece } from './board';
-import { getAllLegalMoves, applyMoveToBoard, isInCheck, enemy, getLegalMoves } from './moveGenerator';
+import { getAllLegalMoves, applyMoveToBoard, isInCheck, enemy, getLegalMoves, hasAnyLegalMove } from './moveGenerator';
 import { updateCastlingRights, getCastlingMoves } from './castling';
 import { generateMoveNotation } from './notation';
 
@@ -115,9 +115,9 @@ export function applyMove(state: GameState, move: Move): GameState {
     return newState;
   }
 
-  // Shohmat va pat
-  const nextAllMoves = getAllLegalMovesForState(newState);
-  if (nextAllMoves.length === 0) {
+  // Shohmat va pat (Tezkor tekshiruv - barcha harakatlarni hisoblamasdan darhol qaytadi)
+  const hasMoves = hasAnyLegalMove(newState) || getCastlingMoves(newState).length > 0;
+  if (!hasMoves) {
     if (newState.isInCheck) {
       newState.status = 'checkmate';
     } else {

@@ -48,13 +48,24 @@ export default function GameControls({ onOpenOnlineModal }: GameControlsProps) {
     }
   }, [game.currentTurn, gameMode, aiColor, isGameOver, makeAIMove]);
 
-  // Harakat maslahatini olish
+  const [hintLoading, setHintLoading] = React.useState(false);
+
+  // Harakat maslahatini olish (Asinxron)
   const handleGetHint = () => {
-    if (isGameOver) return;
-    const bestMove = getBestMove(game, 2);
-    if (bestMove) {
-      dispatch({ type: 'SET_HINT', move: bestMove });
-    }
+    if (isGameOver || hintLoading) return;
+    setHintLoading(true);
+    setTimeout(() => {
+      try {
+        const bestMove = getBestMove(game, 2);
+        if (bestMove) {
+          dispatch({ type: 'SET_HINT', move: bestMove });
+        }
+      } catch (e) {
+        console.error('Maslahat hisoblash xatosi:', e);
+      } finally {
+        setHintLoading(false);
+      }
+    }, 40);
   };
 
   return (
@@ -140,12 +151,12 @@ export default function GameControls({ onOpenOnlineModal }: GameControlsProps) {
         <div className="grid grid-cols-2 gap-2">
           <button
             onClick={handleGetHint}
-            disabled={isGameOver}
+            disabled={isGameOver || hintLoading}
             className="py-2 px-3 bg-cyan-950/60 hover:bg-cyan-900/60 disabled:opacity-40 disabled:cursor-not-allowed text-cyan-300 font-bold text-xs rounded-xl border border-cyan-800/60 transition-all flex items-center justify-center gap-1.5 active:scale-95"
             title="AI maslahatini doskada nurlantirish"
           >
             <span>💡</span>
-            <span>Maslahat</span>
+            <span>{hintLoading ? 'Qidirilmoqda...' : 'Maslahat'}</span>
           </button>
 
           <button
