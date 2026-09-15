@@ -11,8 +11,9 @@ import GameControls from './components/GameControls';
 import GameStatusBar from './components/GameStatusBar';
 import PromotionModal from './components/PromotionModal';
 import GameOverModal from './components/GameOverModal';
-
 import LeaderboardModal from './components/LeaderboardModal';
+import OnlineRoomModal from './components/OnlineRoomModal';
+import EvalBar from './components/EvalBar';
 
 const THEMES: Array<{ id: BoardTheme; name: string; dot: string }> = [
   { id: 'wood', name: 'Klassik Yogʻoch', dot: 'bg-[#b37a4c]' },
@@ -24,7 +25,9 @@ const THEMES: Array<{ id: BoardTheme; name: string; dot: string }> = [
 function AppContent() {
   const { state, dispatch } = useGame();
   const { isFlipped, boardTheme, soundEnabled } = state;
+
   const [showLeaderboard, setShowLeaderboard] = React.useState(false);
+  const [showOnlineModal, setShowOnlineModal] = React.useState(false);
 
   return (
     <div className="min-h-screen bg-[#070b12] bg-[radial-gradient(ellipse_80%_80%_at_50%_-20%,rgba(120,70,20,0.15),rgba(255,255,255,0))] text-slate-100 flex flex-col font-sans">
@@ -115,10 +118,10 @@ function AppContent() {
         {/* Chap ustun: Boshqaruv va ogohlantirishlar */}
         <aside className="w-full lg:w-[260px] flex flex-col gap-3 order-2 lg:order-1 flex-shrink-0">
           <GameStatusBar />
-          <GameControls />
+          <GameControls onOpenOnlineModal={() => setShowOnlineModal(true)} />
         </aside>
 
-        {/* Markaziy ustun: Yuqori o'yinchi + Dosqa + Quyi o'yinchi */}
+        {/* Markaziy ustun: Yuqori o'yinchi + EvalBar + Dosqa + Quyi o'yinchi */}
         <section className="flex flex-col items-center gap-3 order-1 lg:order-2 flex-shrink-0">
           {/* Yuqoridagi O'yinchi kartasi */}
           <PlayerCard
@@ -126,8 +129,11 @@ function AppContent() {
             position="top"
           />
 
-          {/* 10x10 Dosqa */}
-          <Board />
+          {/* EvalBar + 10x10 Dosqa */}
+          <div className="flex items-center gap-2">
+            <EvalBar />
+            <Board />
+          </div>
 
           {/* Pastdagi O'yinchi kartasi */}
           <PlayerCard
@@ -160,6 +166,10 @@ function AppContent() {
       <LeaderboardModal
         isOpen={showLeaderboard}
         onClose={() => setShowLeaderboard(false)}
+      />
+      <OnlineRoomModal
+        isOpen={showOnlineModal}
+        onClose={() => setShowOnlineModal(false)}
       />
     </div>
   );

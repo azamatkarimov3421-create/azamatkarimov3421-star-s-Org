@@ -3,7 +3,7 @@
 // =====================================================
 
 import React, { createContext, useContext, useReducer, useCallback } from 'react';
-import { GameState, Move, PieceType, Square, squaresEqual } from '../engine/types';
+import { GameState, GameStatus, Move, PieceType, Square, squaresEqual } from '../engine/types';
 import { createInitialGameState } from '../engine/board';
 import { getLegalMoves } from '../engine/moveGenerator';
 import { getCastlingMoves } from '../engine/castling';
@@ -13,18 +13,20 @@ import {
   playCastlingSound, playGameOverSound, playPromotionSound, playNurLeapSound,
   setSoundEnabled, isSoundEnabled
 } from '../audio/sounds';
+import { speakUzbek, vibrateTouch } from '../audio/speech';
 
 export type BoardTheme = 'wood' | 'emerald' | 'azure' | 'marble';
+export type TimeControl = 0 | 180 | 300 | 600; // 0=unlimited, 180=3m, 300=5m, 600=10m
 
 // ── Holat interfeysi ──────────────────────────────────
 
-interface AppState {
+export interface AppState {
   game: GameState;
   selectedSquare: Square | null;
   legalMoves: Move[];
   history: GameState[];           // Bekor qilish uchun tarix
   useNumericNotation: boolean;
-  gameMode: 'pvp' | 'vsAI';
+  gameMode: 'pvp' | 'vsAI' | 'online';
   aiColor: 'black' | 'white';
   aiDepth: number;                // 1=oson, 2=o'rta, 3=qiyin
   aiThinking: boolean;
@@ -33,6 +35,12 @@ interface AppState {
   boardTheme: BoardTheme;
   isFlipped: boolean;
   soundEnabled: boolean;
+  timeControl: TimeControl;
+  whiteTime: number;              // qolgan soniyalar
+  blackTime: number;              // qolgan soniyalar
+  hintMove: Move | null;          // Maslahat harakati
+  roomCode: string | null;
+  onlinePlayerColor: 'white' | 'black' | null;
 }
 
 // ── Harakatlar ────────────────────────────────────────
@@ -44,7 +52,7 @@ type Action =
   | { type: 'NEW_GAME' }
   | { type: 'UNDO' }
   | { type: 'TOGGLE_NOTATION' }
-  | { type: 'SET_GAME_MODE'; mode: 'pvp' | 'vsAI' }
+  | { type: 'SET_GAME_MODE'; mode: 'pvp' | 'vsAI' | 'online' }
   | { type: 'SET_AI_DEPTH'; depth: number }
   | { type: 'SET_AI_THINKING'; thinking: boolean }
   | { type: 'OFFER_DRAW' }
@@ -52,7 +60,11 @@ type Action =
   | { type: 'DESELECT' }
   | { type: 'SET_THEME'; theme: BoardTheme }
   | { type: 'TOGGLE_FLIP' }
-  | { type: 'TOGGLE_SOUND' };
+  | { type: 'TOGGLE_SOUND' }
+  | { type: 'SET_TIME_CONTROL'; seconds: TimeControl }
+  | { type: 'TICK_TIMER' }
+  | { type: 'SET_HINT'; move: Move | null }
+  | { type: 'SET_ONLINE_ROOM'; roomCode: string | null; myColor: 'white' | 'black' | null };
 
 // ── Boshlang'ich holat ────────────────────────────────
 
@@ -72,6 +84,12 @@ function createInitialAppState(): AppState {
     boardTheme: 'wood',
     isFlipped: false,
     soundEnabled: isSoundEnabled(),
+    timeControl: 0,
+    whiteTime: 0,
+    blackTime: 0,
+    hintMove: null,
+    roomCode: null,
+    onlinePlayerColor: null,
   };
 }
 
@@ -103,25 +121,38 @@ function gameReducer(state: AppState, action: Action): AppState {
             pendingMove: matchingMove,
           };
         }
-        // Ovoz
+        // Ovoz & Vibratsiya
         if (matchingMove.isCastling) playCastlingSound();
         else if (matchingMove.capturedPiece) {
           if (matchingMove.piece.type === 'Nur') playNurLeapSound();
           else playCaptureSound();
+          vibrateTouch([50, 30, 50]);
         } else {
           if (matchingMove.piece.type === 'Nur') playNurLeapSound();
           else playMoveSound();
+          vibrateTouch(30);
         }
 
         const newGame = applyMove(game, matchingMove);
-        if (newGame.isInCheck) playCheckSound();
-        if (newGame.status === 'checkmate' || newGame.status === 'stalemate') playGameOverSound();
+        if (newGame.isInCheck) {
+          playCheckSound();
+          speakUzbek('Shoh!');
+          vibrateTouch([100, 50, 100]);
+        }
+        if (newGame.status === 'checkmate') {
+          playGameOverSound();
+          speakUzbek('Shohmat! Oʻyin tugadi.');
+        } else if (newGame.status === 'stalemate') {
+          playGameOverSound();
+          speakUzbek('Pat! Durang natija.');
+        }
 
         return {
           ...state,
           game: newGame,
           selectedSquare: null,
           legalMoves: [],
+          hintMove: null,
           history: [...state.history, state.game],
         };
       }
@@ -145,11 +176,20 @@ function gameReducer(state: AppState, action: Action): AppState {
 
     case 'APPLY_MOVE': {
       const newGame = applyMove(state.game, action.move);
+      if (newGame.isInCheck) {
+        playCheckSound();
+        speakUzbek('Shoh!');
+      }
+      if (newGame.status === 'checkmate') {
+        playGameOverSound();
+        speakUzbek('Shohmat! Oʻyin tugadi.');
+      }
       return {
         ...state,
         game: newGame,
         selectedSquare: null,
         legalMoves: [],
+        hintMove: null,
         history: [...state.history, state.game],
         aiThinking: false,
       };
@@ -161,13 +201,13 @@ function gameReducer(state: AppState, action: Action): AppState {
         ...state.pendingMove,
         promotionPiece: action.pieceType,
       };
-      // Aylantirish harakatini bajaring, lekin faqat aylantirish turiga mos kelganini oling
       const promoMove = state.legalMoves.find(
         m => m.isPromotion && m.promotionPiece === action.pieceType &&
           squaresEqual(m.to, state.pendingMove!.to)
       ) || moveWithPromo;
 
       playPromotionSound();
+      speakUzbek(`${action.pieceType === 'Queen' ? 'Vazir' : action.pieceType === 'Nur' ? 'Nur' : 'Dona'}ga aylandi!`);
       const newGame = applyMove(state.game, promoMove);
       if (newGame.isInCheck) playCheckSound();
       if (newGame.status === 'checkmate' || newGame.status === 'stalemate') playGameOverSound();
@@ -179,9 +219,57 @@ function gameReducer(state: AppState, action: Action): AppState {
         legalMoves: [],
         showPromotionFor: null,
         pendingMove: null,
+        hintMove: null,
         history: [...state.history, state.game],
       };
     }
+
+    case 'SET_TIME_CONTROL':
+      return {
+        ...state,
+        timeControl: action.seconds,
+        whiteTime: action.seconds,
+        blackTime: action.seconds,
+      };
+
+    case 'TICK_TIMER': {
+      if (state.timeControl === 0 || state.game.status !== 'playing' && state.game.status !== 'check') {
+        return state;
+      }
+      const isWhiteTurn = state.game.currentTurn === 'white';
+      const newWhiteTime = isWhiteTurn ? Math.max(0, state.whiteTime - 1) : state.whiteTime;
+      const newBlackTime = !isWhiteTurn ? Math.max(0, state.blackTime - 1) : state.blackTime;
+
+      // Vaqt tugashi
+      let newStatus: GameStatus = state.game.status;
+      if (newWhiteTime === 0) {
+        newStatus = 'white_timeout';
+        playGameOverSound();
+        speakUzbek('Oq donalar vaqti tugadi! Qora gʻalaba qozondi.');
+      } else if (newBlackTime === 0) {
+        newStatus = 'black_timeout';
+        playGameOverSound();
+        speakUzbek('Qora donalar vaqti tugadi! Oq gʻalaba qozondi.');
+      }
+
+      return {
+        ...state,
+        whiteTime: newWhiteTime,
+        blackTime: newBlackTime,
+        game: { ...state.game, status: newStatus },
+      };
+    }
+
+    case 'SET_HINT':
+      return { ...state, hintMove: action.move };
+
+    case 'SET_ONLINE_ROOM':
+      return {
+        ...state,
+        roomCode: action.roomCode,
+        onlinePlayerColor: action.myColor,
+        gameMode: action.roomCode ? 'online' : 'pvp',
+      };
 
     case 'NEW_GAME':
       return {

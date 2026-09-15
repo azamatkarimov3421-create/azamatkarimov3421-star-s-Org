@@ -106,6 +106,18 @@ export default function GameOverModal() {
       icon = '🏳️';
       break;
     }
+    case 'white_timeout': {
+      title = "Qora G'alaba Qozondi!";
+      subtitle = "Oq donalar vaqti tugadi.";
+      icon = '⏱️';
+      break;
+    }
+    case 'black_timeout': {
+      title = "Oq G'alaba Qozondi!";
+      subtitle = "Qora donalar vaqti tugadi.";
+      icon = '⏱️';
+      break;
+    }
   }
 
   return (

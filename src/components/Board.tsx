@@ -57,7 +57,7 @@ const THEME_STYLES: Record<BoardTheme, {
 
 export default function Board() {
   const { state, dispatch } = useGame();
-  const { game, selectedSquare, legalMoves, useNumericNotation, boardTheme, isFlipped } = state;
+  const { game, selectedSquare, legalMoves, useNumericNotation, boardTheme, isFlipped, hintMove } = state;
   const boardRef = useRef<HTMLDivElement>(null);
 
   // Drag & Drop
@@ -174,6 +174,8 @@ export default function Board() {
                 const isLastMoveFrom = game.lastMove !== null && squaresEqual(sq, game.lastMove.from);
                 const isLastMoveTo = game.lastMove !== null && squaresEqual(sq, game.lastMove.to);
                 const isCheck = checkSquare !== null && squaresEqual(sq, checkSquare);
+                const isHintFrom = hintMove !== null && squaresEqual(sq, hintMove.from);
+                const isHintTo = hintMove !== null && squaresEqual(sq, hintMove.to);
 
                 // Kvadrat foni
                 let squareBgClass = isLight ? themeStyle.lightSquare : themeStyle.darkSquare;
@@ -192,6 +194,11 @@ export default function Board() {
                     {/* So'nggi Harakat Izlari */}
                     {(isLastMoveFrom || isLastMoveTo) && (
                       <div className={`absolute inset-0 pointer-events-none ${themeStyle.lastMove} z-[1]`} />
+                    )}
+
+                    {/* Maslahat harakati yoritgichi */}
+                    {(isHintFrom || isHintTo) && (
+                      <div className="absolute inset-0 pointer-events-none z-[4] bg-cyan-400/40 ring-4 ring-cyan-300 animate-pulse shadow-[0_0_15px_rgba(34,211,238,0.8)]" />
                     )}
 
                     {/* Tanlangan kvadrat auralari */}

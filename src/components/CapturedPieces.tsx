@@ -7,6 +7,8 @@ import { Color, Piece, PieceType, PIECE_VALUES } from '../engine/types';
 import { useGame } from '../store/gameStore';
 import PieceIcon from './PieceIcon';
 
+import { ChessClock } from './ChessClock';
+
 const ORDER: PieceType[] = ['Queen', 'Nur', 'Rook', 'Bishop', 'Knight', 'Pawn'];
 
 function groupPieces(pieces: Piece[]): Partial<Record<PieceType, number>> {
@@ -58,7 +60,7 @@ export function PlayerCard({ playerColor, position }: PlayerCardProps) {
           : 'bg-slate-900/60 border-slate-800/80 shadow-md'
       }`}
     >
-      {/* Chap: O'yinchi ma'lumoti */}
+      {/* Chap: O'yinchi ma'lumoti & Taymer */}
       <div className="flex items-center gap-3">
         {/* Avatar */}
         <div className="relative">
@@ -125,6 +127,9 @@ export function PlayerCard({ playerColor, position }: PlayerCardProps) {
             )}
           </div>
         </div>
+
+        {/* Shaxmat Taymeri */}
+        <ChessClock color={playerColor} />
       </div>
 
       {/* O'ng: Yutib olingan donalar va afzallik */}

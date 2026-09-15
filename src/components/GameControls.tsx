@@ -5,10 +5,15 @@
 import React, { useEffect, useCallback } from 'react';
 import { useGame } from '../store/gameStore';
 import { getBestMove } from '../ai/minimax';
+import { TimeControlSelector } from './ChessClock';
 
 const DIFFICULTY_LABELS = ['', 'Oson', "O'rta", 'Kuchli'];
 
-export default function GameControls() {
+interface GameControlsProps {
+  onOpenOnlineModal?: () => void;
+}
+
+export default function GameControls({ onOpenOnlineModal }: GameControlsProps) {
   const { state, dispatch } = useGame();
   const { game, gameMode, aiColor, aiDepth, aiThinking, history, isFlipped, soundEnabled } = state;
 
@@ -43,6 +48,15 @@ export default function GameControls() {
     }
   }, [game.currentTurn, gameMode, aiColor, isGameOver, makeAIMove]);
 
+  // Harakat maslahatini olish
+  const handleGetHint = () => {
+    if (isGameOver) return;
+    const bestMove = getBestMove(game, 2);
+    if (bestMove) {
+      dispatch({ type: 'SET_HINT', move: bestMove });
+    }
+  };
+
   return (
     <div className="flex flex-col gap-3 w-full bg-slate-900/80 backdrop-blur-xl border border-slate-800 p-4 rounded-2xl shadow-2xl">
       {/* 1. O'yin Rejimi */}
@@ -53,7 +67,7 @@ export default function GameControls() {
         <div className="grid grid-cols-2 gap-1.5 p-1 bg-slate-950/70 rounded-xl border border-slate-800/80">
           <button
             onClick={() => dispatch({ type: 'SET_GAME_MODE', mode: 'pvp' })}
-            className={`py-2 px-3 rounded-lg text-xs font-bold transition-all flex items-center justify-center gap-1.5 ${
+            className={`py-2 px-2.5 rounded-lg text-xs font-bold transition-all flex items-center justify-center gap-1 ${
               gameMode === 'pvp'
                 ? 'bg-gradient-to-r from-amber-500 to-amber-600 text-slate-950 shadow-md shadow-amber-500/20'
                 : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800/50'
@@ -64,7 +78,7 @@ export default function GameControls() {
           </button>
           <button
             onClick={() => dispatch({ type: 'SET_GAME_MODE', mode: 'vsAI' })}
-            className={`py-2 px-3 rounded-lg text-xs font-bold transition-all flex items-center justify-center gap-1.5 ${
+            className={`py-2 px-2.5 rounded-lg text-xs font-bold transition-all flex items-center justify-center gap-1 ${
               gameMode === 'vsAI'
                 ? 'bg-gradient-to-r from-amber-500 to-amber-600 text-slate-950 shadow-md shadow-amber-500/20'
                 : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800/50'
@@ -76,7 +90,15 @@ export default function GameControls() {
         </div>
       </div>
 
-      {/* 2. AI Darajasi (faqat vs AI rejimida) */}
+      {/* 2. Vaqt Nazorati (Timer) */}
+      <div>
+        <label className="text-[11px] font-extrabold uppercase tracking-wider text-slate-400 mb-1.5 block">
+          Shaxmat Soati (Vaqt)
+        </label>
+        <TimeControlSelector />
+      </div>
+
+      {/* 3. AI Darajasi (faqat vs AI rejimida) */}
       {gameMode === 'vsAI' && (
         <div className="animate-fadeIn">
           <div className="flex items-center justify-between mb-1.5">
@@ -105,7 +127,7 @@ export default function GameControls() {
         </div>
       )}
 
-      {/* 3. Asosiy Tugmalar */}
+      {/* 4. Asosiy Tugmalar */}
       <div className="space-y-2 pt-1 border-t border-slate-800/80">
         <button
           onClick={() => dispatch({ type: 'NEW_GAME' })}
@@ -115,13 +137,34 @@ export default function GameControls() {
           <span>Yangi O'yin Boshlash</span>
         </button>
 
+        <div className="grid grid-cols-2 gap-2">
+          <button
+            onClick={handleGetHint}
+            disabled={isGameOver}
+            className="py-2 px-3 bg-cyan-950/60 hover:bg-cyan-900/60 disabled:opacity-40 disabled:cursor-not-allowed text-cyan-300 font-bold text-xs rounded-xl border border-cyan-800/60 transition-all flex items-center justify-center gap-1.5 active:scale-95"
+            title="AI maslahatini doskada nurlantirish"
+          >
+            <span>💡</span>
+            <span>Maslahat</span>
+          </button>
+
+          <button
+            onClick={onOpenOnlineModal}
+            className="py-2 px-3 bg-purple-950/60 hover:bg-purple-900/60 text-purple-300 font-bold text-xs rounded-xl border border-purple-800/60 transition-all flex items-center justify-center gap-1.5 active:scale-95"
+            title="Onlayn Multiplayer xona yaratish yoki kirish"
+          >
+            <span>🌐</span>
+            <span>Onlayn</span>
+          </button>
+        </div>
+
         <button
           onClick={() => dispatch({ type: 'UNDO' })}
           disabled={history.length === 0 || isGameOver}
           className="w-full py-2 px-3 bg-slate-800 hover:bg-slate-700 disabled:opacity-40 disabled:cursor-not-allowed text-slate-200 font-semibold text-xs rounded-xl border border-slate-700 transition-all flex items-center justify-center gap-2 active:scale-95"
         >
           <span>↩️</span>
-          <span>Harakatni Bekor Qilish</span>
+          <span>Bekor Qilish</span>
           {history.length > 0 && (
             <span className="bg-slate-900 text-slate-400 text-[10px] px-1.5 py-0.2 rounded-full">
               {history.length}
@@ -158,11 +201,11 @@ export default function GameControls() {
         </div>
       </div>
 
-      {/* 4. Tezkor Qulayliklar (Doska aylantirish & Ovoz) */}
+      {/* 5. Tezkor Qulayliklar */}
       <div className="pt-2 border-t border-slate-800/80 grid grid-cols-2 gap-2 text-xs">
         <button
           onClick={() => dispatch({ type: 'TOGGLE_FLIP' })}
-          className={`py-2 px-2.5 rounded-xl border transition-all flex items-center justify-center gap-1.5 font-medium ${
+          className={`py-2 px-2 rounded-xl border transition-all flex items-center justify-center gap-1 font-medium ${
             isFlipped
               ? 'bg-amber-500/20 text-amber-300 border-amber-500/40 shadow-sm'
               : 'bg-slate-950/60 text-slate-300 border-slate-800 hover:bg-slate-800/50'
@@ -175,7 +218,7 @@ export default function GameControls() {
 
         <button
           onClick={() => dispatch({ type: 'TOGGLE_SOUND' })}
-          className={`py-2 px-2.5 rounded-xl border transition-all flex items-center justify-center gap-1.5 font-medium ${
+          className={`py-2 px-2 rounded-xl border transition-all flex items-center justify-center gap-1 font-medium ${
             soundEnabled
               ? 'bg-slate-950/60 text-slate-300 border-slate-800 hover:bg-slate-800/50'
               : 'bg-red-500/15 text-red-300 border-red-500/40 shadow-sm'

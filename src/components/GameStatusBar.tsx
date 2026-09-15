@@ -16,6 +16,8 @@ const STATUS_MESSAGES: Record<GameStatus, string> = {
   draw_50move: '⏱️ 50 ta harakatli qoida — Durang!',
   white_resigned: '🏳️ Oq taslim boʻldi!',
   black_resigned: '🏳️ Qora taslim boʻldi!',
+  white_timeout: '⏱️ Oq vaqti tugadi!',
+  black_timeout: '⏱️ Qora vaqti tugadi!',
 };
 
 export default function GameStatusBar() {

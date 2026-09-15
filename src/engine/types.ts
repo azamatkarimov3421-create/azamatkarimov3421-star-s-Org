@@ -77,7 +77,9 @@ export type GameStatus =
   | 'draw_mutual'
   | 'draw_50move'
   | 'white_resigned'
-  | 'black_resigned';
+  | 'black_resigned'
+  | 'white_timeout'
+  | 'black_timeout';
 
 // Don qiymatlari
 export const PIECE_VALUES: Record<PieceType, number> = {
