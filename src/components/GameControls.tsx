@@ -161,22 +161,27 @@ export default function GameControls({ onOpenOnlineModal }: GameControlsProps) {
 
           <button
             onClick={onOpenOnlineModal}
-            className="py-2 px-3 bg-purple-950/60 hover:bg-purple-900/60 text-purple-300 font-bold text-xs rounded-xl border border-purple-800/60 transition-all flex items-center justify-center gap-1.5 active:scale-95"
+            className={`py-2 px-3 font-bold text-xs rounded-xl border transition-all flex items-center justify-center gap-1.5 active:scale-95 ${
+              gameMode === 'online'
+                ? 'bg-purple-600 hover:bg-purple-500 text-white border-purple-400 shadow-md shadow-purple-600/30 ring-2 ring-purple-400/50'
+                : 'bg-purple-950/60 hover:bg-purple-900/60 text-purple-300 border-purple-800/60'
+            }`}
             title="Onlayn Multiplayer xona yaratish yoki kirish"
           >
             <span>🌐</span>
-            <span>Onlayn</span>
+            <span>{gameMode === 'online' ? `Onlayn` : 'Onlayn'}</span>
           </button>
         </div>
 
         <button
           onClick={() => dispatch({ type: 'UNDO' })}
-          disabled={history.length === 0 || isGameOver}
+          disabled={history.length === 0 || isGameOver || gameMode === 'online'}
           className="w-full py-2 px-3 bg-slate-800 hover:bg-slate-700 disabled:opacity-40 disabled:cursor-not-allowed text-slate-200 font-semibold text-xs rounded-xl border border-slate-700 transition-all flex items-center justify-center gap-2 active:scale-95"
+          title={gameMode === 'online' ? "Onlayn o'yinda yurishni bekor qilish mumkin emas" : "Oxirgi yurishni bekor qilish"}
         >
           <span>↩️</span>
           <span>Bekor Qilish</span>
-          {history.length > 0 && (
+          {history.length > 0 && gameMode !== 'online' && (
             <span className="bg-slate-900 text-slate-400 text-[10px] px-1.5 py-0.2 rounded-full">
               {history.length}
             </span>

@@ -57,7 +57,17 @@ const THEME_STYLES: Record<BoardTheme, {
 
 export default function Board() {
   const { state, dispatch } = useGame();
-  const { game, selectedSquare, legalMoves, useNumericNotation, boardTheme, isFlipped, hintMove } = state;
+  const {
+    game,
+    selectedSquare,
+    legalMoves,
+    useNumericNotation,
+    boardTheme,
+    isFlipped,
+    hintMove,
+    gameMode,
+    onlinePlayerColor,
+  } = state;
   const boardRef = useRef<HTMLDivElement>(null);
 
   // Drag & Drop
@@ -73,18 +83,27 @@ export default function Board() {
 
   // Kvadratni bosish
   const handleSquareClick = useCallback((sq: Square) => {
+    // Agar onlayn rejimda bo'lsak va hali kvadrat tanlanmagan bo'lsa:
+    // faqat o'z rangimizdagi donani tanlashga ruxsat beramiz
+    if (gameMode === 'online' && onlinePlayerColor && !selectedSquare) {
+      const p = game.board[sq.rank]?.[sq.file];
+      if (p && p.color !== onlinePlayerColor) return;
+    }
     dispatch({ type: 'SELECT_SQUARE', square: sq });
-  }, [dispatch]);
+  }, [dispatch, gameMode, onlinePlayerColor, selectedSquare, game.board]);
 
   // Drag boshlanishi
   const handleDragStart = useCallback((e: React.DragEvent, piece: Piece, from: Square) => {
     if (piece.color !== game.currentTurn) return;
     if (game.status !== 'playing' && game.status !== 'check') return;
+    // Onlaynda raqib donasini siljitish taqiqlanadi
+    if (gameMode === 'online' && onlinePlayerColor && piece.color !== onlinePlayerColor) return;
+
     setDragPiece({ piece, from });
     dispatch({ type: 'SELECT_SQUARE', square: from });
     e.dataTransfer.effectAllowed = 'move';
     e.dataTransfer.setData('text/plain', `${from.file},${from.rank}`);
-  }, [game.currentTurn, game.status, dispatch]);
+  }, [game.currentTurn, game.status, gameMode, onlinePlayerColor, dispatch]);
 
   // Drag tugashi / tashlash
   const handleDrop = useCallback((e: React.DragEvent, to: Square) => {
@@ -234,7 +253,10 @@ export default function Board() {
                     {/* Shaxmat Donasi */}
                     {piece && (
                       <div
-                        draggable={piece.color === game.currentTurn}
+                        draggable={
+                          piece.color === game.currentTurn &&
+                          (gameMode !== 'online' || !onlinePlayerColor || piece.color === onlinePlayerColor)
+                        }
                         onDragStart={(e) => handleDragStart(e, piece, sq)}
                         onDragEnd={handleDragEnd}
                         className={`relative z-10 w-8 h-8 sm:w-10 sm:h-10 md:w-12 md:h-12 flex items-center justify-center transition-all duration-150 ${

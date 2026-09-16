@@ -14,6 +14,7 @@ import {
   setSoundEnabled, isSoundEnabled
 } from '../audio/sounds';
 import { speakUzbek, vibrateTouch } from '../audio/speech';
+import { onlineManager } from '../services/onlineService';
 
 export type BoardTheme = 'wood' | 'emerald' | 'azure' | 'marble';
 export type TimeControl = 0 | 180 | 300 | 600; // 0=unlimited, 180=3m, 300=5m, 600=10m
@@ -48,6 +49,9 @@ export interface AppState {
 type Action =
   | { type: 'SELECT_SQUARE'; square: Square }
   | { type: 'APPLY_MOVE'; move: Move }
+  | { type: 'APPLY_REMOTE_MOVE'; move: Move }
+  | { type: 'REMOTE_RESIGN' }
+  | { type: 'REMOTE_DRAW_ACCEPT' }
   | { type: 'PROMOTE'; pieceType: PieceType }
   | { type: 'NEW_GAME' }
   | { type: 'UNDO' }
@@ -134,6 +138,12 @@ function gameReducer(state: AppState, action: Action): AppState {
         }
 
         const newGame = applyMove(game, matchingMove);
+
+        // Agar onlayn rejimda bo'lsa — raqibga harakatni yuboramiz!
+        if (state.gameMode === 'online') {
+          onlineManager.sendMessage({ type: 'MOVE', move: matchingMove });
+        }
+
         if (newGame.isInCheck) {
           playCheckSound();
           speakUzbek('Shoh!');
@@ -160,6 +170,11 @@ function gameReducer(state: AppState, action: Action): AppState {
       // Yangi don tanlash
       const piece = game.board[sq.rank]?.[sq.file];
       if (piece && piece.color === game.currentTurn) {
+        // Onlayn rejimda faqat o'z donasini tanlay oladi!
+        if (state.gameMode === 'online' && state.onlinePlayerColor && piece.color !== state.onlinePlayerColor) {
+          return state;
+        }
+
         const normalMoves = getLegalMoves(game, sq);
         const castling = getCastlingMoves(game).filter(m => squaresEqual(m.from, sq));
         const allMoves = [...normalMoves, ...castling];
@@ -195,6 +210,66 @@ function gameReducer(state: AppState, action: Action): AppState {
       };
     }
 
+    case 'APPLY_REMOTE_MOVE': {
+      const move = action.move;
+      if (move.isPromotion) {
+        playPromotionSound();
+        speakUzbek(`${move.promotionPiece === 'Queen' ? 'Vazir' : move.promotionPiece === 'Nur' ? 'Nur' : 'Dona'}ga aylandi!`);
+      } else if (move.isCastling) {
+        playCastlingSound();
+      } else if (move.capturedPiece) {
+        if (move.piece.type === 'Nur') playNurLeapSound();
+        else playCaptureSound();
+        vibrateTouch([50, 30, 50]);
+      } else {
+        if (move.piece.type === 'Nur') playNurLeapSound();
+        else playMoveSound();
+        vibrateTouch(30);
+      }
+
+      const newGame = applyMove(state.game, move);
+      if (newGame.isInCheck) {
+        playCheckSound();
+        speakUzbek('Shoh!');
+        vibrateTouch([100, 50, 100]);
+      }
+      if (newGame.status === 'checkmate') {
+        playGameOverSound();
+        speakUzbek('Shohmat! Oʻyin tugadi.');
+      } else if (newGame.status === 'stalemate') {
+        playGameOverSound();
+        speakUzbek('Pat! Durang natija.');
+      }
+
+      return {
+        ...state,
+        game: newGame,
+        selectedSquare: null,
+        legalMoves: [],
+        hintMove: null,
+        history: [...state.history, state.game],
+      };
+    }
+
+    case 'REMOTE_RESIGN': {
+      const winnerStatus = state.onlinePlayerColor === 'white' ? 'black_resigned' as const : 'white_resigned' as const;
+      playGameOverSound();
+      speakUzbek("Raqib taslim boʻldi! Siz gʻalaba qozondingiz.");
+      return {
+        ...state,
+        game: { ...state.game, status: winnerStatus },
+      };
+    }
+
+    case 'REMOTE_DRAW_ACCEPT': {
+      playGameOverSound();
+      speakUzbek("Raqib durang taklifini qabul qildi!");
+      return {
+        ...state,
+        game: { ...state.game, status: 'draw_mutual' as const },
+      };
+    }
+
     case 'PROMOTE': {
       if (!state.pendingMove) return state;
       const moveWithPromo: Move = {
@@ -209,6 +284,11 @@ function gameReducer(state: AppState, action: Action): AppState {
       playPromotionSound();
       speakUzbek(`${action.pieceType === 'Queen' ? 'Vazir' : action.pieceType === 'Nur' ? 'Nur' : 'Dona'}ga aylandi!`);
       const newGame = applyMove(state.game, promoMove);
+
+      if (state.gameMode === 'online') {
+        onlineManager.sendMessage({ type: 'MOVE', move: promoMove });
+      }
+
       if (newGame.isInCheck) playCheckSound();
       if (newGame.status === 'checkmate' || newGame.status === 'stalemate') playGameOverSound();
 
@@ -265,10 +345,14 @@ function gameReducer(state: AppState, action: Action): AppState {
 
     case 'SET_ONLINE_ROOM':
       return {
-        ...state,
+        ...createInitialAppState(),
+        boardTheme: state.boardTheme,
+        soundEnabled: state.soundEnabled,
+        useNumericNotation: state.useNumericNotation,
         roomCode: action.roomCode,
         onlinePlayerColor: action.myColor,
         gameMode: action.roomCode ? 'online' : 'pvp',
+        isFlipped: action.myColor === 'black',
       };
 
     case 'NEW_GAME':
@@ -283,6 +367,7 @@ function gameReducer(state: AppState, action: Action): AppState {
       };
 
     case 'UNDO': {
+      if (state.gameMode === 'online') return state; // Onlaynda orqaga qaytarib bo'lmaydi
       if (state.history.length === 0) return state;
       const prevHistory = [...state.history];
       const prevGame = prevHistory.pop()!;
@@ -331,11 +416,17 @@ function gameReducer(state: AppState, action: Action): AppState {
       return { ...state, aiThinking: action.thinking };
 
     case 'OFFER_DRAW': {
+      if (state.gameMode === 'online') {
+        onlineManager.sendMessage({ type: 'ACCEPT_DRAW' });
+      }
       const newGame = { ...state.game, status: 'draw_mutual' as const };
       return { ...state, game: newGame };
     }
 
     case 'RESIGN': {
+      if (state.gameMode === 'online') {
+        onlineManager.sendMessage({ type: 'RESIGN' });
+      }
       const resignStatus = state.game.currentTurn === 'white' ? 'white_resigned' as const : 'black_resigned' as const;
       const newGame = { ...state.game, status: resignStatus };
       playGameOverSound();

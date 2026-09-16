@@ -14,6 +14,7 @@ import GameOverModal from './components/GameOverModal';
 import LeaderboardModal from './components/LeaderboardModal';
 import OnlineRoomModal from './components/OnlineRoomModal';
 import EvalBar from './components/EvalBar';
+import { onlineManager } from './services/onlineService';
 
 const THEMES: Array<{ id: BoardTheme; name: string; dot: string }> = [
   { id: 'wood', name: 'Klassik Yogʻoch', dot: 'bg-[#b37a4c]' },
@@ -24,10 +25,38 @@ const THEMES: Array<{ id: BoardTheme; name: string; dot: string }> = [
 
 function AppContent() {
   const { state, dispatch } = useGame();
-  const { isFlipped, boardTheme, soundEnabled } = state;
+  const { isFlipped, boardTheme, soundEnabled, gameMode, roomCode, onlinePlayerColor } = state;
 
   const [showLeaderboard, setShowLeaderboard] = React.useState(false);
   const [showOnlineModal, setShowOnlineModal] = React.useState(false);
+  const [initialRoom, setInitialRoom] = React.useState<string>('');
+
+  // 1. URL dan ?room=... parametrini tekshirish
+  React.useEffect(() => {
+    try {
+      const params = new URLSearchParams(window.location.search);
+      const room = params.get('room');
+      if (room) {
+        const clean = room.trim().toUpperCase().replace(/^NUR-?/i, '');
+        setInitialRoom(clean);
+        setShowOnlineModal(true);
+      }
+    } catch {}
+  }, []);
+
+  // 2. Onlayn xabarlarni tinglash (Raqib harakatlari, taslim bo'lish, durang)
+  React.useEffect(() => {
+    const unsub = onlineManager.addMessageListener((msg) => {
+      if (msg.type === 'MOVE') {
+        dispatch({ type: 'APPLY_REMOTE_MOVE', move: msg.move });
+      } else if (msg.type === 'RESIGN') {
+        dispatch({ type: 'REMOTE_RESIGN' });
+      } else if (msg.type === 'ACCEPT_DRAW') {
+        dispatch({ type: 'REMOTE_DRAW_ACCEPT' });
+      }
+    });
+    return unsub;
+  }, [dispatch]);
 
   return (
     <div className="min-h-screen bg-[#070b12] bg-[radial-gradient(ellipse_80%_80%_at_50%_-20%,rgba(120,70,20,0.15),rgba(255,255,255,0))] text-slate-100 flex flex-col font-sans">
@@ -57,6 +86,25 @@ function AppContent() {
 
         {/* Dosqa Mavzulari va Sozlamalar */}
         <div className="flex items-center gap-3">
+          {/* Onlayn Rejim Indikatori */}
+          {gameMode === 'online' && roomCode && (
+            <div className="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-emerald-500/15 border border-emerald-500/40 text-xs">
+              <span className="w-2 h-2 rounded-full bg-emerald-400 animate-ping" />
+              <span className="font-mono font-black text-emerald-300">#{roomCode}</span>
+              <span className="text-slate-400 hidden sm:inline">
+                ({onlinePlayerColor === 'white' ? 'Oq' : 'Qora'})
+              </span>
+              <button
+                onClick={() => {
+                  onlineManager.disconnect();
+                  dispatch({ type: 'SET_ONLINE_ROOM', roomCode: null, myColor: null });
+                }}
+                className="ml-1 text-[10px] text-red-400 hover:text-red-300 font-bold underline"
+              >
+                Chiqish
+              </button>
+            </div>
+          )}
           {/* Peshqadamlar va Baza Tugmasi */}
           <button
             onClick={() => setShowLeaderboard(true)}
@@ -170,6 +218,7 @@ function AppContent() {
       <OnlineRoomModal
         isOpen={showOnlineModal}
         onClose={() => setShowOnlineModal(false)}
+        initialRoomCode={initialRoom}
       />
     </div>
   );
