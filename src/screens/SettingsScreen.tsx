@@ -21,7 +21,7 @@ export default function SettingsScreen({ onBack }: SettingsScreenProps) {
   const [showHelpModal, setShowHelpModal] = useState(false);
 
   const THEME_NAMES: Record<BoardTheme, string> = {
-    wood: 'Klassik Yogʻoch',
+    wood: 'Rasmiy Nur 100 (Sariq & Shaftoli)',
     emerald: 'Zumrad Turniri',
     azure: 'Zangori Osmon',
     marble: 'Marmar & Obsidiyan',
@@ -291,7 +291,7 @@ export default function SettingsScreen({ onBack }: SettingsScreenProps) {
                 </span>
               </div>
               <p className="text-xs font-black text-amber-400">
-                Nurfyllo NURMATOV
+                Nurfullo NURMATOV
               </p>
               <p className="text-[11px] text-slate-300 leading-relaxed">
                 Muallif 1970-yillardagi talabalik davridan boshlab 50 yillik izlanishlar va hayotiy tajribalar asosida 64 katakli shaxmatni 100 katakli formatga kengaytirib, yangi <strong className="text-amber-300">«Nur»</strong> donasi va 3 xil rokirovkaga ega mukammal oʻyin tizimini yaratdi.

@@ -1,6 +1,6 @@
 // =====================================================
 // NUR CHESS 100 — 7. Qoidalar Ekrani (Rules Screen)
-// Muallif Nurfyllo Nurmatovning rasmiy metodik qo'llanmasi asosida
+// Muallif Nurfullo Nurmatovning rasmiy metodik qo'llanmasi asosida
 // =====================================================
 
 import React, { useState } from 'react';
@@ -178,7 +178,7 @@ export default function RulesScreen({ onBack }: RulesScreenProps) {
               </div>
 
               <p className="text-xs text-slate-300 leading-relaxed">
-                <strong>NUR CHESS 100</strong> — 1970-yillardan boshlab ixtirochi <span className="text-amber-300 font-bold">Nurfyllo Nurmatov</span> tomonidan ishlab chiqilgan va UzAvtor davlat patenti (№ 000-002-853) bilan tasdiqlangan yangi Oʻzbek milliy shaxmatidir. Oʻyin FIDE xalqaro qoidalariga toʻliq mos keladi.
+                <strong>NUR CHESS 100</strong> — 1970-yillardan boshlab ixtirochi <span className="text-amber-300 font-bold">Nurfullo Nurmatov</span> tomonidan ishlab chiqilgan va UzAvtor davlat patenti (№ 000-002-853) bilan tasdiqlangan yangi Oʻzbek milliy shaxmatidir. Oʻyin FIDE xalqaro qoidalariga toʻliq mos keladi.
               </p>
             </div>
 
@@ -393,7 +393,7 @@ export default function RulesScreen({ onBack }: RulesScreenProps) {
                 <span className="text-[10px] text-amber-400/90 font-mono">Qoʻllanma 51-bet</span>
               </div>
               <p className="text-xs text-slate-300 leading-relaxed">
-                Muallif Nurfyllo Nurmatov tomonidan ishlab chiqilgan va tavsiya etilgan maxsus strategik debyut:
+                Muallif Nurfullo Nurmatov tomonidan ishlab chiqilgan va tavsiya etilgan maxsus strategik debyut:
               </p>
               <div className="p-3 rounded-2xl bg-slate-950/90 border border-amber-500/30 font-mono text-xs text-amber-300 space-y-1">
                 <div>1. m5 m6</div>
@@ -444,7 +444,7 @@ export default function RulesScreen({ onBack }: RulesScreenProps) {
             <div className="p-3.5 rounded-2xl bg-slate-950 border border-slate-800 text-[10px] text-slate-400 space-y-1">
               <div className="text-slate-200 font-bold">NUR CHESS 100 — Oʻzbek Shaxmati</div>
               <div>Mualliflik guvohnomasi: <strong>UzAvtor № 000-002-853</strong> (09.12.2025).</div>
-              <div>Muallif: <strong>Nurfyllo Nurmatov</strong> · «Texno Print Navoiy», 2026 y.</div>
+              <div>Muallif: <strong>Nurfullo Nurmatov</strong> · «Texno Print Navoiy», 2026 y.</div>
             </div>
           </div>
         )}

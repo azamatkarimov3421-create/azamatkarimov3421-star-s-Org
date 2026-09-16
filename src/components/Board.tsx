@@ -19,13 +19,13 @@ const THEME_STYLES: Record<BoardTheme, {
   selectedSquare: string;
 }> = {
   wood: {
-    lightSquare: 'bg-gradient-to-br from-[#f3e3c6] to-[#e4ceaa] text-[#6d4c2b]',
-    darkSquare: 'bg-gradient-to-br from-[#b37a4c] to-[#8d5428] text-[#f7e8ce]',
-    frameBorder: 'border-[#4a2e18] shadow-[0_20px_50px_rgba(0,0,0,0.85),inset_0_2px_8px_rgba(255,255,255,0.15)]',
-    frameBg: 'bg-gradient-to-br from-[#3b2011] via-[#2a160b] to-[#1c0d06]',
-    coordText: 'text-[#d4af37]/90 drop-shadow-[0_1px_1px_rgba(0,0,0,0.9)]',
-    lastMove: 'bg-amber-400/45 ring-2 ring-amber-300/60 inset-0',
-    selectedSquare: 'bg-yellow-300/60 ring-4 ring-yellow-400/90 shadow-[inset_0_0_12px_rgba(234,179,8,0.7)]',
+    lightSquare: 'bg-[#ffff85] text-slate-900',
+    darkSquare: 'bg-[#ff9d7a] text-slate-900',
+    frameBorder: 'border-slate-300 shadow-[0_15px_40px_rgba(0,0,0,0.6)]',
+    frameBg: 'bg-gradient-to-b from-[#fbfcfd] via-[#f1f5f9] to-[#e2e8f0]',
+    coordText: 'text-slate-800 font-extrabold drop-shadow-[0_1px_1px_rgba(255,255,255,0.8)]',
+    lastMove: 'bg-amber-400/45 ring-2 ring-amber-500/60 inset-0',
+    selectedSquare: 'bg-yellow-400/60 ring-2 sm:ring-4 ring-amber-600/80 shadow-[inset_0_0_12px_rgba(217,119,6,0.4)]',
   },
   emerald: {
     lightSquare: 'bg-gradient-to-br from-[#f1f3dc] to-[#dee1be] text-[#365029]',
@@ -151,24 +151,28 @@ export default function Board() {
         className={`w-full p-1.5 sm:p-3 md:p-4 rounded-xl sm:rounded-2xl border-2 sm:border-4 ${themeStyle.frameBorder} ${themeStyle.frameBg} transition-all duration-300 shadow-2xl`}
       >
         {/* Yuqori Ustun Harflari */}
-        <div className="grid grid-cols-10 mb-0.5 sm:mb-1 pl-3.5 pr-3.5 sm:pl-5 sm:pr-5 md:pl-6 md:pr-6">
-          {displayedFiles.map((file) => (
-            <div
-              key={file}
-              className={`flex items-center justify-center h-3.5 sm:h-5 md:h-6 text-[9px] sm:text-xs md:text-sm font-black tracking-wider ${themeStyle.coordText}`}
-            >
-              {file}
-            </div>
-          ))}
+        <div className="flex w-full mb-0.5 sm:mb-1 items-center">
+          <div className="w-3.5 sm:w-5 md:w-6 mr-0.5 sm:mr-1 shrink-0" />
+          <div className="flex-1 grid grid-cols-10">
+            {displayedFiles.map((file) => (
+              <div
+                key={file}
+                className={`flex items-center justify-center h-3.5 sm:h-5 md:h-6 text-[9px] sm:text-xs md:text-sm font-black tracking-wider ${themeStyle.coordText}`}
+              >
+                {file}
+              </div>
+            ))}
+          </div>
+          <div className="w-3.5 sm:w-5 md:w-6 ml-0.5 sm:ml-1 shrink-0" />
         </div>
 
         <div className="flex items-center w-full">
           {/* Chap Qator Raqamlari */}
-          <div className="flex flex-col justify-around h-full w-3.5 sm:w-5 md:w-6 mr-0.5 sm:mr-1">
+          <div className="flex flex-col justify-around h-full w-3.5 sm:w-5 md:w-6 mr-0.5 sm:mr-1 shrink-0">
             {displayedRanks.map((rankIdx) => (
               <div
                 key={rankIdx}
-                className={`flex items-center justify-center aspect-square text-[9px] sm:text-xs md:text-sm font-black ${themeStyle.coordText}`}
+                className={`flex-1 flex items-center justify-center aspect-square text-[9px] sm:text-xs md:text-sm font-black ${themeStyle.coordText}`}
               >
                 {rankIdx + 1}
               </div>
@@ -178,7 +182,7 @@ export default function Board() {
           {/* 10x10 Dosqa Grid (To'liq Fluid va Aspect-Square) */}
           <div
             ref={boardRef}
-            className="flex-1 grid grid-cols-10 aspect-square border sm:border-2 border-black/40 rounded sm:rounded-lg overflow-hidden shadow-[inset_0_2px_10px_rgba(0,0,0,0.65)]"
+            className="flex-1 grid grid-cols-10 aspect-square border sm:border-2 border-slate-400/80 rounded sm:rounded-md overflow-hidden shadow-[inset_0_2px_10px_rgba(0,0,0,0.3)]"
           >
             {displayedRanks.map((rankIdx) =>
               displayedFiles.map((fileLetter) => {
@@ -187,7 +191,7 @@ export default function Board() {
                 const piece = game.board[rankIdx][fileIdx];
                 const key = `${fileIdx},${rankIdx}`;
 
-                const isLight = (rankIdx + fileIdx) % 2 === 0;
+                const isLight = (rankIdx + fileIdx) % 2 !== 0;
                 const isSelected = selectedSquare !== null && squaresEqual(sq, selectedSquare);
                 const legalMove = legalTargetMap.get(key);
                 const isLegalTarget = Boolean(legalMove);
@@ -240,8 +244,8 @@ export default function Board() {
 
                     {/* Qo'llanma 13-bet: H1 kvadrat katagida NUR CHESS 100 rasmiy logotipi belgisi */}
                     {sq.file === 9 && sq.rank === 0 && (
-                      <div className="absolute inset-0 flex items-center justify-center pointer-events-none z-[2] opacity-35">
-                        <NurLogo size="72%" showGlow={false} />
+                      <div className="absolute inset-0 flex items-center justify-center pointer-events-none z-[2] opacity-75">
+                        <NurLogo size="78%" showGlow={false} />
                       </div>
                     )}
 
@@ -285,11 +289,11 @@ export default function Board() {
           </div>
 
           {/* O'ng Qator Raqamlari */}
-          <div className="flex flex-col justify-around h-full w-3.5 sm:w-5 md:w-6 ml-0.5 sm:mr-1">
+          <div className="flex flex-col justify-around h-full w-3.5 sm:w-5 md:w-6 ml-0.5 sm:ml-1 shrink-0">
             {displayedRanks.map((rankIdx) => (
               <div
                 key={rankIdx}
-                className={`flex items-center justify-center aspect-square text-[9px] sm:text-xs md:text-sm font-black ${themeStyle.coordText}`}
+                className={`flex-1 flex items-center justify-center aspect-square text-[9px] sm:text-xs md:text-sm font-black ${themeStyle.coordText}`}
               >
                 {rankIdx + 1}
               </div>
@@ -298,15 +302,19 @@ export default function Board() {
         </div>
 
         {/* Quyi Ustun Harflari */}
-        <div className="grid grid-cols-10 mt-0.5 sm:mb-1 pl-3.5 pr-3.5 sm:pl-5 sm:pr-5 md:pl-6 md:pr-6">
-          {displayedFiles.map((file) => (
-            <div
-              key={file}
-              className={`flex items-center justify-center h-3.5 sm:h-5 md:h-6 text-[9px] sm:text-xs md:text-sm font-black tracking-wider ${themeStyle.coordText}`}
-            >
-              {file}
-            </div>
-          ))}
+        <div className="flex w-full mt-0.5 sm:mt-1 items-center">
+          <div className="w-3.5 sm:w-5 md:w-6 mr-0.5 sm:mr-1 shrink-0" />
+          <div className="flex-1 grid grid-cols-10">
+            {displayedFiles.map((file) => (
+              <div
+                key={file}
+                className={`flex items-center justify-center h-3.5 sm:h-5 md:h-6 text-[9px] sm:text-xs md:text-sm font-black tracking-wider ${themeStyle.coordText}`}
+              >
+                {file}
+              </div>
+            ))}
+          </div>
+          <div className="w-3.5 sm:w-5 md:w-6 ml-0.5 sm:ml-1 shrink-0" />
         </div>
       </div>
     </div>

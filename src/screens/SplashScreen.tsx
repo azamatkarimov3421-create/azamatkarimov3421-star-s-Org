@@ -35,7 +35,7 @@ export default function SplashScreen({ onStart }: SplashScreenProps) {
         {/* Muallif va Patent nishoni */}
         <div className="mt-4 text-center">
           <div className="text-xs font-bold text-slate-300">
-            Muallif: <span className="text-amber-300 font-extrabold">Nurfyllo Nurmatov</span>
+            Muallif: <span className="text-amber-300 font-extrabold">Nurfullo Nurmatov</span>
           </div>
           <div className="text-[10px] text-slate-500 mt-0.5">
             UzAvtor Guvohnoma № 000-002-853 · FIDE qoidalariga mos
