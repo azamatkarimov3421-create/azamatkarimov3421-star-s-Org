@@ -6,9 +6,11 @@ import React, { useState, useEffect } from 'react';
 import { useGame } from '../store/gameStore';
 import { saveGameResult } from '../services/dbService';
 
+import { recordGameFinished } from '../store/userProfileStore';
+
 export default function GameOverModal() {
   const { state, dispatch } = useGame();
-  const { game, gameMode, aiColor, aiDepth } = state;
+  const { game, gameMode, aiColor, aiDepth, onlinePlayerColor } = state;
   const { status, moveHistory } = game;
 
   const [dismissed, setDismissed] = useState(false);
@@ -38,8 +40,19 @@ export default function GameOverModal() {
       }).then(() => {
         setSaved(true);
       });
+
+      // Profil statistikasini yangilash
+      let userResult: 'win' | 'loss' | 'draw' = 'draw';
+      if (winnerName === 'Durang') {
+        userResult = 'draw';
+      } else {
+        const isPlayerWhite = gameMode === 'online' ? onlinePlayerColor === 'white' : true;
+        const isWinnerPlayer = (winnerName === 'Oq' && isPlayerWhite) || (winnerName === 'Qora' && !isPlayerWhite);
+        userResult = isWinnerPlayer ? 'win' : 'loss';
+      }
+      recordGameFinished(userResult, gameMode === 'online');
     }
-  }, [status, saved, game.currentTurn, gameMode, aiDepth, moveHistory.length]);
+  }, [status, saved, game.currentTurn, gameMode, aiDepth, moveHistory.length, onlinePlayerColor]);
 
   // O'yin davom etayotgan bo'lsa yoki modal vaqtincha yopilgan bo'lsa
   if (status === 'playing' || status === 'check' || dismissed) {
