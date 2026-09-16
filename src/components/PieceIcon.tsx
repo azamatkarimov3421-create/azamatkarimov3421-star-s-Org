@@ -8,11 +8,11 @@ import { Color, PieceType } from '../engine/types';
 interface PieceIconProps {
   type: PieceType;
   color: Color;
-  size?: number;
+  size?: number | string;
   className?: string;
 }
 
-export default function PieceIcon({ type, color, size = 52, className = '' }: PieceIconProps) {
+export default function PieceIcon({ type, color, size, className = '' }: PieceIconProps) {
   const isWhite = color === 'white';
   const prefix = `p-${color}-${type}`;
 
@@ -22,9 +22,13 @@ export default function PieceIcon({ type, color, size = 52, className = '' }: Pi
   const goldGradId = `${prefix}-gold-grad`;
   const filterShadowId = `${prefix}-shadow`;
 
+  const style = size !== undefined
+    ? { width: typeof size === 'number' ? `${size}px` : size, height: typeof size === 'number' ? `${size}px` : size }
+    : undefined;
+
   return (
     <div
-      style={{ width: size, height: size }}
+      style={style}
       className={`relative flex items-center justify-center select-none transition-transform duration-150 ${className}`}
       title={`${type} (${isWhite ? 'Oq' : 'Qora'})`}
     >

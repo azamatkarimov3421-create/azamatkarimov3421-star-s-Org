@@ -11,9 +11,10 @@ const DIFFICULTY_LABELS = ['', 'Oson', "O'rta", 'Kuchli'];
 
 interface GameControlsProps {
   onOpenOnlineModal?: () => void;
+  className?: string;
 }
 
-export default function GameControls({ onOpenOnlineModal }: GameControlsProps) {
+export default function GameControls({ onOpenOnlineModal, className = '' }: GameControlsProps) {
   const { state, dispatch } = useGame();
   const { game, gameMode, aiColor, aiDepth, aiThinking, history, isFlipped, soundEnabled } = state;
 
@@ -69,7 +70,7 @@ export default function GameControls({ onOpenOnlineModal }: GameControlsProps) {
   };
 
   return (
-    <div className="flex flex-col gap-3 w-full bg-slate-900/80 backdrop-blur-xl border border-slate-800 p-4 rounded-2xl shadow-2xl">
+    <div className={`flex flex-col gap-3 w-full bg-slate-900/80 backdrop-blur-xl border border-slate-800 p-4 rounded-2xl shadow-2xl ${className}`}>
       {/* 1. O'yin Rejimi */}
       <div>
         <label className="text-[11px] font-extrabold uppercase tracking-wider text-slate-400 mb-1.5 block">

@@ -5,7 +5,11 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { useGame } from '../store/gameStore';
 
-export default function MoveHistory() {
+interface MoveHistoryProps {
+  className?: string;
+}
+
+export default function MoveHistory({ className = '' }: MoveHistoryProps) {
   const { state, dispatch } = useGame();
   const { game, useNumericNotation } = state;
   const { moveHistory } = game;
@@ -38,7 +42,7 @@ export default function MoveHistory() {
   };
 
   return (
-    <div className="flex flex-col bg-slate-900/80 backdrop-blur-xl border border-slate-800 rounded-2xl shadow-2xl overflow-hidden w-full lg:w-[280px] h-[520px] transition-all">
+    <div className={`flex flex-col bg-slate-900/80 backdrop-blur-xl border border-slate-800 rounded-2xl shadow-2xl overflow-hidden w-full lg:w-[280px] h-[520px] transition-all ${className}`}>
       {/* Tablar boshqaruvi */}
       <div className="flex bg-slate-950/70 p-1.5 border-b border-slate-800/80 gap-1">
         <button

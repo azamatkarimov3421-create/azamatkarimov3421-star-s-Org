@@ -144,40 +144,40 @@ export default function Board() {
     : Array.from({ length: 10 }, (_, i) => 9 - i); // 9 dan 0 gacha
 
   return (
-    <div className="relative select-none flex flex-col items-center">
+    <div className="relative select-none flex flex-col items-center w-full max-w-[min(calc(100vw-12px),min(74vh,580px))] mx-auto">
       {/* Tashqi Zargarona Ramka */}
       <div
-        className={`p-3.5 md:p-5 rounded-2xl border-4 ${themeStyle.frameBorder} ${themeStyle.frameBg} transition-all duration-300`}
+        className={`w-full p-1.5 sm:p-3 md:p-4 rounded-xl sm:rounded-2xl border-2 sm:border-4 ${themeStyle.frameBorder} ${themeStyle.frameBg} transition-all duration-300 shadow-2xl`}
       >
         {/* Yuqori Ustun Harflari */}
-        <div className="flex mb-1.5 px-6">
+        <div className="grid grid-cols-10 mb-0.5 sm:mb-1 pl-3.5 pr-3.5 sm:pl-5 sm:pr-5 md:pl-6 md:pr-6">
           {displayedFiles.map((file) => (
             <div
               key={file}
-              className={`w-9 h-6 sm:w-12 sm:h-6 md:w-14 md:h-7 lg:w-[60px] flex items-center justify-center text-[11px] sm:text-xs md:text-sm font-black tracking-wider ${themeStyle.coordText}`}
+              className={`flex items-center justify-center h-3.5 sm:h-5 md:h-6 text-[9px] sm:text-xs md:text-sm font-black tracking-wider ${themeStyle.coordText}`}
             >
               {file}
             </div>
           ))}
         </div>
 
-        <div className="flex items-center">
+        <div className="flex items-center w-full">
           {/* Chap Qator Raqamlari */}
-          <div className="flex flex-col py-0 mr-1.5">
+          <div className="flex flex-col justify-around h-full w-3.5 sm:w-5 md:w-6 mr-0.5 sm:mr-1">
             {displayedRanks.map((rankIdx) => (
               <div
                 key={rankIdx}
-                className={`w-6 h-9 sm:w-6 sm:h-12 md:w-7 md:h-14 lg:h-[60px] flex items-center justify-center text-[11px] sm:text-xs md:text-sm font-black ${themeStyle.coordText}`}
+                className={`flex items-center justify-center aspect-square text-[9px] sm:text-xs md:text-sm font-black ${themeStyle.coordText}`}
               >
                 {rankIdx + 1}
               </div>
             ))}
           </div>
 
-          {/* 10x10 Dosqa Grid */}
+          {/* 10x10 Dosqa Grid (To'liq Fluid va Aspect-Square) */}
           <div
             ref={boardRef}
-            className="grid grid-cols-10 border-2 border-black/40 rounded-lg overflow-hidden shadow-[inset_0_3px_12px_rgba(0,0,0,0.65)]"
+            className="flex-1 grid grid-cols-10 aspect-square border sm:border-2 border-black/40 rounded sm:rounded-lg overflow-hidden shadow-[inset_0_2px_10px_rgba(0,0,0,0.65)]"
           >
             {displayedRanks.map((rankIdx) =>
               displayedFiles.map((fileLetter) => {
@@ -208,7 +208,7 @@ export default function Board() {
                     onClick={() => handleSquareClick(sq)}
                     onDrop={(e) => handleDrop(e, sq)}
                     onDragOver={handleDragOver}
-                    className={`relative w-9 h-9 sm:w-12 sm:h-12 md:w-14 md:h-14 lg:w-[60px] lg:h-[60px] flex items-center justify-center cursor-pointer transition-colors duration-150 ${squareBgClass}`}
+                    className={`relative w-full h-full aspect-square flex items-center justify-center cursor-pointer transition-colors duration-150 ${squareBgClass}`}
                   >
                     {/* So'nggi Harakat Izlari */}
                     {(isLastMoveFrom || isLastMoveTo) && (
@@ -217,7 +217,7 @@ export default function Board() {
 
                     {/* Maslahat harakati yoritgichi */}
                     {(isHintFrom || isHintTo) && (
-                      <div className="absolute inset-0 pointer-events-none z-[4] bg-cyan-400/40 ring-4 ring-cyan-300 animate-pulse shadow-[0_0_15px_rgba(34,211,238,0.8)]" />
+                      <div className="absolute inset-0 pointer-events-none z-[4] bg-cyan-400/40 ring-2 sm:ring-4 ring-cyan-300 animate-pulse shadow-[0_0_15px_rgba(34,211,238,0.8)]" />
                     )}
 
                     {/* Tanlangan kvadrat auralari */}
@@ -227,12 +227,12 @@ export default function Board() {
 
                     {/* Shoh shahda bo'lgandagi xavf aulasi */}
                     {isCheck && (
-                      <div className="absolute inset-0 pointer-events-none z-[6] bg-red-600/60 ring-4 ring-red-500 animate-pulse shadow-[inset_0_0_20px_rgba(239,68,68,0.9)]" />
+                      <div className="absolute inset-0 pointer-events-none z-[6] bg-red-600/60 ring-2 sm:ring-4 ring-red-500 animate-pulse shadow-[inset_0_0_20px_rgba(239,68,68,0.9)]" />
                     )}
 
                     {/* 1-100 Raqamli Notatsiya suv belgisi */}
                     {useNumericNotation && (
-                      <span className="absolute top-0.5 left-1 text-[8px] sm:text-[9px] font-extrabold opacity-40 pointer-events-none z-[2]">
+                      <span className="absolute top-0.5 left-0.5 text-[7px] sm:text-[9px] font-extrabold opacity-40 pointer-events-none z-[2]">
                         {numericLabel}
                       </span>
                     )}
@@ -242,10 +242,10 @@ export default function Board() {
                       <div className="absolute inset-0 flex items-center justify-center pointer-events-none z-20">
                         {piece ? (
                           // Yeyish nishoni: Xavf halqasi
-                          <div className="w-8 h-8 sm:w-10 sm:h-10 md:w-12 md:h-12 rounded-full border-[3.5px] border-emerald-400 bg-emerald-500/25 shadow-[0_0_12px_rgba(52,211,153,0.8)] animate-pulse" />
+                          <div className="w-[78%] h-[78%] rounded-full border-2 sm:border-[3.5px] border-emerald-400 bg-emerald-500/25 shadow-[0_0_10px_rgba(52,211,153,0.8)] animate-pulse" />
                         ) : (
                           // Bo'sh kvadratga harakat nuqtasi
-                          <div className="w-3.5 h-3.5 sm:w-4 sm:h-4 rounded-full bg-emerald-400/90 shadow-[0_0_8px_rgba(52,211,153,0.9)] ring-2 ring-emerald-600/40" />
+                          <div className="w-2.5 h-2.5 sm:w-3.5 sm:h-3.5 rounded-full bg-emerald-400/90 shadow-[0_0_8px_rgba(52,211,153,0.9)] ring-1 sm:ring-2 ring-emerald-600/40" />
                         )}
                       </div>
                     )}
@@ -259,14 +259,13 @@ export default function Board() {
                         }
                         onDragStart={(e) => handleDragStart(e, piece, sq)}
                         onDragEnd={handleDragEnd}
-                        className={`relative z-10 w-8 h-8 sm:w-10 sm:h-10 md:w-12 md:h-12 flex items-center justify-center transition-all duration-150 ${
-                          isSelected ? 'scale-110 -translate-y-1' : 'hover:scale-105'
+                        className={`relative z-10 w-[86%] h-[86%] flex items-center justify-center transition-all duration-150 ${
+                          isSelected ? 'scale-110 -translate-y-0.5' : 'hover:scale-105 active:scale-95'
                         }`}
                       >
                         <PieceIcon
                           type={piece.type}
                           color={piece.color}
-                          size={46}
                           className="w-full h-full"
                         />
                       </div>
@@ -278,11 +277,11 @@ export default function Board() {
           </div>
 
           {/* O'ng Qator Raqamlari */}
-          <div className="flex flex-col py-0 ml-1.5">
+          <div className="flex flex-col justify-around h-full w-3.5 sm:w-5 md:w-6 ml-0.5 sm:mr-1">
             {displayedRanks.map((rankIdx) => (
               <div
                 key={rankIdx}
-                className={`w-6 h-9 sm:w-6 sm:h-12 md:w-7 md:h-14 lg:h-[60px] flex items-center justify-center text-[11px] sm:text-xs md:text-sm font-black ${themeStyle.coordText}`}
+                className={`flex items-center justify-center aspect-square text-[9px] sm:text-xs md:text-sm font-black ${themeStyle.coordText}`}
               >
                 {rankIdx + 1}
               </div>
@@ -291,11 +290,11 @@ export default function Board() {
         </div>
 
         {/* Quyi Ustun Harflari */}
-        <div className="flex mt-1.5 px-6">
+        <div className="grid grid-cols-10 mt-0.5 sm:mb-1 pl-3.5 pr-3.5 sm:pl-5 sm:pr-5 md:pl-6 md:pr-6">
           {displayedFiles.map((file) => (
             <div
               key={file}
-              className={`w-9 h-6 sm:w-12 sm:h-6 md:w-14 md:h-7 lg:w-[60px] flex items-center justify-center text-[11px] sm:text-xs md:text-sm font-black tracking-wider ${themeStyle.coordText}`}
+              className={`flex items-center justify-center h-3.5 sm:h-5 md:h-6 text-[9px] sm:text-xs md:text-sm font-black tracking-wider ${themeStyle.coordText}`}
             >
               {file}
             </div>
