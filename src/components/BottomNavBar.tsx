@@ -1,8 +1,10 @@
 // =====================================================
 // NUR SHAXMAT 100 — Doimiy Mobil Pastki Menyu (Bottom Navigation Bar)
+// Chess.com uslubidagi vektorli va minimalist navigatsiya paneli
 // =====================================================
 
 import React from 'react';
+import { SwordsIcon, BookOpenIcon, TrophyIcon, UserIcon } from './Icons';
 
 export type TabType = 'home' | 'friends' | 'leaderboard' | 'profile';
 
@@ -12,15 +14,15 @@ interface BottomNavBarProps {
 }
 
 export default function BottomNavBar({ activeTab, onSelectTab }: BottomNavBarProps) {
-  const tabs = [
-    { id: 'home' as const, label: 'Bosh sahifa', icon: '🏠' },
-    { id: 'friends' as const, label: "Do'stlar", icon: '👥' },
-    { id: 'leaderboard' as const, label: 'Reyting', icon: '📊' },
-    { id: 'profile' as const, label: 'Profil', icon: '👤' },
+  const tabs: { id: TabType; label: string; icon: React.ReactNode }[] = [
+    { id: 'home', label: "O'yin", icon: <SwordsIcon size={21} /> },
+    { id: 'friends', label: 'Rejimlar', icon: <UserIcon size={21} /> },
+    { id: 'leaderboard', label: 'Reyting', icon: <TrophyIcon size={21} /> },
+    { id: 'profile', label: 'Profil', icon: <BookOpenIcon size={21} /> },
   ];
 
   return (
-    <nav className="fixed bottom-0 left-0 right-0 z-40 bg-slate-950/95 backdrop-blur-2xl border-t border-slate-800/90 px-4 py-2 flex items-center justify-around pb-[max(0.7rem,env(safe-area-inset-bottom))] shadow-[0_-10px_35px_rgba(0,0,0,0.85)] max-w-md mx-auto sm:max-w-none">
+    <nav className="fixed bottom-0 left-0 right-0 z-40 bg-[#21201d]/95 backdrop-blur-md border-t border-[#383531] px-3 py-1.5 flex items-center justify-around pb-[max(0.6rem,env(safe-area-inset-bottom))] shadow-[0_-4px_20px_rgba(0,0,0,0.5)] max-w-md mx-auto sm:max-w-none">
       {tabs.map((tab) => {
         const isActive = activeTab === tab.id;
         return (
@@ -29,16 +31,18 @@ export default function BottomNavBar({ activeTab, onSelectTab }: BottomNavBarPro
             onClick={() => onSelectTab(tab.id)}
             className={`flex-1 flex flex-col items-center justify-center py-1 transition-all active:scale-95 ${
               isActive
-                ? 'text-amber-400 font-black scale-105'
-                : 'text-slate-400 hover:text-slate-200 font-semibold'
+                ? 'text-[#81b64c] font-bold'
+                : 'text-[#9b9893] hover:text-[#e0dfdc] font-medium'
             }`}
           >
-            <span className="text-xl mb-0.5">{tab.icon}</span>
-            <span className={`text-[10px] tracking-tight ${isActive ? 'text-amber-400' : 'text-slate-400'}`}>
+            <div className="relative flex items-center justify-center mb-0.5">
+              {tab.icon}
+            </div>
+            <span className={`text-[11px] tracking-tight ${isActive ? 'text-[#81b64c]' : 'text-[#9b9893]'}`}>
               {tab.label}
             </span>
             {isActive && (
-              <span className="w-1.5 h-1.5 rounded-full bg-amber-400 mt-1 shadow-[0_0_8px_#f59e0b]" />
+              <span className="w-1.5 h-1.5 rounded-full bg-[#81b64c] mt-0.5 shadow-[0_0_6px_#81b64c]" />
             )}
           </button>
         );

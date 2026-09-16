@@ -1,10 +1,17 @@
-// =====================================================
-// NUR CHESS 100 — 4. Sozlamalar Ekrani (Settings Screen)
-// =====================================================
-
 import React, { useState } from 'react';
 import { BoardTheme, useGame } from '../store/gameStore';
 import NurLogo from '../components/NurLogo';
+import {
+  ArrowLeftIcon,
+  Volume2Icon,
+  VolumeXIcon,
+  GlobeIcon,
+  ChevronRightIcon,
+  BookOpenIcon,
+  BotIcon,
+  ChessPawnIcon,
+  UserIcon,
+} from '../components/Icons';
 
 interface SettingsScreenProps {
   onBack: () => void;
@@ -30,146 +37,118 @@ export default function SettingsScreen({ onBack }: SettingsScreenProps) {
   const AI_LABELS = ['', 'Oson', "Oʻrta", 'Kuchli'];
 
   return (
-    <div className="min-h-screen w-full bg-[#070b12] bg-[radial-gradient(ellipse_80%_80%_at_50%_-20%,rgba(120,70,20,0.15),rgba(255,255,255,0))] text-slate-100 flex flex-col font-sans select-none pb-12 max-w-md mx-auto sm:max-w-xl">
+    <div className="min-h-screen w-full bg-[#262421] text-[#f1f1f1] flex flex-col font-sans select-none pb-12 max-w-md mx-auto sm:max-w-xl">
       {/* Header */}
-      <header className="sticky top-0 z-30 backdrop-blur-xl bg-slate-950/85 border-b border-slate-800/80 px-4 py-3.5 flex items-center gap-3 pt-[max(0.8rem,env(safe-area-inset-top))]">
+      <header className="sticky top-0 z-30 bg-[#21201d]/95 backdrop-blur-md border-b border-[#383531] px-4 py-3 flex items-center gap-3 pt-[max(0.7rem,env(safe-area-inset-top))]">
         <button
           onClick={onBack}
-          className="w-10 h-10 rounded-2xl bg-slate-900 border border-slate-800 text-slate-300 hover:text-amber-300 hover:border-amber-500/40 flex items-center justify-center text-lg font-bold transition-all active:scale-95"
+          className="w-9 h-9 rounded-xl bg-[#383531] hover:bg-[#45423c] text-[#c3c2be] hover:text-white flex items-center justify-center transition-all active:scale-95 shadow-[0_2px_0_#21201d]"
           title="Orqaga"
         >
-          ←
+          <ArrowLeftIcon size={18} />
         </button>
         <div>
-          <h2 className="text-lg font-black tracking-tight text-slate-100">
+          <h2 className="text-base font-extrabold text-white">
             Sozlamalar
           </h2>
-          <p className="text-xs text-slate-400">Ilova va oʻyin parametrlarini sozlang</p>
+          <p className="text-xs text-[#9b9893]">Ilova va oʻyin parametrlarini sozlang</p>
         </div>
       </header>
 
       {/* Sozlamalar Ro'yxati */}
-      <main className="flex-1 px-4 py-5 flex flex-col gap-2.5">
-        {/* 1. Mavzu (Dark) */}
-        <div className="p-4 rounded-2xl bg-slate-900/70 border border-slate-800/80 flex items-center justify-between shadow-md">
+      <main className="flex-1 px-4 py-4 flex flex-col gap-2.5">
+        {/* 1. Til */}
+        <div className="p-3.5 rounded-2xl bg-[#21201d] border border-[#383531] flex items-center justify-between shadow-sm">
           <div className="flex items-center gap-3">
-            <span className="text-xl">🌙</span>
-            <span className="font-bold text-sm text-slate-200">Mavzu</span>
+            <div className="w-8 h-8 rounded-lg bg-[#2c2a26] border border-[#3d3a34] flex items-center justify-center text-[#81b64c]">
+              <GlobeIcon size={18} />
+            </div>
+            <span className="font-bold text-sm text-white">Til</span>
           </div>
-          <div className="flex items-center gap-1.5 text-xs text-slate-400 font-semibold">
-            <span>Qorongʻi (Dark)</span>
-            <span className="text-slate-600">›</span>
-          </div>
-        </div>
-
-        {/* 2. Til */}
-        <div className="p-4 rounded-2xl bg-slate-900/70 border border-slate-800/80 flex items-center justify-between shadow-md">
-          <div className="flex items-center gap-3">
-            <span className="text-xl">🌐</span>
-            <span className="font-bold text-sm text-slate-200">Til</span>
-          </div>
-          <div className="flex items-center gap-1.5 text-xs text-amber-300 font-semibold">
+          <div className="flex items-center gap-1.5 text-xs text-[#81b64c] font-bold">
             <span>Oʻzbekcha</span>
-            <span className="text-slate-600">›</span>
+            <ChevronRightIcon size={16} className="text-[#686560]" />
           </div>
         </div>
 
-        {/* 3. Ovoz (Toggle) */}
-        <div className="p-4 rounded-2xl bg-slate-900/70 border border-slate-800/80 flex items-center justify-between shadow-md">
+        {/* 2. Ovoz (Toggle) */}
+        <div className="p-3.5 rounded-2xl bg-[#21201d] border border-[#383531] flex items-center justify-between shadow-sm">
           <div className="flex items-center gap-3">
-            <span className="text-xl">🔊</span>
-            <span className="font-bold text-sm text-slate-200">Ovoz effektlari</span>
+            <div className="w-8 h-8 rounded-lg bg-[#2c2a26] border border-[#3d3a34] flex items-center justify-center text-[#81b64c]">
+              {soundEnabled ? <Volume2Icon size={18} /> : <VolumeXIcon size={18} />}
+            </div>
+            <span className="font-bold text-sm text-white">Ovoz effektlari</span>
           </div>
           <button
             onClick={() => dispatch({ type: 'TOGGLE_SOUND' })}
             className={`w-12 h-6.5 rounded-full p-1 transition-colors duration-200 ease-in-out cursor-pointer flex items-center ${
-              soundEnabled ? 'bg-emerald-500 justify-end' : 'bg-slate-800 justify-start'
+              soundEnabled ? 'bg-[#81b64c] justify-end' : 'bg-[#383531] justify-start'
             }`}
           >
-            <div className="w-5 h-5 rounded-full bg-white shadow-md transition-transform" />
+            <div className="w-4.5 h-4.5 rounded-full bg-white shadow-md transition-transform" />
           </button>
         </div>
 
-        {/* 4. Vibratsiya (Toggle) */}
-        <div className="p-4 rounded-2xl bg-slate-900/70 border border-slate-800/80 flex items-center justify-between shadow-md">
-          <div className="flex items-center gap-3">
-            <span className="text-xl">📳</span>
-            <span className="font-bold text-sm text-slate-200">Vibratsiya</span>
-          </div>
-          <button
-            onClick={() => setVibrationEnabled(!vibrationEnabled)}
-            className={`w-12 h-6.5 rounded-full p-1 transition-colors duration-200 ease-in-out cursor-pointer flex items-center ${
-              vibrationEnabled ? 'bg-emerald-500 justify-end' : 'bg-slate-800 justify-start'
-            }`}
-          >
-            <div className="w-5 h-5 rounded-full bg-white shadow-md transition-transform" />
-          </button>
-        </div>
-
-        {/* 5. Shaxmat doskasi uslubi */}
+        {/* 3. Shaxmat doskasi uslubi */}
         <button
           onClick={() => setShowThemeModal(true)}
-          className="p-4 rounded-2xl bg-slate-900/70 border border-slate-800/80 flex items-center justify-between shadow-md text-left active:scale-[0.99] transition-all"
+          className="p-3.5 rounded-2xl bg-[#21201d] hover:bg-[#282622] border border-[#383531] flex items-center justify-between shadow-sm text-left active:scale-[0.99] transition-all"
         >
           <div className="flex items-center gap-3">
-            <span className="text-xl">▦</span>
-            <span className="font-bold text-sm text-slate-200">Shaxmat doskasi uslubi</span>
+            <div className="w-8 h-8 rounded-lg bg-[#2c2a26] border border-[#3d3a34] flex items-center justify-center text-[#f5b041]">
+              <ChessPawnIcon size={18} />
+            </div>
+            <span className="font-bold text-sm text-white">Dosqa uslubi</span>
           </div>
-          <div className="flex items-center gap-1.5 text-xs text-amber-300 font-semibold">
+          <div className="flex items-center gap-1.5 text-xs text-[#81b64c] font-bold">
             <span>{THEME_NAMES[boardTheme]}</span>
-            <span className="text-slate-600">›</span>
+            <ChevronRightIcon size={16} className="text-[#686560]" />
           </div>
         </button>
 
-        {/* 6. Figuralar uslubi */}
-        <div className="p-4 rounded-2xl bg-slate-900/70 border border-slate-800/80 flex items-center justify-between shadow-md">
-          <div className="flex items-center gap-3">
-            <span className="text-xl">♟</span>
-            <span className="font-bold text-sm text-slate-200">Figuralar uslubi</span>
-          </div>
-          <div className="flex items-center gap-1.5 text-xs text-slate-400 font-semibold">
-            <span>Standart 3D</span>
-            <span className="text-slate-600">›</span>
-          </div>
-        </div>
-
-        {/* 7. Qiyinchilik darajasi (AI) */}
+        {/* 4. Qiyinchilik darajasi (AI) */}
         <button
           onClick={() => setShowAiModal(true)}
-          className="p-4 rounded-2xl bg-slate-900/70 border border-slate-800/80 flex items-center justify-between shadow-md text-left active:scale-[0.99] transition-all"
+          className="p-3.5 rounded-2xl bg-[#21201d] hover:bg-[#282622] border border-[#383531] flex items-center justify-between shadow-sm text-left active:scale-[0.99] transition-all"
         >
           <div className="flex items-center gap-3">
-            <span className="text-xl">📊</span>
-            <span className="font-bold text-sm text-slate-200">Qiyinchilik darajasi (AI)</span>
+            <div className="w-8 h-8 rounded-lg bg-[#2c2a26] border border-[#3d3a34] flex items-center justify-center text-[#5dade2]">
+              <BotIcon size={18} />
+            </div>
+            <span className="font-bold text-sm text-white">AI Qiyinchilik darajasi</span>
           </div>
-          <div className="flex items-center gap-1.5 text-xs text-amber-300 font-semibold">
+          <div className="flex items-center gap-1.5 text-xs text-[#81b64c] font-bold">
             <span>{AI_LABELS[aiDepth]}</span>
-            <span className="text-slate-600">›</span>
+            <ChevronRightIcon size={16} className="text-[#686560]" />
           </div>
         </button>
 
-        {/* 8. Yordam */}
+        {/* 5. Yordam va Qo'llanma */}
         <button
           onClick={() => setShowHelpModal(true)}
-          className="p-4 rounded-2xl bg-slate-900/70 border border-slate-800/80 flex items-center justify-between shadow-md text-left active:scale-[0.99] transition-all"
+          className="p-3.5 rounded-2xl bg-[#21201d] hover:bg-[#282622] border border-[#383531] flex items-center justify-between shadow-sm text-left active:scale-[0.99] transition-all"
         >
           <div className="flex items-center gap-3">
-            <span className="text-xl">❓</span>
-            <span className="font-bold text-sm text-slate-200">Yordam & Koʻrsatmalar</span>
+            <div className="w-8 h-8 rounded-lg bg-[#2c2a26] border border-[#3d3a34] flex items-center justify-center text-[#9b9893]">
+              <BookOpenIcon size={18} />
+            </div>
+            <span className="font-bold text-sm text-white">Yordam & Koʻrsatmalar</span>
           </div>
-          <span className="text-slate-600 font-mono text-sm">›</span>
+          <ChevronRightIcon size={16} className="text-[#686560]" />
         </button>
 
-        {/* 9. Biz haqimizda */}
+        {/* 6. Biz haqimizda */}
         <button
           onClick={() => setShowAboutModal(true)}
-          className="p-4 rounded-2xl bg-slate-900/70 border border-slate-800/80 flex items-center justify-between shadow-md text-left active:scale-[0.99] transition-all"
+          className="p-3.5 rounded-2xl bg-[#21201d] hover:bg-[#282622] border border-[#383531] flex items-center justify-between shadow-sm text-left active:scale-[0.99] transition-all"
         >
           <div className="flex items-center gap-3">
-            <span className="text-xl">ℹ️</span>
-            <span className="font-bold text-sm text-slate-200">Biz haqimizda</span>
+            <div className="w-8 h-8 rounded-lg bg-[#2c2a26] border border-[#3d3a34] flex items-center justify-center text-[#e0dfdc]">
+              <UserIcon size={18} />
+            </div>
+            <span className="font-bold text-sm text-white">Biz haqimizda & Patent</span>
           </div>
-          <span className="text-slate-600 font-mono text-sm">›</span>
+          <ChevronRightIcon size={16} className="text-[#686560]" />
         </button>
       </main>
 

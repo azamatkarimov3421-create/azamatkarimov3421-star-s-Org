@@ -1,8 +1,18 @@
 // =====================================================
 // NUR CHESS 100 — 5. O'yin Rejimlarini Tanlash Ekrani
+// Chess.com uslubidagi vektorli va minimalist rejimlar ro'yxati
 // =====================================================
 
 import React from 'react';
+import {
+  ArrowLeftIcon,
+  BotIcon,
+  UsersIcon,
+  GlobeIcon,
+  TrophyIcon,
+  SwordsIcon,
+  ChevronRightIcon,
+} from '../components/Icons';
 
 interface GameModesScreenProps {
   onBack: () => void;
@@ -20,106 +30,96 @@ export default function GameModesScreen({
   const modes = [
     {
       id: 'vsAI',
-      title: 'Kompyuter bilan',
-      desc: 'Turli darajadagi sunʼiy intellekt',
-      icon: '🤖',
+      title: 'Kompyuter bilan (Bot)',
+      desc: 'Oson, oʻrta va kuchli sunʼiy intellekt',
+      icon: <BotIcon size={26} className="text-[#81b64c]" />,
       action: onSelectVsAI,
-      gradient: 'from-blue-900/30 via-slate-900 to-slate-950',
-      border: 'border-blue-500/30',
       badge: '3 daraja',
     },
     {
       id: 'pvp',
-      title: "Doʻst bilan",
-      desc: "Bir qurilmada doʻstingiz bilan oʻynang",
-      icon: '👥',
+      title: "Doʻst bilan oʻynash",
+      desc: "Bitta qurilmada doʻstingiz bilan navbatma-navbat",
+      icon: <UsersIcon size={26} className="text-[#e0dfdc]" />,
       action: onSelectLocal,
-      gradient: 'from-amber-900/30 via-slate-900 to-slate-950',
-      border: 'border-amber-500/30',
       badge: '2 kishi',
     },
     {
       id: 'online',
-      title: "Onlayn oʻyin",
-      desc: "Dunyo boʻylab jonli raqiblar bilan P2P",
-      icon: '🌐',
+      title: "Onlayn P2P oʻyin",
+      desc: "Xona ochib havolani doʻstingizga yuboring",
+      icon: <GlobeIcon size={26} className="text-[#5dade2]" />,
       action: onSelectOnline,
-      gradient: 'from-purple-900/30 via-slate-900 to-slate-950',
-      border: 'border-purple-500/30',
       badge: 'Real-time',
     },
     {
       id: 'tournaments',
-      title: 'Turnirlar',
-      desc: 'Onlayn musobaqalar va medallar',
-      icon: '🏆',
+      title: 'Turnirlar va Musobaqalar',
+      desc: 'Respublika va Navoiy shaxmat musobaqalari',
+      icon: <TrophyIcon size={26} className="text-[#f1c40f]" />,
       action: () => alert("Turnirlar tizimi tez kunda ishga tushiriladi!"),
-      gradient: 'from-yellow-900/20 via-slate-900 to-slate-950',
-      border: 'border-yellow-500/20',
       badge: 'Tez kunda',
       locked: true,
     },
     {
       id: 'practice',
-      title: 'Mashq rejimi',
-      desc: 'Shaxmat mahorati va Nur donasi taktikasi',
-      icon: '🎯',
+      title: 'Mashq va Taktika',
+      desc: 'Nur donasining 3 xil rokirovka va sakrash usullari',
+      icon: <SwordsIcon size={26} className="text-[#f5b041]" />,
       action: onSelectVsAI,
-      gradient: 'from-emerald-900/20 via-slate-900 to-slate-950',
-      border: 'border-emerald-500/20',
       badge: 'Trening',
     },
   ];
 
   return (
-    <div className="min-h-screen w-full bg-[#070b12] bg-[radial-gradient(ellipse_80%_80%_at_50%_-20%,rgba(120,70,20,0.15),rgba(255,255,255,0))] text-slate-100 flex flex-col font-sans select-none pb-12 max-w-md mx-auto sm:max-w-xl">
+    <div className="min-h-screen w-full bg-[#262421] text-[#f1f1f1] flex flex-col font-sans select-none pb-12 max-w-md mx-auto sm:max-w-xl">
       {/* Header */}
-      <header className="sticky top-0 z-30 backdrop-blur-xl bg-slate-950/85 border-b border-slate-800/80 px-4 py-3.5 flex items-center gap-3 pt-[max(0.8rem,env(safe-area-inset-top))]">
+      <header className="sticky top-0 z-30 bg-[#21201d]/95 backdrop-blur-md border-b border-[#383531] px-4 py-3 flex items-center gap-3 pt-[max(0.7rem,env(safe-area-inset-top))]">
         <button
           onClick={onBack}
-          className="w-10 h-10 rounded-2xl bg-slate-900 border border-slate-800 text-slate-300 hover:text-amber-300 hover:border-amber-500/40 flex items-center justify-center text-lg font-bold transition-all active:scale-95"
+          className="w-9 h-9 rounded-xl bg-[#383531] hover:bg-[#45423c] text-[#c3c2be] hover:text-white flex items-center justify-center transition-all active:scale-95 shadow-[0_2px_0_#21201d]"
           title="Orqaga"
         >
-          ←
+          <ArrowLeftIcon size={18} />
         </button>
         <div>
-          <h2 className="text-lg font-black tracking-tight text-slate-100">
-            Oʻyinni tanlang
+          <h2 className="text-base font-extrabold text-white">
+            Oʻyin Rejimini Tanlang
           </h2>
-          <p className="text-xs text-slate-400">Oʻzingizga maʼqul rejimni tanlang</p>
+          <p className="text-xs text-[#9b9893]">Oʻzingizga mos oʻyin turini tanlang</p>
         </div>
       </header>
 
       {/* Rejimlar Ro'yxati */}
-      <main className="flex-1 px-4 py-5 flex flex-col gap-3.5">
+      <main className="flex-1 px-4 py-4 flex flex-col gap-3">
         {modes.map((mode) => (
           <button
             key={mode.id}
             onClick={mode.action}
-            className={`w-full p-4 rounded-2xl border bg-gradient-to-r ${mode.gradient} ${mode.border} text-left flex items-center justify-between group transition-all active:scale-[0.98] shadow-lg relative overflow-hidden`}
+            className="w-full p-4 rounded-2xl border bg-[#21201d] hover:bg-[#282622] border-[#383531] hover:border-[#4d4942] text-left flex items-center justify-between group transition-all active:scale-[0.99] shadow-sm relative"
           >
-            <div className="flex items-center gap-4">
-              <div className="w-14 h-14 rounded-2xl bg-slate-950/80 border border-slate-800 flex items-center justify-center text-3xl shadow-inner group-hover:scale-105 transition-transform">
+            <div className="flex items-center gap-3.5">
+              <div className="w-12 h-12 rounded-xl bg-[#2a2824] border border-[#3d3a34] flex items-center justify-center flex-shrink-0">
                 {mode.icon}
               </div>
 
               <div>
                 <div className="flex items-center gap-2">
-                  <h3 className="font-extrabold text-base text-slate-100 group-hover:text-amber-300 transition-colors">
+                  <h3 className="font-extrabold text-sm text-white group-hover:text-[#81b64c] transition-colors">
                     {mode.title}
                   </h3>
-                  <span className="text-[10px] font-black uppercase tracking-wider px-2 py-0.5 rounded-full bg-slate-800/90 text-amber-300 border border-slate-700">
+                  <span className="text-[9px] font-black uppercase tracking-wider px-2 py-0.5 rounded-full bg-[#81b64c]/15 text-[#81b64c] border border-[#81b64c]/25">
                     {mode.badge}
                   </span>
                 </div>
-                <p className="text-xs text-slate-400 mt-1 font-medium max-w-[220px]">
+                <p className="text-xs text-[#9b9893] mt-0.5 font-medium leading-snug">
                   {mode.desc}
                 </p>
               </div>
             </div>
 
-            <div className="w-8 h-8 rounded-xl bg-slate-950/60 flex items-center justify-center text-slate-400 group-hover:text-amber-300 group-hover:translate-x-0.5 transition-all text-sm font-mono">
-              {mode.locked ? '🔒' : '›'}
+            <div className="text-[#686560] group-hover:text-white group-hover:translate-x-0.5 transition-all">
+              <ChevronRightIcon size={18} />
             </div>
           </button>
         ))}

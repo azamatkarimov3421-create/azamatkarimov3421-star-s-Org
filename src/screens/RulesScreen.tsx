@@ -7,6 +7,7 @@ import React, { useState } from 'react';
 import NurLogo from '../components/NurLogo';
 import PieceIcon from '../components/PieceIcon';
 import { PieceType } from '../engine/types';
+import { ArrowLeftIcon } from '../components/Icons';
 
 interface RulesScreenProps {
   onBack: () => void;
@@ -94,67 +95,67 @@ export default function RulesScreen({ onBack }: RulesScreenProps) {
   ];
 
   return (
-    <div className="min-h-screen w-full bg-[#070b12] bg-[radial-gradient(ellipse_80%_80%_at_50%_-20%,rgba(120,70,20,0.15),rgba(255,255,255,0))] text-slate-100 flex flex-col font-sans select-none pb-14 max-w-md mx-auto sm:max-w-xl">
+    <div className="min-h-screen w-full bg-[#262421] text-[#f1f1f1] flex flex-col font-sans select-none pb-14 max-w-md mx-auto sm:max-w-xl">
       {/* Header */}
-      <header className="sticky top-0 z-30 backdrop-blur-xl bg-slate-950/85 border-b border-slate-800/80 px-4 py-3.5 flex items-center gap-3 pt-[max(0.8rem,env(safe-area-inset-top))]">
+      <header className="sticky top-0 z-30 bg-[#21201d]/95 backdrop-blur-md border-b border-[#383531] px-4 py-3 flex items-center gap-3 pt-[max(0.7rem,env(safe-area-inset-top))]">
         <button
           onClick={onBack}
-          className="w-10 h-10 rounded-2xl bg-slate-900 border border-slate-800 text-slate-300 hover:text-amber-300 hover:border-amber-500/40 flex items-center justify-center text-lg font-bold transition-all active:scale-95 shadow-inner"
+          className="w-9 h-9 rounded-xl bg-[#383531] hover:bg-[#45423c] text-[#c3c2be] hover:text-white flex items-center justify-center transition-all active:scale-95 shadow-[0_2px_0_#21201d]"
           title="Orqaga"
         >
-          ←
+          <ArrowLeftIcon size={18} />
         </button>
         <div className="flex-1">
-          <h2 className="text-lg font-black tracking-tight text-slate-100 flex items-center gap-2">
+          <h2 className="text-base font-extrabold text-white flex items-center gap-2">
             <span>NUR CHESS 100</span>
-            <span className="text-[10px] uppercase font-mono px-1.5 py-0.5 rounded bg-amber-500/20 text-amber-300 border border-amber-500/30">
+            <span className="text-[10px] uppercase font-mono px-1.5 py-0.5 rounded bg-[#81b64c]/20 text-[#81b64c] border border-[#81b64c]/30">
               Qoidalar
             </span>
           </h2>
-          <p className="text-[11px] text-slate-400">100 katakli Oʻzbek shaxmatining rasmiy qoʻllanmasi</p>
+          <p className="text-[11px] text-[#9b9893]">100 katakli Oʻzbek shaxmatining rasmiy qoʻllanmasi</p>
         </div>
         <NurLogo size={34} showGlow={false} />
       </header>
 
       {/* 4 Ta Segmentli Tablar */}
       <div className="px-4 pt-3.5">
-        <div className="grid grid-cols-4 bg-slate-950/90 p-1 rounded-2xl border border-slate-800/90 gap-1 text-[11px] font-bold">
+        <div className="grid grid-cols-4 bg-[#21201d] p-1 rounded-xl border border-[#383531] gap-1 text-[11px] font-bold">
           <button
             onClick={() => setActiveTab('basic')}
-            className={`py-2 rounded-xl transition-all ${
+            className={`py-2 rounded-lg transition-all ${
               activeTab === 'basic'
-                ? 'bg-amber-500 text-slate-950 shadow-md font-black'
-                : 'text-slate-400 hover:text-slate-200'
+                ? 'bg-[#81b64c] text-white shadow-sm font-black'
+                : 'text-[#9b9893] hover:text-white'
             }`}
           >
             Asosiy
           </button>
           <button
             onClick={() => setActiveTab('pieces')}
-            className={`py-2 rounded-xl transition-all ${
+            className={`py-2 rounded-lg transition-all ${
               activeTab === 'pieces'
-                ? 'bg-amber-500 text-slate-950 shadow-md font-black'
-                : 'text-slate-400 hover:text-slate-200'
+                ? 'bg-[#81b64c] text-white shadow-sm font-black'
+                : 'text-[#9b9893] hover:text-white'
             }`}
           >
             Donalar
           </button>
           <button
             onClick={() => setActiveTab('special')}
-            className={`py-2 rounded-xl transition-all ${
+            className={`py-2 rounded-lg transition-all ${
               activeTab === 'special'
-                ? 'bg-amber-500 text-slate-950 shadow-md font-black'
-                : 'text-slate-400 hover:text-slate-200'
+                ? 'bg-[#81b64c] text-white shadow-sm font-black'
+                : 'text-[#9b9893] hover:text-white'
             }`}
           >
             Rokirovka
           </button>
           <button
             onClick={() => setActiveTab('openings')}
-            className={`py-2 rounded-xl transition-all ${
+            className={`py-2 rounded-lg transition-all ${
               activeTab === 'openings'
-                ? 'bg-amber-500 text-slate-950 shadow-md font-black'
-                : 'text-slate-400 hover:text-slate-200'
+                ? 'bg-[#81b64c] text-white shadow-sm font-black'
+                : 'text-[#9b9893] hover:text-white'
             }`}
           >
             Debyutlar

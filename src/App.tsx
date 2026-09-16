@@ -130,7 +130,7 @@ function AppContent() {
     currentScreen === 'game_modes';
 
   return (
-    <div className="min-h-screen bg-[#070b12] text-slate-100 flex flex-col font-sans select-none">
+    <div className="min-h-screen bg-[#262421] text-[#f1f1f1] flex flex-col font-sans select-none">
       {/* ── 1. ASOSIY EKRAN ROUTER ─────────────────────────── */}
       {currentScreen === 'splash' && (
         <SplashScreen onStart={() => navigateTo('home')} />

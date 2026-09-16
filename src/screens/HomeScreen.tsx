@@ -1,5 +1,16 @@
 import React from 'react';
 import NurLogo from '../components/NurLogo';
+import {
+  SwordsIcon,
+  BotIcon,
+  UsersIcon,
+  GlobeIcon,
+  BookOpenIcon,
+  TrophyIcon,
+  SettingsIcon,
+  ChevronRightIcon,
+  PlayIcon,
+} from '../components/Icons';
 
 interface HomeScreenProps {
   onStartGameModes: () => void;
@@ -20,120 +31,145 @@ export default function HomeScreen({
   onOpenStats,
   onOpenSettings,
 }: HomeScreenProps) {
-  const menuItems = [
-    {
-      id: 'modes',
-      title: "Oʻyinni boshlash",
-      subtitle: 'Onlayn yoki oflayn',
-      icon: '⚔️',
-      action: onStartGameModes,
-      badge: 'Tavsiya',
-      glow: true,
-    },
+  const gameModes = [
     {
       id: 'vsAI',
-      title: 'Kompyuter bilan',
-      subtitle: 'AI darajalari',
-      icon: '🤖',
+      title: 'Kompyuter bilan (Bot)',
+      subtitle: 'Oson, oʻrta va kuchli darajalar',
+      icon: <BotIcon size={22} className="text-[#81b64c]" />,
       action: onStartVsAI,
+      badge: 'Tezkor',
     },
     {
       id: 'pvp',
-      title: "Doʻst bilan",
-      subtitle: 'Bir qurilmada',
-      icon: '👥',
+      title: "Doʻst bilan oʻynash",
+      subtitle: 'Bitta qurilmada 2 oʻyinchi',
+      icon: <UsersIcon size={22} className="text-[#e0dfdc]" />,
       action: onStartLocal,
     },
     {
       id: 'online',
       title: "Onlayn oʻyin",
-      subtitle: 'Dunyo boʻylab oʻyinchilar',
-      icon: '🌐',
+      subtitle: 'Internet orqali doʻst bilan',
+      icon: <GlobeIcon size={22} className="text-[#5dade2]" />,
       action: onOpenOnline,
     },
     {
       id: 'rules',
-      title: 'Qoidalar',
-      subtitle: '10x10 shaxmat qoidalari',
-      icon: '📖',
+      title: 'Qoidalar va Darslik',
+      subtitle: '10x10 doska va Nur donasi harakati',
+      icon: <BookOpenIcon size={22} className="text-[#f5b041]" />,
       action: onOpenRules,
     },
     {
       id: 'stats',
-      title: 'Statistika',
-      subtitle: 'Yutuqlar va reyting',
-      icon: '📊',
+      title: 'Statistika va Reyting',
+      subtitle: 'Shaxsiy yutuqlar va natijalar',
+      icon: <TrophyIcon size={22} className="text-[#f1c40f]" />,
       action: onOpenStats,
     },
   ];
 
   return (
-    <div className="min-h-screen w-full bg-[#070b12] bg-[radial-gradient(ellipse_80%_80%_at_50%_-20%,rgba(120,70,20,0.15),rgba(255,255,255,0))] text-slate-100 flex flex-col font-sans select-none pb-24 max-w-md mx-auto sm:max-w-xl">
-      {/* Yuqori Panel (Header) */}
-      <header className="sticky top-0 z-30 backdrop-blur-xl bg-slate-950/85 border-b border-slate-800/80 px-5 py-3.5 flex items-center justify-between pt-[max(0.8rem,env(safe-area-inset-top))]">
-        <div className="flex items-center gap-2.5">
+    <div className="min-h-screen w-full bg-[#262421] text-[#f1f1f1] flex flex-col font-sans select-none pb-24 max-w-md mx-auto sm:max-w-xl">
+      {/* ── 1. CHESS.COM USLUBIDAGI YUQORI HEADER ── */}
+      <header className="sticky top-0 z-30 bg-[#21201d]/95 backdrop-blur-md border-b border-[#383531] px-4 py-3 flex items-center justify-between pt-[max(0.7rem,env(safe-area-inset-top))]">
+        <div className="flex items-center gap-3">
           <NurLogo size={36} showGlow={false} />
-          <h2 className="text-xl font-black tracking-tight text-transparent bg-clip-text bg-gradient-to-r from-amber-100 via-amber-300 to-yellow-400">
-            NUR CHESS 100
-          </h2>
+          <div>
+            <h1 className="text-base sm:text-lg font-black tracking-tight text-white leading-tight">
+              NUR SHAXMAT 100
+            </h1>
+            <p className="text-[10px] text-[#9b9893] font-semibold tracking-wide uppercase">
+              Oʻzbek Shaxmati (10x10)
+            </p>
+          </div>
         </div>
 
         <button
           onClick={onOpenSettings}
-          className="w-10 h-10 rounded-2xl bg-slate-900/90 border border-slate-800 text-slate-300 hover:text-amber-300 hover:border-amber-500/40 flex items-center justify-center text-lg transition-all active:scale-95 shadow-inner"
+          className="w-9 h-9 rounded-xl bg-[#383531] hover:bg-[#45423c] text-[#c3c2be] hover:text-white flex items-center justify-center transition-all active:scale-95 shadow-[0_2px_0_#21201d]"
           title="Sozlamalar"
         >
-          ⚙️
+          <SettingsIcon size={18} />
         </button>
       </header>
 
-      {/* Menyu Kartochkalari */}
-      <main className="flex-1 px-4 py-5 flex flex-col gap-3">
-        {menuItems.map((item) => (
-          <button
-            key={item.id}
-            onClick={item.action}
-            className={`w-full p-4 rounded-2xl border transition-all text-left flex items-center justify-between group active:scale-[0.98] ${
-              item.glow
-                ? 'bg-gradient-to-r from-slate-900 via-slate-900/95 to-slate-950 border-amber-500/50 shadow-[0_4px_20px_rgba(245,158,11,0.15)] hover:border-amber-400'
-                : 'bg-slate-900/70 hover:bg-slate-900 border-slate-800/80 hover:border-slate-700 shadow-md'
-            }`}
-          >
-            {/* Chap: Ikonka va Matn */}
-            <div className="flex items-center gap-3.5">
-              <div
-                className={`w-12 h-12 rounded-2xl flex items-center justify-center text-2xl shadow-inner ${
-                  item.glow
-                    ? 'bg-amber-500/20 border border-amber-500/40 text-amber-300'
-                    : 'bg-slate-950/80 border border-slate-800 text-slate-300 group-hover:text-amber-300 transition-colors'
-                }`}
-              >
-                {item.icon}
+      {/* ── 2. ASOSIY QISM ── */}
+      <main className="flex-1 px-4 py-4 flex flex-col gap-4">
+        {/* Chess.com Signature 3D Katta Yashil Boshlash Tugmasi */}
+        <div className="p-4 rounded-2xl bg-[#21201d] border border-[#383531] shadow-lg flex flex-col gap-3">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2.5">
+              <div className="w-10 h-10 rounded-xl bg-[#2c2a26] border border-[#383531] flex items-center justify-center text-[#81b64c]">
+                <SwordsIcon size={22} />
               </div>
-
               <div>
-                <div className="flex items-center gap-2">
-                  <h3 className="font-bold text-base text-slate-100 group-hover:text-amber-300 transition-colors">
-                    {item.title}
-                  </h3>
-                  {item.badge && (
-                    <span className="text-[10px] font-black uppercase tracking-wider px-2 py-0.5 rounded-full bg-amber-500/20 text-amber-300 border border-amber-500/30">
-                      {item.badge}
-                    </span>
-                  )}
-                </div>
-                <p className="text-xs text-slate-400 mt-0.5 font-medium">
-                  {item.subtitle}
-                </p>
+                <h2 className="text-base font-extrabold text-white">Yangi Oʻyin Boshlash</h2>
+                <p className="text-xs text-[#9b9893]">100 katak • Nur donasi • Yangi strategiya</p>
               </div>
             </div>
+          </div>
 
-            {/* O'ng: Ko'rsatkich belgisi */}
-            <div className="w-8 h-8 rounded-xl bg-slate-950/50 flex items-center justify-center text-slate-500 group-hover:text-amber-300 group-hover:translate-x-0.5 transition-all text-sm font-mono">
-              ›
-            </div>
+          <button
+            onClick={onStartVsAI}
+            className="w-full py-3.5 px-4 rounded-xl bg-[#81b64c] hover:bg-[#92c35a] text-white font-black text-base flex items-center justify-center gap-2.5 shadow-[0_4px_0_#537a2e] active:translate-y-1 active:shadow-[0_0_0_#537a2e] transition-all cursor-pointer"
+          >
+            <PlayIcon size={18} />
+            <span>OʻYNASH (Kompyuter bilan)</span>
           </button>
-        ))}
+        </div>
+
+        {/* Rejimlar Ro'yxati */}
+        <div className="flex flex-col gap-2.5">
+          <div className="px-1 text-xs font-bold text-[#9b9893] uppercase tracking-wider">
+            Oʻyin Rejimlari
+          </div>
+
+          {gameModes.map((mode) => (
+            <button
+              key={mode.id}
+              onClick={mode.action}
+              className="w-full p-3.5 rounded-2xl bg-[#21201d] hover:bg-[#282622] border border-[#383531] hover:border-[#4d4942] transition-all text-left flex items-center justify-between group active:scale-[0.99] shadow-sm"
+            >
+              <div className="flex items-center gap-3">
+                <div className="w-11 h-11 rounded-xl bg-[#2a2824] border border-[#3d3a34] flex items-center justify-center flex-shrink-0">
+                  {mode.icon}
+                </div>
+
+                <div>
+                  <div className="flex items-center gap-2">
+                    <span className="font-bold text-sm text-white group-hover:text-[#81b64c] transition-colors">
+                      {mode.title}
+                    </span>
+                    {mode.badge && (
+                      <span className="text-[9px] font-black uppercase tracking-wider px-2 py-0.5 rounded-full bg-[#81b64c]/20 text-[#81b64c] border border-[#81b64c]/30">
+                        {mode.badge}
+                      </span>
+                    )}
+                  </div>
+                  <p className="text-xs text-[#9b9893] mt-0.5 font-medium">
+                    {mode.subtitle}
+                  </p>
+                </div>
+              </div>
+
+              <div className="text-[#686560] group-hover:text-white group-hover:translate-x-0.5 transition-all">
+                <ChevronRightIcon size={18} />
+              </div>
+            </button>
+          ))}
+        </div>
+
+        {/* Muallif va Qo'llanma Ma'lumoti */}
+        <div className="mt-auto pt-3 text-center text-xs text-[#737069] flex flex-col items-center gap-1">
+          <p className="font-semibold text-[#9b9893]">
+            Muallif: <span className="text-white font-bold">Nurfullo Nurmatov</span>
+          </p>
+          <p className="text-[11px]">
+            10×10 Oʻzbek Shaxmat Federatsiyasi standarti
+          </p>
+        </div>
       </main>
     </div>
   );
