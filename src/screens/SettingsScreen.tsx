@@ -4,6 +4,7 @@
 
 import React, { useState } from 'react';
 import { BoardTheme, useGame } from '../store/gameStore';
+import NurLogo from '../components/NurLogo';
 
 interface SettingsScreenProps {
   onBack: () => void;
@@ -240,21 +241,96 @@ export default function SettingsScreen({ onBack }: SettingsScreenProps) {
         </div>
       )}
 
-      {/* Biz Haqimizda Modali */}
+      {/* Biz Haqimizda Modali — Rasmiy Muallif, Patent va Kitob ma'lumotlari */}
       {showAboutModal && (
-        <div className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4 animate-fadeIn">
-          <div className="bg-slate-900 border border-slate-700 rounded-3xl p-6 max-w-sm w-full space-y-4 text-center">
-            <span className="text-4xl">👑</span>
-            <h3 className="text-lg font-black text-amber-300">Nur Chess 100</h3>
-            <p className="text-xs text-slate-300 leading-relaxed">
-              Oʻzbekiston milliy shaxmati — 100 kvadratlik interaktiv shaxmat platformasi. Nur donasi va 3 xil rokirovka qoidalari bilan boyitilgan.
-            </p>
-            <div className="text-[11px] text-slate-500">Versiya 1.0.0 (APK Release)</div>
+        <div className="fixed inset-0 bg-black/85 backdrop-blur-md z-50 flex items-end sm:items-center justify-center p-0 sm:p-4 animate-fadeIn">
+          <div className="bg-slate-900 border-t sm:border border-slate-700/80 rounded-t-3xl sm:rounded-3xl p-5 sm:p-6 max-w-md w-full max-h-[90vh] overflow-y-auto space-y-4 pb-[max(1.5rem,env(safe-area-inset-bottom))] shadow-2xl">
+            {/* Yuqori Logotip va Sarlavha */}
+            <div className="flex flex-col items-center text-center pt-1">
+              <NurLogo size={84} showGlow={true} />
+              <h3 className="text-lg sm:text-xl font-black text-amber-300 mt-2">
+                NUR CHESS 100
+              </h3>
+              <p className="text-[11px] font-bold text-amber-200/80 uppercase tracking-widest">
+                Oʻzbek Shaxmati · Aql, Sabr va Gʻalaba
+              </p>
+            </div>
+
+            {/* Mualliflik va Patent Guvohnomasi */}
+            <div className="p-3.5 rounded-2xl bg-amber-500/10 border border-amber-500/30 space-y-1.5 text-left">
+              <div className="flex items-center gap-2">
+                <span className="text-base">📜</span>
+                <span className="text-xs font-black text-amber-300">
+                  Rasmiy Intellektual Mulk Guvohnomasi
+                </span>
+              </div>
+              <p className="text-[11px] text-slate-300 leading-relaxed">
+                Ўзбекистон Республикаси Муаллифлик ва турдош ҳуқуқларни ҳимоя қилиш жамияти (UzAvtor) томонидан депонентлаштирилган:
+              </p>
+              <div className="grid grid-cols-2 gap-1.5 pt-1 text-[10px] font-mono">
+                <div className="bg-slate-950/70 p-1.5 rounded-lg border border-slate-800">
+                  <span className="text-slate-400 block">Guvohnoma:</span>
+                  <span className="text-amber-400 font-black">№ 000-002-853</span>
+                </div>
+                <div className="bg-slate-950/70 p-1.5 rounded-lg border border-slate-800">
+                  <span className="text-slate-400 block">Sana / Muddat:</span>
+                  <span className="text-slate-200 font-bold">09.12.2025–2030</span>
+                </div>
+              </div>
+              <p className="text-[10px] text-emerald-400 font-semibold pt-1">
+                ✓ Xalqaro shaxmat federatsiyasi (FIDE) standartlariga toʻliq mos keladi.
+              </p>
+            </div>
+
+            {/* Muallif Haqida */}
+            <div className="p-3.5 rounded-2xl bg-slate-950/80 border border-slate-800 space-y-2 text-left">
+              <div className="flex items-center gap-2">
+                <span className="text-base">👤</span>
+                <span className="text-xs font-black text-slate-100">
+                  Ixtirochi va Muallif Haqida
+                </span>
+              </div>
+              <p className="text-xs font-black text-amber-400">
+                Nurfyllo NURMATOV
+              </p>
+              <p className="text-[11px] text-slate-300 leading-relaxed">
+                Muallif 1970-yillardagi talabalik davridan boshlab 50 yillik izlanishlar va hayotiy tajribalar asosida 64 katakli shaxmatni 100 katakli formatga kengaytirib, yangi <strong className="text-amber-300">«Nur»</strong> donasi va 3 xil rokirovkaga ega mukammal oʻyin tizimini yaratdi.
+              </p>
+              <div className="text-[10px] text-slate-400 border-t border-slate-800/80 pt-1.5 space-y-0.5">
+                <div>• Oʻzbekiston Qishloq va Suv xoʻjaligi vazirliklari aʼlochisi medali</div>
+                <div>• Oʻzbekiston Respublikasi «Mehnat faxriysi»</div>
+                <div>• 28 yil «Navoiy Suvloyiha» davlat unitar korxonasi direktori</div>
+              </div>
+            </div>
+
+            {/* Ilmiy va Mutaxassislar Xulosalari */}
+            <div className="p-3.5 rounded-2xl bg-slate-950/80 border border-slate-800 space-y-1.5 text-left">
+              <div className="flex items-center gap-2">
+                <span className="text-base">🎓</span>
+                <span className="text-xs font-black text-slate-100">
+                  Rasmiy Ekspertiza va Ilmiy Xulosalar
+                </span>
+              </div>
+              <ul className="text-[10px] text-slate-300 space-y-1 list-disc list-inside">
+                <li><strong className="text-slate-200">Prof. O. Ochilov</strong> — OʻzMU huzuridagi Nanotexnologiyalar markazi laboratoriya mudiri, f.-m.f.d.</li>
+                <li><strong className="text-slate-200">Prof. M. J. Abdullayev</strong> — BuxDU Sport nazariyasi va metodikasi mudiri, p.f.d. (DSc).</li>
+                <li><strong className="text-slate-200">I. I. Haydarov</strong> — Oʻzbekiston Shaxmat federatsiyasi Navoiy viloyati boʻlimi rahbari.</li>
+                <li><strong className="text-slate-200">Shaxmat ustalari:</strong> M. Xushmurodova, O. Karimova, N. Umurzoqova.</li>
+              </ul>
+            </div>
+
+            {/* Nashriyot va Aloqa */}
+            <div className="p-3 rounded-2xl bg-slate-950/60 border border-slate-800 text-[10px] text-slate-400 text-left space-y-1">
+              <div><strong>Kitob:</strong> «NUR CHESS 100» oʻquv-metodik qoʻllanmasi (56 bet), 2026 y.</div>
+              <div><strong>ISBN:</strong> 978-9910-622-75-5 · «Texno Print Navoiy» nashriyoti.</div>
+              <div><strong>Muallif bilan aloqa:</strong> (90) 665-58-44, (93) 665-58-44, (90) 717-44-54</div>
+            </div>
+
             <button
               onClick={() => setShowAboutModal(false)}
-              className="w-full py-2.5 bg-amber-500 text-slate-950 rounded-xl text-xs font-black shadow-md"
+              className="w-full py-3 bg-gradient-to-r from-amber-400 to-yellow-500 text-slate-950 rounded-xl text-xs font-black shadow-lg active:scale-95 transition-all"
             >
-              Tushunarli
+              Yopish
             </button>
           </div>
         </div>

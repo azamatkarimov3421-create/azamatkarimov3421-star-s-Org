@@ -190,15 +190,16 @@ export default function PieceIcon({ type, color, size, className = '' }: PieceIc
           </g>
         )}
 
-        {/* ── 3. NUR (NUR - UZBEK CHESS ROYAL PIECE) ─────────────────────────────── */}
+        {/* ── 3. NUR (NUR - 100 KATAKLI SHAXMATNING NOYOB DONASI) ───────────────── */}
+        {/* Muallif Nurfyllo Nurmatov chizmalari (33-bet) asosida: Minora/Mayak shakli, 4 tishli toji, nur tuynuklari va poydevori */}
         {type === 'Nur' && (
-          <g stroke={isWhite ? '#6A4300' : '#2A1900'} strokeWidth="2.2" strokeLinejoin="round" strokeLinecap="round">
-            {/* 12 ta Nur Quyosh Nurlari (Aylana bo'ylab nurlanish) */}
-            <g transform="translate(50, 34)">
+          <g stroke={isWhite ? '#6A4300' : '#111827'} strokeWidth="2.2" strokeLinejoin="round" strokeLinecap="round">
+            {/* 1. Atrofga taralayotgan 12 ta nur nurlari */}
+            <g transform="translate(50, 30)">
               {Array.from({ length: 12 }).map((_, i) => {
                 const angle = i * 30;
                 const isLong = i % 2 === 0;
-                const r1 = 18;
+                const r1 = 19;
                 const r2 = isLong ? 29 : 23;
                 const rad = (angle * Math.PI) / 180;
                 const x1 = Math.cos(rad) * r1;
@@ -213,55 +214,60 @@ export default function PieceIcon({ type, color, size, className = '' }: PieceIc
                     x2={x2}
                     y2={y2}
                     stroke={`url(#${goldGradId})`}
-                    strokeWidth={isLong ? '4' : '2.5'}
+                    strokeWidth={isLong ? '3.5' : '2'}
                     strokeLinecap="round"
+                    opacity={isWhite ? 0.95 : 0.85}
                   />
                 );
               })}
             </g>
 
-            {/* Quyosh Doirasi */}
-            <circle cx="50" cy="34" r="17" fill={`url(#${goldGradId})`} stroke={isWhite ? '#744210' : '#FFD700'} strokeWidth="2.5" />
-
-            {/* O'zbekiston 8-qirrali Yulduz Naqshi */}
-            <g transform="translate(50, 34) scale(0.95)">
-              <polygon
-                points="0,-14 4,-4 14,0 4,4 0,14 -4,4 -14,0 -4,-4"
-                fill={isWhite ? '#FFFFFF' : '#FFD700'}
-                opacity="0.95"
-              />
-              <polygon
-                points="0,-14 4,-4 14,0 4,4 0,14 -4,4 -14,0 -4,-4"
-                transform="rotate(45)"
-                fill={isWhite ? '#FFF9C4' : '#F5C045'}
-                opacity="0.85"
-              />
-            </g>
-
-            {/* O'zbek Xonlik Toji (3 tishcha) */}
+            {/* 2. Minora Chiroq Turreti (Kitob 33-betidagi 4 tishli chiroq minorasi) */}
             <path
-              d="M34 24 L40 14 L50 20 L60 14 L66 24 Z"
+              d="M34 26 L34 14 L39 14 L39 19 L46 19 L46 14 L54 14 L54 19 L61 19 L61 14 L66 14 L66 26 Z"
               fill={`url(#${goldGradId})`}
-              stroke={isWhite ? '#744210' : '#FFD700'}
+              stroke={isWhite ? '#78350F' : '#FFD700'}
+              strokeWidth="2.2"
+            />
+
+            {/* Nur nurlanish tuynuklari (Light slits) */}
+            <line x1="42" y1="21" x2="42" y2="25" stroke={isWhite ? '#78350F' : '#030712'} strokeWidth="2.5" strokeLinecap="round" />
+            <line x1="50" y1="21" x2="50" y2="25" stroke={isWhite ? '#78350F' : '#030712'} strokeWidth="2.5" strokeLinecap="round" />
+            <line x1="58" y1="21" x2="58" y2="25" stroke={isWhite ? '#78350F' : '#030712'} strokeWidth="2.5" strokeLinecap="round" />
+
+            {/* 3. Minora Cho'qqisi (Oltin Nur nuri) */}
+            <circle cx="50" cy="9" r="4.5" fill="#FBBF24" stroke={isWhite ? '#78350F' : '#FFD700'} strokeWidth="1.5" />
+
+            {/* 4. Minora Bo'yinturug'i (Turret Collar) */}
+            <rect x="32" y="26" width="36" height="5" rx="2" fill={`url(#${ringGradId})`} stroke={isWhite ? '#78350F' : '#F59E0B'} strokeWidth="1.5" />
+
+            {/* 5. Tana Ustuni (Slender Minaret Column - 33-betdagi 14mm-22mm ustun) */}
+            <path
+              d="M36 31 C38 45 38 58 35 68 L65 68 C62 58 62 45 64 31 Z"
+              fill={`url(#${bodyGradId})`}
+              stroke={isWhite ? '#78350F' : '#4B5563'}
               strokeWidth="2"
             />
 
-            {/* Markaziy Firuza (Turquoise) Qimmatbaho Tosh */}
-            <circle cx="50" cy="34" r="4.5" fill="#00A896" stroke="#FFF" strokeWidth="1" />
+            {/* Ustundagi Zargarona Oltin Kamar */}
+            <line x1="38" y1="48" x2="62" y2="48" stroke={`url(#${goldGradId})`} strokeWidth="3" strokeLinecap="round" />
 
-            {/* Ustun va Poydevor */}
+            {/* 6. Pog'onali Keng Poydevor (34mm Stepped Base) */}
             <path
-              d="M34 52 Q30 66 32 72 L68 72 Q70 66 66 52 Z"
-              fill={`url(#${goldGradId})`}
+              d="M26 68 Q22 75 22 82 L78 82 Q78 75 74 68 Z"
+              fill={`url(#${bodyGradId})`}
+              stroke={isWhite ? '#78350F' : '#374151'}
+              strokeWidth="2"
             />
 
-            {/* "Nr" Belgisi Badge */}
-            <rect x="36" y="72" width="28" height="12" rx="4" fill={isWhite ? '#5C3800' : '#1A0F00'} stroke={isWhite ? '#FFD700' : '#D4AF37'} strokeWidth="1.5" />
-            <text x="50" y="81" textAnchor="middle" fontSize="9" fontStyle="italic" fontWeight="900" fill="#FFD700" stroke="none">
+            {/* "Nr" Rasmiy Belgisi Plitkasi */}
+            <rect x="37" y="70" width="26" height="11" rx="3.5" fill={isWhite ? '#451A03' : '#030712'} stroke="#FBBF24" strokeWidth="1.5" />
+            <text x="50" y="78.5" textAnchor="middle" fontSize="8.5" fontStyle="italic" fontWeight="900" fill="#FBBF24" stroke="none">
               Nr
             </text>
 
-            <rect x="20" y="84" width="60" height="8" rx="4" fill={`url(#${goldGradId})`} />
+            {/* Eng Pastki Qalin Halqa Poydevor */}
+            <rect x="18" y="82" width="64" height="8" rx="4" fill={`url(#${ringGradId})`} stroke={isWhite ? '#78350F' : '#F59E0B'} strokeWidth="1.5" />
           </g>
         )}
 

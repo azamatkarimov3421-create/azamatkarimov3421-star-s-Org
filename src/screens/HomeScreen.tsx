@@ -1,8 +1,5 @@
-// =====================================================
-// NUR CHESS 100 — 2. Bosh Menyu (Home Screen)
-// =====================================================
-
 import React from 'react';
+import NurLogo from '../components/NurLogo';
 
 interface HomeScreenProps {
   onStartGameModes: () => void;
@@ -75,9 +72,9 @@ export default function HomeScreen({
       {/* Yuqori Panel (Header) */}
       <header className="sticky top-0 z-30 backdrop-blur-xl bg-slate-950/85 border-b border-slate-800/80 px-5 py-3.5 flex items-center justify-between pt-[max(0.8rem,env(safe-area-inset-top))]">
         <div className="flex items-center gap-2.5">
-          <span className="text-2xl drop-shadow-[0_0_10px_rgba(245,158,11,0.6)]">👑</span>
+          <NurLogo size={36} showGlow={false} />
           <h2 className="text-xl font-black tracking-tight text-transparent bg-clip-text bg-gradient-to-r from-amber-100 via-amber-300 to-yellow-400">
-            Nur Chess 100
+            NUR CHESS 100
           </h2>
         </div>
 

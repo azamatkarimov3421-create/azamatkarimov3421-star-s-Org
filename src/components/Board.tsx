@@ -6,6 +6,7 @@ import React, { useCallback, useRef, useState } from 'react';
 import { BoardTheme, useGame } from '../store/gameStore';
 import { FILES, Move, Piece, Square, squaresEqual } from '../engine/types';
 import PieceIcon from './PieceIcon';
+import NurLogo from './NurLogo';
 
 // Mavzular rang palitrasi
 const THEME_STYLES: Record<BoardTheme, {
@@ -235,6 +236,13 @@ export default function Board() {
                       <span className="absolute top-0.5 left-0.5 text-[7px] sm:text-[9px] font-extrabold opacity-40 pointer-events-none z-[2]">
                         {numericLabel}
                       </span>
+                    )}
+
+                    {/* Qo'llanma 13-bet: H1 kvadrat katagida NUR CHESS 100 rasmiy logotipi belgisi */}
+                    {sq.file === 9 && sq.rank === 0 && (
+                      <div className="absolute inset-0 flex items-center justify-center pointer-events-none z-[2] opacity-35">
+                        <NurLogo size="72%" showGlow={false} />
+                      </div>
                     )}
 
                     {/* Qonuniy harakat nuqtasi / yeyish nishoni */}
