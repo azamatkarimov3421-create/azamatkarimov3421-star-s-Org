@@ -38,20 +38,20 @@ export class AIEngine {
 
     scoreMove(move, ttMove, ply) {
         // 1. TT PV move
-        if (ttMove && move.equals(ttMove)) return 1000000;
+        if (ttMove && move.equals(ttMove)) return 10000000;
 
         let score = 0;
 
-        // 2. MVV-LVA Captures
+        // 2. MVV-LVA Captures (1,000,000+ shunda hech qanday tinch yurish urishdan ustun bo'lolmaydi)
         if (move.captured) {
             const victimVal = PIECE_VALUES[move.captured.type];
             const attackerVal = PIECE_VALUES[move.piece.type];
-            score += 10000 + (victimVal * 10 - attackerVal);
+            score += 1000000 + (victimVal * 10 - attackerVal);
         }
 
         // 3. Promotion
         if (move.promotion) {
-            score += 9000 + PIECE_VALUES[move.promotion];
+            score += 900000 + PIECE_VALUES[move.promotion];
         }
 
         // 4. Markazni nazorat qilish (D, E, M, N ustunlari)
@@ -62,23 +62,24 @@ export class AIEngine {
 
         // 5. NUR faolligi va sakrab hujum
         if (move.piece.type === PIECE_NUR) {
-            score += 200;
+            score += 100;
         }
 
         // 6. Rokirovka (Shoh xavfsizligi)
         if (move.castlingType) {
-            score += 400;
+            score += 300;
         }
 
         // 7. Killer moves
         const killers = this.killerMoves.get(ply);
         if (killers && killers.some(k => move.equals(k))) {
-            score += 600;
+            score += 500;
         }
 
-        // 8. History heuristic
+        // 8. History heuristic (500 ball bilan cheklangan, urishlardan oshib ketmaydi)
         const hKey = `${move.fromSq[0]},${move.fromSq[1]},${move.toSq[0]},${move.toSq[1]}`;
-        score += this.historyTable.get(hKey) || 0;
+        const hVal = this.historyTable.get(hKey) || 0;
+        score += Math.min(hVal, 500);
 
         return score;
     }
@@ -87,7 +88,7 @@ export class AIEngine {
         return moves.slice().sort((a, b) => this.scoreMove(b, ttMove, ply) - this.scoreMove(a, ttMove, ply));
     }
 
-    quiescenceSearch(alpha, beta, maxQDepth = 2, deadline = 0) {
+    quiescenceSearch(alpha, beta, maxQDepth = 3, deadline = 0) {
         this.nodesEvaluated++;
         if (this.stopSearch || (deadline > 0 && Date.now() > deadline)) {
             this.stopSearch = true;
@@ -108,8 +109,8 @@ export class AIEngine {
             : this.board.getLegalMoves().filter(m => m.captured !== null || m.promotion !== null);
         if (captures.length === 0) return standPat;
 
-        // 10x10 doskada hisoblash portlashining oldini olish uchun ko'pi bilan 6 ta eng yaxshi urish ko'riladi
-        const ordered = this.orderMoves(captures, null, 0).slice(0, 6);
+        // Quiescence search ichida barcha urishlar to'liq ko'riladi, bitta ham urish chetda qolmaydi!
+        const ordered = this.orderMoves(captures, null, 0);
 
         const savedRights = this.board.cloneCastlingRights();
         for (const move of ordered) {
@@ -157,7 +158,7 @@ export class AIEngine {
         }
 
         if (depth === 0) {
-            const qScore = this.quiescenceSearch(alpha, beta, 2, deadline);
+            const qScore = this.quiescenceSearch(alpha, beta, 3, deadline);
             return [qScore, null];
         }
 
@@ -170,8 +171,11 @@ export class AIEngine {
         }
 
         const orderedMoves = this.orderMoves(legalMoves, ttMove, ply);
-        // Katta 100 katakli doskada ortiqcha shoxlanish va brauzer qotishini to'xtatish
-        const searchMoves = depth >= 3 ? orderedMoves.slice(0, 18) : (depth === 2 ? orderedMoves.slice(0, 24) : orderedMoves);
+        // Root da (ply === 0) hech qachon yurishlar qirqilmaydi — barcha yurishlar to'liq tekshiriladi!
+        // Ichki tugunlarda esa barcha urishlar va eng kuchli tinch yurishlar ko'riladi.
+        const searchMoves = ply === 0 
+            ? orderedMoves 
+            : (depth >= 4 ? orderedMoves.slice(0, 36) : orderedMoves);
         let bestMove = searchMoves[0];
         let bestScore = -999999;
         const savedRights = this.board.cloneCastlingRights();

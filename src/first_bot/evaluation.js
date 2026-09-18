@@ -117,16 +117,16 @@ export function evaluateBoard(board, aiLevel = 3) {
                                         forkTargets++;
                                         if (target.type === PIECE_KING || target.type === PIECE_QUEEN) {
                                             royalTarget = true;
-                                            pstVal += 35;
+                                            pstVal += 15;
                                         } else if (target.type === PIECE_ROOK || target.type === PIECE_NUR) {
-                                            pstVal += 20;
+                                            pstVal += 10;
                                         }
                                     }
                                 }
                             }
                         }
                         if (forkTargets >= 2) {
-                            pstVal += royalTarget ? 150 : 80;
+                            pstVal += royalTarget ? 35 : 20;
                         }
                     }
                     break;
