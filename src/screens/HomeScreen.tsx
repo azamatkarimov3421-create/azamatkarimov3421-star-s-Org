@@ -11,8 +11,10 @@ import {
   SettingsIcon,
   ChevronRightIcon,
   PlayIcon,
+  GoogleIcon,
 } from '../components/Icons';
 import { t } from '../i18n/translations';
+import { getUserProfile } from '../store/userProfileStore';
 
 interface HomeScreenProps {
   onStartVsAI: () => void;
@@ -34,6 +36,7 @@ export default function HomeScreen({
   onOpenSettings,
 }: HomeScreenProps) {
   const { state, dispatch } = useGame();
+  const profile = getUserProfile();
 
   const gameModes = [
     {
@@ -139,16 +142,73 @@ export default function HomeScreen({
                 <SettingsIcon size={16} />
                 <span>Sozlamalar</span>
               </button>
+
+              {/* Desktop Google Profil Tugmasi */}
+              {profile.isGoogleLinked ? (
+                <button
+                  onClick={onOpenStats}
+                  className="ml-1 px-3 py-1.5 rounded-xl text-xs font-bold bg-[#1d2b21] hover:bg-[#25372a] border border-[#304736] text-white transition-all flex items-center gap-2 cursor-pointer shadow-sm"
+                  title="Google Profilingiz"
+                >
+                  {profile.avatarUrl ? (
+                    <img
+                      src={profile.avatarUrl}
+                      alt=""
+                      className="w-6 h-6 rounded-lg object-cover border border-[#4ade80]"
+                      referrerPolicy="no-referrer"
+                    />
+                  ) : (
+                    <GoogleIcon size={16} />
+                  )}
+                  <span className="font-bold max-w-[120px] truncate">{profile.name}</span>
+                  <span className="text-[10px] text-amber-400 font-mono font-bold">⭐ {profile.rating}</span>
+                </button>
+              ) : (
+                <button
+                  onClick={onOpenStats}
+                  className="ml-1 px-3.5 py-1.5 rounded-xl text-xs font-black bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-slate-950 flex items-center gap-2 transition-all cursor-pointer shadow-[0_0_12px_rgba(245,158,11,0.35)]"
+                  title="Google bilan profil ochish"
+                >
+                  <GoogleIcon size={15} />
+                  <span>Google bilan profil ochish</span>
+                </button>
+              )}
             </nav>
 
-            {/* Mobil Sozlamalar tugmasi */}
-            <button
-              onClick={onOpenSettings}
-              className="md:hidden w-10 h-10 rounded-xl bg-[#233027] border border-[#2e4235] text-[#c3c2be] hover:text-white flex items-center justify-center transition-all active:scale-95"
-              title="Sozlamalar"
-            >
-              <SettingsIcon size={18} />
-            </button>
+            {/* Mobil O'ng Blok: Profil va Sozlamalar */}
+            <div className="flex items-center gap-2 md:hidden">
+              <button
+                onClick={onOpenStats}
+                className={`h-10 px-2.5 rounded-xl border flex items-center gap-1.5 text-xs font-bold transition-all active:scale-95 cursor-pointer ${
+                  profile.isGoogleLinked
+                    ? 'bg-[#233027] border-[#2e4235] text-white'
+                    : 'bg-amber-500/20 border-amber-500/40 text-amber-300'
+                }`}
+                title="Profil"
+              >
+                {profile.isGoogleLinked && profile.avatarUrl ? (
+                  <img
+                    src={profile.avatarUrl}
+                    alt=""
+                    className="w-5 h-5 rounded-md object-cover border border-emerald-400/60"
+                    referrerPolicy="no-referrer"
+                  />
+                ) : (
+                  <GoogleIcon size={16} />
+                )}
+                <span className="text-[11px] max-w-[70px] truncate">
+                  {profile.isGoogleLinked ? profile.name : 'Profil'}
+                </span>
+              </button>
+
+              <button
+                onClick={onOpenSettings}
+                className="w-10 h-10 rounded-xl bg-[#233027] border border-[#2e4235] text-[#c3c2be] hover:text-white flex items-center justify-center transition-all active:scale-95 cursor-pointer"
+                title="Sozlamalar"
+              >
+                <SettingsIcon size={18} />
+              </button>
+            </div>
           </div>
         </header>
 

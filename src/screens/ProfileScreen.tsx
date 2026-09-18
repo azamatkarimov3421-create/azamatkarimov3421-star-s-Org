@@ -3,8 +3,8 @@
 // Chess.com uslubidagi vektorli va minimalist profil
 // =====================================================
 
-import React, { useState } from 'react';
-import { getUserProfile, saveUserProfile, UserProfile } from '../store/userProfileStore';
+import React, { useState, useEffect } from 'react';
+import { getUserProfile, saveUserProfile, UserProfile, isGoogleUser } from '../store/userProfileStore';
 import {
   ArrowLeftIcon,
   SettingsIcon,
@@ -13,7 +13,11 @@ import {
   UserIcon,
   ChevronRightIcon,
   SwordsIcon,
+  GoogleIcon,
+  LogOutIcon,
 } from '../components/Icons';
+import GoogleAuthModal from '../components/GoogleAuthModal';
+import { signOutGoogle } from '../services/authService';
 
 interface ProfileScreenProps {
   onBack: () => void;
@@ -33,6 +37,11 @@ export default function ProfileScreen({
   const [profile, setProfile] = useState<UserProfile>(getUserProfile());
   const [isEditingName, setIsEditingName] = useState(false);
   const [nameInput, setNameInput] = useState(profile.name);
+  const [showAuthModal, setShowAuthModal] = useState(false);
+
+  useEffect(() => {
+    setProfile(getUserProfile());
+  }, []);
 
   const winRate = profile.gamesPlayed > 0
     ? Math.round((profile.wins / profile.gamesPlayed) * 100)
@@ -44,6 +53,15 @@ export default function ProfileScreen({
     saveUserProfile(updated);
     setProfile(updated);
     setIsEditingName(false);
+  };
+
+  const handleSignOut = async () => {
+    if (window.confirm("Rostdan ham Google hisobingizdan chiqmoqchimisiz?")) {
+      await signOutGoogle();
+      const updated = getUserProfile();
+      setProfile(updated);
+      setNameInput(updated.name);
+    }
   };
 
   return (
@@ -72,54 +90,117 @@ export default function ProfileScreen({
       </header>
 
       <main className="flex-1 px-4 py-4 space-y-4">
-        {/* Profil Asosiy Kartochkasi */}
-        <div className="flex flex-col items-center text-center p-5 rounded-2xl bg-[#21201d] border border-[#383531] shadow-md relative">
-          {/* Avatar */}
-          <div className="relative mb-3">
-            <div className="w-20 h-20 rounded-2xl bg-[#2c2a26] border-2 border-[#81b64c] flex items-center justify-center text-[#81b64c] shadow-md">
-              <UserIcon size={38} />
+        {/* AGAR GOOGLE ULANGAN BO'LMASA — PROFIL OCHISH BANNERI */}
+        {!profile.isGoogleLinked ? (
+          <div className="p-6 rounded-3xl bg-gradient-to-b from-[#2a2723] to-[#21201d] border-2 border-amber-500/40 shadow-2xl flex flex-col items-center text-center gap-4">
+            <div className="w-18 h-18 rounded-3xl bg-white/10 border border-white/15 flex items-center justify-center shadow-inner p-3.5">
+              <GoogleIcon size={44} />
             </div>
+
+            <div>
+              <h3 className="text-xl font-black text-white">
+                Google Hisobi Bilan Profil Oching
+              </h3>
+              <p className="text-xs text-[#c3c2be] mt-1.5 max-w-sm leading-relaxed">
+                Natijalaringiz, yutuqlaringiz va reytingingizni saqlab qolish uchun Google orqali tizimga kiring.
+              </p>
+            </div>
+
+            <div className="w-full max-w-xs space-y-2 text-left bg-[#181715] p-3.5 rounded-2xl border border-[#33302b] text-xs text-[#9b9893]">
+              <div className="flex items-center gap-2">
+                <span className="text-emerald-400 font-bold">✓</span>
+                <span>Reyting va natijalar xavfsiz saqlanadi</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <span className="text-emerald-400 font-bold">✓</span>
+                <span>Oʻyinlarda Google suratingiz chiqadi</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <span className="text-emerald-400 font-bold">✓</span>
+                <span>Peshqadamlar roʻyxatida ishtirok</span>
+              </div>
+            </div>
+
             <button
-              onClick={() => setIsEditingName(true)}
-              className="absolute -bottom-1 -right-1 w-6 h-6 rounded-lg bg-[#81b64c] text-white text-[11px] font-bold flex items-center justify-center shadow-md border border-[#21201d] active:scale-95"
-              title="Ismni tahrirlash"
+              onClick={() => setShowAuthModal(true)}
+              className="w-full max-w-xs py-3.5 px-5 rounded-2xl bg-white hover:bg-zinc-100 active:scale-95 text-slate-900 font-extrabold text-sm flex items-center justify-center gap-3 shadow-xl transition-all cursor-pointer border border-zinc-200"
             >
-              ✎
+              <GoogleIcon size={20} />
+              <span>Google orqali kirish</span>
             </button>
           </div>
-
-          {/* Ism */}
-          {isEditingName ? (
-            <div className="flex items-center gap-2 mb-2">
-              <input
-                type="text"
-                value={nameInput}
-                onChange={(e) => setNameInput(e.target.value)}
-                className="bg-[#181715] border border-[#81b64c] rounded-xl px-3 py-1.5 text-sm font-bold text-white text-center focus:outline-none"
-              />
+        ) : (
+          /* PROFIL ASOSIY KARTOCHKASI (GOOGLE BILAN ULANGAN HOLDA) */
+          <div className="flex flex-col items-center text-center p-5 rounded-3xl bg-[#21201d] border border-[#383531] shadow-md relative">
+            {/* Avatar */}
+            <div className="relative mb-3">
+              {profile.avatarUrl ? (
+                <img
+                  src={profile.avatarUrl}
+                  alt={profile.name}
+                  className="w-20 h-20 rounded-2xl object-cover border-2 border-[#81b64c] shadow-md bg-[#2c2a26]"
+                  referrerPolicy="no-referrer"
+                />
+              ) : (
+                <div className="w-20 h-20 rounded-2xl bg-[#2c2a26] border-2 border-[#81b64c] flex items-center justify-center text-[#81b64c] shadow-md">
+                  <UserIcon size={38} />
+                </div>
+              )}
               <button
-                onClick={handleSaveName}
-                className="px-3 py-1.5 bg-[#81b64c] hover:bg-[#92c35a] text-white font-bold text-xs rounded-xl shadow"
+                onClick={() => setIsEditingName(true)}
+                className="absolute -bottom-1 -right-1 w-6 h-6 rounded-lg bg-[#81b64c] text-white text-[11px] font-bold flex items-center justify-center shadow-md border border-[#21201d] active:scale-95"
+                title="Ismni tahrirlash"
               >
-                Saqlash
+                ✎
               </button>
             </div>
-          ) : (
-            <h3 className="text-lg font-black text-white">
-              {profile.name}
-            </h3>
-          )}
 
-          {/* Reyting va Liga */}
-          <div className="flex items-center gap-2 mt-2">
-            <div className="flex items-center gap-1.5 px-3 py-1 rounded-xl bg-[#2c2a26] border border-[#383531] text-xs font-mono font-bold text-[#81b64c]">
-              <span>⭐ {profile.rating} reyting</span>
+            {/* Google Tasdiq Belgisi */}
+            <div className="flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-emerald-500/15 border border-emerald-500/30 text-[10px] font-bold text-emerald-400 mb-1.5">
+              <GoogleIcon size={12} />
+              <span>Google bilan ulangan</span>
             </div>
-            <div className="px-3 py-1 rounded-xl bg-[#2c2a26] border border-[#383531] text-xs font-bold text-[#f5b041]">
-              {profile.league} ligasi
+
+            {/* Ism */}
+            {isEditingName ? (
+              <div className="flex items-center gap-2 mb-2">
+                <input
+                  type="text"
+                  value={nameInput}
+                  onChange={(e) => setNameInput(e.target.value)}
+                  className="bg-[#181715] border border-[#81b64c] rounded-xl px-3 py-1.5 text-sm font-bold text-white text-center focus:outline-none"
+                />
+                <button
+                  onClick={handleSaveName}
+                  className="px-3 py-1.5 bg-[#81b64c] hover:bg-[#92c35a] text-white font-bold text-xs rounded-xl shadow cursor-pointer"
+                >
+                  Saqlash
+                </button>
+              </div>
+            ) : (
+              <h3 className="text-lg font-black text-white">
+                {profile.name}
+              </h3>
+            )}
+
+            {/* Google Email */}
+            {profile.email && (
+              <p className="text-xs text-[#9b9893] font-mono mt-0.5">
+                {profile.email}
+              </p>
+            )}
+
+            {/* Reyting va Liga */}
+            <div className="flex items-center gap-2 mt-2.5">
+              <div className="flex items-center gap-1.5 px-3 py-1 rounded-xl bg-[#2c2a26] border border-[#383531] text-xs font-mono font-bold text-[#81b64c]">
+                <span>⭐ {profile.rating} reyting</span>
+              </div>
+              <div className="px-3 py-1 rounded-xl bg-[#2c2a26] border border-[#383531] text-xs font-bold text-[#f5b041]">
+                {profile.league}
+              </div>
             </div>
           </div>
-        </div>
+        )}
 
         {/* 4 Talik Statistika Qatori */}
         <div className="grid grid-cols-4 gap-2">
@@ -229,8 +310,29 @@ export default function ProfileScreen({
             </div>
             <ChevronRightIcon size={16} className="text-[#686560]" />
           </button>
+
+          {/* Chiqish (Faqat Google ulangan bo'lsa) */}
+          {profile.isGoogleLinked && (
+            <button
+              onClick={handleSignOut}
+              className="w-full mt-4 p-3.5 rounded-2xl bg-red-500/10 hover:bg-red-500/20 border border-red-500/30 flex items-center justify-center gap-2.5 text-red-300 hover:text-red-200 text-xs font-bold transition-all active:scale-[0.99] shadow-sm cursor-pointer"
+            >
+              <LogOutIcon size={16} />
+              <span>Google hisobidan chiqish</span>
+            </button>
+          )}
         </div>
       </main>
+
+      {/* Google Auth Modali */}
+      <GoogleAuthModal
+        isOpen={showAuthModal}
+        onClose={() => setShowAuthModal(false)}
+        onSuccess={(updated) => {
+          setProfile(updated);
+          setNameInput(updated.name);
+        }}
+      />
     </div>
   );
 }

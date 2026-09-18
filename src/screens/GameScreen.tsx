@@ -589,9 +589,16 @@ export default function GameScreen({ onBack, onOpenSettings }: GameScreenProps) 
             }`}
           >
             <div className="flex items-center gap-2">
-              <div className="w-8 h-8 rounded-lg bg-[#2c2a26] border border-[#3d3a34] flex items-center justify-center text-[#81b64c]">
+              <div className="w-8 h-8 rounded-lg bg-[#2c2a26] border border-[#3d3a34] flex items-center justify-center text-[#81b64c] overflow-hidden">
                 {gameMode === 'aiVsAi' ? (
                   <BotIcon size={18} className="text-[#81b64c]" />
+                ) : userProfile.avatarUrl ? (
+                  <img
+                    src={userProfile.avatarUrl}
+                    alt=""
+                    className="w-full h-full object-cover rounded-lg"
+                    referrerPolicy="no-referrer"
+                  />
                 ) : (
                   <UserIcon size={18} />
                 )}

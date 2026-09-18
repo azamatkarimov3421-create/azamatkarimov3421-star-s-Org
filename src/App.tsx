@@ -6,6 +6,7 @@
 import React, { useState, useEffect } from 'react';
 import { GameProvider, useGame } from './store/gameStore';
 import { onlineManager } from './services/onlineService';
+import { initAuth } from './services/authService';
 
 // 8 ta Asosiy Ekranlar
 import SplashScreen from './screens/SplashScreen';
@@ -58,6 +59,12 @@ function AppContent() {
         setCurrentScreen('game');
       }
     } catch {}
+  }, []);
+
+  // 3. Google Auth sessiyasini kuzatish (OAuth redirectidan qaytish va avto-login)
+  useEffect(() => {
+    const unsub = initAuth();
+    return unsub;
   }, []);
 
   // 2. Onlayn xabarlarni tinglash (Raqib harakatlari, taslim bo'lish, durang)

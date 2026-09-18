@@ -3,15 +3,21 @@
 // =====================================================
 
 export interface UserProfile {
+  id?: string;
   name: string;
+  email?: string;
   rating: number;
   league: string;
   avatar: string;
+  avatarUrl?: string;
   gamesPlayed: number;
   wins: number;
   draws: number;
   losses: number;
   onlineGames: number;
+  isGoogleLinked: boolean;
+  googleId?: string;
+  lastLoginAt?: string;
 }
 
 export interface Achievement {
@@ -24,17 +30,21 @@ export interface Achievement {
   unlocked: boolean;
 }
 
-const DEFAULT_PROFILE: UserProfile = {
-  name: 'Azamat Karimov',
-  rating: 1480,
-  league: 'Bronza liga',
+export const DEFAULT_UNLINKED_PROFILE: UserProfile = {
+  name: 'Mehmon Oʻyinchi',
+  rating: 1200,
+  league: 'Boshlangʻich liga',
   avatar: '👤',
-  gamesPlayed: 124,
-  wins: 78,
-  draws: 20,
-  losses: 26,
-  onlineGames: 6,
+  avatarUrl: undefined,
+  gamesPlayed: 0,
+  wins: 0,
+  draws: 0,
+  losses: 0,
+  onlineGames: 0,
+  isGoogleLinked: false,
 };
+
+const DEFAULT_PROFILE = DEFAULT_UNLINKED_PROFILE;
 
 const DEFAULT_ACHIEVEMENTS: Achievement[] = [
   {
@@ -99,9 +109,67 @@ const ACHIEVEMENTS_KEY = 'nurchess_achievements_v1';
 export function getUserProfile(): UserProfile {
   try {
     const data = localStorage.getItem(PROFILE_KEY);
-    if (data) return { ...DEFAULT_PROFILE, ...JSON.parse(data) };
+    if (data) {
+      const parsed = JSON.parse(data);
+      // Ensure boolean isGoogleLinked is strictly checked
+      return {
+        ...DEFAULT_PROFILE,
+        ...parsed,
+        isGoogleLinked: Boolean(parsed.isGoogleLinked && parsed.email),
+      };
+    }
   } catch {}
   return DEFAULT_PROFILE;
+}
+
+export function isGoogleUser(): boolean {
+  const p = getUserProfile();
+  return Boolean(p.isGoogleLinked && p.email);
+}
+
+export function linkGoogleAccount(data: {
+  id?: string;
+  name: string;
+  email: string;
+  avatarUrl?: string;
+  googleId?: string;
+}): UserProfile {
+  const current = getUserProfile();
+  const updated: UserProfile = {
+    ...current,
+    id: data.id || current.id || `user_${Date.now()}`,
+    name: data.name.trim() || 'Google Oʻyinchi',
+    email: data.email.trim(),
+    avatarUrl: data.avatarUrl || current.avatarUrl,
+    googleId: data.googleId || data.id,
+    isGoogleLinked: true,
+    lastLoginAt: new Date().toISOString(),
+    // Preserve or initialize rating
+    rating: current.rating >= 1000 ? current.rating : 1200,
+    league: current.league || 'Boshlangʻich liga',
+  };
+  saveUserProfile(updated);
+  return updated;
+}
+
+export function unlinkGoogleAccount(): UserProfile {
+  const current = getUserProfile();
+  const reset: UserProfile = {
+    ...DEFAULT_UNLINKED_PROFILE,
+    rating: 1200,
+    gamesPlayed: current.gamesPlayed,
+    wins: current.wins,
+    draws: current.draws,
+    losses: current.losses,
+    onlineGames: current.onlineGames,
+    isGoogleLinked: false,
+    email: undefined,
+    avatarUrl: undefined,
+    id: undefined,
+    googleId: undefined,
+  };
+  saveUserProfile(reset);
+  return reset;
 }
 
 export function saveUserProfile(profile: UserProfile): void {
