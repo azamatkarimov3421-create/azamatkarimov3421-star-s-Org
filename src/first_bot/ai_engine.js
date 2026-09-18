@@ -9,7 +9,11 @@
  * - Advanced Move Ordering (PV, MVV-LVA, Killer Moves, History)
  */
 
-import { WHITE, BLACK, PIECE_VALUES, PIECE_NUR } from './board_constants.js';
+import {
+    WHITE, BLACK,
+    PIECE_PAWN, PIECE_KNIGHT, PIECE_BISHOP, PIECE_NUR, PIECE_ROOK, PIECE_QUEEN, PIECE_KING,
+    PIECE_VALUES
+} from './board_constants.js';
 import { Zobrist } from './zobrist.js';
 import { evaluateBoard } from './evaluation.js';
 import { findBookMove } from './opening_book.js';
@@ -104,8 +108,8 @@ export class AIEngine {
             : this.board.getLegalMoves().filter(m => m.captured !== null || m.promotion !== null);
         if (captures.length === 0) return standPat;
 
-        // 10x10 doskada hisoblash portlashining oldini olish uchun ko'pi bilan 4 ta eng yaxshi urish ko'riladi
-        const ordered = this.orderMoves(captures, null, 0).slice(0, 4);
+        // 10x10 doskada hisoblash portlashining oldini olish uchun ko'pi bilan 6 ta eng yaxshi urish ko'riladi
+        const ordered = this.orderMoves(captures, null, 0).slice(0, 6);
 
         const savedRights = this.board.cloneCastlingRights();
         for (const move of ordered) {
@@ -167,7 +171,7 @@ export class AIEngine {
 
         const orderedMoves = this.orderMoves(legalMoves, ttMove, ply);
         // Katta 100 katakli doskada ortiqcha shoxlanish va brauzer qotishini to'xtatish
-        const searchMoves = depth >= 3 ? orderedMoves.slice(0, 16) : (depth === 2 ? orderedMoves.slice(0, 22) : orderedMoves);
+        const searchMoves = depth >= 3 ? orderedMoves.slice(0, 18) : (depth === 2 ? orderedMoves.slice(0, 24) : orderedMoves);
         let bestMove = searchMoves[0];
         let bestScore = -999999;
         const savedRights = this.board.cloneCastlingRights();
@@ -225,68 +229,54 @@ export class AIEngine {
         const legalMoves = this.board.getLegalMoves();
         if (legalMoves.length === 0) return null;
 
-        // 1. Debyutlar kitobini tekshirish (Opening Book)
-        const bookMoveObj = findBookMove(this.board.moveHistory);
-        if (bookMoveObj) {
-            const matchedLegal = legalMoves.find(m => 
-                m.fromSq[0] === bookMoveObj.from[0] && m.fromSq[1] === bookMoveObj.from[1] &&
-                m.toSq[0] === bookMoveObj.to[0] && m.toSq[1] === bookMoveObj.to[1]
-            );
-            if (matchedLegal) {
-                if (onProgress) {
-                    onProgress({
-                        depth: 1,
-                        score: 0,
-                        move: matchedLegal,
-                        nodes: 1,
-                        timeMs: Date.now() - startTime,
-                        isBook: true
-                    });
+        // 1. Debyutlar kitobini tekshirish (faqat doskada shax yoki tekin o'lja bo'lmaganda)
+        const inCheck = this.board.isInCheck(this.board.turn);
+        if (!inCheck) {
+            const bookMoveObj = findBookMove(this.board.moveHistory);
+            if (bookMoveObj) {
+                const matchedLegal = legalMoves.find(m => 
+                    m.fromSq[0] === bookMoveObj.from[0] && m.fromSq[1] === bookMoveObj.from[1] &&
+                    m.toSq[0] === bookMoveObj.to[0] && m.toSq[1] === bookMoveObj.to[1]
+                );
+                if (matchedLegal) {
+                    const freeMajorCaptures = legalMoves.filter(m => m.captured && 
+                        (m.captured.type === PIECE_QUEEN || m.captured.type === PIECE_ROOK || m.captured.type === PIECE_NUR || m.captured.type === PIECE_KNIGHT || m.captured.type === PIECE_BISHOP)
+                    );
+                    if (freeMajorCaptures.length === 0 || matchedLegal.captured) {
+                        if (onProgress) {
+                            onProgress({
+                                depth: 1,
+                                score: 0,
+                                move: matchedLegal,
+                                nodes: 1,
+                                timeMs: Date.now() - startTime,
+                                isBook: true
+                            });
+                        }
+                        return {
+                            move: matchedLegal,
+                            score: 0,
+                            nodes: 1,
+                            timeMs: Date.now() - startTime
+                        };
+                    }
                 }
-                return {
-                    move: matchedLegal,
-                    score: 0,
-                    nodes: 1,
-                    timeMs: Date.now() - startTime
-                };
             }
         }
 
-        // 2. Iterative Deepening & Root Candidates
+        // 2. Iterative Deepening (Standart Alpha-Beta Minimax)
         const deadline = startTime + timeLimitMs;
-        let rootCandidates = [];
-        let bestOverallMove = legalMoves[Math.floor(Math.random() * legalMoves.length)];
+        let bestOverallMove = legalMoves[0];
         let bestOverallScore = 0;
 
         for (let d = 1; d <= maxDepth; d++) {
             if (this.stopSearch || Date.now() >= deadline) break;
+            const [score, move] = this.alphaBeta(d, -1000000, 1000000, 0, deadline);
+            if (this.stopSearch && d > 1) break;
 
-            const orderedMoves = this.orderMoves(legalMoves, bestOverallMove, 0);
-            const currentLevelCandidates = [];
-            let alpha = -1000000;
-            const beta = 1000000;
-            const savedRights = this.board.cloneCastlingRights();
-
-            for (const move of orderedMoves) {
-                if (this.stopSearch || Date.now() >= deadline) break;
-                this.board.makeMove(move);
-                const [rawScore] = this.alphaBeta(d - 1, -beta, -alpha, 1, deadline);
-                const score = -rawScore;
-                this.board.undoMove(savedRights);
-
-                if (this.stopSearch && d > 1) break;
-
-                currentLevelCandidates.push({ move, score });
-                if (score > alpha) {
-                    alpha = score;
-                }
-            }
-
-            if (currentLevelCandidates.length > 0) {
-                currentLevelCandidates.sort((a, b) => b.score - a.score);
-                rootCandidates = currentLevelCandidates;
-                bestOverallMove = rootCandidates[0].move;
-                bestOverallScore = rootCandidates[0].score;
+            if (move) {
+                bestOverallMove = move;
+                bestOverallScore = score;
             }
 
             const elapsed = Date.now() - startTime;
@@ -301,28 +291,15 @@ export class AIEngine {
                 });
             }
 
-            if (Math.abs(bestOverallScore) > 40000) break; // Mat topildi
+            if (Math.abs(score) > 40000) break; // Mat topildi
             if (Date.now() >= deadline) break;
 
-            // UI qotib qolmasligi uchun event loopga ozgina nafas beriladi
+            // UI silliq ishlashi uchun har chuqurlikdan so'ng event loopga ozgina nafas beriladi
             await new Promise(res => setTimeout(res, 5));
         }
 
-        // Darajaga mos aqlli va xilma-xil yurishni tanlash
-        let chosenMove = bestOverallMove;
-        if (rootCandidates.length > 1) {
-            const tolerance = aiLevel === 1 ? 40 : (aiLevel === 2 ? 18 : (aiLevel === 3 ? 8 : 0));
-            const topCandidates = rootCandidates.filter(c => c.score >= bestOverallScore - tolerance);
-            if (topCandidates.length > 1) {
-                const randomIndex = Math.floor(Math.random() * topCandidates.length);
-                chosenMove = topCandidates[randomIndex].move;
-            } else {
-                chosenMove = rootCandidates[0].move;
-            }
-        }
-
         return {
-            move: chosenMove,
+            move: bestOverallMove,
             score: bestOverallScore,
             nodes: this.nodesEvaluated,
             timeMs: Date.now() - startTime
@@ -338,76 +315,51 @@ export class AIEngine {
         const legalMoves = this.board.getLegalMoves();
         if (legalMoves.length === 0) return null;
 
-        // 1. Debyutlar kitobini tekshirish (Opening Book)
-        const bookMoveObj = findBookMove(this.board.moveHistory);
-        if (bookMoveObj) {
-            const matchedLegal = legalMoves.find(m => 
-                m.fromSq[0] === bookMoveObj.from[0] && m.fromSq[1] === bookMoveObj.from[1] &&
-                m.toSq[0] === bookMoveObj.to[0] && m.toSq[1] === bookMoveObj.to[1]
-            );
-            if (matchedLegal) {
-                return {
-                    move: matchedLegal,
-                    score: 0,
-                    nodes: 1,
-                    timeMs: Date.now() - startTime
-                };
+        // 1. Debyutlar kitobini tekshirish
+        const inCheck = this.board.isInCheck(this.board.turn);
+        if (!inCheck) {
+            const bookMoveObj = findBookMove(this.board.moveHistory);
+            if (bookMoveObj) {
+                const matchedLegal = legalMoves.find(m => 
+                    m.fromSq[0] === bookMoveObj.from[0] && m.fromSq[1] === bookMoveObj.from[1] &&
+                    m.toSq[0] === bookMoveObj.to[0] && m.toSq[1] === bookMoveObj.to[1]
+                );
+                if (matchedLegal) {
+                    const freeMajorCaptures = legalMoves.filter(m => m.captured && 
+                        (m.captured.type === PIECE_QUEEN || m.captured.type === PIECE_ROOK || m.captured.type === PIECE_NUR || m.captured.type === PIECE_KNIGHT || m.captured.type === PIECE_BISHOP)
+                    );
+                    if (freeMajorCaptures.length === 0 || matchedLegal.captured) {
+                        return {
+                            move: matchedLegal,
+                            score: 0,
+                            nodes: 1,
+                            timeMs: Date.now() - startTime
+                        };
+                    }
+                }
             }
         }
 
-        // 2. Iterative Deepening & Root Candidates
+        // 2. Iterative Deepening
         const deadline = startTime + timeLimitMs;
-        let rootCandidates = [];
-        let bestOverallMove = legalMoves[Math.floor(Math.random() * legalMoves.length)];
+        let bestOverallMove = legalMoves[0];
         let bestOverallScore = 0;
 
         for (let d = 1; d <= maxDepth; d++) {
-            const orderedMoves = this.orderMoves(legalMoves, bestOverallMove, 0);
-            const currentLevelCandidates = [];
-            let alpha = -1000000;
-            const beta = 1000000;
-            const savedRights = this.board.cloneCastlingRights();
+            const [score, move] = this.alphaBeta(d, -1000000, 1000000, 0, deadline);
+            if (this.stopSearch && d > 1) break;
 
-            for (const move of orderedMoves) {
-                if (this.stopSearch || Date.now() >= deadline) break;
-                this.board.makeMove(move);
-                const [rawScore] = this.alphaBeta(d - 1, -beta, -alpha, 1, deadline);
-                const score = -rawScore;
-                this.board.undoMove(savedRights);
-
-                if (this.stopSearch && d > 1) break;
-
-                currentLevelCandidates.push({ move, score });
-                if (score > alpha) {
-                    alpha = score;
-                }
+            if (move) {
+                bestOverallMove = move;
+                bestOverallScore = score;
             }
 
-            if (currentLevelCandidates.length > 0) {
-                currentLevelCandidates.sort((a, b) => b.score - a.score);
-                rootCandidates = currentLevelCandidates;
-                bestOverallMove = rootCandidates[0].move;
-                bestOverallScore = rootCandidates[0].score;
-            }
-
-            if (Math.abs(bestOverallScore) > 40000) break;
+            if (Math.abs(score) > 40000) break;
             if (Date.now() >= deadline) break;
         }
 
-        let chosenMove = bestOverallMove;
-        if (rootCandidates.length > 1) {
-            const tolerance = aiLevel === 1 ? 40 : (aiLevel === 2 ? 18 : (aiLevel === 3 ? 8 : 0));
-            const topCandidates = rootCandidates.filter(c => c.score >= bestOverallScore - tolerance);
-            if (topCandidates.length > 1) {
-                const randomIndex = Math.floor(Math.random() * topCandidates.length);
-                chosenMove = topCandidates[randomIndex].move;
-            } else {
-                chosenMove = rootCandidates[0].move;
-            }
-        }
-
         return {
-            move: chosenMove,
+            move: bestOverallMove,
             score: bestOverallScore,
             nodes: this.nodesEvaluated,
             timeMs: Date.now() - startTime
