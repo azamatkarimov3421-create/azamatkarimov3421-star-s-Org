@@ -4,7 +4,12 @@
 
 import React, { useState, useEffect, useRef } from 'react';
 import { GoogleIcon } from './Icons';
-import { signInWithGoogle, signInWithGoogleDirect, renderGoogleSignInButton } from '../services/authService';
+import {
+  signInWithGoogle,
+  signInWithGooglePopup,
+  signInWithGoogleDirect,
+  renderGoogleSignInButton,
+} from '../services/authService';
 import { UserProfile } from '../store/userProfileStore';
 
 interface GoogleAuthModalProps {
@@ -36,14 +41,17 @@ export default function GoogleAuthModal({ isOpen, onClose, onSuccess }: GoogleAu
     setLoading(true);
     setErrorMsg(null);
     try {
-      const res = await signInWithGoogle();
-      if (!res.success) {
-        setErrorMsg(res.error || 'Google orqali ulanishda xatolik yuz berdi.');
-        // Show manual fallback if OAuth is not enabled on Supabase dashboard
-        setShowManual(true);
-      }
+      await signInWithGooglePopup((p) => {
+        onSuccess(p);
+        onClose();
+      });
     } catch (e: any) {
-      setErrorMsg(e?.message || 'Xatolik yuz berdi');
+      const msg = e?.message || '';
+      if (msg.includes('provider is not enabled') || msg.includes('validation_failed')) {
+        setErrorMsg('Google provayderi Supabase-da hali faollashtirilmagan. Quyida profilingizni tasdiqlang yoki Supabase-da Google-ni saqlang.');
+      } else {
+        setErrorMsg(msg || 'Google orqali ulanishda xatolik yuz berdi.');
+      }
       setShowManual(true);
     } finally {
       setLoading(false);

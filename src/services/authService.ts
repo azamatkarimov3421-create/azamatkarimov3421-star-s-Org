@@ -258,18 +258,93 @@ export function initGoogleIdentityServices(onSuccess: (profile: UserProfile) => 
  * Google rasmiy tugmasini HTML element ichiga joylash
  */
 export function renderGoogleSignInButton(container: HTMLElement, onSuccess: (profile: UserProfile) => void) {
-  initGoogleIdentityServices(onSuccess);
-  const google = (window as any).google;
-  if (google?.accounts?.id) {
-    google.accounts.id.renderButton(container, {
-      theme: 'filled_black',
-      size: 'large',
-      type: 'standard',
-      shape: 'pill',
-      text: 'continue_with',
-      logo_alignment: 'left',
-      width: 280,
-    });
+  const tryRender = () => {
+    const google = (window as any).google;
+    if (google?.accounts?.id && container) {
+      initGoogleIdentityServices(onSuccess);
+      container.innerHTML = '';
+      google.accounts.id.renderButton(container, {
+        theme: 'filled_black',
+        size: 'large',
+        type: 'standard',
+        shape: 'pill',
+        text: 'continue_with',
+        logo_alignment: 'left',
+        width: 280,
+      });
+      return true;
+    }
+    return false;
+  };
+
+  if (!tryRender()) {
+    const interval = setInterval(() => {
+      if (tryRender()) {
+        clearInterval(interval);
+      }
+    }, 250);
+    setTimeout(() => clearInterval(interval), 5000);
   }
 }
+
+/**
+ * Google rasmiy pop-up oynasi orqali to'g'ridan-to'g'ri hisob tanlash va kirish
+ */
+export function signInWithGooglePopup(onSuccess: (profile: UserProfile) => void): Promise<void> {
+  return new Promise((resolve, reject) => {
+    const google = (window as any).google;
+
+    // 1. Agar Google GIS tayyor bo'lsa, to'g'ridan-to'g'ri token popup ochiladi
+    if (google?.accounts?.oauth2) {
+      try {
+        const client = google.accounts.oauth2.initTokenClient({
+          client_id: GOOGLE_CLIENT_ID,
+          scope: 'openid email profile',
+          callback: async (response: any) => {
+            if (response.error) {
+              logger.logError('NETWORK', `Google popup xatosi: ${response.error}`);
+              reject(new Error(response.error_description || response.error));
+              return;
+            }
+            if (response.access_token) {
+              try {
+                const res = await fetch('https://www.googleapis.com/oauth2/v3/userinfo', {
+                  headers: { Authorization: `Bearer ${response.access_token}` },
+                });
+                const data = await res.json();
+                if (data.email) {
+                  const profile = linkGoogleAccount({
+                    id: data.sub,
+                    name: data.name || data.given_name || 'Google Oʻyinchi',
+                    email: data.email,
+                    avatarUrl: data.picture,
+                    googleId: data.sub,
+                  });
+                  logger.logInfo('UI', `Google popup orqali muvaffaqiyatli ulandi: ${profile.name} (${profile.email})`);
+                  onSuccess(profile);
+                  resolve();
+                  return;
+                }
+              } catch (err: any) {
+                logger.logError('NETWORK', 'Google userinfo olishda xato', err);
+              }
+            }
+          },
+        });
+
+        client.requestAccessToken({ prompt: 'select_account' });
+        return;
+      } catch (err) {
+        logger.logWarn('NETWORK', 'Google token popup ishlamadi, Supabase OAuth rejimiga oʻtiladi.');
+      }
+    }
+
+    // 2. Agar GIS bo'lmasa yoki xato bersa — Supabase OAuth redirectiga o'tadi
+    signInWithGoogle().then((res) => {
+      if (!res.success) reject(new Error(res.error));
+      else resolve();
+    });
+  });
+}
+
 
