@@ -102,32 +102,32 @@ export function evaluateBoard(board, aiLevel = 3) {
                         }
                     }
 
-                    // NUR Vilkasi (Dual Fork / Multiple Threats):
-                    // Boshqa figuralar ustidan sakrab bir vaqtning o'zida 2 yoki undan ko'p og'ir figuraga hujum
-                    let forkTargets = 0;
-                    let royalTarget = false; // Shoh yoki Farzinga tahdid
-                    const dirs = [[0, 1], [0, -1], [1, 0], [-1, 0]];
-                    for (const [df, dr] of dirs) {
-                        for (let d = 1; d <= 3; d++) {
-                            const tf = f + df * d;
-                            const tr = r + dr * d;
-                            if (board.isInside(tf, tr)) {
-                                const target = board.grid[tr][tf];
-                                if (target && target.color !== p.color) {
-                                    forkTargets++;
-                                    if (target.type === PIECE_KING || target.type === PIECE_QUEEN) {
-                                        royalTarget = true;
-                                        pstVal += 35;
-                                    } else if (target.type === PIECE_ROOK || target.type === PIECE_NUR) {
-                                        pstVal += 20;
+                    // NUR Vilkasi (Dual Fork / Multiple Threats) — faqat Usta va Grosmeyster (aiLevel >= 3)
+                    if (aiLevel >= 3) {
+                        let forkTargets = 0;
+                        let royalTarget = false; // Shoh yoki Farzinga tahdid
+                        const dirs = [[0, 1], [0, -1], [1, 0], [-1, 0]];
+                        for (const [df, dr] of dirs) {
+                            for (let d = 1; d <= 3; d++) {
+                                const tf = f + df * d;
+                                const tr = r + dr * d;
+                                if (board.isInside(tf, tr)) {
+                                    const target = board.grid[tr][tf];
+                                    if (target && target.color !== p.color) {
+                                        forkTargets++;
+                                        if (target.type === PIECE_KING || target.type === PIECE_QUEEN) {
+                                            royalTarget = true;
+                                            pstVal += 35;
+                                        } else if (target.type === PIECE_ROOK || target.type === PIECE_NUR) {
+                                            pstVal += 20;
+                                        }
                                     }
                                 }
                             }
                         }
-                    }
-                    // Agar 2+ ta figuraga bir vaqtda sakrab tahdid qilsa (Vilka bonusi)
-                    if (forkTargets >= 2) {
-                        pstVal += royalTarget ? 150 : 80;
+                        if (forkTargets >= 2) {
+                            pstVal += royalTarget ? 150 : 80;
+                        }
                     }
                     break;
 

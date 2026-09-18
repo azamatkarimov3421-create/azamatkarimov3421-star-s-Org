@@ -15,8 +15,9 @@ import { evaluateBoard } from './evaluation.js';
 import { findBookMove } from './opening_book.js';
 
 export class AIEngine {
-    constructor(board) {
+    constructor(board, aiLevel = 3) {
         this.board = board;
+        this.aiLevel = aiLevel;
         this.zobrist = new Zobrist();
         this.transpositionTable = new Map();
         this.killerMoves = new Map(); // ply -> [move1, move2]
@@ -49,23 +50,29 @@ export class AIEngine {
             score += 9000 + PIECE_VALUES[move.promotion];
         }
 
-        // 4. NUR faolligi va sakrab hujum
+        // 4. Markazni nazorat qilish (D, E, M, N ustunlari)
+        const [toF, toR] = move.toSq;
+        if (toF >= 3 && toF <= 6 && toR >= 3 && toR <= 6) {
+            score += 30;
+        }
+
+        // 5. NUR faolligi va sakrab hujum
         if (move.piece.type === PIECE_NUR) {
             score += 200;
         }
 
-        // 5. Rokirovka (Shoh xavfsizligi)
+        // 6. Rokirovka (Shoh xavfsizligi)
         if (move.castlingType) {
             score += 400;
         }
 
-        // 6. Killer moves
+        // 7. Killer moves
         const killers = this.killerMoves.get(ply);
         if (killers && killers.some(k => move.equals(k))) {
             score += 600;
         }
 
-        // 7. History heuristic
+        // 8. History heuristic
         const hKey = `${move.fromSq[0]},${move.fromSq[1]},${move.toSq[0]},${move.toSq[1]}`;
         score += this.historyTable.get(hKey) || 0;
 
@@ -80,24 +87,25 @@ export class AIEngine {
         this.nodesEvaluated++;
         if (this.stopSearch || (deadline > 0 && Date.now() > deadline)) {
             this.stopSearch = true;
-            let standPat = evaluateBoard(this.board);
+            let standPat = evaluateBoard(this.board, this.aiLevel);
             if (this.board.turn === BLACK) standPat = -standPat;
             return standPat;
         }
 
-        let standPat = evaluateBoard(this.board);
+        let standPat = evaluateBoard(this.board, this.aiLevel);
         if (this.board.turn === BLACK) standPat = -standPat;
 
         if (maxQDepth <= 0) return standPat;
         if (standPat >= beta) return beta;
         if (alpha < standPat) alpha = standPat;
 
-        const legalMoves = this.board.getLegalMoves();
-        const captures = legalMoves.filter(m => m.captured !== null || m.promotion !== null);
+        const captures = this.board.getCapturesOnly
+            ? this.board.getCapturesOnly(this.board.turn)
+            : this.board.getLegalMoves().filter(m => m.captured !== null || m.promotion !== null);
         if (captures.length === 0) return standPat;
 
-        // 10x10 doskada hisoblash portlashining oldini olish uchun ko'pi bilan 8 ta eng yaxshi urish ko'riladi
-        const ordered = this.orderMoves(captures, null, 0).slice(0, 8);
+        // 10x10 doskada hisoblash portlashining oldini olish uchun ko'pi bilan 4 ta eng yaxshi urish ko'riladi
+        const ordered = this.orderMoves(captures, null, 0).slice(0, 4);
 
         const savedRights = this.board.cloneCastlingRights();
         for (const move of ordered) {
@@ -125,7 +133,7 @@ export class AIEngine {
         this.nodesEvaluated++;
         const inCheck = this.board.isInCheck(this.board.turn);
 
-        // Check Extension: Faqat ply < 3 bo'lgandagina va 1 marta chuqurlashtiriladi (cheksiz rekursiya yo'qotildi!)
+        // Check Extension: Faqat ply < 3 bo'lgandagina va 1 marta chuqurroq hisoblash (cheksiz rekursiya yo'qotildi!)
         if (inCheck && depth === 0 && ply < 3) {
             depth = 1;
         }
@@ -159,7 +167,7 @@ export class AIEngine {
 
         const orderedMoves = this.orderMoves(legalMoves, ttMove, ply);
         // Katta 100 katakli doskada ortiqcha shoxlanish va brauzer qotishini to'xtatish
-        const searchMoves = depth >= 3 ? orderedMoves.slice(0, 16) : orderedMoves;
+        const searchMoves = depth >= 3 ? orderedMoves.slice(0, 16) : (depth === 2 ? orderedMoves.slice(0, 22) : orderedMoves);
         let bestMove = searchMoves[0];
         let bestScore = -999999;
         const savedRights = this.board.cloneCastlingRights();
@@ -208,9 +216,10 @@ export class AIEngine {
         return [bestScore, bestMove];
     }
 
-    async getBestMoveAsync(maxDepth = 3, timeLimitMs = 2500, onProgress = null) {
+    async getBestMoveAsync(maxDepth = 3, timeLimitMs = 2500, onProgress = null, aiLevel = 3) {
         this.nodesEvaluated = 0;
         this.stopSearch = false;
+        this.aiLevel = aiLevel;
         const startTime = Date.now();
 
         const legalMoves = this.board.getLegalMoves();
@@ -243,19 +252,41 @@ export class AIEngine {
             }
         }
 
-        // 2. Iterative Deepening
+        // 2. Iterative Deepening & Root Candidates
         const deadline = startTime + timeLimitMs;
+        let rootCandidates = [];
         let bestOverallMove = legalMoves[Math.floor(Math.random() * legalMoves.length)];
         let bestOverallScore = 0;
 
         for (let d = 1; d <= maxDepth; d++) {
             if (this.stopSearch || Date.now() >= deadline) break;
-            const [score, move] = this.alphaBeta(d, -1000000, 1000000, 0, deadline);
-            if (this.stopSearch && d > 1) break;
 
-            if (move) {
-                bestOverallMove = move;
-                bestOverallScore = score;
+            const orderedMoves = this.orderMoves(legalMoves, bestOverallMove, 0);
+            const currentLevelCandidates = [];
+            let alpha = -1000000;
+            const beta = 1000000;
+            const savedRights = this.board.cloneCastlingRights();
+
+            for (const move of orderedMoves) {
+                if (this.stopSearch || Date.now() >= deadline) break;
+                this.board.makeMove(move);
+                const [rawScore] = this.alphaBeta(d - 1, -beta, -alpha, 1, deadline);
+                const score = -rawScore;
+                this.board.undoMove(savedRights);
+
+                if (this.stopSearch && d > 1) break;
+
+                currentLevelCandidates.push({ move, score });
+                if (score > alpha) {
+                    alpha = score;
+                }
+            }
+
+            if (currentLevelCandidates.length > 0) {
+                currentLevelCandidates.sort((a, b) => b.score - a.score);
+                rootCandidates = currentLevelCandidates;
+                bestOverallMove = rootCandidates[0].move;
+                bestOverallScore = rootCandidates[0].score;
             }
 
             const elapsed = Date.now() - startTime;
@@ -270,24 +301,38 @@ export class AIEngine {
                 });
             }
 
-            if (Math.abs(score) > 40000) break; // Mat topildi
+            if (Math.abs(bestOverallScore) > 40000) break; // Mat topildi
             if (Date.now() >= deadline) break;
 
-            // UI qotib qolmasligi uchun har chuqurlikdan keyin brauzer event loopiga nafas beriladi
-            await new Promise(res => setTimeout(res, 10));
+            // UI qotib qolmasligi uchun event loopga ozgina nafas beriladi
+            await new Promise(res => setTimeout(res, 5));
+        }
+
+        // Darajaga mos aqlli va xilma-xil yurishni tanlash
+        let chosenMove = bestOverallMove;
+        if (rootCandidates.length > 1) {
+            const tolerance = aiLevel === 1 ? 40 : (aiLevel === 2 ? 18 : (aiLevel === 3 ? 8 : 0));
+            const topCandidates = rootCandidates.filter(c => c.score >= bestOverallScore - tolerance);
+            if (topCandidates.length > 1) {
+                const randomIndex = Math.floor(Math.random() * topCandidates.length);
+                chosenMove = topCandidates[randomIndex].move;
+            } else {
+                chosenMove = rootCandidates[0].move;
+            }
         }
 
         return {
-            move: bestOverallMove,
+            move: chosenMove,
             score: bestOverallScore,
             nodes: this.nodesEvaluated,
             timeMs: Date.now() - startTime
         };
     }
 
-    getBestMoveSync(maxDepth = 3, timeLimitMs = 1500) {
+    getBestMoveSync(maxDepth = 3, timeLimitMs = 1500, aiLevel = 3) {
         this.nodesEvaluated = 0;
         this.stopSearch = false;
+        this.aiLevel = aiLevel;
         const startTime = Date.now();
 
         const legalMoves = this.board.getLegalMoves();
@@ -310,26 +355,59 @@ export class AIEngine {
             }
         }
 
-        // 2. Iterative Deepening
+        // 2. Iterative Deepening & Root Candidates
         const deadline = startTime + timeLimitMs;
-        let bestOverallMove = legalMoves[0];
+        let rootCandidates = [];
+        let bestOverallMove = legalMoves[Math.floor(Math.random() * legalMoves.length)];
         let bestOverallScore = 0;
 
         for (let d = 1; d <= maxDepth; d++) {
-            const [score, move] = this.alphaBeta(d, -1000000, 1000000, 0, deadline);
-            if (this.stopSearch && d > 1) break;
+            const orderedMoves = this.orderMoves(legalMoves, bestOverallMove, 0);
+            const currentLevelCandidates = [];
+            let alpha = -1000000;
+            const beta = 1000000;
+            const savedRights = this.board.cloneCastlingRights();
 
-            if (move) {
-                bestOverallMove = move;
-                bestOverallScore = score;
+            for (const move of orderedMoves) {
+                if (this.stopSearch || Date.now() >= deadline) break;
+                this.board.makeMove(move);
+                const [rawScore] = this.alphaBeta(d - 1, -beta, -alpha, 1, deadline);
+                const score = -rawScore;
+                this.board.undoMove(savedRights);
+
+                if (this.stopSearch && d > 1) break;
+
+                currentLevelCandidates.push({ move, score });
+                if (score > alpha) {
+                    alpha = score;
+                }
             }
 
-            if (Math.abs(score) > 40000) break;
+            if (currentLevelCandidates.length > 0) {
+                currentLevelCandidates.sort((a, b) => b.score - a.score);
+                rootCandidates = currentLevelCandidates;
+                bestOverallMove = rootCandidates[0].move;
+                bestOverallScore = rootCandidates[0].score;
+            }
+
+            if (Math.abs(bestOverallScore) > 40000) break;
             if (Date.now() >= deadline) break;
         }
 
+        let chosenMove = bestOverallMove;
+        if (rootCandidates.length > 1) {
+            const tolerance = aiLevel === 1 ? 40 : (aiLevel === 2 ? 18 : (aiLevel === 3 ? 8 : 0));
+            const topCandidates = rootCandidates.filter(c => c.score >= bestOverallScore - tolerance);
+            if (topCandidates.length > 1) {
+                const randomIndex = Math.floor(Math.random() * topCandidates.length);
+                chosenMove = topCandidates[randomIndex].move;
+            } else {
+                chosenMove = rootCandidates[0].move;
+            }
+        }
+
         return {
-            move: bestOverallMove,
+            move: chosenMove,
             score: bestOverallScore,
             nodes: this.nodesEvaluated,
             timeMs: Date.now() - startTime

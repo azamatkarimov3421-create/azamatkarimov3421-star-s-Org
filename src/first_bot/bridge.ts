@@ -73,28 +73,28 @@ export function getFirstBotMove(state: GameState, level: number = 2): ReactMove 
 
   try {
     const board = convertGameStateToFirstBotBoard(state);
-    const engine = new AIEngine(board);
+    const engine = new AIEngine(board, level);
 
     // AI darajalari (1-Havaskor, 2-Tajribali, 3-Usta, 4-Grossmeyster)
     let depth = 3;
     let timeLimit = 1000;
     if (level === 1) {
       depth = 1;
-      timeLimit = 250;
+      timeLimit = 350;
     } else if (level === 2) {
       depth = 2;
-      timeLimit = 500;
+      timeLimit = 700;
     } else if (level === 3) {
       depth = 3;
-      timeLimit = 1000;
+      timeLimit = 1200;
     } else if (level >= 4) {
-      depth = 5;
-      timeLimit = 1800;
+      depth = 4;
+      timeLimit = 2000;
     }
 
-    const res = engine.getBestMoveSync(depth, timeLimit);
+    const res = engine.getBestMoveSync(depth, timeLimit, level);
     if (!res || !res.move) {
-      return legalMoves[0];
+      return legalMoves[Math.floor(Math.random() * legalMoves.length)];
     }
 
     const botMove = res.move;
@@ -105,10 +105,10 @@ export function getFirstBotMove(state: GameState, level: number = 2): ReactMove 
       m.to.rank === botMove.toSq[1]
     );
 
-    return matched || legalMoves[0];
+    return matched || legalMoves[Math.floor(Math.random() * legalMoves.length)];
   } catch (err) {
     console.error('Xatolik birinchi bot dvigatelida:', err);
-    return legalMoves[0];
+    return legalMoves[Math.floor(Math.random() * legalMoves.length)];
   }
 }
 
@@ -121,37 +121,29 @@ export async function getFirstBotMoveAsync(state: GameState, level: number = 2):
 
   try {
     const board = convertGameStateToFirstBotBoard(state);
-    const engine = new AIEngine(board);
+    const engine = new AIEngine(board, level);
 
     let depth = 3;
     let timeLimit = 800;
     if (level === 1) {
       depth = 1;
-      timeLimit = 250;
+      timeLimit = 350;
     } else if (level === 2) {
       depth = 2;
-      timeLimit = 500;
+      timeLimit = 700;
     } else if (level === 3) {
       depth = 3;
-      timeLimit = 800;
+      timeLimit = 1200;
     } else if (level >= 4) {
       depth = 4;
-      timeLimit = 1400;
+      timeLimit = 2000;
     }
 
-    // Qat'iy qotib qolishdan himoya (Timeout Guard)
-    const timeoutPromise = new Promise<null>((resolve) => {
-      setTimeout(() => {
-        logger.logWarn('AI_ENGINE', `AI hisoblash vaqti chegaradan oshdi (${timeLimit + 300}ms). Qotishning oldi olindi.`);
-        resolve(null);
-      }, timeLimit + 300);
-    });
-
-    const searchPromise = engine.getBestMoveAsync(depth, timeLimit);
-    const res = await Promise.race([searchPromise, timeoutPromise]);
+    // Engine o'zining ichki deadline mexanizmiga ega bo'lib, vaqt yetganda silliq to'xtaydi
+    const res = await engine.getBestMoveAsync(depth, timeLimit, null, level);
 
     if (!res || !res.move) {
-      return legalMoves[0];
+      return legalMoves[Math.floor(Math.random() * legalMoves.length)];
     }
 
     const botMove = res.move;
@@ -162,9 +154,9 @@ export async function getFirstBotMoveAsync(state: GameState, level: number = 2):
       m.to.rank === botMove.toSq[1]
     );
 
-    return matched || legalMoves[0];
+    return matched || legalMoves[Math.floor(Math.random() * legalMoves.length)];
   } catch (err: any) {
     logger.logError('AI_ENGINE', "AI bot dvigatelida kutilmagan xatolik yuz berdi. Xavfsiz yurish tanlandi.", err);
-    return legalMoves[0];
+    return legalMoves[Math.floor(Math.random() * legalMoves.length)];
   }
 }

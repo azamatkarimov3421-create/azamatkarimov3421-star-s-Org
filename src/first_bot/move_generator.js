@@ -554,6 +554,22 @@ export class Board {
         return legal;
     }
 
+    getCapturesOnly(color = this.turn) {
+        const pseudo = this.getPseudoLegalMoves(color);
+        const captures = [];
+        const savedRights = this.cloneCastlingRights();
+
+        for (const m of pseudo) {
+            if (m.captured === null && m.promotion === null) continue;
+            this.makeMove(m);
+            if (!this.isInCheck(color)) {
+                captures.push(m);
+            }
+            this.undoMove(savedRights);
+        }
+        return captures;
+    }
+
     isCheckmate(color = this.turn) {
         return this.isInCheck(color) && this.getLegalMoves(color).length === 0;
     }
