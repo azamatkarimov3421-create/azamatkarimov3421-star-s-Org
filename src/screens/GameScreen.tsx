@@ -125,9 +125,12 @@ export default function GameScreen({ onBack, onOpenSettings }: GameScreenProps) 
   const isBottomTurn = currentTurn === bottomColor && !isGameOver;
 
   return (
-    <div className="h-[100dvh] max-h-[100dvh] w-full bg-[#262421] text-[#f1f1f1] flex flex-col justify-between font-sans select-none pb-[max(0.6rem,env(safe-area-inset-bottom))] lg:pb-3 fixed inset-0 overflow-hidden touch-none overscroll-none">
+    <div className="h-[100dvh] max-h-[100dvh] w-full bg-[#121614] md:bg-[url('/desktop-bg.jpg')] bg-cover bg-center text-[#f1f1f1] flex flex-col justify-between font-sans select-none pb-[max(0.6rem,env(safe-area-inset-bottom))] lg:pb-3 fixed inset-0 overflow-hidden touch-none overscroll-none">
+      {/* Desktop fondagi qorong'i atmosfera qatlami */}
+      <div className="hidden md:block absolute inset-0 bg-gradient-to-b from-[#0b100d]/88 via-[#0d1310]/78 to-[#0b100d]/92 pointer-events-none z-0" />
+
       {/* ── 1. YUQORI HEADER (RESPONSIVE CHESS HEADER) ─────────────────── */}
-      <header className="shrink-0 z-30 bg-[#21201d]/95 backdrop-blur-md border-b border-[#383531] px-3 sm:px-6 py-2 pt-[max(0.5rem,env(safe-area-inset-top))]">
+      <header className="relative z-30 shrink-0 bg-[#141b17]/95 backdrop-blur-md border-b border-[#27372d] px-3 sm:px-6 py-2 pt-[max(0.5rem,env(safe-area-inset-top))]">
         <div className="w-full max-w-7xl mx-auto flex items-center justify-between">
           <button
             onClick={() => {
@@ -244,7 +247,7 @@ export default function GameScreen({ onBack, onOpenSettings }: GameScreenProps) 
       </header>
 
       {/* ── 2. ASOSIY MAYDON (RESPONSIVE: MOBILDA TIK, KOMPYUTERDA YONMA-YON) ────── */}
-      <main className="flex-1 w-full max-w-7xl mx-auto flex flex-col md:flex-row items-center justify-center gap-3 md:gap-5 lg:gap-8 px-2 sm:px-4 lg:px-6 py-0.5 lg:py-2 overflow-hidden min-h-0 touch-none">
+      <main className="relative z-10 flex-1 w-full max-w-7xl mx-auto flex flex-col md:flex-row items-center justify-center gap-3 md:gap-5 lg:gap-8 px-2 sm:px-4 lg:px-6 py-0.5 lg:py-2 overflow-hidden min-h-0 touch-none">
         {/* CHAP / MARKAZIY QISM: Doska va O'yinchilar HUD */}
         <div className="flex-1 flex flex-col items-center justify-center min-h-0 w-full overflow-hidden my-auto">
           {/* Yuqoridagi O'yinchi Kartasi (Opponent HUD) */}
