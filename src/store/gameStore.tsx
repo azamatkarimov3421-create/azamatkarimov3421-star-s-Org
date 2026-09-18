@@ -42,6 +42,7 @@ export interface AppState {
   hintMove: Move | null;          // Maslahat harakati
   roomCode: string | null;
   onlinePlayerColor: 'white' | 'black' | null;
+  is3D: boolean;                  // Kitobdagidek 3D fazoviy ko'rinish
 }
 
 // ── Harakatlar ────────────────────────────────────────
@@ -68,7 +69,9 @@ type Action =
   | { type: 'SET_TIME_CONTROL'; seconds: TimeControl }
   | { type: 'TICK_TIMER' }
   | { type: 'SET_HINT'; move: Move | null }
-  | { type: 'SET_ONLINE_ROOM'; roomCode: string | null; myColor: 'white' | 'black' | null };
+  | { type: 'SET_ONLINE_ROOM'; roomCode: string | null; myColor: 'white' | 'black' | null }
+  | { type: 'TOGGLE_3D' }
+  | { type: 'SET_3D'; enabled: boolean };
 
 // ── Boshlang'ich holat ────────────────────────────────
 
@@ -94,6 +97,18 @@ function createInitialAppState(): AppState {
     hintMove: null,
     roomCode: null,
     onlinePlayerColor: null,
+    is3D: (() => {
+      try {
+        const saved = localStorage.getItem('nur_chess_3d_v2');
+        if (saved !== null) {
+          return saved === 'true';
+        }
+        localStorage.setItem('nur_chess_3d_v2', 'true');
+        return true;
+      } catch {
+        return true;
+      }
+    })(),
   };
 }
 
@@ -190,14 +205,34 @@ function gameReducer(state: AppState, action: Action): AppState {
     }
 
     case 'APPLY_MOVE': {
+      const move = action.move;
+      if (move.isPromotion) {
+        playPromotionSound();
+        speakUzbek(`${move.promotionPiece === 'Queen' ? 'Farzin' : move.promotionPiece === 'Nur' ? 'Nur' : 'Dona'}ga aylandi!`);
+      } else if (move.isCastling) {
+        playCastlingSound();
+      } else if (move.capturedPiece) {
+        if (move.piece.type === 'Nur') playNurLeapSound();
+        else playCaptureSound();
+        vibrateTouch([50, 30, 50]);
+      } else {
+        if (move.piece.type === 'Nur') playNurLeapSound();
+        else playMoveSound();
+        vibrateTouch(30);
+      }
+
       const newGame = applyMove(state.game, action.move);
       if (newGame.isInCheck) {
         playCheckSound();
         speakUzbek('Shoh!');
+        vibrateTouch([100, 50, 100]);
       }
       if (newGame.status === 'checkmate') {
         playGameOverSound();
         speakUzbek('Shohmat! Oʻyin tugadi.');
+      } else if (newGame.status === 'stalemate') {
+        playGameOverSound();
+        speakUzbek('Pat! Durang natija.');
       }
       return {
         ...state,
@@ -349,6 +384,7 @@ function gameReducer(state: AppState, action: Action): AppState {
         boardTheme: state.boardTheme,
         soundEnabled: state.soundEnabled,
         useNumericNotation: state.useNumericNotation,
+        is3D: state.is3D,
         roomCode: action.roomCode,
         onlinePlayerColor: action.myColor,
         gameMode: action.roomCode ? 'online' : 'pvp',
@@ -362,6 +398,7 @@ function gameReducer(state: AppState, action: Action): AppState {
         isFlipped: state.isFlipped,
         soundEnabled: state.soundEnabled,
         useNumericNotation: state.useNumericNotation,
+        is3D: state.is3D,
         gameMode: state.gameMode,
         aiDepth: state.aiDepth,
       };
@@ -386,6 +423,23 @@ function gameReducer(state: AppState, action: Action): AppState {
     case 'TOGGLE_NOTATION':
       return { ...state, useNumericNotation: !state.useNumericNotation };
 
+    case 'TOGGLE_3D': {
+      const next = !state.is3D;
+      try {
+        localStorage.setItem('nur_chess_3d_v2', String(next));
+        localStorage.setItem('nur_chess_3d', String(next));
+      } catch {}
+      return { ...state, is3D: next };
+    }
+
+    case 'SET_3D': {
+      try {
+        localStorage.setItem('nur_chess_3d_v2', String(action.enabled));
+        localStorage.setItem('nur_chess_3d', String(action.enabled));
+      } catch {}
+      return { ...state, is3D: action.enabled };
+    }
+
     case 'SET_THEME':
       return { ...state, boardTheme: action.theme };
 
@@ -407,6 +461,7 @@ function gameReducer(state: AppState, action: Action): AppState {
         isFlipped: state.isFlipped,
         soundEnabled: state.soundEnabled,
         useNumericNotation: state.useNumericNotation,
+        is3D: state.is3D,
       };
 
     case 'SET_AI_DEPTH':
@@ -427,9 +482,13 @@ function gameReducer(state: AppState, action: Action): AppState {
       if (state.gameMode === 'online') {
         onlineManager.sendMessage({ type: 'RESIGN' });
       }
-      const resignStatus = state.game.currentTurn === 'white' ? 'white_resigned' as const : 'black_resigned' as const;
+      const resigningColor = (state.gameMode === 'online' && state.onlinePlayerColor)
+        ? state.onlinePlayerColor
+        : state.game.currentTurn;
+      const resignStatus = resigningColor === 'white' ? 'white_resigned' as const : 'black_resigned' as const;
       const newGame = { ...state.game, status: resignStatus };
       playGameOverSound();
+      speakUzbek(resigningColor === state.onlinePlayerColor ? 'Siz taslim boʻldingiz.' : 'Raqib taslim boʻldi.');
       return { ...state, game: newGame };
     }
 

@@ -2,17 +2,18 @@
 // NUR SHAXMAT 100 — Onlayn Xona Modali (P2P Realtime Multiplayer)
 // =====================================================
 
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { useGame } from '../store/gameStore';
 import { onlineManager, OnlineStatus } from '../services/onlineService';
 
 interface OnlineRoomModalProps {
   isOpen: boolean;
   onClose: () => void;
+  onStartGame?: () => void;
   initialRoomCode?: string;
 }
 
-export default function OnlineRoomModal({ isOpen, onClose, initialRoomCode }: OnlineRoomModalProps) {
+export default function OnlineRoomModal({ isOpen, onClose, onStartGame, initialRoomCode }: OnlineRoomModalProps) {
   const { state, dispatch } = useGame();
   const { roomCode, onlinePlayerColor } = state;
 
@@ -22,23 +23,46 @@ export default function OnlineRoomModal({ isOpen, onClose, initialRoomCode }: On
   const [copiedLink, setCopiedLink] = useState(false);
   const [copiedCode, setCopiedCode] = useState(false);
 
+  const hasTransitionedRef = useRef(false);
+  const onCloseRef = useRef(onClose);
+  const onStartGameRef = useRef(onStartGame);
+  onCloseRef.current = onClose;
+  onStartGameRef.current = onStartGame;
+
   // Status tinglovchisi
   useEffect(() => {
+    if (!isOpen) {
+      hasTransitionedRef.current = false;
+      return;
+    }
+
+    let timer: any = null;
     const unsub = onlineManager.addStatusListener((status, msg) => {
       setOnlineStatus(status);
       setStatusText(msg || '');
 
-      // Agar ulanish muvaffaqiyatli bo'lsa, xona ma'lumotlarini store ga yangilaymiz
-      if (status === 'connected' && onlineManager.roomCode && onlineManager.myColor) {
-        dispatch({
-          type: 'SET_ONLINE_ROOM',
-          roomCode: onlineManager.roomCode,
-          myColor: onlineManager.myColor,
-        });
+      // Faqat BIR MARTA ulanish hodisasini boshqarish
+      if (status === 'connected' && !hasTransitionedRef.current) {
+        hasTransitionedRef.current = true;
+        if (onlineManager.roomCode && onlineManager.myColor) {
+          dispatch({
+            type: 'SET_ONLINE_ROOM',
+            roomCode: onlineManager.roomCode,
+            myColor: onlineManager.myColor,
+          });
+        }
+        timer = setTimeout(() => {
+          onCloseRef.current();
+          onStartGameRef.current?.();
+        }, 800);
       }
     });
-    return unsub;
-  }, [dispatch]);
+
+    return () => {
+      unsub();
+      if (timer) clearTimeout(timer);
+    };
+  }, [isOpen, dispatch]);
 
   // URL dan kod kelganda maydonga yozish
   useEffect(() => {
@@ -52,6 +76,7 @@ export default function OnlineRoomModal({ isOpen, onClose, initialRoomCode }: On
   // 1. Yangi xona yaratish (Oq donalar)
   const handleCreateRoom = async () => {
     try {
+      hasTransitionedRef.current = false;
       const code = await onlineManager.createRoom();
       dispatch({
         type: 'SET_ONLINE_ROOM',
@@ -68,27 +93,32 @@ export default function OnlineRoomModal({ isOpen, onClose, initialRoomCode }: On
     const clean = inputCode.trim();
     if (!clean) return;
     try {
+      hasTransitionedRef.current = false;
       await onlineManager.joinRoom(clean);
-      dispatch({
-        type: 'SET_ONLINE_ROOM',
-        roomCode: clean,
-        myColor: 'black',
-      });
-      // 1 soniyadan keyin modalni yopish
-      setTimeout(() => onClose(), 1000);
     } catch (err: any) {
       console.error('Xonaga ulanishda xato:', err);
     }
   };
 
-  // Havolani nusxalash
+  // Xona kodini do'stga yuborish / nusxalash
   const handleCopyLink = () => {
     const activeCode = onlineManager.roomCode || roomCode;
     if (!activeCode) return;
-    const shareUrl = `${window.location.origin}/?room=${activeCode}`;
-    navigator.clipboard.writeText(shareUrl);
-    setCopiedLink(true);
-    setTimeout(() => setCopiedLink(false), 2000);
+    const shareText = `Nur Shaxmat 100 onlayn xona kodi: ${activeCode}\nIlovada "Onlayn" boʻlimiga kirib, ushbu kodni kiriting!`;
+    if (navigator.share) {
+      navigator.share({
+        title: 'Nur Shaxmat 100',
+        text: shareText,
+      }).catch(() => {
+        navigator.clipboard.writeText(shareText);
+        setCopiedLink(true);
+        setTimeout(() => setCopiedLink(false), 2000);
+      });
+    } else {
+      navigator.clipboard.writeText(shareText);
+      setCopiedLink(true);
+      setTimeout(() => setCopiedLink(false), 2000);
+    }
   };
 
   // Kodni nusxalash
@@ -104,16 +134,23 @@ export default function OnlineRoomModal({ isOpen, onClose, initialRoomCode }: On
   const handleLeaveRoom = () => {
     onlineManager.disconnect();
     dispatch({ type: 'SET_ONLINE_ROOM', roomCode: null, myColor: null });
+    dispatch({ type: 'SET_GAME_MODE', mode: 'vsAI' });
+    onClose();
   };
 
   const activeCode = onlineManager.roomCode || roomCode;
   const activeColor = onlineManager.myColor || onlinePlayerColor;
 
   return (
-    <div className="fixed inset-0 bg-black/85 backdrop-blur-md flex items-center justify-center z-50 p-4 animate-fadeIn">
+    <div
+      onClick={(e) => {
+        if (e.target === e.currentTarget) handleLeaveRoom();
+      }}
+      className="fixed inset-0 bg-black/85 backdrop-blur-md flex items-center justify-center z-50 p-4 animate-fadeIn"
+    >
       <div className="relative max-w-md w-full bg-gradient-to-b from-slate-900 via-slate-900 to-slate-950 rounded-3xl p-6 sm:p-8 shadow-2xl border border-slate-700/80">
         <button
-          onClick={onClose}
+          onClick={handleLeaveRoom}
           className="absolute top-4 right-4 w-8 h-8 rounded-full bg-slate-800 hover:bg-slate-700 text-slate-300 flex items-center justify-center font-bold text-sm transition-colors"
         >
           ✕
@@ -191,7 +228,18 @@ export default function OnlineRoomModal({ isOpen, onClose, initialRoomCode }: On
                 </button>
                 {onlineStatus === 'connected' && (
                   <button
-                    onClick={onClose}
+                    onClick={() => {
+                      hasTransitionedRef.current = true;
+                      if (onlineManager.roomCode && onlineManager.myColor) {
+                        dispatch({
+                          type: 'SET_ONLINE_ROOM',
+                          roomCode: onlineManager.roomCode,
+                          myColor: onlineManager.myColor,
+                        });
+                      }
+                      onClose();
+                      onStartGame?.();
+                    }}
                     className="flex-1 py-2 bg-emerald-600 hover:bg-emerald-500 text-white font-extrabold rounded-xl text-xs shadow-md transition-all"
                   >
                     Doskaga oʻtish ♟️

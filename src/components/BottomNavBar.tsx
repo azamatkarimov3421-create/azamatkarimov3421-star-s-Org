@@ -4,9 +4,10 @@
 // =====================================================
 
 import React from 'react';
-import { SwordsIcon, BookOpenIcon, TrophyIcon, UserIcon } from './Icons';
+import { SwordsIcon, TrophyIcon, UserIcon } from './Icons';
+import { t } from '../i18n/translations';
 
-export type TabType = 'home' | 'friends' | 'leaderboard' | 'profile';
+export type TabType = 'home' | 'leaderboard' | 'profile';
 
 interface BottomNavBarProps {
   activeTab: TabType;
@@ -15,14 +16,13 @@ interface BottomNavBarProps {
 
 export default function BottomNavBar({ activeTab, onSelectTab }: BottomNavBarProps) {
   const tabs: { id: TabType; label: string; icon: React.ReactNode }[] = [
-    { id: 'home', label: "O'yin", icon: <SwordsIcon size={21} /> },
-    { id: 'friends', label: 'Rejimlar', icon: <UserIcon size={21} /> },
-    { id: 'leaderboard', label: 'Reyting', icon: <TrophyIcon size={21} /> },
-    { id: 'profile', label: 'Profil', icon: <BookOpenIcon size={21} /> },
+    { id: 'home', label: t('nav_game'), icon: <SwordsIcon size={21} /> },
+    { id: 'leaderboard', label: t('nav_achievements'), icon: <TrophyIcon size={21} /> },
+    { id: 'profile', label: 'Profil', icon: <UserIcon size={21} /> },
   ];
 
   return (
-    <nav className="fixed bottom-0 left-0 right-0 z-40 bg-[#21201d]/95 backdrop-blur-md border-t border-[#383531] px-3 py-1.5 flex items-center justify-around pb-[max(0.6rem,env(safe-area-inset-bottom))] shadow-[0_-4px_20px_rgba(0,0,0,0.5)] max-w-md mx-auto sm:max-w-none">
+    <nav className="md:hidden fixed bottom-0 left-0 right-0 z-40 bg-[#21201d]/95 backdrop-blur-md border-t border-[#383531] px-3 py-1.5 flex items-center justify-around pb-[max(0.6rem,env(safe-area-inset-bottom))] shadow-[0_-4px_20px_rgba(0,0,0,0.5)] max-w-md mx-auto sm:max-w-none">
       {tabs.map((tab) => {
         const isActive = activeTab === tab.id;
         return (

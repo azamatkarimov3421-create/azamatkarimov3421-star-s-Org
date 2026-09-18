@@ -2,7 +2,7 @@
 // NUR SHAXMAT 100 — Yuqori Sifatli Dosqa Komponenti (10x10)
 // =====================================================
 
-import React, { useCallback, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { BoardTheme, useGame } from '../store/gameStore';
 import { FILES, Move, Piece, Square, squaresEqual } from '../engine/types';
 import PieceIcon from './PieceIcon';
@@ -65,14 +65,29 @@ export default function Board() {
     useNumericNotation,
     boardTheme,
     isFlipped,
+    is3D,
     hintMove,
     gameMode,
     onlinePlayerColor,
+    aiColor,
+    aiThinking,
   } = state;
   const boardRef = useRef<HTMLDivElement>(null);
 
   // Drag & Drop
   const [dragPiece, setDragPiece] = useState<{ piece: Piece; from: Square } | null>(null);
+
+  // Dona harakati animatsiyasini qat'iy nazorat qilish (280ms davomida)
+  const [animatingMoveIndex, setAnimatingMoveIndex] = useState<number | null>(null);
+  useEffect(() => {
+    if (game.moveHistory.length > 0) {
+      setAnimatingMoveIndex(game.moveHistory.length - 1);
+      const timer = setTimeout(() => {
+        setAnimatingMoveIndex(null);
+      }, 290);
+      return () => clearTimeout(timer);
+    }
+  }, [game.moveHistory.length]);
 
   const themeStyle = THEME_STYLES[boardTheme] || THEME_STYLES.wood;
 
@@ -84,6 +99,12 @@ export default function Board() {
 
   // Kvadratni bosish
   const handleSquareClick = useCallback((sq: Square) => {
+    // Bot bilan o'ynaganda bot navbati yoki bot o'ylayotgan bo'lsa
+    if (gameMode === 'vsAI' && (game.currentTurn === aiColor || aiThinking)) return;
+
+    // Onlayn rejimda raqib navbatida kvadrat tanlash taqiqlanadi
+    if (gameMode === 'online' && onlinePlayerColor && game.currentTurn !== onlinePlayerColor) return;
+
     // Agar onlayn rejimda bo'lsak va hali kvadrat tanlanmagan bo'lsa:
     // faqat o'z rangimizdagi donani tanlashga ruxsat beramiz
     if (gameMode === 'online' && onlinePlayerColor && !selectedSquare) {
@@ -91,10 +112,11 @@ export default function Board() {
       if (p && p.color !== onlinePlayerColor) return;
     }
     dispatch({ type: 'SELECT_SQUARE', square: sq });
-  }, [dispatch, gameMode, onlinePlayerColor, selectedSquare, game.board]);
+  }, [dispatch, gameMode, onlinePlayerColor, selectedSquare, game.board, game.currentTurn, aiColor, aiThinking]);
 
   // Drag boshlanishi
   const handleDragStart = useCallback((e: React.DragEvent, piece: Piece, from: Square) => {
+    if (gameMode === 'vsAI' && (game.currentTurn === aiColor || aiThinking)) return;
     if (piece.color !== game.currentTurn) return;
     if (game.status !== 'playing' && game.status !== 'check') return;
     // Onlaynda raqib donasini siljitish taqiqlanadi
@@ -145,34 +167,72 @@ export default function Board() {
     : Array.from({ length: 10 }, (_, i) => 9 - i); // 9 dan 0 gacha
 
   return (
-    <div className="relative select-none flex flex-col items-center w-full max-w-[min(calc(100vw-12px),min(74vh,580px))] mx-auto">
-      {/* Tashqi Zargarona Ramka */}
+    <div
+      className={`relative select-none flex flex-col items-center w-full mx-auto touch-none transition-all duration-300 ${
+        is3D ? 'chess-board-box-3d pt-0.5 pb-2' : 'chess-board-box'
+      }`}
+      style={
+        is3D
+          ? {
+              perspective: '1000px',
+              perspectiveOrigin: '50% 65%',
+            }
+          : undefined
+      }
+      onTouchMove={(e) => {
+        if (e.cancelable) e.preventDefault();
+      }}
+      onContextMenu={(e) => e.preventDefault()}
+    >
+      {/* Tashqi Zargarona Ramka (3D rejimida kitobdagidek qalin yog'och taxta) */}
       <div
-        className={`w-full p-1.5 sm:p-3 md:p-4 rounded-xl sm:rounded-2xl border-2 sm:border-4 ${themeStyle.frameBorder} ${themeStyle.frameBg} transition-all duration-300 shadow-2xl`}
+        className={`w-full transition-all duration-300 select-none touch-none ${
+          is3D
+            ? 'p-1.5 sm:p-2.5 rounded-2xl sm:rounded-3xl border-4 sm:border-[5px] border-[#381f14] bg-gradient-to-b from-[#2e1810] via-[#1c0f0a] to-[#120906]'
+            : `p-1 sm:p-2 rounded-xl sm:rounded-2xl border-2 sm:border-[3px] ${themeStyle.frameBorder} ${themeStyle.frameBg} shadow-xl`
+        }`}
+        style={
+          is3D
+            ? {
+                transform: 'rotateX(28deg)',
+                transformStyle: 'preserve-3d',
+                boxShadow:
+                  '0 20px 28px -4px rgba(0,0,0,0.85), 0 6px 0 0 #3d1e10, 0 10px 0 0 #2a1309, 0 14px 0 0 #190a04, inset 0 2px 4px rgba(255,255,255,0.18)',
+              }
+            : undefined
+        }
       >
         {/* Yuqori Ustun Harflari */}
-        <div className="flex w-full mb-0.5 sm:mb-1 items-center">
-          <div className="w-3.5 sm:w-5 md:w-6 mr-0.5 sm:mr-1 shrink-0" />
-          <div className="flex-1 grid grid-cols-10">
+        <div className="grid grid-cols-[16px_1fr_16px] sm:grid-cols-[22px_1fr_22px] md:grid-cols-[26px_1fr_26px] items-center w-full mb-0.5 sm:mb-1">
+          <div />
+          <div className="grid grid-cols-10 w-full">
             {displayedFiles.map((file) => (
               <div
                 key={file}
-                className={`flex items-center justify-center h-3.5 sm:h-5 md:h-6 text-[9px] sm:text-xs md:text-sm font-black tracking-wider ${themeStyle.coordText}`}
+                className={`flex items-center justify-center text-[9px] sm:text-xs md:text-sm font-black tracking-wider ${
+                  is3D ? 'text-[#f6dc88] font-black drop-shadow-[0_1px_2px_rgba(0,0,0,0.95)]' : themeStyle.coordText
+                }`}
               >
                 {file}
               </div>
             ))}
           </div>
-          <div className="w-3.5 sm:w-5 md:w-6 ml-0.5 sm:ml-1 shrink-0" />
+          <div />
         </div>
 
-        <div className="flex items-center w-full">
-          {/* Chap Qator Raqamlari */}
-          <div className="flex flex-col justify-around h-full w-3.5 sm:w-5 md:w-6 mr-0.5 sm:mr-1 shrink-0">
+        {/* O'rta qism: Chap raqamlar + 10x10 Dosqa + O'ng raqamlar */}
+        <div
+          className="grid grid-cols-[16px_1fr_16px] sm:grid-cols-[22px_1fr_22px] md:grid-cols-[26px_1fr_26px] items-stretch w-full"
+          style={is3D ? { transformStyle: 'preserve-3d' } : undefined}
+        >
+          {/* Chap Qator Raqamlari (doska qatorlari bilan 100% bir xil balandlikda tekislangan) */}
+          <div className="grid grid-rows-10 h-full w-full py-0">
             {displayedRanks.map((rankIdx) => (
               <div
                 key={rankIdx}
-                className={`flex-1 flex items-center justify-center aspect-square text-[9px] sm:text-xs md:text-sm font-black ${themeStyle.coordText}`}
+                className={`h-full flex items-center justify-center text-[9px] sm:text-xs md:text-sm font-black ${
+                  is3D ? 'text-[#f6dc88] font-black drop-shadow-[0_1px_2px_rgba(0,0,0,0.95)]' : themeStyle.coordText
+                }`}
               >
                 {rankIdx + 1}
               </div>
@@ -182,7 +242,12 @@ export default function Board() {
           {/* 10x10 Dosqa Grid (To'liq Fluid va Aspect-Square) */}
           <div
             ref={boardRef}
-            className="flex-1 grid grid-cols-10 aspect-square border sm:border-2 border-slate-400/80 rounded sm:rounded-md overflow-hidden shadow-[inset_0_2px_10px_rgba(0,0,0,0.3)]"
+            className={`grid grid-cols-10 grid-rows-10 aspect-square w-full rounded sm:rounded-md touch-none select-none ${
+              is3D
+                ? 'border-2 sm:border-[3px] border-[#5a331c] shadow-[inset_0_2px_8px_rgba(0,0,0,0.7)]'
+                : 'overflow-hidden border sm:border-2 border-slate-400/80 shadow-[inset_0_2px_10px_rgba(0,0,0,0.3)]'
+            }`}
+            style={is3D ? { transformStyle: 'preserve-3d' } : undefined}
           >
             {displayedRanks.map((rankIdx) =>
               displayedFiles.map((fileLetter) => {
@@ -197,15 +262,64 @@ export default function Board() {
                 const isLegalTarget = Boolean(legalMove);
                 const isLastMoveFrom = game.lastMove !== null && squaresEqual(sq, game.lastMove.from);
                 const isLastMoveTo = game.lastMove !== null && squaresEqual(sq, game.lastMove.to);
+                const isCastlingRook =
+                  game.lastMove !== null &&
+                  Boolean(game.lastMove.isCastling && game.lastMove.rookTo && squaresEqual(sq, game.lastMove.rookTo));
                 const isCheck = checkSquare !== null && squaresEqual(sq, checkSquare);
                 const isHintFrom = hintMove !== null && squaresEqual(sq, hintMove.from);
                 const isHintTo = hintMove !== null && squaresEqual(sq, hintMove.to);
 
-                // Kvadrat foni
-                let squareBgClass = isLight ? themeStyle.lightSquare : themeStyle.darkSquare;
+                const isCurrentlyAnimating =
+                  animatingMoveIndex !== null &&
+                  animatingMoveIndex === game.moveHistory.length - 1 &&
+                  (isLastMoveTo || isCastlingRook);
 
-                // 1-100 Raqamli notatsiya belgisi
+                // Donaning silliq siljish animatsiyasi (oxirgi harakat nuqtasiga qarab)
+                let slideStyle: React.CSSProperties | undefined = undefined;
+
+                if (isCurrentlyAnimating && isLastMoveTo && game.lastMove) {
+                  const fromCol = isFlipped ? 9 - game.lastMove.from.file : game.lastMove.from.file;
+                  const toCol = isFlipped ? 9 - game.lastMove.to.file : game.lastMove.to.file;
+                  const fromRow = isFlipped ? game.lastMove.from.rank : 9 - game.lastMove.from.rank;
+                  const toRow = isFlipped ? game.lastMove.to.rank : 9 - game.lastMove.to.rank;
+                  const dx = (fromCol - toCol) * 100;
+                  const dy = (fromRow - toRow) * 100;
+                  slideStyle = { '--slide-x': `${dx}%`, '--slide-y': `${dy}%` } as React.CSSProperties;
+                } else if (isCurrentlyAnimating && isCastlingRook && game.lastMove && game.lastMove.rookFrom && game.lastMove.rookTo) {
+                  const fromCol = isFlipped ? 9 - game.lastMove.rookFrom.file : game.lastMove.rookFrom.file;
+                  const toCol = isFlipped ? 9 - game.lastMove.rookTo.file : game.lastMove.rookTo.file;
+                  const fromRow = isFlipped ? game.lastMove.rookFrom.rank : 9 - game.lastMove.rookFrom.rank;
+                  const toRow = isFlipped ? game.lastMove.rookTo.rank : 9 - game.lastMove.rookTo.rank;
+                  const dx = (fromCol - toCol) * 100;
+                  const dy = (fromRow - toRow) * 100;
+                  slideStyle = { '--slide-x': `${dx}%`, '--slide-y': `${dy}%` } as React.CSSProperties;
+                }
+
+                // Kvadrat foni (3D rejimida kitobdagidek tabiiy yog'och tuslari)
+                let squareBgClass = is3D
+                  ? isLight
+                    ? 'bg-gradient-to-br from-[#f8ebc2] via-[#eedca4] to-[#dec17b] text-slate-900 shadow-[inset_0_1px_2px_rgba(255,255,255,0.6)]'
+                    : 'bg-gradient-to-br from-[#c46937] via-[#b35728] to-[#97431b] text-slate-900 shadow-[inset_0_1px_2px_rgba(0,0,0,0.35)]'
+                  : isLight
+                  ? themeStyle.lightSquare
+                  : themeStyle.darkSquare;
+
+                // 1-100 Raqamli notatsiya belgisi (A1=1, B1=2 ... H1=10, A2=11 ... H10=100)
                 const numericLabel = rankIdx * 10 + fileIdx + 1;
+
+                // 3D dona stilizatsiyasi (kitobdagidek tik turgan va soya tashlagan)
+                const pieceStyle: React.CSSProperties = is3D
+                  ? {
+                      ...slideStyle,
+                      transform: isSelected
+                        ? 'translateZ(26px) rotateX(-28deg) translateY(-10px) scale(1.18)'
+                        : 'translateZ(8px) rotateX(-28deg) translateY(-4px) scale(1.08)',
+                      transformOrigin: 'bottom center',
+                      filter: isSelected
+                        ? 'drop-shadow(0 10px 8px rgba(0,0,0,0.85)) drop-shadow(0 0 10px rgba(245,158,11,0.95))'
+                        : 'drop-shadow(0 4px 5px rgba(0,0,0,0.65))',
+                    }
+                  : slideStyle || {};
 
                 return (
                   <div
@@ -213,7 +327,8 @@ export default function Board() {
                     onClick={() => handleSquareClick(sq)}
                     onDrop={(e) => handleDrop(e, sq)}
                     onDragOver={handleDragOver}
-                    className={`relative w-full h-full aspect-square flex items-center justify-center cursor-pointer transition-colors duration-150 ${squareBgClass}`}
+                    className={`relative w-full h-full aspect-square flex items-center justify-center cursor-pointer transition-colors duration-150 touch-none select-none ${squareBgClass}`}
+                    style={is3D ? { transformStyle: 'preserve-3d' } : undefined}
                   >
                     {/* So'nggi Harakat Izlari */}
                     {(isLastMoveFrom || isLastMoveTo) && (
@@ -235,9 +350,13 @@ export default function Board() {
                       <div className="absolute inset-0 pointer-events-none z-[6] bg-red-600/60 ring-2 sm:ring-4 ring-red-500 animate-pulse shadow-[inset_0_0_20px_rgba(239,68,68,0.9)]" />
                     )}
 
-                    {/* 1-100 Raqamli Notatsiya suv belgisi */}
+                    {/* 1-100 Raqamli Notatsiya belgisi */}
                     {useNumericNotation && (
-                      <span className="absolute top-0.5 left-0.5 text-[7px] sm:text-[9px] font-extrabold opacity-40 pointer-events-none z-[2]">
+                      <span
+                        className={`absolute top-0.5 left-0.5 text-[8px] sm:text-[9.5px] font-black pointer-events-none z-[2] leading-none ${
+                          isLight ? 'text-slate-900/65' : 'text-white/65'
+                        }`}
+                      >
                         {numericLabel}
                       </span>
                     )}
@@ -265,20 +384,28 @@ export default function Board() {
                     {/* Shaxmat Donasi */}
                     {piece && (
                       <div
+                        key={isCurrentlyAnimating ? `${piece.id}-${game.moveHistory.length}` : piece.id}
                         draggable={
                           piece.color === game.currentTurn &&
                           (gameMode !== 'online' || !onlinePlayerColor || piece.color === onlinePlayerColor)
                         }
                         onDragStart={(e) => handleDragStart(e, piece, sq)}
                         onDragEnd={handleDragEnd}
-                        className={`relative z-10 w-[86%] h-[86%] flex items-center justify-center transition-all duration-150 ${
-                          isSelected ? 'scale-110 -translate-y-0.5' : 'hover:scale-105 active:scale-95'
+                        style={pieceStyle}
+                        className={`relative z-10 w-full h-full flex items-center justify-center touch-none select-none ${
+                          isCurrentlyAnimating
+                            ? is3D
+                              ? 'animate-glide-3d z-30'
+                              : 'animate-glide-2d z-30'
+                            : ''
+                        } ${
+                          !is3D && isSelected ? 'scale-110 -translate-y-0.5' : !is3D ? 'hover:scale-105 active:scale-95' : ''
                         }`}
                       >
                         <PieceIcon
                           type={piece.type}
                           color={piece.color}
-                          className="w-full h-full"
+                          className="w-[88%] h-[88%] pointer-events-none drop-shadow-sm select-none"
                         />
                       </div>
                     )}
@@ -289,11 +416,13 @@ export default function Board() {
           </div>
 
           {/* O'ng Qator Raqamlari */}
-          <div className="flex flex-col justify-around h-full w-3.5 sm:w-5 md:w-6 ml-0.5 sm:ml-1 shrink-0">
+          <div className="grid grid-rows-10 h-full w-full py-0">
             {displayedRanks.map((rankIdx) => (
               <div
                 key={rankIdx}
-                className={`flex-1 flex items-center justify-center aspect-square text-[9px] sm:text-xs md:text-sm font-black ${themeStyle.coordText}`}
+                className={`h-full flex items-center justify-center text-[9px] sm:text-xs md:text-sm font-black ${
+                  is3D ? 'text-[#f6dc88] font-black drop-shadow-[0_1px_2px_rgba(0,0,0,0.95)]' : themeStyle.coordText
+                }`}
               >
                 {rankIdx + 1}
               </div>
@@ -302,19 +431,21 @@ export default function Board() {
         </div>
 
         {/* Quyi Ustun Harflari */}
-        <div className="flex w-full mt-0.5 sm:mt-1 items-center">
-          <div className="w-3.5 sm:w-5 md:w-6 mr-0.5 sm:mr-1 shrink-0" />
-          <div className="flex-1 grid grid-cols-10">
+        <div className="grid grid-cols-[16px_1fr_16px] sm:grid-cols-[22px_1fr_22px] md:grid-cols-[26px_1fr_26px] items-center w-full mt-0.5 sm:mt-1">
+          <div />
+          <div className="grid grid-cols-10 w-full">
             {displayedFiles.map((file) => (
               <div
                 key={file}
-                className={`flex items-center justify-center h-3.5 sm:h-5 md:h-6 text-[9px] sm:text-xs md:text-sm font-black tracking-wider ${themeStyle.coordText}`}
+                className={`flex items-center justify-center text-[9px] sm:text-xs md:text-sm font-black tracking-wider ${
+                  is3D ? 'text-[#f6dc88] font-black drop-shadow-[0_1px_2px_rgba(0,0,0,0.95)]' : themeStyle.coordText
+                }`}
               >
                 {file}
               </div>
             ))}
           </div>
-          <div className="w-3.5 sm:w-5 md:w-6 ml-0.5 sm:ml-1 shrink-0" />
+          <div />
         </div>
       </div>
     </div>

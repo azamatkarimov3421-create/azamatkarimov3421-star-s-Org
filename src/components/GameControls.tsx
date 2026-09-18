@@ -7,7 +7,7 @@ import { useGame } from '../store/gameStore';
 import { getBestMove } from '../ai/minimax';
 import { TimeControlSelector } from './ChessClock';
 
-const DIFFICULTY_LABELS = ['', 'Oson', "O'rta", 'Kuchli'];
+const DIFFICULTY_LABELS = ['', 'Havaskor', "O'rta", 'Usta', 'Grosmeyster'];
 
 interface GameControlsProps {
   onOpenOnlineModal?: () => void;
@@ -121,8 +121,8 @@ export default function GameControls({ onOpenOnlineModal, className = '' }: Game
               {DIFFICULTY_LABELS[aiDepth]}
             </span>
           </div>
-          <div className="grid grid-cols-3 gap-1.5 p-1 bg-slate-950/70 rounded-xl border border-slate-800/80">
-            {[1, 2, 3].map((depth) => (
+          <div className="grid grid-cols-4 gap-1 p-1 bg-slate-950/70 rounded-xl border border-slate-800/80">
+            {[1, 2, 3, 4].map((depth) => (
               <button
                 key={depth}
                 onClick={() => dispatch({ type: 'SET_AI_DEPTH', depth })}
@@ -192,9 +192,7 @@ export default function GameControls({ onOpenOnlineModal, className = '' }: Game
         <div className="grid grid-cols-2 gap-2">
           <button
             onClick={() => {
-              if (window.confirm('Raqibga durang taklif qilasizmi?')) {
-                dispatch({ type: 'OFFER_DRAW' });
-              }
+              dispatch({ type: 'OFFER_DRAW' });
             }}
             disabled={isGameOver}
             className="py-2 px-3 bg-slate-800/80 hover:bg-slate-700 disabled:opacity-40 disabled:cursor-not-allowed text-sky-300 font-semibold text-xs rounded-xl border border-slate-700 transition-all flex items-center justify-center gap-1.5 active:scale-95"
@@ -205,9 +203,7 @@ export default function GameControls({ onOpenOnlineModal, className = '' }: Game
 
           <button
             onClick={() => {
-              if (window.confirm("Haqiqatan ham taslim bo'lmoqchimisiz?")) {
-                dispatch({ type: 'RESIGN' });
-              }
+              dispatch({ type: 'RESIGN' });
             }}
             disabled={isGameOver}
             className="py-2 px-3 bg-slate-800/80 hover:bg-red-950/50 disabled:opacity-40 disabled:cursor-not-allowed text-red-400 font-semibold text-xs rounded-xl border border-slate-700 hover:border-red-800/60 transition-all flex items-center justify-center gap-1.5 active:scale-95"

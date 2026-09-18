@@ -1,9 +1,10 @@
 // =====================================================
-// NUR SHAXMAT 100 — Onlayn Multiplayer Xizmati (P2P Realtime)
-// WebRTC DataChannel (PeerJS) yordamida 0-kechikishli to'g'ridan-to'g'ri aloqa
+// NUR SHAXMAT 100 — Onlayn Multiplayer Xizmati (Supabase Realtime)
+// WebSockets Broadcast & Presence yordamida tezkor va barqaror aloqa
 // =====================================================
 
-import Peer, { DataConnection } from 'peerjs';
+import { RealtimeChannel } from '@supabase/supabase-js';
+import { supabase } from '../lib/supabase';
 import { Move } from '../engine/types';
 
 export type OnlineStatus =
@@ -21,24 +22,15 @@ export type MessageType =
   | { type: 'ACCEPT_DRAW' }
   | { type: 'RESIGN' }
   | { type: 'REMATCH' }
+  | { type: 'JOIN' }
+  | { type: 'LEAVE' }
   | { type: 'HANDSHAKE' };
 
 export type MessageCallback = (msg: MessageType) => void;
 export type StatusCallback = (status: OnlineStatus, extra?: string) => void;
 
-// WebRTC STUN serverlari (turli tarmoqlar va mobil internet orqali ulanish uchun)
-const ICE_CONFIG = {
-  iceServers: [
-    { urls: 'stun:stun.l.google.com:19302' },
-    { urls: 'stun:stun1.l.google.com:19302' },
-    { urls: 'stun:stun2.l.google.com:19302' },
-    { urls: 'stun:global.stun.twilio.com:3478' },
-  ],
-};
-
 class OnlineManager {
-  private peer: Peer | null = null;
-  private conn: DataConnection | null = null;
+  private channel: RealtimeChannel | null = null;
   private messageListeners = new Set<MessageCallback>();
   private statusListeners = new Set<StatusCallback>();
 
@@ -80,43 +72,66 @@ class OnlineManager {
     this.notifyStatus('creating', 'Xona ochilmoqda...');
 
     const code = customCode || `${Math.floor(10000 + Math.random() * 90000)}`;
-    const peerId = `nur100-${code}`;
-
     this.roomCode = code;
     this.myColor = 'white';
 
     return new Promise((resolve, reject) => {
       try {
-        this.peer = new Peer(peerId, {
-          config: ICE_CONFIG,
-          debug: 1,
+        const ch = supabase.channel(`nur_room_${code}`, {
+          config: {
+            broadcast: { self: false },
+            presence: { key: 'white' },
+          },
         });
 
-        this.peer.on('open', () => {
-          this.notifyStatus('waiting', 'Raqib ulanishi kutilmoqda...');
-          resolve(code);
-        });
+        this.channel = ch;
 
-        this.peer.on('connection', (connection) => {
-          this.conn = connection;
-          this.setupConnection();
-          connection.on('open', () => {
+        ch.on('broadcast', { event: 'game_event' }, ({ payload }) => {
+          if (!payload || !payload.type) return;
+
+          if (payload.type === 'JOIN') {
             this.notifyStatus('connected', 'Raqib muvaffaqiyatli ulandi!');
             this.sendMessage({ type: 'HANDSHAKE' });
-          });
+          } else if (payload.type === 'HANDSHAKE') {
+            this.notifyStatus('connected', 'Raqib tayyor!');
+          } else if (payload.type === 'LEAVE') {
+            this.notifyStatus('disconnected', 'Raqib oʻyindan chiqdi');
+          }
+
+          this.notifyMessage(payload as MessageType);
         });
 
-        this.peer.on('error', (err: any) => {
-          console.warn('PeerJS xonasi xatosi:', err);
-          if (err.type === 'unavailable-id') {
-            this.createRoom().then(resolve).catch(reject);
-          } else {
-            this.notifyStatus('error', err.message || 'Xona ochishda xatolik');
-            reject(err);
+        ch.on('presence', { event: 'sync' }, () => {
+          const state = ch.presenceState();
+          const presences = Object.values(state).flat();
+          const hasWhite = presences.some((p: any) => p.role === 'white');
+          const hasBlack = presences.some((p: any) => p.role === 'black');
+          if (hasWhite && hasBlack && this.status !== 'connected') {
+            this.notifyStatus('connected', 'Raqib muvaffaqiyatli ulandi!');
+            this.sendMessage({ type: 'HANDSHAKE' });
+          }
+        });
+
+        ch.on('presence', { event: 'leave' }, () => {
+          if (this.status === 'connected') {
+            this.notifyStatus('disconnected', 'Raqib aloqadan uzildi');
+          }
+        });
+
+        ch.subscribe(async (status) => {
+          if (status === 'SUBSCRIBED') {
+            try {
+              await ch.track({ role: 'white', joined_at: Date.now() });
+            } catch {}
+            this.notifyStatus('waiting', 'Raqib ulanishi kutilmoqda...');
+            resolve(code);
+          } else if (status === 'CHANNEL_ERROR' || status === 'TIMED_OUT') {
+            this.notifyStatus('error', 'Xona ochishda xatolik yuz berdi');
+            reject(new Error(status));
           }
         });
       } catch (e: any) {
-        this.notifyStatus('error', e.message);
+        this.notifyStatus('error', e.message || 'Xatolik');
         reject(e);
       }
     });
@@ -130,72 +145,86 @@ class OnlineManager {
     this.notifyStatus('connecting', 'Xonaga ulanmoqda...');
 
     const cleanCode = roomCode.trim().toUpperCase().replace(/^NUR-?/i, '');
-    const peerId = `nur100-${cleanCode}`;
-
     this.roomCode = cleanCode;
     this.myColor = 'black';
 
     return new Promise((resolve, reject) => {
       try {
-        this.peer = new Peer({
-          config: ICE_CONFIG,
-          debug: 1,
+        const ch = supabase.channel(`nur_room_${cleanCode}`, {
+          config: {
+            broadcast: { self: false },
+            presence: { key: 'black' },
+          },
         });
 
-        this.peer.on('open', () => {
-          if (!this.peer) return;
+        this.channel = ch;
 
-          const connection = this.peer.connect(peerId, {
-            reliable: true,
-          });
+        ch.on('broadcast', { event: 'game_event' }, ({ payload }) => {
+          if (!payload || !payload.type) return;
 
-          this.conn = connection;
-          this.setupConnection();
-
-          connection.on('open', () => {
+          if (payload.type === 'HANDSHAKE') {
             this.notifyStatus('connected', 'Xonaga muvaffaqiyatli ulandingiz!');
-            this.sendMessage({ type: 'HANDSHAKE' });
-            resolve();
-          });
+          } else if (payload.type === 'LEAVE') {
+            this.notifyStatus('disconnected', 'Raqib oʻyindan chiqdi');
+          }
 
-          connection.on('error', (err) => {
-            console.error('Ulanish xatosi:', err);
-            this.notifyStatus('error', 'Xonaga ulanib boʻlmadi');
-            reject(err);
-          });
+          this.notifyMessage(payload as MessageType);
         });
 
-        this.peer.on('error', (err) => {
-          console.error('Peer error:', err);
-          this.notifyStatus('error', 'Xona topilmadi yoki raqib oflayn');
-          reject(err);
+        ch.on('presence', { event: 'sync' }, () => {
+          const state = ch.presenceState();
+          const presences = Object.values(state).flat();
+          const hasWhite = presences.some((p: any) => p.role === 'white');
+          const hasBlack = presences.some((p: any) => p.role === 'black');
+          if (hasWhite && hasBlack && this.status !== 'connected') {
+            this.notifyStatus('connected', 'Xonaga muvaffaqiyatli ulandingiz!');
+          }
+        });
+
+        ch.on('presence', { event: 'leave' }, () => {
+          if (this.status === 'connected') {
+            this.notifyStatus('disconnected', 'Raqib aloqadan uzildi');
+          }
+        });
+
+        ch.subscribe(async (status) => {
+          if (status === 'SUBSCRIBED') {
+            try {
+              await ch.track({ role: 'black', joined_at: Date.now() });
+            } catch {}
+
+            // JOIN xabarini ishonchli yetib borishi uchun yuboramiz
+            ch.send({
+              type: 'broadcast',
+              event: 'game_event',
+              payload: { type: 'JOIN' },
+            });
+
+            let count = 0;
+            const retryJoin = setInterval(() => {
+              count++;
+              if (this.status === 'connected' || count >= 4) {
+                clearInterval(retryJoin);
+                return;
+              }
+              ch.send({
+                type: 'broadcast',
+                event: 'game_event',
+                payload: { type: 'JOIN' },
+              });
+            }, 600);
+
+            this.notifyStatus('connected', 'Xonaga muvaffaqiyatli ulandingiz!');
+            resolve();
+          } else if (status === 'CHANNEL_ERROR' || status === 'TIMED_OUT') {
+            this.notifyStatus('error', 'Xonaga ulanib boʻlmadi. Kodni tekshiring.');
+            reject(new Error(status));
+          }
         });
       } catch (e: any) {
-        this.notifyStatus('error', e.message);
+        this.notifyStatus('error', e.message || 'Xatolik');
         reject(e);
       }
-    });
-  }
-
-  private setupConnection() {
-    if (!this.conn) return;
-
-    this.conn.on('data', (data: any) => {
-      if (data && typeof data === 'object' && data.type) {
-        if (data.type === 'HANDSHAKE') {
-          this.notifyStatus('connected', 'Raqib ulandi va tayyor!');
-        }
-        this.notifyMessage(data as MessageType);
-      }
-    });
-
-    this.conn.on('close', () => {
-      this.notifyStatus('disconnected', 'Raqib oʻyindan chiqdi');
-    });
-
-    this.conn.on('error', (err) => {
-      console.warn('Aloqa uzildi:', err);
-      this.notifyStatus('disconnected', 'Aloqa uzildi');
     });
   }
 
@@ -203,14 +232,18 @@ class OnlineManager {
    * Harakat yoki xabarni raqibga yuborish
    */
   public sendMessage(msg: MessageType) {
-    if (this.conn && this.conn.open) {
+    if (this.channel) {
       try {
-        this.conn.send(msg);
+        this.channel.send({
+          type: 'broadcast',
+          event: 'game_event',
+          payload: msg,
+        });
       } catch (e) {
         console.error('Xabar yuborishda xato:', e);
       }
     } else {
-      console.warn('Ulanish ochiq emas, xabar yuborilmadi:', msg);
+      console.warn('Supabase kanali faol emas, xabar yuborilmadi:', msg);
     }
   }
 
@@ -218,17 +251,17 @@ class OnlineManager {
    * Aloqani to'xtatish
    */
   public disconnect() {
-    if (this.conn) {
+    if (this.channel) {
       try {
-        this.conn.close();
+        this.channel.send({
+          type: 'broadcast',
+          event: 'game_event',
+          payload: { type: 'LEAVE' },
+        });
+        this.channel.unsubscribe();
+        supabase.removeChannel(this.channel);
       } catch {}
-      this.conn = null;
-    }
-    if (this.peer) {
-      try {
-        this.peer.destroy();
-      } catch {}
-      this.peer = null;
+      this.channel = null;
     }
     this.status = 'idle';
     this.roomCode = null;

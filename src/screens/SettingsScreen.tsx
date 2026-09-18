@@ -12,16 +12,35 @@ import {
   ChessPawnIcon,
   UserIcon,
 } from '../components/Icons';
+import {
+  SoundTheme,
+  SOUND_THEME_NAMES,
+  getSoundTheme,
+  setSoundTheme,
+  testAudioTone,
+} from '../audio/sounds';
+import {
+  SUPPORTED_LANGUAGES,
+  getAppLanguage,
+  setAppLanguage,
+  t,
+  AppLanguage,
+} from '../i18n/translations';
 
 interface SettingsScreenProps {
   onBack: () => void;
+  onOpenRules?: () => void;
 }
 
-export default function SettingsScreen({ onBack }: SettingsScreenProps) {
+export default function SettingsScreen({ onBack, onOpenRules }: SettingsScreenProps) {
   const { state, dispatch } = useGame();
-  const { boardTheme, soundEnabled, aiDepth } = state;
+  const { boardTheme, soundEnabled, aiDepth, useNumericNotation, is3D } = state;
 
+  const [currentLang, setCurrentLangState] = useState<AppLanguage>(getAppLanguage());
+  const [soundTheme, setSoundThemeState] = useState<SoundTheme>(getSoundTheme());
   const [vibrationEnabled, setVibrationEnabled] = useState(true);
+  const [showLangModal, setShowLangModal] = useState(false);
+  const [showSoundThemeModal, setShowSoundThemeModal] = useState(false);
   const [showThemeModal, setShowThemeModal] = useState(false);
   const [showAiModal, setShowAiModal] = useState(false);
   const [showAboutModal, setShowAboutModal] = useState(false);
@@ -34,10 +53,12 @@ export default function SettingsScreen({ onBack }: SettingsScreenProps) {
     marble: 'Marmar & Obsidiyan',
   };
 
-  const AI_LABELS = ['', 'Oson', "Oʻrta", 'Kuchli'];
+  const AI_LABELS = ['', 'Havaskor (Oson)', "Tajribali (Oʻrta)", 'Usta (Kuchli)', 'Grosmeyster (Pro)'];
+
+  const currentLangObj = SUPPORTED_LANGUAGES.find((l) => l.code === currentLang) || SUPPORTED_LANGUAGES[0];
 
   return (
-    <div className="min-h-screen w-full bg-[#262421] text-[#f1f1f1] flex flex-col font-sans select-none pb-12 max-w-md mx-auto sm:max-w-xl">
+    <div className="min-h-screen w-full bg-[#262421] text-[#f1f1f1] flex flex-col font-sans select-none pb-12 max-w-md mx-auto sm:max-w-2xl lg:max-w-4xl">
       {/* Header */}
       <header className="sticky top-0 z-30 bg-[#21201d]/95 backdrop-blur-md border-b border-[#383531] px-4 py-3 flex items-center gap-3 pt-[max(0.7rem,env(safe-area-inset-top))]">
         <button
@@ -49,47 +70,164 @@ export default function SettingsScreen({ onBack }: SettingsScreenProps) {
         </button>
         <div>
           <h2 className="text-base font-extrabold text-white">
-            Sozlamalar
+            {t('settings_title')}
           </h2>
-          <p className="text-xs text-[#9b9893]">Ilova va oʻyin parametrlarini sozlang</p>
+          <p className="text-xs text-[#9b9893]">{t('settings_subtitle')}</p>
         </div>
       </header>
 
       {/* Sozlamalar Ro'yxati */}
-      <main className="flex-1 px-4 py-4 flex flex-col gap-2.5">
+      <main className="flex-1 px-4 py-4 flex flex-col md:grid md:grid-cols-2 gap-3">
         {/* 1. Til */}
-        <div className="p-3.5 rounded-2xl bg-[#21201d] border border-[#383531] flex items-center justify-between shadow-sm">
+        <button
+          onClick={() => setShowLangModal(true)}
+          className="p-3.5 rounded-2xl bg-[#21201d] hover:bg-[#282622] border border-[#383531] flex items-center justify-between shadow-sm text-left active:scale-[0.99] transition-all"
+        >
           <div className="flex items-center gap-3">
             <div className="w-8 h-8 rounded-lg bg-[#2c2a26] border border-[#3d3a34] flex items-center justify-center text-[#81b64c]">
               <GlobeIcon size={18} />
             </div>
-            <span className="font-bold text-sm text-white">Til</span>
+            <div>
+              <span className="font-bold text-sm text-white">{t('lang_setting')}</span>
+              <p className="text-[10px] text-[#9b9893]">5 xil til mavjud</p>
+            </div>
           </div>
           <div className="flex items-center gap-1.5 text-xs text-[#81b64c] font-bold">
-            <span>Oʻzbekcha</span>
+            <span>{currentLangObj.flag} {currentLangObj.name}</span>
             <ChevronRightIcon size={16} className="text-[#686560]" />
           </div>
+        </button>
+
+        {/* 2. Ovoz (Toggle + Tovush mavzulari + Sinov tugmalari) */}
+        <div className="p-3.5 rounded-2xl bg-[#21201d] border border-[#383531] flex flex-col gap-3 shadow-sm">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <div className="w-8 h-8 rounded-lg bg-[#2c2a26] border border-[#3d3a34] flex items-center justify-center text-[#81b64c]">
+                {soundEnabled ? <Volume2Icon size={18} /> : <VolumeXIcon size={18} />}
+              </div>
+              <span className="font-bold text-sm text-white">{t('sound_setting')}</span>
+            </div>
+            <button
+              onClick={() => dispatch({ type: 'TOGGLE_SOUND' })}
+              className={`w-12 h-6.5 rounded-full p-1 transition-colors duration-200 ease-in-out cursor-pointer flex items-center ${
+                soundEnabled ? 'bg-[#81b64c] justify-end' : 'bg-[#383531] justify-start'
+              }`}
+            >
+              <div className="w-4.5 h-4.5 rounded-full bg-white shadow-md transition-transform" />
+            </button>
+          </div>
+
+          {/* Tovush Mavzusi */}
+          {soundEnabled && (
+            <div className="border-t border-[#312e2b] pt-2.5 flex items-center justify-between">
+              <span className="text-xs font-semibold text-[#c3c2be]">{t('sound_theme_setting')}:</span>
+              <button
+                onClick={() => setShowSoundThemeModal(true)}
+                className="px-2.5 py-1 rounded-lg bg-[#2c2a26] hover:bg-[#383531] border border-[#3d3a34] text-xs font-bold text-amber-400 flex items-center gap-1.5 transition-all"
+              >
+                <span>{SOUND_THEME_NAMES[soundTheme]}</span>
+                <ChevronRightIcon size={14} className="text-[#888]" />
+              </button>
+            </div>
+          )}
+
+          {/* Tovushlarni Sinash */}
+          {soundEnabled && (
+            <div className="border-t border-[#312e2b] pt-2.5">
+              <div className="text-[11px] font-bold text-[#81b64c] mb-1.5">{t('sound_test_title')}:</div>
+              <div className="grid grid-cols-4 gap-1.5">
+                <button
+                  onClick={() => testAudioTone('move')}
+                  className="py-1.5 px-1 bg-[#2c2a26] hover:bg-[#383531] active:scale-95 border border-[#3d3a34] rounded-xl text-[11px] font-bold text-slate-200 transition-all text-center shadow-sm"
+                >
+                  {t('test_move')}
+                </button>
+                <button
+                  onClick={() => testAudioTone('capture')}
+                  className="py-1.5 px-1 bg-[#2c2a26] hover:bg-[#383531] active:scale-95 border border-[#3d3a34] rounded-xl text-[11px] font-bold text-rose-300 transition-all text-center shadow-sm"
+                >
+                  {t('test_capture')}
+                </button>
+                <button
+                  onClick={() => testAudioTone('nur')}
+                  className="py-1.5 px-1 bg-[#2c2a26] hover:bg-[#383531] active:scale-95 border border-[#3d3a34] rounded-xl text-[11px] font-bold text-amber-300 transition-all text-center shadow-sm"
+                >
+                  {t('test_nur')}
+                </button>
+                <button
+                  onClick={() => testAudioTone('check')}
+                  className="py-1.5 px-1 bg-[#2c2a26] hover:bg-[#383531] active:scale-95 border border-[#3d3a34] rounded-xl text-[11px] font-bold text-yellow-300 transition-all text-center shadow-sm"
+                >
+                  {t('test_check')}
+                </button>
+              </div>
+            </div>
+          )}
         </div>
 
-        {/* 2. Ovoz (Toggle) */}
+        {/* 3. 1–100 Raqamli Notatsiya */}
         <div className="p-3.5 rounded-2xl bg-[#21201d] border border-[#383531] flex items-center justify-between shadow-sm">
           <div className="flex items-center gap-3">
-            <div className="w-8 h-8 rounded-lg bg-[#2c2a26] border border-[#3d3a34] flex items-center justify-center text-[#81b64c]">
-              {soundEnabled ? <Volume2Icon size={18} /> : <VolumeXIcon size={18} />}
+            <div className="w-8 h-8 rounded-lg bg-[#2c2a26] border border-[#3d3a34] flex items-center justify-center text-[#f5b041] font-mono font-black text-xs">
+              100
             </div>
-            <span className="font-bold text-sm text-white">Ovoz effektlari</span>
+            <div>
+              <span className="font-bold text-sm text-white">{t('notation_setting')}</span>
+              <p className="text-[10px] text-[#9b9893]">{t('notation_desc')}</p>
+            </div>
           </div>
           <button
-            onClick={() => dispatch({ type: 'TOGGLE_SOUND' })}
+            onClick={() => dispatch({ type: 'TOGGLE_NOTATION' })}
             className={`w-12 h-6.5 rounded-full p-1 transition-colors duration-200 ease-in-out cursor-pointer flex items-center ${
-              soundEnabled ? 'bg-[#81b64c] justify-end' : 'bg-[#383531] justify-start'
+              useNumericNotation ? 'bg-[#81b64c] justify-end' : 'bg-[#383531] justify-start'
             }`}
           >
             <div className="w-4.5 h-4.5 rounded-full bg-white shadow-md transition-transform" />
           </button>
         </div>
 
-        {/* 3. Shaxmat doskasi uslubi */}
+        {/* 3.1. 3D Fazoviy Ko'rinish (Kitobdagidek) */}
+        <div className="p-3.5 rounded-2xl bg-[#21201d] border border-[#383531] flex items-center justify-between shadow-sm">
+          <div className="flex items-center gap-3">
+            <div className="w-8 h-8 rounded-lg bg-[#2c2a26] border border-[#3d3a34] flex items-center justify-center text-amber-400 font-black text-sm">
+              🎲
+            </div>
+            <div>
+              <span className="font-bold text-sm text-white">3D Fazoviy Doska</span>
+              <p className="text-[10px] text-[#9b9893]">
+                {is3D ? 'Kitobdagidek yogʻoch taxta va tik turgan donalar' : 'Standart 2D tekis doska'}
+              </p>
+            </div>
+          </div>
+          <button
+            onClick={() => dispatch({ type: 'TOGGLE_3D' })}
+            className={`w-12 h-6.5 rounded-full p-1 transition-colors duration-200 ease-in-out cursor-pointer flex items-center ${
+              is3D ? 'bg-amber-500 justify-end' : 'bg-[#383531] justify-start'
+            }`}
+          >
+            <div className="w-4.5 h-4.5 rounded-full bg-white shadow-md transition-transform" />
+          </button>
+        </div>
+
+        {/* 4. Tebranish (Vibratsiya) */}
+        <div className="p-3.5 rounded-2xl bg-[#21201d] border border-[#383531] flex items-center justify-between shadow-sm">
+          <div className="flex items-center gap-3">
+            <div className="w-8 h-8 rounded-lg bg-[#2c2a26] border border-[#3d3a34] flex items-center justify-center text-[#5dade2] text-sm">
+              📳
+            </div>
+            <span className="font-bold text-sm text-white">{t('vibration_setting')}</span>
+          </div>
+          <button
+            onClick={() => setVibrationEnabled(!vibrationEnabled)}
+            className={`w-12 h-6.5 rounded-full p-1 transition-colors duration-200 ease-in-out cursor-pointer flex items-center ${
+              vibrationEnabled ? 'bg-[#81b64c] justify-end' : 'bg-[#383531] justify-start'
+            }`}
+          >
+            <div className="w-4.5 h-4.5 rounded-full bg-white shadow-md transition-transform" />
+          </button>
+        </div>
+
+        {/* 5. Shaxmat doskasi uslubi */}
         <button
           onClick={() => setShowThemeModal(true)}
           className="p-3.5 rounded-2xl bg-[#21201d] hover:bg-[#282622] border border-[#383531] flex items-center justify-between shadow-sm text-left active:scale-[0.99] transition-all"
@@ -98,7 +236,7 @@ export default function SettingsScreen({ onBack }: SettingsScreenProps) {
             <div className="w-8 h-8 rounded-lg bg-[#2c2a26] border border-[#3d3a34] flex items-center justify-center text-[#f5b041]">
               <ChessPawnIcon size={18} />
             </div>
-            <span className="font-bold text-sm text-white">Dosqa uslubi</span>
+            <span className="font-bold text-sm text-white">{t('board_theme_setting')}</span>
           </div>
           <div className="flex items-center gap-1.5 text-xs text-[#81b64c] font-bold">
             <span>{THEME_NAMES[boardTheme]}</span>
@@ -106,7 +244,7 @@ export default function SettingsScreen({ onBack }: SettingsScreenProps) {
           </div>
         </button>
 
-        {/* 4. Qiyinchilik darajasi (AI) */}
+        {/* 6. Qiyinchilik darajasi (AI) */}
         <button
           onClick={() => setShowAiModal(true)}
           className="p-3.5 rounded-2xl bg-[#21201d] hover:bg-[#282622] border border-[#383531] flex items-center justify-between shadow-sm text-left active:scale-[0.99] transition-all"
@@ -115,7 +253,7 @@ export default function SettingsScreen({ onBack }: SettingsScreenProps) {
             <div className="w-8 h-8 rounded-lg bg-[#2c2a26] border border-[#3d3a34] flex items-center justify-center text-[#5dade2]">
               <BotIcon size={18} />
             </div>
-            <span className="font-bold text-sm text-white">AI Qiyinchilik darajasi</span>
+            <span className="font-bold text-sm text-white">{t('ai_difficulty_setting')}</span>
           </div>
           <div className="flex items-center gap-1.5 text-xs text-[#81b64c] font-bold">
             <span>{AI_LABELS[aiDepth]}</span>
@@ -123,21 +261,27 @@ export default function SettingsScreen({ onBack }: SettingsScreenProps) {
           </div>
         </button>
 
-        {/* 5. Yordam va Qo'llanma */}
+        {/* 7. Yordam va Qo'llanma */}
         <button
-          onClick={() => setShowHelpModal(true)}
+          onClick={() => {
+            if (onOpenRules) {
+              onOpenRules();
+            } else {
+              setShowHelpModal(true);
+            }
+          }}
           className="p-3.5 rounded-2xl bg-[#21201d] hover:bg-[#282622] border border-[#383531] flex items-center justify-between shadow-sm text-left active:scale-[0.99] transition-all"
         >
           <div className="flex items-center gap-3">
             <div className="w-8 h-8 rounded-lg bg-[#2c2a26] border border-[#3d3a34] flex items-center justify-center text-[#9b9893]">
               <BookOpenIcon size={18} />
             </div>
-            <span className="font-bold text-sm text-white">Yordam & Koʻrsatmalar</span>
+            <span className="font-bold text-sm text-white">{t('help_setting')}</span>
           </div>
           <ChevronRightIcon size={16} className="text-[#686560]" />
         </button>
 
-        {/* 6. Biz haqimizda */}
+        {/* 8. Biz haqimizda */}
         <button
           onClick={() => setShowAboutModal(true)}
           className="p-3.5 rounded-2xl bg-[#21201d] hover:bg-[#282622] border border-[#383531] flex items-center justify-between shadow-sm text-left active:scale-[0.99] transition-all"
@@ -146,11 +290,90 @@ export default function SettingsScreen({ onBack }: SettingsScreenProps) {
             <div className="w-8 h-8 rounded-lg bg-[#2c2a26] border border-[#3d3a34] flex items-center justify-center text-[#e0dfdc]">
               <UserIcon size={18} />
             </div>
-            <span className="font-bold text-sm text-white">Biz haqimizda & Patent</span>
+            <span className="font-bold text-sm text-white">{t('about_setting')}</span>
           </div>
           <ChevronRightIcon size={16} className="text-[#686560]" />
         </button>
+
+        {/* Ilova versiyasi (oddiy belgi) */}
+        <div className="text-center text-xs text-[#686560] py-3 select-none">
+          Nur Shaxmat 100 • v1.0.8
+        </div>
       </main>
+
+      {/* Til Tanlash Modali */}
+      {showLangModal && (
+        <div className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4 animate-fadeIn">
+          <div className="bg-slate-900 border border-slate-700 rounded-3xl p-6 max-w-xs w-full space-y-4">
+            <h3 className="text-base font-black text-slate-100">{t('select_lang_title')}</h3>
+            <div className="space-y-2">
+              {SUPPORTED_LANGUAGES.map((lang) => (
+                <button
+                  key={lang.code}
+                  onClick={() => {
+                    setAppLanguage(lang.code);
+                    setCurrentLangState(lang.code);
+                    setShowLangModal(false);
+                  }}
+                  className={`w-full py-2.5 px-4 rounded-xl text-xs font-bold text-left flex items-center justify-between border transition-all ${
+                    currentLang === lang.code
+                      ? 'bg-amber-500/20 text-amber-300 border-amber-500/60'
+                      : 'bg-slate-950/60 text-slate-300 border-slate-800 hover:bg-slate-800'
+                  }`}
+                >
+                  <span className="flex items-center gap-2">
+                    <span className="text-base">{lang.flag}</span>
+                    <span>{lang.name}</span>
+                  </span>
+                  {currentLang === lang.code && <span>✓</span>}
+                </button>
+              ))}
+            </div>
+            <button
+              onClick={() => setShowLangModal(false)}
+              className="w-full py-2 bg-slate-800 text-slate-300 rounded-xl text-xs font-bold"
+            >
+              {t('close_btn')}
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* Tovush Mavzusi Modali */}
+      {showSoundThemeModal && (
+        <div className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4 animate-fadeIn">
+          <div className="bg-slate-900 border border-slate-700 rounded-3xl p-6 max-w-xs w-full space-y-4">
+            <h3 className="text-base font-black text-slate-100">{t('select_sound_theme_title')}</h3>
+            <div className="space-y-2">
+              {(['wood', 'marble', 'digital', 'crystal'] as SoundTheme[]).map((th) => (
+                <button
+                  key={th}
+                  onClick={() => {
+                    setSoundTheme(th);
+                    setSoundThemeState(th);
+                    testAudioTone('move');
+                    setShowSoundThemeModal(false);
+                  }}
+                  className={`w-full py-2.5 px-4 rounded-xl text-xs font-bold text-left flex items-center justify-between border transition-all ${
+                    soundTheme === th
+                      ? 'bg-amber-500/20 text-amber-300 border-amber-500/60'
+                      : 'bg-slate-950/60 text-slate-300 border-slate-800 hover:bg-slate-800'
+                  }`}
+                >
+                  <span>{SOUND_THEME_NAMES[th]}</span>
+                  {soundTheme === th && <span>✓</span>}
+                </button>
+              ))}
+            </div>
+            <button
+              onClick={() => setShowSoundThemeModal(false)}
+              className="w-full py-2 bg-slate-800 text-slate-300 rounded-xl text-xs font-bold"
+            >
+              {t('close_btn')}
+            </button>
+          </div>
+        </div>
+      )}
 
       {/* Dosqa Mavzusi Modali */}
       {showThemeModal && (
@@ -192,7 +415,7 @@ export default function SettingsScreen({ onBack }: SettingsScreenProps) {
           <div className="bg-slate-900 border border-slate-700 rounded-3xl p-6 max-w-xs w-full space-y-4">
             <h3 className="text-base font-black text-slate-100">AI Qiyinchilik Darajasi</h3>
             <div className="space-y-2">
-              {[1, 2, 3].map((depth) => (
+              {[1, 2, 3, 4].map((depth) => (
                 <button
                   key={depth}
                   onClick={() => {

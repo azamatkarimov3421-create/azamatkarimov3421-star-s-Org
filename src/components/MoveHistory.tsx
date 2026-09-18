@@ -42,7 +42,7 @@ export default function MoveHistory({ className = '' }: MoveHistoryProps) {
   };
 
   return (
-    <div className={`flex flex-col bg-slate-900/80 backdrop-blur-xl border border-slate-800 rounded-2xl shadow-2xl overflow-hidden w-full lg:w-[280px] h-[520px] transition-all ${className}`}>
+    <div className={`flex flex-col bg-[#1c1a18] border border-[#383531] rounded-2xl shadow-xl overflow-hidden w-full h-full transition-all ${className}`}>
       {/* Tablar boshqaruvi */}
       <div className="flex bg-slate-950/70 p-1.5 border-b border-slate-800/80 gap-1">
         <button

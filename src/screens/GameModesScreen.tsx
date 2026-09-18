@@ -72,7 +72,7 @@ export default function GameModesScreen({
   ];
 
   return (
-    <div className="min-h-screen w-full bg-[#262421] text-[#f1f1f1] flex flex-col font-sans select-none pb-12 max-w-md mx-auto sm:max-w-xl">
+    <div className="min-h-screen w-full bg-[#262421] text-[#f1f1f1] flex flex-col font-sans select-none pb-12 max-w-md mx-auto sm:max-w-2xl lg:max-w-4xl">
       {/* Header */}
       <header className="sticky top-0 z-30 bg-[#21201d]/95 backdrop-blur-md border-b border-[#383531] px-4 py-3 flex items-center gap-3 pt-[max(0.7rem,env(safe-area-inset-top))]">
         <button
@@ -91,7 +91,7 @@ export default function GameModesScreen({
       </header>
 
       {/* Rejimlar Ro'yxati */}
-      <main className="flex-1 px-4 py-4 flex flex-col gap-3">
+      <main className="flex-1 px-4 py-4 flex flex-col sm:grid sm:grid-cols-2 gap-3">
         {modes.map((mode) => (
           <button
             key={mode.id}

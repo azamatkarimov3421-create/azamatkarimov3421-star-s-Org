@@ -22,3 +22,11 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+# Binaries and archives
+*.apk
+*.zip
+*.bat
+.env
+test.txt
+

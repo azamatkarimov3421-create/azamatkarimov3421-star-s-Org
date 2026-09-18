@@ -107,14 +107,9 @@ function generateNurMoves(board: Board, from: Square, piece: Piece): Move[] {
         moves.push({ from, to, piece });
       } else if (target.color !== piece.color) {
         moves.push({ from, to, piece, capturedPiece: target });
-        // Dushman donini yegandan so'ng ham davom etadi (sakrab o'tib yeydi)
-        // Lekin faqat shu kvadratga qo'nadi, undan narisi yo'q
-        break;
+        // Nur o'z va raqib donalari ustidan oshib o'tadi, to'xtamaydi
       } else {
-        // O'z doni — bu yo'nalishda to'xtab, lekin keyingi urinishlarda sakrab o'tadi
-        // Nur o'z donlari USTIDAN sakrashi mumkin (3 ta qadam ichida)
-        // Bu yo'nalishda tugmani o'tkazish davom etadi, lekin qo'nolmaydi
-        // (Sakrab o'tadi, lekin o'z doniga qo'nolmaydi)
+        // O'z doni — bu kvadratga qo'nolmaydi, lekin ustidan sakrab o'tadi
         continue;
       }
     }
@@ -125,21 +120,17 @@ function generateNurMoves(board: Board, from: Square, piece: Piece): Move[] {
 /**
  * Piyoda harakatlari:
  * - Boshlanish pozitsiyasidan (Oq: rank 1, Qora: rank 8) 1, 2, yoki 3 qadam
- * - Dushman hududida (Oq: rank 5+, Qora: rank 4-) faqat 1 qadam
+ * - Boshqa barcha holatlarda faqat 1 qadam
  * - Diagonal yeyish
  * - Yo'lda olish (En passant)
- * - Aylantirish (Rank 9 ga yetganda)
+ * - Aylantirish (Rank 9/0 ga yetganda)
  */
 function generatePawnMoves(board: Board, from: Square, piece: Piece, state: GameState): Move[] {
   const moves: Move[] = [];
   const dir = piece.color === 'white' ? 1 : -1;
   const startRank = piece.color === 'white' ? 1 : 8;
-  // Dushman hududi: Oq uchun rank 5-9 (index 5-9), Qora uchun rank 0-4 (index 0-4)
-  const isInEnemyTerritory = piece.color === 'white'
-    ? from.rank >= 5
-    : from.rank <= 4;
-
-  const maxSteps = (from.rank === startRank && !isInEnemyTerritory) ? 3 : 1;
+  // Piyoda faqat birinchi yurishida (boshlang'ich gorizontaldan) 1-3 qadam yura oladi
+  const maxSteps = from.rank === startRank ? 3 : 1;
 
   // Oldinga harakatlar
   for (let steps = 1; steps <= maxSteps; steps++) {
@@ -242,19 +233,13 @@ export function isSquareAttacked(board: Board, sq: Square, byColor: Color): bool
     }
   }
 
-  // Nur (1-2-3 qadam to'g'ri yo'nalishda qo'nish)
+  // Nur (1-2-3 qadam to'g'ri yo'nalishda sakrab hujum qiladi)
   for (const [dr, df] of [[1,0],[-1,0],[0,1],[0,-1]] as [number,number][]) {
     for (let steps = 1; steps <= 3; steps++) {
       const r = sq.rank + dr * steps, f = sq.file + df * steps;
       if (r < 0 || r > 9 || f < 0 || f > 9) break;
       const p = board[r][f];
-      if (p) {
-        if (p.color === byColor && p.type === 'Nur') return true;
-        // Dushman doni bo'lsa, Nur undan o'tolmaydi (maqsad kvadrat bu)
-        // o'z doni bo'lsa, Nur sakrab o'tadi
-        if (p.color !== byColor) break;
-        // o'z doni — davom etadi (Nur sakrashi)
-      }
+      if (p && p.color === byColor && p.type === 'Nur') return true;
     }
   }
 

@@ -10,7 +10,6 @@ import { onlineManager } from './services/onlineService';
 // 8 ta Asosiy Ekranlar
 import SplashScreen from './screens/SplashScreen';
 import HomeScreen from './screens/HomeScreen';
-import GameModesScreen from './screens/GameModesScreen';
 import GameScreen from './screens/GameScreen';
 import SettingsScreen from './screens/SettingsScreen';
 import ProfileScreen from './screens/ProfileScreen';
@@ -27,7 +26,6 @@ import OnlineRoomModal from './components/OnlineRoomModal';
 export type ScreenType =
   | 'splash'
   | 'home'
-  | 'game_modes'
   | 'game'
   | 'settings'
   | 'profile'
@@ -44,7 +42,7 @@ function AppContent() {
   const [showOnlineModal, setShowOnlineModal] = useState(false);
   const [initialRoom, setInitialRoom] = useState<string>('');
 
-  // 1. URL dan ?room=... parametrini tekshirish
+  // 2. URL dan ?room=... parametrini tekshirish
   useEffect(() => {
     try {
       const params = new URLSearchParams(window.location.search);
@@ -72,12 +70,39 @@ function AppContent() {
     return unsub;
   }, [dispatch]);
 
-  // 3. Onlayn xonaga muvaffaqiyatli ulanganda avtomatik o'yin ekraniga o'tish
-  useEffect(() => {
-    if (gameMode === 'online' && roomCode && currentScreen !== 'game') {
-      setCurrentScreen('game');
+  const handleBackFromGame = () => {
+    if (gameMode === 'online' || roomCode) {
+      onlineManager.disconnect();
+      dispatch({ type: 'SET_ONLINE_ROOM', roomCode: null, myColor: null });
+      dispatch({ type: 'SET_GAME_MODE', mode: 'vsAI' });
     }
-  }, [gameMode, roomCode, currentScreen]);
+    navigateTo('home');
+  };
+
+  // Android tizim ortga tugmasi (Back button) va modallarni yopish
+  useEffect(() => {
+    (window as any).__onAndroidBack = () => {
+      if (showOnlineModal) {
+        setShowOnlineModal(false);
+        onlineManager.disconnect();
+        dispatch({ type: 'SET_ONLINE_ROOM', roomCode: null, myColor: null });
+        return true;
+      }
+      if (showLeaderboard) {
+        setShowLeaderboard(false);
+        return true;
+      }
+      if (currentScreen === 'game') {
+        handleBackFromGame();
+        return true;
+      }
+      if (currentScreen !== 'home') {
+        navigateTo('home');
+        return true;
+      }
+      return false;
+    };
+  }, [currentScreen, showOnlineModal, showLeaderboard, gameMode, roomCode]);
 
   // Sahifalararo o'tish yordamchisi
   const navigateTo = (screen: ScreenType) => {
@@ -107,8 +132,6 @@ function AppContent() {
   const handleSelectTab = (tab: TabType) => {
     if (tab === 'home') {
       navigateTo('home');
-    } else if (tab === 'friends') {
-      navigateTo('game_modes');
     } else if (tab === 'leaderboard') {
       setShowLeaderboard(true);
     } else if (tab === 'profile') {
@@ -119,15 +142,13 @@ function AppContent() {
   // Faol tab
   const getActiveTab = (): TabType => {
     if (currentScreen === 'profile' || currentScreen === 'achievements') return 'profile';
-    if (currentScreen === 'game_modes') return 'friends';
     return 'home';
   };
 
   // Pastki menyuni ko'rsatish sharti
   const showBottomNav =
     currentScreen === 'home' ||
-    currentScreen === 'profile' ||
-    currentScreen === 'game_modes';
+    currentScreen === 'profile';
 
   return (
     <div className="min-h-screen bg-[#262421] text-[#f1f1f1] flex flex-col font-sans select-none">
@@ -138,7 +159,6 @@ function AppContent() {
 
       {currentScreen === 'home' && (
         <HomeScreen
-          onStartGameModes={() => navigateTo('game_modes')}
           onStartVsAI={handleStartVsAI}
           onStartLocal={handleStartLocal}
           onOpenOnline={handleOpenOnline}
@@ -148,24 +168,18 @@ function AppContent() {
         />
       )}
 
-      {currentScreen === 'game_modes' && (
-        <GameModesScreen
-          onBack={() => navigateTo('home')}
-          onSelectVsAI={handleStartVsAI}
-          onSelectLocal={handleStartLocal}
-          onSelectOnline={handleOpenOnline}
-        />
-      )}
-
       {currentScreen === 'game' && (
         <GameScreen
-          onBack={() => navigateTo('home')}
+          onBack={handleBackFromGame}
           onOpenSettings={() => navigateTo('settings')}
         />
       )}
 
       {currentScreen === 'settings' && (
-        <SettingsScreen onBack={() => navigateTo(previousScreen || 'home')} />
+        <SettingsScreen
+          onBack={() => navigateTo(previousScreen || 'home')}
+          onOpenRules={() => navigateTo('rules')}
+        />
       )}
 
       {currentScreen === 'profile' && (
@@ -201,11 +215,14 @@ function AppContent() {
         isOpen={showLeaderboard}
         onClose={() => setShowLeaderboard(false)}
       />
-      <OnlineRoomModal
-        isOpen={showOnlineModal}
-        onClose={() => setShowOnlineModal(false)}
-        initialRoomCode={initialRoom}
-      />
+      {showOnlineModal && (
+        <OnlineRoomModal
+          isOpen={showOnlineModal}
+          onClose={() => setShowOnlineModal(false)}
+          onStartGame={() => navigateTo('game')}
+          initialRoomCode={initialRoom}
+        />
+      )}
     </div>
   );
 }
