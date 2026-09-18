@@ -27,6 +27,9 @@ import {
   BotIcon,
   UserIcon,
   ClockIcon,
+  PlayIcon,
+  PauseIcon,
+  StepForwardIcon,
 } from '../components/Icons';
 
 interface GameScreenProps {
@@ -36,7 +39,22 @@ interface GameScreenProps {
 
 export default function GameScreen({ onBack, onOpenSettings }: GameScreenProps) {
   const { state, dispatch } = useGame();
-  const { game, gameMode, aiColor, aiDepth, aiThinking, roomCode, onlinePlayerColor, isFlipped, is3D, history } = state;
+  const {
+    game,
+    gameMode,
+    aiColor,
+    aiDepth,
+    aiWhiteDepth,
+    aiBlackDepth,
+    aiVsAiPaused,
+    aiVsAiSpeed,
+    aiThinking,
+    roomCode,
+    onlinePlayerColor,
+    isFlipped,
+    is3D,
+    history,
+  } = state;
   const { status, currentTurn, moveHistory } = game;
 
   const [hintLoading, setHintLoading] = useState(false);
@@ -71,6 +89,8 @@ export default function GameScreen({ onBack, onOpenSettings }: GameScreenProps) 
     ? currentTurn === onlinePlayerColor
     : (gameMode === 'vsAI')
     ? currentTurn !== aiColor
+    : (gameMode === 'aiVsAi')
+    ? false
     : true;
 
   const aiThinkingRef = React.useRef(false);
@@ -129,12 +149,104 @@ export default function GameScreen({ onBack, onOpenSettings }: GameScreenProps) 
     };
   }, [currentTurn, gameMode, aiColor, isGameOver, game.moveHistory.length, aiDepth, dispatch, handleEmergencyReset]);
 
+  // Bot vs Bot (AI vs AI) avtomatik o'yin sikli
+  React.useEffect(() => {
+    if (gameMode !== 'aiVsAi') return;
+    if (isGameOver) return;
+    if (aiVsAiPaused) return;
+    if (aiThinkingRef.current) return;
+
+    aiThinkingRef.current = true;
+    dispatch({ type: 'SET_AI_THINKING', thinking: true });
+
+    let isCancelled = false;
+    const currentDepth = currentTurn === 'white' ? aiWhiteDepth : aiBlackDepth;
+    const botName = currentTurn === 'white' ? `Oq Bot (D-${aiWhiteDepth})` : `Qora Bot (D-${aiBlackDepth})`;
+
+    const watchdog = setTimeout(() => {
+      if (aiThinkingRef.current && !isCancelled) {
+        logger.logWarn('AI_ENGINE', `${botName} hisoblash vaqti tugadi. Avtomatik tiklanmoqda...`);
+        handleEmergencyReset();
+      }
+    }, 4000);
+
+    const timer = setTimeout(async () => {
+      try {
+        const t0 = Date.now();
+        const bestMove = await getBestMoveAsync(game, currentDepth);
+        const dt = Date.now() - t0;
+        if (!isCancelled && bestMove) {
+          logger.logInfo('AI_ENGINE', `${botName} yurdi: (${bestMove.from.file},${bestMove.from.rank}) -> (${bestMove.to.file},${bestMove.to.rank}) [${dt}ms]`);
+          dispatch({ type: 'APPLY_MOVE', move: bestMove });
+        }
+      } catch (e: any) {
+        logger.logError('AI_ENGINE', `${botName} hisoblashida xatolik yuz berdi`, e);
+      } finally {
+        clearTimeout(watchdog);
+        aiThinkingRef.current = false;
+        dispatch({ type: 'SET_AI_THINKING', thinking: false });
+      }
+    }, Math.max(80, aiVsAiSpeed));
+
+    return () => {
+      isCancelled = true;
+      clearTimeout(timer);
+      clearTimeout(watchdog);
+      aiThinkingRef.current = false;
+      dispatch({ type: 'SET_AI_THINKING', thinking: false });
+    };
+  }, [
+    gameMode,
+    currentTurn,
+    isGameOver,
+    aiVsAiPaused,
+    aiWhiteDepth,
+    aiBlackDepth,
+    aiVsAiSpeed,
+    game.moveHistory.length,
+    dispatch,
+    handleEmergencyReset,
+  ]);
+
+  // Bot vs Bot rejimida qo'lda 1 qadam oldinga yurish (Step)
+  const handleStepAiVsAi = async () => {
+    if (gameMode !== 'aiVsAi' || isGameOver || aiThinkingRef.current) return;
+    aiThinkingRef.current = true;
+    dispatch({ type: 'SET_AI_THINKING', thinking: true });
+    const currentDepth = currentTurn === 'white' ? aiWhiteDepth : aiBlackDepth;
+    const botName = currentTurn === 'white' ? `Oq Bot (D-${aiWhiteDepth})` : `Qora Bot (D-${aiBlackDepth})`;
+    try {
+      const t0 = Date.now();
+      const bestMove = await getBestMoveAsync(game, currentDepth);
+      const dt = Date.now() - t0;
+      if (bestMove) {
+        logger.logInfo('AI_ENGINE', `${botName} [Qadam]: (${bestMove.from.file},${bestMove.from.rank}) -> (${bestMove.to.file},${bestMove.to.rank}) [${dt}ms]`);
+        dispatch({ type: 'APPLY_MOVE', move: bestMove });
+      }
+    } catch (e: any) {
+      logger.logError('AI_ENGINE', `${botName} qadamida xatolik yuz berdi`, e);
+    } finally {
+      aiThinkingRef.current = false;
+      dispatch({ type: 'SET_AI_THINKING', thinking: false });
+    }
+  };
+
+  // Bot vs Bot tezligini navbat bilan almashtirish (250 -> 600 -> 1200 ms)
+  const handleCycleSpeed = () => {
+    const speeds = [250, 600, 1200];
+    const idx = speeds.indexOf(aiVsAiSpeed);
+    const nextSpeed = speeds[(idx + 1) % speeds.length] || 600;
+    dispatch({ type: 'SET_AI_VS_AI_SPEED', speed: nextSpeed });
+  };
+
   // Sarlavha matni
   const modeTitle =
     gameMode === 'online'
       ? `Onlayn #${roomCode || ''}`
       : gameMode === 'vsAI'
       ? 'Kompyuter bilan'
+      : gameMode === 'aiVsAi'
+      ? 'Bot vs Bot (Avtomat)'
       : "Doʻst bilan";
 
   // Maslahat olish
@@ -164,18 +276,36 @@ export default function GameScreen({ onBack, onOpenSettings }: GameScreenProps) 
     }
   };
 
-  // Raqib ma'lumotlari
+  // Yuqori va pastki o'yinchilar ranglari
+  const topColor = isFlipped ? 'white' : 'black';
+  const bottomColor = isFlipped ? 'black' : 'white';
+
+  // Raqib va pastki o'yinchi ma'lumotlari
   const opponentName =
     gameMode === 'online'
       ? 'Raqib'
       : gameMode === 'vsAI'
       ? 'Nur Bot (AI)'
+      : gameMode === 'aiVsAi'
+      ? (topColor === 'black' ? `Qora Bot (D-${aiBlackDepth})` : `Oq Bot (D-${aiWhiteDepth})`)
       : '2-Oʻyinchi';
-  const opponentRating = gameMode === 'online' ? 1520 : 1500;
 
-  // Yuqori va pastki o'yinchilar ranglari
-  const topColor = isFlipped ? 'white' : 'black';
-  const bottomColor = isFlipped ? 'black' : 'white';
+  const opponentRating =
+    gameMode === 'online'
+      ? 1520
+      : gameMode === 'aiVsAi'
+      ? (topColor === 'black' ? aiBlackDepth * 400 + 800 : aiWhiteDepth * 400 + 800)
+      : 1500;
+
+  const bottomName =
+    gameMode === 'aiVsAi'
+      ? (bottomColor === 'white' ? `Oq Bot (D-${aiWhiteDepth})` : `Qora Bot (D-${aiBlackDepth})`)
+      : (userProfile.name || 'Siz');
+
+  const bottomRating =
+    gameMode === 'aiVsAi'
+      ? (bottomColor === 'white' ? aiWhiteDepth * 400 + 800 : aiBlackDepth * 400 + 800)
+      : userProfile.rating;
 
   const isTopTurn = currentTurn === topColor && !isGameOver;
   const isBottomTurn = currentTurn === bottomColor && !isGameOver;
@@ -347,7 +477,7 @@ export default function GameScreen({ onBack, onOpenSettings }: GameScreenProps) 
           >
             <div className="flex items-center gap-2">
               <div className="w-8 h-8 rounded-lg bg-[#2c2a26] border border-[#3d3a34] flex items-center justify-center text-[#c3c2be]">
-                {topColor === 'black' ? (
+                {topColor === 'black' || gameMode === 'aiVsAi' ? (
                   <BotIcon size={18} className="text-[#81b64c]" />
                 ) : (
                   <UserIcon size={18} className="text-[#c3c2be]" />
@@ -361,15 +491,20 @@ export default function GameScreen({ onBack, onOpenSettings }: GameScreenProps) 
                   <span className="text-[10px] font-bold text-[#81b64c] bg-[#81b64c]/15 px-1.5 py-0.2 rounded">
                     {topColor === 'white' ? 'Oq' : 'Qora'}
                   </span>
-                  {gameMode === 'vsAI' && aiThinking && (
+                  {(gameMode === 'vsAI' || gameMode === 'aiVsAi') && isTopTurn && aiThinking && (
                     <span className="text-[10px] font-bold text-amber-400 bg-amber-400/15 px-1.5 py-0.2 rounded flex items-center gap-1 animate-pulse">
                       <span className="w-1.5 h-1.5 rounded-full bg-amber-400 animate-ping" />
                       Oʻylamoqda...
                     </span>
                   )}
+                  {gameMode === 'aiVsAi' && isTopTurn && aiVsAiPaused && !isGameOver && (
+                    <span className="text-[10px] font-bold text-zinc-400 bg-zinc-800 px-1.5 py-0.2 rounded">
+                      Pauzada
+                    </span>
+                  )}
                 </div>
                 <div className="text-[10px] text-[#9b9893] font-mono leading-none">
-                  {opponentRating} reyting
+                  {opponentRating} {gameMode === 'aiVsAi' ? '' : 'reyting'}
                 </div>
               </div>
             </div>
@@ -439,19 +574,34 @@ export default function GameScreen({ onBack, onOpenSettings }: GameScreenProps) 
           >
             <div className="flex items-center gap-2">
               <div className="w-8 h-8 rounded-lg bg-[#2c2a26] border border-[#3d3a34] flex items-center justify-center text-[#81b64c]">
-                <UserIcon size={18} />
+                {gameMode === 'aiVsAi' ? (
+                  <BotIcon size={18} className="text-[#81b64c]" />
+                ) : (
+                  <UserIcon size={18} />
+                )}
               </div>
               <div>
                 <div className="flex items-center gap-1.5">
                   <span className="font-bold text-xs sm:text-sm text-white">
-                    {userProfile.name || 'Siz'}
+                    {bottomName}
                   </span>
                   <span className="text-[10px] font-bold text-[#81b64c] bg-[#81b64c]/15 px-1.5 py-0.2 rounded">
                     {bottomColor === 'white' ? 'Oq' : 'Qora'}
                   </span>
+                  {gameMode === 'aiVsAi' && isBottomTurn && aiThinking && (
+                    <span className="text-[10px] font-bold text-amber-400 bg-amber-400/15 px-1.5 py-0.2 rounded flex items-center gap-1 animate-pulse">
+                      <span className="w-1.5 h-1.5 rounded-full bg-amber-400 animate-ping" />
+                      Oʻylamoqda...
+                    </span>
+                  )}
+                  {gameMode === 'aiVsAi' && isBottomTurn && aiVsAiPaused && !isGameOver && (
+                    <span className="text-[10px] font-bold text-zinc-400 bg-zinc-800 px-1.5 py-0.2 rounded">
+                      Pauzada
+                    </span>
+                  )}
                 </div>
                 <div className="text-[10px] text-[#81b64c] font-mono font-semibold leading-none">
-                  {userProfile.rating} reyting
+                  {bottomRating} {gameMode === 'aiVsAi' ? '' : 'reyting'}
                 </div>
               </div>
             </div>
@@ -510,62 +660,129 @@ export default function GameScreen({ onBack, onOpenSettings }: GameScreenProps) 
 
           {/* Sidebar Pastki: Boshqaruv Tugmalari */}
           <div className="shrink-0 pt-2.5 border-t border-[#383531] space-y-2">
-            <div className="grid grid-cols-2 gap-2">
-              <button
-                onClick={() => dispatch({ type: 'UNDO' })}
-                disabled={history.length === 0 || isGameOver || gameMode === 'online'}
-                className="py-2.5 px-3 rounded-xl bg-[#2b2926] hover:bg-[#383531] disabled:opacity-30 border border-[#3d3a34] text-[#c3c2be] hover:text-white font-bold text-xs flex items-center justify-center gap-2 transition-all shadow-[0_2px_0_#1a1917] active:translate-y-0.5 cursor-pointer"
-              >
-                <RotateCcwIcon size={16} />
-                <span>Bekor qilish</span>
-              </button>
+            {gameMode === 'aiVsAi' ? (
+              <div className="space-y-2">
+                <div className="grid grid-cols-2 gap-2">
+                  {/* Play / Pause */}
+                  <button
+                    onClick={() => dispatch({ type: 'TOGGLE_AI_VS_AI_PAUSE' })}
+                    disabled={isGameOver}
+                    className={`py-2.5 px-3 rounded-xl border font-black text-xs flex items-center justify-center gap-2 transition-all cursor-pointer shadow-md active:scale-95 ${
+                      aiVsAiPaused
+                        ? 'bg-emerald-600 hover:bg-emerald-500 text-slate-950 border-emerald-400'
+                        : 'bg-amber-600/80 hover:bg-amber-500 text-white border-amber-500'
+                    }`}
+                  >
+                    {aiVsAiPaused ? <PlayIcon size={16} /> : <PauseIcon size={16} />}
+                    <span>{aiVsAiPaused ? 'Davom (Play)' : 'Pauza'}</span>
+                  </button>
 
-              <button
-                onClick={handleGetHint}
-                disabled={isGameOver || hintLoading}
-                className="py-2.5 px-3 rounded-xl bg-[#2b2926] hover:bg-[#383531] disabled:opacity-30 border border-[#3d3a34] text-[#81b64c] hover:text-[#99cc59] font-bold text-xs flex items-center justify-center gap-2 transition-all shadow-[0_2px_0_#1a1917] active:translate-y-0.5 cursor-pointer"
-              >
-                <LightbulbIcon size={16} />
-                <span>{hintLoading ? '...' : 'Maslahat'}</span>
-              </button>
-            </div>
+                  {/* Bitta qadam (Step) */}
+                  <button
+                    onClick={handleStepAiVsAi}
+                    disabled={isGameOver || aiThinking}
+                    className="py-2.5 px-3 rounded-xl bg-[#2b2926] hover:bg-[#383531] disabled:opacity-30 border border-[#3d3a34] text-sky-400 hover:text-sky-300 font-bold text-xs flex items-center justify-center gap-2 transition-all shadow-[0_2px_0_#1a1917] active:translate-y-0.5 cursor-pointer"
+                    title="Bitta yurish qildirish"
+                  >
+                    <StepForwardIcon size={16} />
+                    <span>Qadam</span>
+                  </button>
+                </div>
 
-            <div className="grid grid-cols-3 gap-2">
-              <button
-                onClick={() => dispatch({ type: 'TOGGLE_FLIP' })}
-                className="py-2 px-1.5 rounded-xl bg-[#2b2926] hover:bg-[#383531] border border-[#3d3a34] text-[#c3c2be] hover:text-white font-bold text-xs flex items-center justify-center gap-1.5 transition-all shadow-[0_2px_0_#1a1917] active:translate-y-0.5 cursor-pointer"
-                title="Doskani aylantirish"
-              >
-                <RotateCwIcon size={14} />
-                <span className="text-[11px]">Aylantir</span>
-              </button>
+                <div className="grid grid-cols-3 gap-2">
+                  {/* Tezlik */}
+                  <button
+                    onClick={handleCycleSpeed}
+                    className="py-2 px-1 rounded-xl bg-[#2b2926] hover:bg-[#383531] border border-[#3d3a34] text-amber-300 hover:text-amber-200 font-bold text-xs flex items-center justify-center gap-1 transition-all cursor-pointer"
+                    title="Yurishlar tezligini almashtirish"
+                  >
+                    <span>⚡</span>
+                    <span className="text-[11px]">{aiVsAiSpeed}ms</span>
+                  </button>
 
-              <button
-                onClick={() => dispatch({ type: 'OFFER_DRAW' })}
-                disabled={isGameOver}
-                className="py-2 px-1.5 rounded-xl bg-[#2b2926] hover:bg-[#383531] disabled:opacity-30 border border-[#3d3a34] text-[#5dade2] hover:text-[#7fb3d5] font-bold text-xs flex items-center justify-center gap-1.5 transition-all shadow-[0_2px_0_#1a1917] active:translate-y-0.5 cursor-pointer"
-                title="Durang taklif qilish"
-              >
-                <HandshakeIcon size={14} />
-                <span className="text-[11px]">Durang</span>
-              </button>
+                  {/* Qayta jang */}
+                  <button
+                    onClick={() => dispatch({ type: 'NEW_GAME' })}
+                    className="py-2 px-1 rounded-xl bg-[#2b2926] hover:bg-[#383531] border border-[#3d3a34] text-[#c3c2be] hover:text-white font-bold text-xs flex items-center justify-center gap-1 transition-all cursor-pointer"
+                    title="Yangi jangni boshlash"
+                  >
+                    <RotateCwIcon size={14} />
+                    <span className="text-[11px]">Qayta</span>
+                  </button>
 
-              <button
-                onClick={() => dispatch({ type: 'RESIGN' })}
-                disabled={isGameOver}
-                className="py-2 px-1.5 rounded-xl bg-[#2b2926] hover:bg-[#383531] disabled:opacity-30 border border-[#3d3a34] text-[#e74c3c] hover:text-[#ec7063] font-bold text-xs flex items-center justify-center gap-1.5 transition-all shadow-[0_2px_0_#1a1917] active:translate-y-0.5 cursor-pointer"
-                title="Taslim bo'lish"
-              >
-                <FlagIcon size={14} />
-                <span className="text-[11px]">Taslim</span>
-              </button>
-            </div>
+                  {/* To'xtatish */}
+                  <button
+                    onClick={() => dispatch({ type: 'RESIGN' })}
+                    disabled={isGameOver}
+                    className="py-2 px-1 rounded-xl bg-[#2b2926] hover:bg-[#383531] disabled:opacity-30 border border-[#3d3a34] text-[#e74c3c] hover:text-[#ec7063] font-bold text-xs flex items-center justify-center gap-1 transition-all cursor-pointer"
+                    title="O'yinni to'xtatish"
+                  >
+                    <FlagIcon size={14} />
+                    <span className="text-[11px]">Toʻxtat</span>
+                  </button>
+                </div>
+              </div>
+            ) : (
+              // Standart tugmalar (PVP va vsAI uchun)
+              <>
+                <div className="grid grid-cols-2 gap-2">
+                  <button
+                    onClick={() => dispatch({ type: 'UNDO' })}
+                    disabled={history.length === 0 || isGameOver || gameMode === 'online'}
+                    className="py-2.5 px-3 rounded-xl bg-[#2b2926] hover:bg-[#383531] disabled:opacity-30 border border-[#3d3a34] text-[#c3c2be] hover:text-white font-bold text-xs flex items-center justify-center gap-2 transition-all shadow-[0_2px_0_#1a1917] active:translate-y-0.5 cursor-pointer"
+                  >
+                    <RotateCcwIcon size={16} />
+                    <span>Bekor qilish</span>
+                  </button>
+
+                  <button
+                    onClick={handleGetHint}
+                    disabled={isGameOver || hintLoading}
+                    className="py-2.5 px-3 rounded-xl bg-[#2b2926] hover:bg-[#383531] disabled:opacity-30 border border-[#3d3a34] text-[#81b64c] hover:text-[#99cc59] font-bold text-xs flex items-center justify-center gap-2 transition-all shadow-[0_2px_0_#1a1917] active:translate-y-0.5 cursor-pointer"
+                  >
+                    <LightbulbIcon size={16} />
+                    <span>{hintLoading ? '...' : 'Maslahat'}</span>
+                  </button>
+                </div>
+
+                <div className="grid grid-cols-3 gap-2">
+                  <button
+                    onClick={() => dispatch({ type: 'TOGGLE_FLIP' })}
+                    className="py-2 px-1.5 rounded-xl bg-[#2b2926] hover:bg-[#383531] border border-[#3d3a34] text-[#c3c2be] hover:text-white font-bold text-xs flex items-center justify-center gap-1.5 transition-all shadow-[0_2px_0_#1a1917] active:translate-y-0.5 cursor-pointer"
+                    title="Doskani aylantirish"
+                  >
+                    <RotateCwIcon size={14} />
+                    <span className="text-[11px]">Aylantir</span>
+                  </button>
+
+                  <button
+                    onClick={() => dispatch({ type: 'OFFER_DRAW' })}
+                    disabled={isGameOver}
+                    className="py-2 px-1.5 rounded-xl bg-[#2b2926] hover:bg-[#383531] disabled:opacity-30 border border-[#3d3a34] text-[#5dade2] hover:text-[#7fb3d5] font-bold text-xs flex items-center justify-center gap-1.5 transition-all shadow-[0_2px_0_#1a1917] active:translate-y-0.5 cursor-pointer"
+                    title="Durang taklif qilish"
+                  >
+                    <HandshakeIcon size={14} />
+                    <span className="text-[11px]">Durang</span>
+                  </button>
+
+                  <button
+                    onClick={() => dispatch({ type: 'RESIGN' })}
+                    disabled={isGameOver}
+                    className="py-2 px-1.5 rounded-xl bg-[#2b2926] hover:bg-[#383531] disabled:opacity-30 border border-[#3d3a34] text-[#e74c3c] hover:text-[#ec7063] font-bold text-xs flex items-center justify-center gap-1.5 transition-all shadow-[0_2px_0_#1a1917] active:translate-y-0.5 cursor-pointer"
+                    title="Taslim bo'lish"
+                  >
+                    <FlagIcon size={14} />
+                    <span className="text-[11px]">Taslim</span>
+                  </button>
+                </div>
+              </>
+            )}
 
             {/* Agar Bot o'ylanib qolsa — to'g'ridan-to'g'ri to'xtatish va tiklash tugmasi */}
             {aiThinking && (
               <button
                 onClick={handleEmergencyReset}
-                className="w-full py-1.5 px-2 rounded-xl bg-amber-500/20 hover:bg-amber-500/30 border border-amber-500/50 text-amber-300 font-bold text-xs flex items-center justify-center gap-1.5 transition-all animate-pulse"
+                className="w-full py-1.5 px-2 rounded-xl bg-amber-500/20 hover:bg-amber-500/30 border border-amber-500/50 text-amber-300 font-bold text-xs flex items-center justify-center gap-1.5 transition-all animate-pulse cursor-pointer"
                 title="Bot hisoblashini to'xtatish va doskani tiklash"
               >
                 <span>⚡ Majburiy tiklash (Unfreeze)</span>
@@ -577,55 +794,101 @@ export default function GameScreen({ onBack, onOpenSettings }: GameScreenProps) 
 
       {/* ── 3. CHESS.COM USLUBIDAGI TAKTIL PASTKI TUGMALAR (FAQAT MOBILDA) ─────────── */}
       <footer className="px-3 pt-0.5 shrink-0 md:hidden max-w-md mx-auto w-full">
-        <div className="grid grid-cols-4 gap-2">
-          {/* Bekor qilish */}
-          <button
-            onClick={() => dispatch({ type: 'UNDO' })}
-            disabled={history.length === 0 || isGameOver || gameMode === 'online'}
-            className="py-2 px-2 rounded-xl bg-[#2b2926] hover:bg-[#383531] disabled:opacity-30 border border-[#3d3a34] text-[#c3c2be] hover:text-white font-bold text-xs flex flex-col items-center justify-center gap-1 transition-all shadow-[0_2px_0_#1a1917] active:translate-y-0.5 active:shadow-[0_0_0_#1a1917]"
-            title="Yurishni bekor qilish"
-          >
-            <RotateCcwIcon size={18} />
-            <span className="text-[10px]">Bekor</span>
-          </button>
+        {gameMode === 'aiVsAi' ? (
+          <div className="grid grid-cols-4 gap-2">
+            {/* Play / Pause */}
+            <button
+              onClick={() => dispatch({ type: 'TOGGLE_AI_VS_AI_PAUSE' })}
+              disabled={isGameOver}
+              className={`py-2 px-2 rounded-xl border font-bold text-xs flex flex-col items-center justify-center gap-1 transition-all shadow-[0_2px_0_#1a1917] active:translate-y-0.5 ${
+                aiVsAiPaused
+                  ? 'bg-emerald-600 text-slate-950 border-emerald-400'
+                  : 'bg-amber-600/80 text-white border-amber-500'
+              }`}
+            >
+              {aiVsAiPaused ? <PlayIcon size={18} /> : <PauseIcon size={18} />}
+              <span className="text-[10px]">{aiVsAiPaused ? 'Davom' : 'Pauza'}</span>
+            </button>
 
-          {/* Maslahat */}
-          <button
-            onClick={handleGetHint}
-            disabled={isGameOver || hintLoading}
-            className="py-2.5 px-2 rounded-xl bg-[#2b2926] hover:bg-[#383531] disabled:opacity-30 border border-[#3d3a34] text-[#81b64c] hover:text-[#99cc59] font-bold text-xs flex flex-col items-center justify-center gap-1 transition-all shadow-[0_2px_0_#1a1917] active:translate-y-0.5 active:shadow-[0_0_0_#1a1917]"
-            title="Maslahat"
-          >
-            <LightbulbIcon size={18} />
-            <span className="text-[10px]">{hintLoading ? '...' : 'Maslahat'}</span>
-          </button>
+            {/* Step */}
+            <button
+              onClick={handleStepAiVsAi}
+              disabled={isGameOver || aiThinking}
+              className="py-2 px-2 rounded-xl bg-[#2b2926] hover:bg-[#383531] disabled:opacity-30 border border-[#3d3a34] text-sky-400 font-bold text-xs flex flex-col items-center justify-center gap-1 transition-all shadow-[0_2px_0_#1a1917] active:translate-y-0.5"
+            >
+              <StepForwardIcon size={18} />
+              <span className="text-[10px]">Qadam</span>
+            </button>
 
-          {/* Durang taklif */}
-          <button
-            onClick={() => {
-              dispatch({ type: 'OFFER_DRAW' });
-            }}
-            disabled={isGameOver}
-            className="py-2.5 px-2 rounded-xl bg-[#2b2926] hover:bg-[#383531] disabled:opacity-30 border border-[#3d3a34] text-[#5dade2] hover:text-[#7fb3d5] font-bold text-xs flex flex-col items-center justify-center gap-1 transition-all shadow-[0_2px_0_#1a1917] active:translate-y-0.5 active:shadow-[0_0_0_#1a1917]"
-            title="Durang taklifi"
-          >
-            <HandshakeIcon size={18} />
-            <span className="text-[10px]">Durang</span>
-          </button>
+            {/* Tezlik */}
+            <button
+              onClick={handleCycleSpeed}
+              className="py-2 px-2 rounded-xl bg-[#2b2926] hover:bg-[#383531] border border-[#3d3a34] text-amber-300 font-bold text-xs flex flex-col items-center justify-center gap-1 transition-all shadow-[0_2px_0_#1a1917] active:translate-y-0.5"
+            >
+              <span className="text-base leading-none">⚡</span>
+              <span className="text-[10px]">{aiVsAiSpeed}ms</span>
+            </button>
 
-          {/* Taslim */}
-          <button
-            onClick={() => {
-              dispatch({ type: 'RESIGN' });
-            }}
-            disabled={isGameOver}
-            className="py-2.5 px-2 rounded-xl bg-[#2b2926] hover:bg-[#383531] disabled:opacity-30 border border-[#3d3a34] text-[#e74c3c] hover:text-[#ec7063] font-bold text-xs flex flex-col items-center justify-center gap-1 transition-all shadow-[0_2px_0_#1a1917] active:translate-y-0.5 active:shadow-[0_0_0_#1a1917]"
-            title="Taslim bo'lish"
-          >
-            <FlagIcon size={18} />
-            <span className="text-[10px]">Taslim</span>
-          </button>
-        </div>
+            {/* Qayta jang */}
+            <button
+              onClick={() => dispatch({ type: 'NEW_GAME' })}
+              className="py-2 px-2 rounded-xl bg-[#2b2926] hover:bg-[#383531] border border-[#3d3a34] text-[#c3c2be] hover:text-white font-bold text-xs flex flex-col items-center justify-center gap-1 transition-all shadow-[0_2px_0_#1a1917] active:translate-y-0.5"
+            >
+              <RotateCwIcon size={18} />
+              <span className="text-[10px]">Qayta</span>
+            </button>
+          </div>
+        ) : (
+          <div className="grid grid-cols-4 gap-2">
+            {/* Bekor qilish */}
+            <button
+              onClick={() => dispatch({ type: 'UNDO' })}
+              disabled={history.length === 0 || isGameOver || gameMode === 'online'}
+              className="py-2 px-2 rounded-xl bg-[#2b2926] hover:bg-[#383531] disabled:opacity-30 border border-[#3d3a34] text-[#c3c2be] hover:text-white font-bold text-xs flex flex-col items-center justify-center gap-1 transition-all shadow-[0_2px_0_#1a1917] active:translate-y-0.5 active:shadow-[0_0_0_#1a1917]"
+              title="Yurishni bekor qilish"
+            >
+              <RotateCcwIcon size={18} />
+              <span className="text-[10px]">Bekor</span>
+            </button>
+
+            {/* Maslahat */}
+            <button
+              onClick={handleGetHint}
+              disabled={isGameOver || hintLoading}
+              className="py-2.5 px-2 rounded-xl bg-[#2b2926] hover:bg-[#383531] disabled:opacity-30 border border-[#3d3a34] text-[#81b64c] hover:text-[#99cc59] font-bold text-xs flex flex-col items-center justify-center gap-1 transition-all shadow-[0_2px_0_#1a1917] active:translate-y-0.5 active:shadow-[0_0_0_#1a1917]"
+              title="Maslahat"
+            >
+              <LightbulbIcon size={18} />
+              <span className="text-[10px]">{hintLoading ? '...' : 'Maslahat'}</span>
+            </button>
+
+            {/* Durang taklif */}
+            <button
+              onClick={() => {
+                dispatch({ type: 'OFFER_DRAW' });
+              }}
+              disabled={isGameOver}
+              className="py-2.5 px-2 rounded-xl bg-[#2b2926] hover:bg-[#383531] disabled:opacity-30 border border-[#3d3a34] text-[#5dade2] hover:text-[#7fb3d5] font-bold text-xs flex flex-col items-center justify-center gap-1 transition-all shadow-[0_2px_0_#1a1917] active:translate-y-0.5 active:shadow-[0_0_0_#1a1917]"
+              title="Durang taklifi"
+            >
+              <HandshakeIcon size={18} />
+              <span className="text-[10px]">Durang</span>
+            </button>
+
+            {/* Taslim */}
+            <button
+              onClick={() => {
+                dispatch({ type: 'RESIGN' });
+              }}
+              disabled={isGameOver}
+              className="py-2.5 px-2 rounded-xl bg-[#2b2926] hover:bg-[#383531] disabled:opacity-30 border border-[#3d3a34] text-[#e74c3c] hover:text-[#ec7063] font-bold text-xs flex flex-col items-center justify-center gap-1 transition-all shadow-[0_2px_0_#1a1917] active:translate-y-0.5 active:shadow-[0_0_0_#1a1917]"
+              title="Taslim bo'lish"
+            >
+              <FlagIcon size={18} />
+              <span className="text-[10px]">Taslim</span>
+            </button>
+          </div>
+        )}
       </footer>
 
       {/* Harakatlar tarixi modali */}

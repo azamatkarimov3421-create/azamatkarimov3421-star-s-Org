@@ -10,7 +10,7 @@ import { recordGameFinished } from '../store/userProfileStore';
 
 export default function GameOverModal() {
   const { state, dispatch } = useGame();
-  const { game, gameMode, aiColor, aiDepth, onlinePlayerColor } = state;
+  const { game, gameMode, aiColor, aiDepth, aiWhiteDepth, aiBlackDepth, onlinePlayerColor } = state;
   const { status, moveHistory } = game;
 
   const [dismissed, setDismissed] = useState(false);
@@ -27,32 +27,39 @@ export default function GameOverModal() {
         winnerName = 'Oq';
       }
 
-      const whiteName = 'Oq O\'yinchi';
-      const blackName = gameMode === 'vsAI' ? `AI (Daraja: ${aiDepth})` : 'Qora O\'yinchi';
+      const whiteName = gameMode === 'aiVsAi' ? `Oq Bot (D-${aiWhiteDepth})` : 'Oq O\'yinchi';
+      const blackName =
+        gameMode === 'aiVsAi'
+          ? `Qora Bot (D-${aiBlackDepth})`
+          : gameMode === 'vsAI'
+          ? `AI (Daraja: ${aiDepth})`
+          : 'Qora O\'yinchi';
 
       saveGameResult({
         white_player: whiteName,
         black_player: blackName,
         winner: winnerName,
-        game_mode: gameMode === 'vsAI' ? 'vs AI' : '2 Kishi',
+        game_mode: gameMode === 'aiVsAi' ? 'Bot vs Bot' : gameMode === 'vsAI' ? 'vs AI' : '2 Kishi',
         total_moves: Math.ceil(moveHistory.length / 2),
         status,
       }).then(() => {
         setSaved(true);
       });
 
-      // Profil statistikasini yangilash
-      let userResult: 'win' | 'loss' | 'draw' = 'draw';
-      if (winnerName === 'Durang') {
-        userResult = 'draw';
-      } else {
-        const isPlayerWhite = gameMode === 'online' ? onlinePlayerColor === 'white' : true;
-        const isWinnerPlayer = (winnerName === 'Oq' && isPlayerWhite) || (winnerName === 'Qora' && !isPlayerWhite);
-        userResult = isWinnerPlayer ? 'win' : 'loss';
+      // Profil statistikasini faqat haqiqiy o'yinchi rejimlarida yangilash
+      if (gameMode !== 'aiVsAi') {
+        let userResult: 'win' | 'loss' | 'draw' = 'draw';
+        if (winnerName === 'Durang') {
+          userResult = 'draw';
+        } else {
+          const isPlayerWhite = gameMode === 'online' ? onlinePlayerColor === 'white' : true;
+          const isWinnerPlayer = (winnerName === 'Oq' && isPlayerWhite) || (winnerName === 'Qora' && !isPlayerWhite);
+          userResult = isWinnerPlayer ? 'win' : 'loss';
+        }
+        recordGameFinished(userResult, gameMode === 'online');
       }
-      recordGameFinished(userResult, gameMode === 'online');
     }
-  }, [status, saved, game.currentTurn, gameMode, aiDepth, moveHistory.length, onlinePlayerColor]);
+  }, [status, saved, game.currentTurn, gameMode, aiDepth, aiWhiteDepth, aiBlackDepth, moveHistory.length, onlinePlayerColor]);
 
   // O'yin davom etayotgan bo'lsa yoki modal vaqtincha yopilgan bo'lsa
   if (status === 'playing' || status === 'check' || dismissed) {
@@ -68,13 +75,18 @@ export default function GameOverModal() {
     case 'checkmate': {
       // Shohmat bo'lganda yurish navbati qaysi tomonda bo'lsa, o'sha yutqazdi
       const winner = game.currentTurn === 'white' ? 'Qora' : 'Oq';
-      const isWinnerAI = gameMode === 'vsAI' && (
-        (winner === 'Qora' && aiColor === 'black') || (winner === 'Oq' && aiColor === 'white')
-      );
-      title = `${winner} G'alaba Qozondi!`;
-      subtitle = isWinnerAI
-        ? "Sun'iy Intellekt shohmat qildi!"
-        : "Ajoyib shohmat bilan g'alaba qozonildi!";
+      if (gameMode === 'aiVsAi') {
+        title = `${winner} Bot G'alaba Qozondi!`;
+        subtitle = `${winner === 'Oq' ? `Oq Bot (D-${aiWhiteDepth})` : `Qora Bot (D-${aiBlackDepth})`} raqib shohini mot qildi!`;
+      } else {
+        const isWinnerAI = gameMode === 'vsAI' && (
+          (winner === 'Qora' && aiColor === 'black') || (winner === 'Oq' && aiColor === 'white')
+        );
+        title = `${winner} G'alaba Qozondi!`;
+        subtitle = isWinnerAI
+          ? "Sun'iy Intellekt shohmat qildi!"
+          : "Ajoyib shohmat bilan g'alaba qozonildi!";
+      }
       icon = '👑';
       badgeColor = 'bg-emerald-500/20 text-emerald-300 border-emerald-500/40';
       break;
@@ -108,14 +120,14 @@ export default function GameOverModal() {
       break;
     }
     case 'white_resigned': {
-      title = "Qora G'alaba Qozondi!";
-      subtitle = "Oq donalar taslim bo'ldi.";
+      title = gameMode === 'aiVsAi' ? "Qora Bot G'alaba Qozondi!" : "Qora G'alaba Qozondi!";
+      subtitle = gameMode === 'aiVsAi' ? "O'yin to'xtatildi." : "Oq donalar taslim bo'ldi.";
       icon = '🏳️';
       break;
     }
     case 'black_resigned': {
-      title = "Oq G'alaba Qozondi!";
-      subtitle = "Qora donalar taslim bo'ldi.";
+      title = gameMode === 'aiVsAi' ? "Oq Bot G'alaba Qozondi!" : "Oq G'alaba Qozondi!";
+      subtitle = gameMode === 'aiVsAi' ? "O'yin to'xtatildi." : "Qora donalar taslim bo'ldi.";
       icon = '🏳️';
       break;
     }

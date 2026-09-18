@@ -19,6 +19,8 @@ import { onlineManager } from '../services/onlineService';
 export type BoardTheme = 'wood' | 'emerald' | 'azure' | 'marble';
 export type TimeControl = 0 | 180 | 300 | 600; // 0=unlimited, 180=3m, 300=5m, 600=10m
 
+export type GameMode = 'pvp' | 'vsAI' | 'online' | 'aiVsAi';
+
 // ── Holat interfeysi ──────────────────────────────────
 
 export interface AppState {
@@ -27,9 +29,13 @@ export interface AppState {
   legalMoves: Move[];
   history: GameState[];           // Bekor qilish uchun tarix
   useNumericNotation: boolean;
-  gameMode: 'pvp' | 'vsAI' | 'online';
+  gameMode: GameMode;
   aiColor: 'black' | 'white';
-  aiDepth: number;                // 1=oson, 2=o'rta, 3=qiyin
+  aiDepth: number;                // 1=oson, 2=o'rta, 3=qiyin, 4=pro
+  aiWhiteDepth: number;           // Bot vs Bot rejimida oq bot darajasi (1-4)
+  aiBlackDepth: number;           // Bot vs Bot rejimida qora bot darajasi (1-4)
+  aiVsAiPaused: boolean;          // Bot vs Bot o'yini to'xtatib turilganligi
+  aiVsAiSpeed: number;            // Bot vs Bot yurishlar oralig'i (ms)
   aiThinking: boolean;
   showPromotionFor: Square | null;
   pendingMove: Move | null;
@@ -57,8 +63,12 @@ type Action =
   | { type: 'NEW_GAME' }
   | { type: 'UNDO' }
   | { type: 'TOGGLE_NOTATION' }
-  | { type: 'SET_GAME_MODE'; mode: 'pvp' | 'vsAI' | 'online' }
+  | { type: 'SET_GAME_MODE'; mode: GameMode }
   | { type: 'SET_AI_DEPTH'; depth: number }
+  | { type: 'SET_AI_VS_AI_CONFIG'; whiteDepth: number; blackDepth: number; speed?: number }
+  | { type: 'TOGGLE_AI_VS_AI_PAUSE' }
+  | { type: 'SET_AI_VS_AI_PAUSED'; paused: boolean }
+  | { type: 'SET_AI_VS_AI_SPEED'; speed: number }
   | { type: 'SET_AI_THINKING'; thinking: boolean }
   | { type: 'OFFER_DRAW' }
   | { type: 'RESIGN' }
@@ -85,6 +95,10 @@ function createInitialAppState(): AppState {
     gameMode: 'pvp',
     aiColor: 'black',
     aiDepth: 2,
+    aiWhiteDepth: 2,
+    aiBlackDepth: 2,
+    aiVsAiPaused: false,
+    aiVsAiSpeed: 600,
     aiThinking: false,
     showPromotionFor: null,
     pendingMove: null,
@@ -401,6 +415,10 @@ function gameReducer(state: AppState, action: Action): AppState {
         is3D: state.is3D,
         gameMode: state.gameMode,
         aiDepth: state.aiDepth,
+        aiWhiteDepth: state.aiWhiteDepth,
+        aiBlackDepth: state.aiBlackDepth,
+        aiVsAiSpeed: state.aiVsAiSpeed,
+        aiVsAiPaused: false,
       };
 
     case 'UNDO': {
@@ -457,6 +475,10 @@ function gameReducer(state: AppState, action: Action): AppState {
         ...createInitialAppState(),
         gameMode: action.mode,
         aiDepth: state.aiDepth,
+        aiWhiteDepth: state.aiWhiteDepth,
+        aiBlackDepth: state.aiBlackDepth,
+        aiVsAiSpeed: state.aiVsAiSpeed,
+        aiVsAiPaused: false,
         boardTheme: state.boardTheme,
         isFlipped: state.isFlipped,
         soundEnabled: state.soundEnabled,
@@ -466,6 +488,32 @@ function gameReducer(state: AppState, action: Action): AppState {
 
     case 'SET_AI_DEPTH':
       return { ...state, aiDepth: action.depth };
+
+    case 'SET_AI_VS_AI_CONFIG':
+      return {
+        ...state,
+        aiWhiteDepth: action.whiteDepth,
+        aiBlackDepth: action.blackDepth,
+        ...(action.speed !== undefined ? { aiVsAiSpeed: action.speed } : {}),
+      };
+
+    case 'TOGGLE_AI_VS_AI_PAUSE':
+      return {
+        ...state,
+        aiVsAiPaused: !state.aiVsAiPaused,
+      };
+
+    case 'SET_AI_VS_AI_PAUSED':
+      return {
+        ...state,
+        aiVsAiPaused: action.paused,
+      };
+
+    case 'SET_AI_VS_AI_SPEED':
+      return {
+        ...state,
+        aiVsAiSpeed: action.speed,
+      };
 
     case 'SET_AI_THINKING':
       return { ...state, aiThinking: action.thinking };

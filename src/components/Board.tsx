@@ -99,6 +99,9 @@ export default function Board() {
 
   // Kvadratni bosish
   const handleSquareClick = useCallback((sq: Square) => {
+    // Bot vs Bot rejimida qo'lda harakatlanish taqiqlanadi
+    if (gameMode === 'aiVsAi') return;
+
     // Bot bilan o'ynaganda bot navbati yoki bot o'ylayotgan bo'lsa
     if (gameMode === 'vsAI' && (game.currentTurn === aiColor || aiThinking)) return;
 
@@ -116,6 +119,9 @@ export default function Board() {
 
   // Drag boshlanishi
   const handleDragStart = useCallback((e: React.DragEvent, piece: Piece, from: Square) => {
+    // Bot vs Bot rejimida qo'lda harakatlanish taqiqlanadi
+    if (gameMode === 'aiVsAi') return;
+
     if (gameMode === 'vsAI' && (game.currentTurn === aiColor || aiThinking)) return;
     if (piece.color !== game.currentTurn) return;
     if (game.status !== 'playing' && game.status !== 'check') return;

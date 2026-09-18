@@ -33,11 +33,12 @@ interface PlayerCardProps {
 
 export function PlayerCard({ playerColor, position }: PlayerCardProps) {
   const { state } = useGame();
-  const { game, gameMode, aiColor, aiDepth, aiThinking } = state;
+  const { game, gameMode, aiColor, aiDepth, aiWhiteDepth, aiBlackDepth, aiThinking } = state;
   const { currentTurn, capturedByWhite, capturedByBlack, status } = game;
 
   const isWhite = playerColor === 'white';
-  const isAI = gameMode === 'vsAI' && aiColor === playerColor;
+  const isAI = (gameMode === 'vsAI' && aiColor === playerColor) || gameMode === 'aiVsAi';
+  const botDepth = isWhite ? aiWhiteDepth : aiBlackDepth;
   const isCurrentTurn = currentTurn === playerColor && status === 'playing';
 
   // Bu o'yinchi yutib olgan donlar (raqib donlari)
@@ -93,7 +94,7 @@ export function PlayerCard({ playerColor, position }: PlayerCardProps) {
           <div className="flex items-center gap-1.5">
             <span className="font-bold text-xs sm:text-sm text-slate-100 truncate max-w-[90px] sm:max-w-none">
               {isAI
-                ? `AI (${aiLabels[aiDepth]})`
+                ? `AI (${aiLabels[gameMode === 'aiVsAi' ? botDepth : aiDepth] || 'D-' + (gameMode === 'aiVsAi' ? botDepth : aiDepth)})`
                 : isWhite
                 ? "Oqlar"
                 : "Qoralar"}

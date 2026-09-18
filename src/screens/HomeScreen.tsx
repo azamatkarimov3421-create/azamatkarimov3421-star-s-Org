@@ -18,6 +18,7 @@ interface HomeScreenProps {
   onStartVsAI: () => void;
   onStartLocal: () => void;
   onOpenOnline: () => void;
+  onOpenBotVsBot: () => void;
   onOpenRules: () => void;
   onOpenStats: () => void;
   onOpenSettings: () => void;
@@ -27,6 +28,7 @@ export default function HomeScreen({
   onStartVsAI,
   onStartLocal,
   onOpenOnline,
+  onOpenBotVsBot,
   onOpenRules,
   onOpenStats,
   onOpenSettings,
@@ -41,6 +43,15 @@ export default function HomeScreen({
       icon: <BotIcon size={22} className="text-[#4ade80]" />,
       iconBg: 'bg-[#183622] border-[#275535]',
       action: onStartVsAI,
+    },
+    {
+      id: 'aiVsAi',
+      title: 'Bot vs Bot (Avtomat)',
+      subtitle: 'Botlar jangi va tahlil rejimi',
+      icon: <SwordsIcon size={22} className="text-amber-400" />,
+      iconBg: 'bg-[#332616] border-[#553c20]',
+      badge: 'YANGI',
+      action: onOpenBotVsBot,
     },
     {
       id: 'pvp',
@@ -252,9 +263,16 @@ export default function HomeScreen({
                     </div>
 
                     <div className="min-w-0">
-                      <span className="font-bold text-sm text-white group-hover:text-[#4ade80] transition-colors block truncate">
-                        {mode.title}
-                      </span>
+                      <div className="flex items-center gap-1.5">
+                        <span className="font-bold text-sm text-white group-hover:text-[#4ade80] transition-colors truncate">
+                          {mode.title}
+                        </span>
+                        {(mode as any).badge && (
+                          <span className="text-[9px] font-black px-1.5 py-0.2 rounded bg-amber-400/20 text-amber-300 border border-amber-400/30">
+                            {(mode as any).badge}
+                          </span>
+                        )}
+                      </div>
                       <p className="text-xs text-[#9ca3af] mt-0.5 font-medium truncate">
                         {mode.subtitle}
                       </p>

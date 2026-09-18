@@ -22,6 +22,7 @@ import PromotionModal from './components/PromotionModal';
 import GameOverModal from './components/GameOverModal';
 import LeaderboardModal from './components/LeaderboardModal';
 import OnlineRoomModal from './components/OnlineRoomModal';
+import BotVsBotModal from './components/BotVsBotModal';
 
 export type ScreenType =
   | 'splash'
@@ -40,6 +41,7 @@ function AppContent() {
   const [previousScreen, setPreviousScreen] = useState<ScreenType>('home');
   const [showLeaderboard, setShowLeaderboard] = useState(false);
   const [showOnlineModal, setShowOnlineModal] = useState(false);
+  const [showBotVsBotModal, setShowBotVsBotModal] = useState(false);
   const [initialRoom, setInitialRoom] = useState<string>('');
 
   // 2. URL dan ?room=... parametrini tekshirish
@@ -124,6 +126,14 @@ function AppContent() {
     navigateTo('game');
   };
 
+  const handleStartBotVsBot = (whiteDepth: number, blackDepth: number, speed: number) => {
+    setShowBotVsBotModal(false);
+    dispatch({ type: 'SET_GAME_MODE', mode: 'aiVsAi' });
+    dispatch({ type: 'SET_AI_VS_AI_CONFIG', whiteDepth, blackDepth, speed });
+    dispatch({ type: 'NEW_GAME' });
+    navigateTo('game');
+  };
+
   const handleOpenOnline = () => {
     setShowOnlineModal(true);
   };
@@ -162,6 +172,7 @@ function AppContent() {
           onStartVsAI={handleStartVsAI}
           onStartLocal={handleStartLocal}
           onOpenOnline={handleOpenOnline}
+          onOpenBotVsBot={() => setShowBotVsBotModal(true)}
           onOpenRules={() => navigateTo('rules')}
           onOpenStats={() => navigateTo('profile')}
           onOpenSettings={() => navigateTo('settings')}
@@ -223,6 +234,14 @@ function AppContent() {
           initialRoomCode={initialRoom}
         />
       )}
+      <BotVsBotModal
+        isOpen={showBotVsBotModal}
+        onClose={() => setShowBotVsBotModal(false)}
+        onStart={handleStartBotVsBot}
+        initialWhiteDepth={state.aiWhiteDepth}
+        initialBlackDepth={state.aiBlackDepth}
+        initialSpeed={state.aiVsAiSpeed}
+      />
     </div>
   );
 }
