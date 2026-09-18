@@ -63,7 +63,16 @@ function AppContent() {
 
   // 3. Google Auth sessiyasini kuzatish (OAuth redirectidan qaytish va avto-login)
   useEffect(() => {
-    const unsub = initAuth();
+    // Agar Google OAuth redirectidan qaytgan bo'lsa
+    if (window.location.hash.includes('access_token')) {
+      setCurrentScreen('profile');
+    }
+
+    const unsub = initAuth((profile) => {
+      if (profile.isGoogleLinked) {
+        setCurrentScreen('profile');
+      }
+    });
     return unsub;
   }, []);
 

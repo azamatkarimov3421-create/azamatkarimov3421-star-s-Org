@@ -24,16 +24,6 @@ export default function GoogleAuthModal({ isOpen, onClose, onSuccess }: GoogleAu
   const [showManual, setShowManual] = useState(false);
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
-  const googleBtnRef = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    if (isOpen && googleBtnRef.current) {
-      renderGoogleSignInButton(googleBtnRef.current, (p) => {
-        onSuccess(p);
-        onClose();
-      });
-    }
-  }, [isOpen]);
 
   if (!isOpen) return null;
 
@@ -109,21 +99,17 @@ export default function GoogleAuthModal({ isOpen, onClose, onSuccess }: GoogleAu
 
         {/* Asosiy Google Tugmasi */}
         <div className="space-y-3 pt-1">
-          {/* Rasmiy Google Identity Services tugmasi (agar tayyor bo'lsa) */}
-          <div ref={googleBtnRef} className="flex justify-center min-h-[44px] overflow-hidden" />
-
-          {/* Zaxira: Standart chiroyli Google tugmasi */}
           <button
             onClick={handleOAuthSignIn}
             disabled={loading}
-            className="w-full py-3.5 px-4 rounded-2xl bg-white hover:bg-zinc-100 active:scale-[0.98] text-slate-900 font-bold text-sm flex items-center justify-center gap-3 shadow-lg hover:shadow-xl transition-all cursor-pointer border border-zinc-200 disabled:opacity-50"
+            className="w-full py-4 px-4 rounded-2xl bg-white hover:bg-zinc-100 active:scale-[0.98] text-slate-900 font-extrabold text-sm flex items-center justify-center gap-3 shadow-xl hover:shadow-2xl transition-all cursor-pointer border border-zinc-200 disabled:opacity-50"
           >
             {loading ? (
               <span className="w-5 h-5 border-2 border-slate-900 border-t-transparent rounded-full animate-spin" />
             ) : (
               <GoogleIcon size={22} />
             )}
-            <span>{loading ? "Ulanmoqda..." : "Google orqali davom etish"}</span>
+            <span>{loading ? "Google tizimiga ulanmoqda..." : "Google orqali kirish"}</span>
           </button>
 
           {/* Afzalliklar */}
