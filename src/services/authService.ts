@@ -44,6 +44,11 @@ export function initAuth(onProfileChange?: (profile: UserProfile) => void): () =
       logger.logInfo('NETWORK', `Supabase Auth hodisasi: ${event}`);
       if (session?.user && (event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED' || event === 'INITIAL_SESSION')) {
         handleSupabaseUser(session.user, onProfileChange);
+        if (typeof window !== 'undefined' && window.location.hash.includes('access_token')) {
+          setTimeout(() => {
+            window.history.replaceState(null, '', window.location.pathname + window.location.search);
+          }, 600);
+        }
       } else if (event === 'SIGNED_OUT') {
         const unlinked = unlinkGoogleAccount();
         if (onProfileChange) onProfileChange(unlinked);
@@ -97,7 +102,8 @@ export async function signInWithGoogle(): Promise<GoogleAuthResult> {
     logger.logInfo('NETWORK', "Google OAuth orqali kirish boshlandi...");
     
     // Redirect URL joriy domenga mos bo'ladi (Vercel yoki Localhost)
-    const redirectTo = window.location.origin;
+    const origin = typeof window !== 'undefined' ? window.location.origin : 'https://azamatkarimov3421-star-s-org.vercel.app';
+    const redirectTo = origin.includes('localhost') ? origin : 'https://azamatkarimov3421-star-s-org.vercel.app';
 
     const { data, error } = await supabase.auth.signInWithOAuth({
       provider: 'google',
