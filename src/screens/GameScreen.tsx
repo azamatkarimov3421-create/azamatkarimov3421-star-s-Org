@@ -60,6 +60,7 @@ export default function GameScreen({ onBack, onOpenSettings }: GameScreenProps) 
   const [hintLoading, setHintLoading] = useState(false);
   const [showHistoryModal, setShowHistoryModal] = useState(false);
   const [showErrorModal, setShowErrorModal] = useState(false);
+  const [showVsAiLevelModal, setShowVsAiLevelModal] = useState(false);
   const [errorCount, setErrorCount] = useState(0);
   const [lastWarning, setLastWarning] = useState<string | null>(null);
   const userProfile = getUserProfile();
@@ -239,12 +240,15 @@ export default function GameScreen({ onBack, onOpenSettings }: GameScreenProps) 
     dispatch({ type: 'SET_AI_VS_AI_SPEED', speed: nextSpeed });
   };
 
+  const AI_LEVEL_NAMES = ['', 'Havaskor (D-1)', "Tajribali (D-2)", 'Usta (D-3)', 'Grosmeyster (D-4)'];
+  const AI_LEVEL_RATINGS = [0, 1000, 1400, 1800, 2200];
+
   // Sarlavha matni
   const modeTitle =
     gameMode === 'online'
       ? `Onlayn #${roomCode || ''}`
       : gameMode === 'vsAI'
-      ? 'Kompyuter bilan'
+      ? `Bot bilan • ${AI_LEVEL_NAMES[aiDepth] || 'AI'}`
       : gameMode === 'aiVsAi'
       ? 'Bot vs Bot (Avtomat)'
       : "Doʻst bilan";
@@ -285,7 +289,7 @@ export default function GameScreen({ onBack, onOpenSettings }: GameScreenProps) 
     gameMode === 'online'
       ? 'Raqib'
       : gameMode === 'vsAI'
-      ? 'Nur Bot (AI)'
+      ? `Nur Bot (${AI_LEVEL_NAMES[aiDepth] || 'AI'})`
       : gameMode === 'aiVsAi'
       ? (topColor === 'black' ? `Qora Bot (D-${aiBlackDepth})` : `Oq Bot (D-${aiWhiteDepth})`)
       : '2-Oʻyinchi';
@@ -293,6 +297,8 @@ export default function GameScreen({ onBack, onOpenSettings }: GameScreenProps) 
   const opponentRating =
     gameMode === 'online'
       ? 1520
+      : gameMode === 'vsAI'
+      ? (AI_LEVEL_RATINGS[aiDepth] || 1400)
       : gameMode === 'aiVsAi'
       ? (topColor === 'black' ? aiBlackDepth * 400 + 800 : aiWhiteDepth * 400 + 800)
       : 1500;
@@ -484,13 +490,23 @@ export default function GameScreen({ onBack, onOpenSettings }: GameScreenProps) 
                 )}
               </div>
               <div>
-                <div className="flex items-center gap-1.5">
+                <div className="flex items-center gap-1.5 flex-wrap">
                   <span className="font-bold text-xs sm:text-sm text-white">
                     {opponentName}
                   </span>
                   <span className="text-[10px] font-bold text-[#81b64c] bg-[#81b64c]/15 px-1.5 py-0.2 rounded">
                     {topColor === 'white' ? 'Oq' : 'Qora'}
                   </span>
+                  {gameMode === 'vsAI' && (
+                    <button
+                      onClick={() => setShowVsAiLevelModal(true)}
+                      className="text-[10px] font-bold text-amber-300 bg-amber-500/20 hover:bg-amber-500/30 border border-amber-500/40 px-1.5 py-0.2 rounded-md flex items-center gap-1 transition-all cursor-pointer active:scale-95"
+                      title="Bot darajasini almashtirish"
+                    >
+                      <span>🎯 {AI_LEVEL_NAMES[aiDepth]}</span>
+                      <span className="text-[8px] text-amber-400">✎</span>
+                    </button>
+                  )}
                   {(gameMode === 'vsAI' || gameMode === 'aiVsAi') && isTopTurn && aiThinking && (
                     <span className="text-[10px] font-bold text-amber-400 bg-amber-400/15 px-1.5 py-0.2 rounded flex items-center gap-1 animate-pulse">
                       <span className="w-1.5 h-1.5 rounded-full bg-amber-400 animate-ping" />
@@ -630,9 +646,20 @@ export default function GameScreen({ onBack, onOpenSettings }: GameScreenProps) 
                 <span className="w-2.5 h-2.5 rounded-full bg-[#81b64c] animate-pulse" />
                 <span className="font-extrabold text-sm text-white tracking-wide">{modeTitle}</span>
               </div>
-              <span className="text-[10px] font-mono text-amber-400 bg-amber-400/15 px-2 py-0.5 rounded-full font-bold">
-                10×10 DOSQA
-              </span>
+              {gameMode === 'vsAI' ? (
+                <button
+                  onClick={() => setShowVsAiLevelModal(true)}
+                  className="text-[10px] font-mono text-amber-400 bg-amber-400/15 hover:bg-amber-400/25 border border-amber-400/30 px-2 py-0.5 rounded-full font-bold flex items-center gap-1 cursor-pointer transition-all"
+                  title="Bot darajasini almashtirish"
+                >
+                  <span>{AI_LEVEL_NAMES[aiDepth]}</span>
+                  <span className="text-[8px]">✎</span>
+                </button>
+              ) : (
+                <span className="text-[10px] font-mono text-amber-400 bg-amber-400/15 px-2 py-0.5 rounded-full font-bold">
+                  10×10 DOSQA
+                </span>
+              )}
             </div>
 
             {/* Navbat & Shoh bildirishnomasi */}
@@ -920,6 +947,77 @@ export default function GameScreen({ onBack, onOpenSettings }: GameScreenProps) 
         onClose={() => setShowErrorModal(false)}
         onResetGame={handleEmergencyReset}
       />
+
+      {/* Bot darajasini o'zgartirish modali (vsAI rejimida) */}
+      {showVsAiLevelModal && (
+        <div className="fixed inset-0 bg-black/75 backdrop-blur-sm z-50 flex items-center justify-center p-4 animate-fadeIn">
+          <div className="relative w-full max-w-sm bg-[#21201d] border border-[#383531] rounded-2xl p-5 shadow-2xl flex flex-col gap-4">
+            <div className="flex items-center justify-between pb-3 border-b border-[#383531]">
+              <div className="flex items-center gap-2">
+                <BotIcon size={20} className="text-[#81b64c]" />
+                <h3 className="font-bold text-white text-base">Bot Darajasini Tanlang</h3>
+              </div>
+              <button
+                onClick={() => setShowVsAiLevelModal(false)}
+                className="w-8 h-8 rounded-lg bg-[#383531] hover:bg-[#45423c] text-[#c3c2be] hover:text-white font-bold flex items-center justify-center text-sm cursor-pointer"
+              >
+                ✕
+              </button>
+            </div>
+
+            <div className="space-y-2">
+              {[
+                { depth: 1, name: 'Havaskor', rating: '1000 reyting', desc: 'Tez va qulay oʻyin, yangi oʻrganuvchilar uchun', badge: 'D-1' },
+                { depth: 2, name: 'Tajribali', rating: '1400 reyting', desc: 'Standart taktikalar va mustahkam himoya', badge: 'D-2' },
+                { depth: 3, name: 'Usta', rating: '1800 reyting', desc: 'Chuqur hisob-kitob va xavfli kombinatsiyalar', badge: 'D-3' },
+                { depth: 4, name: 'Grosmeyster', rating: '2200 reyting', desc: 'Maksimal chuqurlikdagi mukammal tahlil', badge: 'D-4' },
+              ].map((lvl) => {
+                const isSelected = aiDepth === lvl.depth;
+                return (
+                  <button
+                    key={lvl.depth}
+                    onClick={() => {
+                      dispatch({ type: 'SET_AI_DEPTH', depth: lvl.depth });
+                      setShowVsAiLevelModal(false);
+                      logger.logInfo('UI', `Bot darajasi o'zgartirildi: ${lvl.name} (D-${lvl.depth})`);
+                    }}
+                    className={`w-full p-3 rounded-xl border text-left flex items-center justify-between transition-all cursor-pointer ${
+                      isSelected
+                        ? 'bg-[#81b64c]/20 border-[#81b64c] shadow-[0_0_12px_rgba(129,182,76,0.2)]'
+                        : 'bg-[#181715] border-[#383531] hover:border-[#45423c] hover:bg-[#262421]'
+                    }`}
+                  >
+                    <div>
+                      <div className="flex items-center gap-2">
+                        <span className={`font-bold text-sm ${isSelected ? 'text-[#81b64c]' : 'text-white'}`}>
+                          {lvl.name}
+                        </span>
+                        <span className="text-[10px] font-mono px-1.5 py-0.2 rounded bg-[#383531] text-[#c3c2be] font-bold">
+                          {lvl.badge}
+                        </span>
+                      </div>
+                      <p className="text-[11px] text-[#9b9893] mt-0.5">{lvl.desc}</p>
+                    </div>
+                    <div className="text-right shrink-0">
+                      <span className="text-xs font-mono font-bold text-amber-400 block">{lvl.rating}</span>
+                      {isSelected && (
+                        <span className="text-[10px] text-[#81b64c] font-bold">Faol ✓</span>
+                      )}
+                    </div>
+                  </button>
+                );
+              })}
+            </div>
+
+            <button
+              onClick={() => setShowVsAiLevelModal(false)}
+              className="w-full py-2.5 rounded-xl bg-[#383531] hover:bg-[#45423c] text-white font-bold text-sm transition-all cursor-pointer"
+            >
+              Yopish
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

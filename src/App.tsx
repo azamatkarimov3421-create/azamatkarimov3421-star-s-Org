@@ -23,6 +23,7 @@ import GameOverModal from './components/GameOverModal';
 import LeaderboardModal from './components/LeaderboardModal';
 import OnlineRoomModal from './components/OnlineRoomModal';
 import BotVsBotModal from './components/BotVsBotModal';
+import VsAiModal from './components/VsAiModal';
 
 export type ScreenType =
   | 'splash'
@@ -42,6 +43,7 @@ function AppContent() {
   const [showLeaderboard, setShowLeaderboard] = useState(false);
   const [showOnlineModal, setShowOnlineModal] = useState(false);
   const [showBotVsBotModal, setShowBotVsBotModal] = useState(false);
+  const [showVsAiModal, setShowVsAiModal] = useState(false);
   const [initialRoom, setInitialRoom] = useState<string>('');
 
   // 2. URL dan ?room=... parametrini tekshirish
@@ -115,7 +117,16 @@ function AppContent() {
 
   // O'yin rejimlarini boshlash
   const handleStartVsAI = () => {
+    setShowVsAiModal(true);
+  };
+
+  const handleConfirmStartVsAI = (depth: number, playerColor: 'white' | 'black') => {
+    setShowVsAiModal(false);
     dispatch({ type: 'SET_GAME_MODE', mode: 'vsAI' });
+    dispatch({ type: 'SET_AI_DEPTH', depth });
+    const botColor = playerColor === 'white' ? 'black' : 'white';
+    dispatch({ type: 'SET_AI_COLOR', color: botColor });
+    dispatch({ type: 'SET_FLIPPED', flipped: playerColor === 'black' });
     dispatch({ type: 'NEW_GAME' });
     navigateTo('game');
   };
@@ -241,6 +252,13 @@ function AppContent() {
         initialWhiteDepth={state.aiWhiteDepth}
         initialBlackDepth={state.aiBlackDepth}
         initialSpeed={state.aiVsAiSpeed}
+      />
+      <VsAiModal
+        isOpen={showVsAiModal}
+        onClose={() => setShowVsAiModal(false)}
+        onStart={handleConfirmStartVsAI}
+        initialDepth={state.aiDepth}
+        initialColor={state.isFlipped ? 'black' : 'white'}
       />
     </div>
   );

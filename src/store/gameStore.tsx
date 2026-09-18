@@ -65,6 +65,8 @@ type Action =
   | { type: 'TOGGLE_NOTATION' }
   | { type: 'SET_GAME_MODE'; mode: GameMode }
   | { type: 'SET_AI_DEPTH'; depth: number }
+  | { type: 'SET_AI_COLOR'; color: 'black' | 'white' }
+  | { type: 'SET_FLIPPED'; flipped: boolean }
   | { type: 'SET_AI_VS_AI_CONFIG'; whiteDepth: number; blackDepth: number; speed?: number }
   | { type: 'TOGGLE_AI_VS_AI_PAUSE' }
   | { type: 'SET_AI_VS_AI_PAUSED'; paused: boolean }
@@ -414,6 +416,7 @@ function gameReducer(state: AppState, action: Action): AppState {
         useNumericNotation: state.useNumericNotation,
         is3D: state.is3D,
         gameMode: state.gameMode,
+        aiColor: state.aiColor,
         aiDepth: state.aiDepth,
         aiWhiteDepth: state.aiWhiteDepth,
         aiBlackDepth: state.aiBlackDepth,
@@ -464,6 +467,9 @@ function gameReducer(state: AppState, action: Action): AppState {
     case 'TOGGLE_FLIP':
       return { ...state, isFlipped: !state.isFlipped };
 
+    case 'SET_FLIPPED':
+      return { ...state, isFlipped: action.flipped };
+
     case 'TOGGLE_SOUND': {
       const nextSound = !state.soundEnabled;
       setSoundEnabled(nextSound);
@@ -474,6 +480,7 @@ function gameReducer(state: AppState, action: Action): AppState {
       return {
         ...createInitialAppState(),
         gameMode: action.mode,
+        aiColor: state.aiColor,
         aiDepth: state.aiDepth,
         aiWhiteDepth: state.aiWhiteDepth,
         aiBlackDepth: state.aiBlackDepth,
@@ -488,6 +495,9 @@ function gameReducer(state: AppState, action: Action): AppState {
 
     case 'SET_AI_DEPTH':
       return { ...state, aiDepth: action.depth };
+
+    case 'SET_AI_COLOR':
+      return { ...state, aiColor: action.color };
 
     case 'SET_AI_VS_AI_CONFIG':
       return {

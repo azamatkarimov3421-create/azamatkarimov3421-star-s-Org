@@ -34,15 +34,13 @@ interface SettingsScreenProps {
 
 export default function SettingsScreen({ onBack, onOpenRules }: SettingsScreenProps) {
   const { state, dispatch } = useGame();
-  const { boardTheme, soundEnabled, aiDepth, useNumericNotation, is3D } = state;
-
+  const { boardTheme, soundEnabled, useNumericNotation, is3D } = state;
   const [currentLang, setCurrentLangState] = useState<AppLanguage>(getAppLanguage());
   const [soundTheme, setSoundThemeState] = useState<SoundTheme>(getSoundTheme());
   const [vibrationEnabled, setVibrationEnabled] = useState(true);
   const [showLangModal, setShowLangModal] = useState(false);
   const [showSoundThemeModal, setShowSoundThemeModal] = useState(false);
   const [showThemeModal, setShowThemeModal] = useState(false);
-  const [showAiModal, setShowAiModal] = useState(false);
   const [showAboutModal, setShowAboutModal] = useState(false);
   const [showHelpModal, setShowHelpModal] = useState(false);
 
@@ -52,8 +50,6 @@ export default function SettingsScreen({ onBack, onOpenRules }: SettingsScreenPr
     azure: 'Zangori Osmon',
     marble: 'Marmar & Obsidiyan',
   };
-
-  const AI_LABELS = ['', 'Havaskor (Oson)', "Tajribali (Oʻrta)", 'Usta (Kuchli)', 'Grosmeyster (Pro)'];
 
   const currentLangObj = SUPPORTED_LANGUAGES.find((l) => l.code === currentLang) || SUPPORTED_LANGUAGES[0];
 
@@ -244,24 +240,7 @@ export default function SettingsScreen({ onBack, onOpenRules }: SettingsScreenPr
           </div>
         </button>
 
-        {/* 6. Qiyinchilik darajasi (AI) */}
-        <button
-          onClick={() => setShowAiModal(true)}
-          className="p-3.5 rounded-2xl bg-[#21201d] hover:bg-[#282622] border border-[#383531] flex items-center justify-between shadow-sm text-left active:scale-[0.99] transition-all"
-        >
-          <div className="flex items-center gap-3">
-            <div className="w-8 h-8 rounded-lg bg-[#2c2a26] border border-[#3d3a34] flex items-center justify-center text-[#5dade2]">
-              <BotIcon size={18} />
-            </div>
-            <span className="font-bold text-sm text-white">{t('ai_difficulty_setting')}</span>
-          </div>
-          <div className="flex items-center gap-1.5 text-xs text-[#81b64c] font-bold">
-            <span>{AI_LABELS[aiDepth]}</span>
-            <ChevronRightIcon size={16} className="text-[#686560]" />
-          </div>
-        </button>
-
-        {/* 7. Yordam va Qo'llanma */}
+        {/* 6. Yordam va Qo'llanma */}
         <button
           onClick={() => {
             if (onOpenRules) {
@@ -401,40 +380,6 @@ export default function SettingsScreen({ onBack, onOpenRules }: SettingsScreenPr
             </div>
             <button
               onClick={() => setShowThemeModal(false)}
-              className="w-full py-2 bg-slate-800 text-slate-300 rounded-xl text-xs font-bold"
-            >
-              Yopish
-            </button>
-          </div>
-        </div>
-      )}
-
-      {/* AI Darajasi Modali */}
-      {showAiModal && (
-        <div className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4 animate-fadeIn">
-          <div className="bg-slate-900 border border-slate-700 rounded-3xl p-6 max-w-xs w-full space-y-4">
-            <h3 className="text-base font-black text-slate-100">AI Qiyinchilik Darajasi</h3>
-            <div className="space-y-2">
-              {[1, 2, 3, 4].map((depth) => (
-                <button
-                  key={depth}
-                  onClick={() => {
-                    dispatch({ type: 'SET_AI_DEPTH', depth });
-                    setShowAiModal(false);
-                  }}
-                  className={`w-full py-2.5 px-4 rounded-xl text-xs font-bold text-left flex items-center justify-between border transition-all ${
-                    aiDepth === depth
-                      ? 'bg-amber-500/20 text-amber-300 border-amber-500/60'
-                      : 'bg-slate-950/60 text-slate-300 border-slate-800 hover:bg-slate-800'
-                  }`}
-                >
-                  <span>{AI_LABELS[depth]}</span>
-                  {aiDepth === depth && <span>✓</span>}
-                </button>
-              ))}
-            </div>
-            <button
-              onClick={() => setShowAiModal(false)}
               className="w-full py-2 bg-slate-800 text-slate-300 rounded-xl text-xs font-bold"
             >
               Yopish
