@@ -2,13 +2,11 @@
 // NUR SHAXMAT 100 — Google Autentifikatsiya Modali (GoogleAuthModal)
 // =====================================================
 
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState } from 'react';
 import { GoogleIcon } from './Icons';
 import {
   signInWithGoogle,
-  signInWithGooglePopup,
   signInWithGoogleDirect,
-  renderGoogleSignInButton,
 } from '../services/authService';
 import { UserProfile } from '../store/userProfileStore';
 
