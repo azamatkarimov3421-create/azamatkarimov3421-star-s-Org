@@ -2,9 +2,9 @@
 // NUR SHAXMAT 100 — Google Autentifikatsiya Modali (GoogleAuthModal)
 // =====================================================
 
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { GoogleIcon } from './Icons';
-import { signInWithGoogle, signInWithGoogleDirect } from '../services/authService';
+import { signInWithGoogle, signInWithGoogleDirect, renderGoogleSignInButton } from '../services/authService';
 import { UserProfile } from '../store/userProfileStore';
 
 interface GoogleAuthModalProps {
@@ -19,6 +19,16 @@ export default function GoogleAuthModal({ isOpen, onClose, onSuccess }: GoogleAu
   const [showManual, setShowManual] = useState(false);
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
+  const googleBtnRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (isOpen && googleBtnRef.current) {
+      renderGoogleSignInButton(googleBtnRef.current, (p) => {
+        onSuccess(p);
+        onClose();
+      });
+    }
+  }, [isOpen]);
 
   if (!isOpen) return null;
 
@@ -90,6 +100,10 @@ export default function GoogleAuthModal({ isOpen, onClose, onSuccess }: GoogleAu
 
         {/* Asosiy Google Tugmasi */}
         <div className="space-y-3 pt-1">
+          {/* Rasmiy Google Identity Services tugmasi (agar tayyor bo'lsa) */}
+          <div ref={googleBtnRef} className="flex justify-center min-h-[44px] overflow-hidden" />
+
+          {/* Zaxira: Standart chiroyli Google tugmasi */}
           <button
             onClick={handleOAuthSignIn}
             disabled={loading}

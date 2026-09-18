@@ -161,3 +161,115 @@ export async function signOutGoogle(): Promise<void> {
     logger.logInfo('UI', "Google hisobidan muvaffaqiyatli chiqildi.");
   }
 }
+
+/**
+ * Rasmiy Google Client ID
+ */
+export const GOOGLE_CLIENT_ID =
+  '1001825670321-pnb75kl8fu402cnc1aub2ll7lkd5d1cr.apps.googleusercontent.com';
+
+/**
+ * Google JWT ID Tokenini dekodlash (client-side)
+ */
+export function parseJwt(token: string): any {
+  try {
+    const base64Url = token.split('.')[1];
+    const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+    const jsonPayload = decodeURIComponent(
+      atob(base64)
+        .split('')
+        .map((c) => '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2))
+        .join('')
+    );
+    return JSON.parse(jsonPayload);
+  } catch (e) {
+    logger.logError('NETWORK', 'Google JWT dekodlashda xatolik', e);
+    return null;
+  }
+}
+
+/**
+ * Google Identity Services (GIS) mijoz tizimini initsializatsiya qilish
+ */
+export function initGoogleIdentityServices(onSuccess: (profile: UserProfile) => void) {
+  if (typeof window === 'undefined') return;
+
+  const handleCredentialResponse = async (response: any) => {
+    if (!response?.credential) return;
+    const payload = parseJwt(response.credential);
+    if (!payload) return;
+
+    const name = payload.name || payload.given_name || 'Google Oʻyinchi';
+    const email = payload.email || '';
+    const avatarUrl = payload.picture || undefined;
+    const sub = payload.sub || '';
+
+    const profile = linkGoogleAccount({
+      id: sub,
+      name,
+      email,
+      avatarUrl,
+      googleId: sub,
+    });
+
+    if (isSupabaseConfigured && supabase) {
+      try {
+        await supabase.auth.signInWithIdToken({
+          provider: 'google',
+          token: response.credential,
+        });
+      } catch (err) {
+        logger.logWarn('NETWORK', 'Supabase IdToken ulanishida ogohlantirish');
+      }
+    }
+
+    logger.logInfo('UI', `Google hisobi ulandi (GIS): ${name} (${email})`);
+    onSuccess(profile);
+  };
+
+  const setupGIS = () => {
+    const google = (window as any).google;
+    if (google?.accounts?.id) {
+      google.accounts.id.initialize({
+        client_id: GOOGLE_CLIENT_ID,
+        callback: handleCredentialResponse,
+        auto_select: false,
+        cancel_on_tap_outside: true,
+      });
+    }
+  };
+
+  const google = (window as any).google;
+  if (google?.accounts?.id) {
+    setupGIS();
+  } else {
+    const interval = setInterval(() => {
+      const g = (window as any).google;
+      if (g?.accounts?.id) {
+        clearInterval(interval);
+        setupGIS();
+      }
+    }, 250);
+    setTimeout(() => clearInterval(interval), 6000);
+  }
+}
+
+/**
+ * Google rasmiy tugmasini HTML element ichiga joylash
+ */
+export function renderGoogleSignInButton(container: HTMLElement, onSuccess: (profile: UserProfile) => void) {
+  initGoogleIdentityServices(onSuccess);
+  const google = (window as any).google;
+  if (google?.accounts?.id) {
+    google.accounts.id.renderButton(container, {
+      theme: 'filled_black',
+      size: 'large',
+      type: 'standard',
+      shape: 'pill',
+      text: 'continue_with',
+      logo_alignment: 'left',
+      width: 280,
+    });
+  }
+}
+
