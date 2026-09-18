@@ -23,9 +23,9 @@ const AI_LEVELS = [
 ];
 
 const SPEED_OPTIONS = [
-  { ms: 250, label: 'Tezkor', icon: '⚡', desc: '250 ms (Tezkor test)' },
-  { ms: 600, label: 'Oʻrtacha', icon: '⚖️', desc: '600 ms (Koʻrishga qulay)' },
-  { ms: 1200, label: 'Sekin', icon: '🐢', desc: '1.2 soniya (Chuqur tahlil)' },
+  { ms: 600, label: 'Tezkor', icon: '⚡', desc: '0.6 sek (Tezkor oʻyin)' },
+  { ms: 2000, label: 'Oʻrtacha', icon: '⏱️', desc: '2 soniya (Taktik tahlil)' },
+  { ms: 5000, label: 'Chuqur', icon: '🧠', desc: '5 soniya (Grosmeyster)' },
 ];
 
 export default function BotVsBotModal({
@@ -34,7 +34,7 @@ export default function BotVsBotModal({
   onStart,
   initialWhiteDepth = 2,
   initialBlackDepth = 2,
-  initialSpeed = 600,
+  initialSpeed = 2000,
 }: BotVsBotModalProps) {
   const [whiteDepth, setWhiteDepth] = useState<number>(initialWhiteDepth);
   const [blackDepth, setBlackDepth] = useState<number>(initialBlackDepth);
@@ -145,7 +145,9 @@ export default function BotVsBotModal({
           <div>
             <div className="flex items-center justify-between mb-2">
               <span className="text-xs font-black text-white uppercase tracking-wider">Yurish Tezligi</span>
-              <span className="text-xs text-zinc-400 font-mono">Kutish: {speed} ms</span>
+              <span className="text-xs text-zinc-400 font-mono">
+                Kutish: {speed >= 1000 ? `${speed / 1000} soniya` : `${speed} ms`}
+              </span>
             </div>
             <div className="grid grid-cols-3 gap-2">
               {SPEED_OPTIONS.map((opt) => {

@@ -98,7 +98,7 @@ function createInitialAppState(): AppState {
     aiWhiteDepth: 2,
     aiBlackDepth: 2,
     aiVsAiPaused: false,
-    aiVsAiSpeed: 600,
+    aiVsAiSpeed: 2000,
     aiThinking: false,
     showPromotionFor: null,
     pendingMove: null,

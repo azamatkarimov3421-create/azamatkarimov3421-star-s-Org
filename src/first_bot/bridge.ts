@@ -77,19 +77,19 @@ export function getFirstBotMove(state: GameState, level: number = 2): ReactMove 
 
     // AI darajalari (1-Havaskor, 2-Tajribali, 3-Usta, 4-Grossmeyster)
     let depth = 3;
-    let timeLimit = 1000;
+    let timeLimit = 2000;
     if (level === 1) {
-      depth = 1;
-      timeLimit = 350;
-    } else if (level === 2) {
       depth = 2;
-      timeLimit = 700;
-    } else if (level === 3) {
+      timeLimit = 600;
+    } else if (level === 2) {
       depth = 3;
-      timeLimit = 1200;
-    } else if (level >= 4) {
-      depth = 4;
       timeLimit = 2000;
+    } else if (level === 3) {
+      depth = 4;
+      timeLimit = 3500;
+    } else if (level >= 4) {
+      depth = 5;
+      timeLimit = 5000;
     }
 
     const res = engine.getBestMoveSync(depth, timeLimit, level);
@@ -124,19 +124,19 @@ export async function getFirstBotMoveAsync(state: GameState, level: number = 2):
     const engine = new AIEngine(board, level);
 
     let depth = 3;
-    let timeLimit = 800;
+    let timeLimit = 2000;
     if (level === 1) {
-      depth = 1;
-      timeLimit = 350;
-    } else if (level === 2) {
       depth = 2;
-      timeLimit = 700;
-    } else if (level === 3) {
+      timeLimit = 600;
+    } else if (level === 2) {
       depth = 3;
-      timeLimit = 1200;
-    } else if (level >= 4) {
-      depth = 4;
       timeLimit = 2000;
+    } else if (level === 3) {
+      depth = 4;
+      timeLimit = 3500;
+    } else if (level >= 4) {
+      depth = 5;
+      timeLimit = 5000;
     }
 
     // Engine o'zining ichki deadline mexanizmiga ega bo'lib, vaqt yetganda silliq to'xtaydi

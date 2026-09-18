@@ -116,13 +116,13 @@ export default function GameScreen({ onBack, onOpenSettings }: GameScreenProps) 
 
     let isCancelled = false;
 
-    // Watchdog: Agar bot 3.6 soniyadan ortiq javob bermasa, qotib qolmasligi uchun avtomatik tiklanadi
+    // Watchdog: Agar bot 10 soniyadan ortiq javob bermasa, qotib qolmasligi uchun avtomatik tiklanadi
     const watchdog = setTimeout(() => {
       if (aiThinkingRef.current && !isCancelled) {
         logger.logWarn('AI_ENGINE', "Bot hisoblash vaqti belgilangan muddatdan oshdi. Tizim avtomatik tiklandi.");
         handleEmergencyReset();
       }
-    }, 3600);
+    }, 10000);
 
     // 250ms kutish: foydalanuvchi donasi silliq sirg'alib o'tishini tugatishi uchun
     const timer = setTimeout(async () => {
@@ -168,7 +168,7 @@ export default function GameScreen({ onBack, onOpenSettings }: GameScreenProps) 
         logger.logWarn('AI_ENGINE', `${botName} hisoblash vaqti tugadi. Avtomatik tiklanmoqda...`);
         handleEmergencyReset();
       }
-    }, 4000);
+    }, Math.max(12000, aiVsAiSpeed + 8000));
 
     const timer = setTimeout(async () => {
       try {
@@ -231,11 +231,11 @@ export default function GameScreen({ onBack, onOpenSettings }: GameScreenProps) 
     }
   };
 
-  // Bot vs Bot tezligini navbat bilan almashtirish (250 -> 600 -> 1200 ms)
+  // Bot vs Bot tezligini navbat bilan almashtirish (600ms -> 2000ms -> 5000ms)
   const handleCycleSpeed = () => {
-    const speeds = [250, 600, 1200];
+    const speeds = [600, 2000, 5000];
     const idx = speeds.indexOf(aiVsAiSpeed);
-    const nextSpeed = speeds[(idx + 1) % speeds.length] || 600;
+    const nextSpeed = speeds[(idx + 1) % speeds.length] || 2000;
     dispatch({ type: 'SET_AI_VS_AI_SPEED', speed: nextSpeed });
   };
 
@@ -697,7 +697,7 @@ export default function GameScreen({ onBack, onOpenSettings }: GameScreenProps) 
                     title="Yurishlar tezligini almashtirish"
                   >
                     <span>⚡</span>
-                    <span className="text-[11px]">{aiVsAiSpeed}ms</span>
+                    <span className="text-[11px]">{aiVsAiSpeed >= 1000 ? `${aiVsAiSpeed / 1000}s` : `${aiVsAiSpeed}ms`}</span>
                   </button>
 
                   {/* Qayta jang */}
@@ -826,7 +826,7 @@ export default function GameScreen({ onBack, onOpenSettings }: GameScreenProps) 
               className="py-2 px-2 rounded-xl bg-[#2b2926] hover:bg-[#383531] border border-[#3d3a34] text-amber-300 font-bold text-xs flex flex-col items-center justify-center gap-1 transition-all shadow-[0_2px_0_#1a1917] active:translate-y-0.5"
             >
               <span className="text-base leading-none">⚡</span>
-              <span className="text-[10px]">{aiVsAiSpeed}ms</span>
+              <span className="text-[10px]">{aiVsAiSpeed >= 1000 ? `${aiVsAiSpeed / 1000}s` : `${aiVsAiSpeed}ms`}</span>
             </button>
 
             {/* Qayta jang */}
