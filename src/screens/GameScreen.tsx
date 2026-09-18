@@ -13,6 +13,8 @@ import MoveHistory from '../components/MoveHistory';
 import { getUserProfile } from '../store/userProfileStore';
 import { getBestMove, getBestMoveAsync } from '../ai/minimax';
 import { onlineManager } from '../services/onlineService';
+import { logger } from '../services/loggerService';
+import ErrorModal from '../components/ErrorModal';
 import {
   ArrowLeftIcon,
   RotateCwIcon,
@@ -39,7 +41,30 @@ export default function GameScreen({ onBack, onOpenSettings }: GameScreenProps) 
 
   const [hintLoading, setHintLoading] = useState(false);
   const [showHistoryModal, setShowHistoryModal] = useState(false);
+  const [showErrorModal, setShowErrorModal] = useState(false);
+  const [errorCount, setErrorCount] = useState(0);
+  const [lastWarning, setLastWarning] = useState<string | null>(null);
   const userProfile = getUserProfile();
+
+  // Loggerga obuna bo'lish (Xatolik yoki ogohlantirishlarni kuzatish)
+  React.useEffect(() => {
+    const updateLogs = () => {
+      const allLogs = logger.getLogs();
+      const errs = allLogs.filter(l => l.level === 'error').length;
+      setErrorCount(errs);
+    };
+    updateLogs();
+
+    const unsubscribe = logger.subscribe((entry, logs) => {
+      const errs = logs.filter(l => l.level === 'error').length;
+      setErrorCount(errs);
+      if (entry.level === 'error' || entry.level === 'warn') {
+        setLastWarning(entry.message);
+        setTimeout(() => setLastWarning(null), 5000);
+      }
+    });
+    return unsubscribe;
+  }, []);
 
   const isGameOver = status !== 'playing' && status !== 'check';
   const isMyTurn = (gameMode === 'online' && onlinePlayerColor)
@@ -49,6 +74,15 @@ export default function GameScreen({ onBack, onOpenSettings }: GameScreenProps) 
     : true;
 
   const aiThinkingRef = React.useRef(false);
+
+  // Favqulodda muzlashdan chiqarish (Emergency Unfreeze Handler)
+  const handleEmergencyReset = React.useCallback(() => {
+    aiThinkingRef.current = false;
+    setHintLoading(false);
+    dispatch({ type: 'SET_AI_THINKING', thinking: false });
+    dispatch({ type: 'SELECT_SQUARE', square: { rank: -1, file: -1 } });
+    logger.logInfo('SYSTEM', "Foydalanuvchi tomonidan doska holati muvaffaqiyatli tiklandi va qotishdan chiqarildi.");
+  }, [dispatch]);
 
   // AI Bot yurishini avtomatik hisoblash va amalga oshirish (vsAI rejimida)
   React.useEffect(() => {
@@ -62,29 +96,38 @@ export default function GameScreen({ onBack, onOpenSettings }: GameScreenProps) 
 
     let isCancelled = false;
 
-    // 320ms kutish: foydalanuvchi donasi silliq sirg'alib o'tishini tugatishi uchun
+    // Watchdog: Agar bot 3.6 soniyadan ortiq javob bermasa, qotib qolmasligi uchun avtomatik tiklanadi
+    const watchdog = setTimeout(() => {
+      if (aiThinkingRef.current && !isCancelled) {
+        logger.logWarn('AI_ENGINE', "Bot hisoblash vaqti belgilangan muddatdan oshdi. Tizim avtomatik tiklandi.");
+        handleEmergencyReset();
+      }
+    }, 3600);
+
+    // 250ms kutish: foydalanuvchi donasi silliq sirg'alib o'tishini tugatishi uchun
     const timer = setTimeout(async () => {
       try {
         const bestMove = await getBestMoveAsync(game, aiDepth);
         if (!isCancelled && bestMove) {
           dispatch({ type: 'APPLY_MOVE', move: bestMove });
         }
-      } catch (e) {
-        console.error('AI hisoblash xatosi:', e);
+      } catch (e: any) {
+        logger.logError('AI_ENGINE', 'AI bot hisoblash jarayonida kutilmagan xatolik yuz berdi', e);
       } finally {
-        if (!isCancelled) {
-          aiThinkingRef.current = false;
-          dispatch({ type: 'SET_AI_THINKING', thinking: false });
-        }
+        clearTimeout(watchdog);
+        aiThinkingRef.current = false;
+        dispatch({ type: 'SET_AI_THINKING', thinking: false });
       }
-    }, 320);
+    }, 250);
 
     return () => {
       isCancelled = true;
       clearTimeout(timer);
+      clearTimeout(watchdog);
       aiThinkingRef.current = false;
+      dispatch({ type: 'SET_AI_THINKING', thinking: false });
     };
-  }, [currentTurn, gameMode, aiColor, isGameOver, game, aiDepth, dispatch]);
+  }, [currentTurn, gameMode, aiColor, isGameOver, game.moveHistory.length, aiDepth, dispatch, handleEmergencyReset]);
 
   // Sarlavha matni
   const modeTitle =
@@ -94,16 +137,29 @@ export default function GameScreen({ onBack, onOpenSettings }: GameScreenProps) 
       ? 'Kompyuter bilan'
       : "Doʻst bilan";
 
-  // Maslahat
+  // Maslahat olish
   const handleGetHint = async () => {
     if (isGameOver || hintLoading) return;
     setHintLoading(true);
+
+    const hintTimeout = setTimeout(() => {
+      setHintLoading(false);
+      logger.logWarn('GAME_LOGIC', 'Maslahat hisoblash vaqti tugadi.');
+    }, 2500);
+
     try {
+      logger.logInfo('GAME_LOGIC', "Maslahat (Hint) tahlili boshlandi...");
       const best = await getBestMoveAsync(game, 2);
-      if (best) dispatch({ type: 'SET_HINT', move: best });
-    } catch (e) {
-      console.error(e);
+      if (best) {
+        dispatch({ type: 'SET_HINT', move: best });
+        logger.logInfo('GAME_LOGIC', `Maslahat berildi: (${best.from.file},${best.from.rank}) -> (${best.to.file},${best.to.rank})`);
+      } else {
+        logger.logWarn('GAME_LOGIC', "Ushbu holatda maslahat yurishi topilmadi.");
+      }
+    } catch (e: any) {
+      logger.logError('AI_ENGINE', 'Maslahat izlashda xatolik yuz berdi', e);
     } finally {
+      clearTimeout(hintTimeout);
       setHintLoading(false);
     }
   };
@@ -233,6 +289,21 @@ export default function GameScreen({ onBack, onOpenSettings }: GameScreenProps) 
                 <span>3D</span>
               </button>
             </div>
+
+            {/* Tizim Loglari va Xatoliklar jurnali tugmasi */}
+            <button
+              onClick={() => setShowErrorModal(true)}
+              className={`h-9 px-2.5 rounded-xl border text-xs font-bold flex items-center gap-1.5 transition-all active:scale-95 shadow-[0_2px_0_#21201d] ${
+                errorCount > 0
+                  ? 'bg-red-500/25 hover:bg-red-500/35 text-red-300 border-red-500/60 animate-pulse'
+                  : 'bg-[#383531] hover:bg-[#45423c] text-[#c3c2be] hover:text-white border-[#45423c]'
+              }`}
+              title="Tizim loglari va nosozliklar jurnali"
+            >
+              <span>{errorCount > 0 ? '⚠️' : '🛡️'}</span>
+              <span className="hidden sm:inline">{errorCount > 0 ? `${errorCount} xato` : 'Log'}</span>
+            </button>
+
             {onOpenSettings && (
               <button
                 onClick={onOpenSettings}
@@ -245,6 +316,20 @@ export default function GameScreen({ onBack, onOpenSettings }: GameScreenProps) 
           </div>
         </div>
       </header>
+
+      {/* Agar ogohlantirish yoki xato yuz bersa — yuqorida paydo bo'luvchi xabarnoma */}
+      {lastWarning && (
+        <div
+          onClick={() => setShowErrorModal(true)}
+          className="absolute top-14 left-1/2 -translate-x-1/2 z-40 max-w-md w-[90%] px-3.5 py-2 rounded-2xl bg-amber-500 text-slate-950 font-bold text-xs shadow-2xl flex items-center justify-between gap-2 cursor-pointer animate-fadeIn border border-amber-300"
+        >
+          <div className="flex items-center gap-2 truncate">
+            <span>⚠️</span>
+            <span className="truncate">{lastWarning}</span>
+          </div>
+          <span className="shrink-0 underline text-[11px] font-black">Loglarni koʻrish</span>
+        </div>
+      )}
 
       {/* ── 2. ASOSIY MAYDON (RESPONSIVE: MOBILDA TIK, KOMPYUTERDA YONMA-YON) ────── */}
       <main className="relative z-10 flex-1 w-full max-w-7xl mx-auto flex flex-col md:flex-row items-center justify-center gap-3 md:gap-5 lg:gap-8 px-2 sm:px-4 lg:px-6 py-0.5 lg:py-2 overflow-hidden min-h-0 touch-none">
@@ -475,6 +560,17 @@ export default function GameScreen({ onBack, onOpenSettings }: GameScreenProps) 
                 <span className="text-[11px]">Taslim</span>
               </button>
             </div>
+
+            {/* Agar Bot o'ylanib qolsa — to'g'ridan-to'g'ri to'xtatish va tiklash tugmasi */}
+            {aiThinking && (
+              <button
+                onClick={handleEmergencyReset}
+                className="w-full py-1.5 px-2 rounded-xl bg-amber-500/20 hover:bg-amber-500/30 border border-amber-500/50 text-amber-300 font-bold text-xs flex items-center justify-center gap-1.5 transition-all animate-pulse"
+                title="Bot hisoblashini to'xtatish va doskani tiklash"
+              >
+                <span>⚡ Majburiy tiklash (Unfreeze)</span>
+              </button>
+            )}
           </div>
         </aside>
       </main>
@@ -554,6 +650,13 @@ export default function GameScreen({ onBack, onOpenSettings }: GameScreenProps) 
           </div>
         </div>
       )}
+
+      {/* Tizim Loglari va Nosozliklarni ko'rish va Tiklash Modali */}
+      <ErrorModal
+        isOpen={showErrorModal}
+        onClose={() => setShowErrorModal(false)}
+        onResetGame={handleEmergencyReset}
+      />
     </div>
   );
 }

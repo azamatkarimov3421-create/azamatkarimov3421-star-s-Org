@@ -76,8 +76,15 @@ export class AIEngine {
         return moves.slice().sort((a, b) => this.scoreMove(b, ttMove, ply) - this.scoreMove(a, ttMove, ply));
     }
 
-    quiescenceSearch(alpha, beta, maxQDepth = 4) {
+    quiescenceSearch(alpha, beta, maxQDepth = 2, deadline = 0) {
         this.nodesEvaluated++;
+        if (this.stopSearch || (deadline > 0 && Date.now() > deadline)) {
+            this.stopSearch = true;
+            let standPat = evaluateBoard(this.board);
+            if (this.board.turn === BLACK) standPat = -standPat;
+            return standPat;
+        }
+
         let standPat = evaluateBoard(this.board);
         if (this.board.turn === BLACK) standPat = -standPat;
 
@@ -87,12 +94,19 @@ export class AIEngine {
 
         const legalMoves = this.board.getLegalMoves();
         const captures = legalMoves.filter(m => m.captured !== null || m.promotion !== null);
-        const ordered = this.orderMoves(captures, null, 0);
+        if (captures.length === 0) return standPat;
+
+        // 10x10 doskada hisoblash portlashining oldini olish uchun ko'pi bilan 8 ta eng yaxshi urish ko'riladi
+        const ordered = this.orderMoves(captures, null, 0).slice(0, 8);
 
         const savedRights = this.board.cloneCastlingRights();
         for (const move of ordered) {
+            if (this.stopSearch || (deadline > 0 && Date.now() > deadline)) {
+                this.stopSearch = true;
+                break;
+            }
             this.board.makeMove(move);
-            const score = -this.quiescenceSearch(-beta, -alpha, maxQDepth - 1);
+            const score = -this.quiescenceSearch(-beta, -alpha, maxQDepth - 1, deadline);
             this.board.undoMove(savedRights);
 
             if (score >= beta) return beta;
@@ -103,7 +117,7 @@ export class AIEngine {
     }
 
     alphaBeta(depth, alpha, beta, ply, deadline) {
-        if (Date.now() > deadline) {
+        if (this.stopSearch || Date.now() > deadline) {
             this.stopSearch = true;
             return [0, null];
         }
@@ -111,8 +125,8 @@ export class AIEngine {
         this.nodesEvaluated++;
         const inCheck = this.board.isInCheck(this.board.turn);
 
-        // Check Extension: Shax ostida bo'lganda taktika boy berilmasligi uchun 1 qavat chuqurroq hisoblanadi
-        if (inCheck && depth === 0) {
+        // Check Extension: Faqat ply < 3 bo'lgandagina va 1 marta chuqurlashtiriladi (cheksiz rekursiya yo'qotildi!)
+        if (inCheck && depth === 0 && ply < 3) {
             depth = 1;
         }
 
@@ -131,7 +145,7 @@ export class AIEngine {
         }
 
         if (depth === 0) {
-            const qScore = this.quiescenceSearch(alpha, beta);
+            const qScore = this.quiescenceSearch(alpha, beta, 2, deadline);
             return [qScore, null];
         }
 
@@ -144,11 +158,13 @@ export class AIEngine {
         }
 
         const orderedMoves = this.orderMoves(legalMoves, ttMove, ply);
-        let bestMove = orderedMoves[0];
+        // Katta 100 katakli doskada ortiqcha shoxlanish va brauzer qotishini to'xtatish
+        const searchMoves = depth >= 3 ? orderedMoves.slice(0, 16) : orderedMoves;
+        let bestMove = searchMoves[0];
         let bestScore = -999999;
         const savedRights = this.board.cloneCastlingRights();
 
-        for (const move of orderedMoves) {
+        for (const move of searchMoves) {
             this.board.makeMove(move);
             const [rawScore] = this.alphaBeta(depth - 1, -beta, -alpha, ply + 1, deadline);
             const score = -rawScore;
@@ -201,7 +217,6 @@ export class AIEngine {
         if (legalMoves.length === 0) return null;
 
         // 1. Debyutlar kitobini tekshirish (Opening Book)
-        // Agar o'yin boshi bo'lsa va kitobda yurish bo'lsa, xatosiz master yurish olinadi
         const bookMoveObj = findBookMove(this.board.moveHistory);
         if (bookMoveObj) {
             const matchedLegal = legalMoves.find(m => 
@@ -234,6 +249,7 @@ export class AIEngine {
         let bestOverallScore = 0;
 
         for (let d = 1; d <= maxDepth; d++) {
+            if (this.stopSearch || Date.now() >= deadline) break;
             const [score, move] = this.alphaBeta(d, -1000000, 1000000, 0, deadline);
             if (this.stopSearch && d > 1) break;
 
@@ -257,7 +273,8 @@ export class AIEngine {
             if (Math.abs(score) > 40000) break; // Mat topildi
             if (Date.now() >= deadline) break;
 
-            await new Promise(res => setTimeout(res, 0));
+            // UI qotib qolmasligi uchun har chuqurlikdan keyin brauzer event loopiga nafas beriladi
+            await new Promise(res => setTimeout(res, 10));
         }
 
         return {

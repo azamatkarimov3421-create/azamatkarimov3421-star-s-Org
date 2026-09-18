@@ -12,6 +12,7 @@ import { Board, Piece } from './move_generator.js';
 import { AIEngine } from './ai_engine.js';
 // @ts-ignore
 import { WHITE, BLACK, PIECE_PAWN, PIECE_KNIGHT, PIECE_BISHOP, PIECE_NUR, PIECE_ROOK, PIECE_QUEEN, PIECE_KING } from './board_constants.js';
+import { logger } from '../services/loggerService';
 
 const TYPE_MAP: Record<string, string> = {
   Pawn: PIECE_PAWN,
@@ -132,13 +133,23 @@ export async function getFirstBotMoveAsync(state: GameState, level: number = 2):
       timeLimit = 500;
     } else if (level === 3) {
       depth = 3;
-      timeLimit = 1000;
+      timeLimit = 800;
     } else if (level >= 4) {
       depth = 4;
-      timeLimit = 1800;
+      timeLimit = 1400;
     }
 
-    const res = await engine.getBestMoveAsync(depth, timeLimit);
+    // Qat'iy qotib qolishdan himoya (Timeout Guard)
+    const timeoutPromise = new Promise<null>((resolve) => {
+      setTimeout(() => {
+        logger.logWarn('AI_ENGINE', `AI hisoblash vaqti chegaradan oshdi (${timeLimit + 300}ms). Qotishning oldi olindi.`);
+        resolve(null);
+      }, timeLimit + 300);
+    });
+
+    const searchPromise = engine.getBestMoveAsync(depth, timeLimit);
+    const res = await Promise.race([searchPromise, timeoutPromise]);
+
     if (!res || !res.move) {
       return legalMoves[0];
     }
@@ -152,8 +163,8 @@ export async function getFirstBotMoveAsync(state: GameState, level: number = 2):
     );
 
     return matched || legalMoves[0];
-  } catch (err) {
-    console.error('Xatolik asinxron bot dvigatelida:', err);
+  } catch (err: any) {
+    logger.logError('AI_ENGINE', "AI bot dvigatelida kutilmagan xatolik yuz berdi. Xavfsiz yurish tanlandi.", err);
     return legalMoves[0];
   }
 }
