@@ -41,17 +41,18 @@ export default function GoogleAuthModal({ isOpen, onClose, onSuccess }: GoogleAu
     setLoading(true);
     setErrorMsg(null);
     try {
-      await signInWithGooglePopup((p) => {
-        onSuccess(p);
-        onClose();
-      });
-    } catch (e: any) {
-      const msg = e?.message || '';
-      if (msg.includes('provider is not enabled') || msg.includes('validation_failed')) {
-        setErrorMsg('Google provayderi Supabase-da hali faollashtirilmagan. Quyida profilingizni tasdiqlang yoki Supabase-da Google-ni saqlang.');
-      } else {
-        setErrorMsg(msg || 'Google orqali ulanishda xatolik yuz berdi.');
+      const res = await signInWithGoogle();
+      if (!res.success) {
+        const msg = res.error || '';
+        if (msg.includes('provider is not enabled') || msg.includes('validation_failed')) {
+          setErrorMsg('Supabase-da Google hali yoqilmagan. Iltimos, Supabase-da Google-ni yoqib Save tugmasini bosing.');
+        } else {
+          setErrorMsg(msg || 'Google orqali ulanishda xatolik yuz berdi.');
+        }
+        setShowManual(true);
       }
+    } catch (e: any) {
+      setErrorMsg(e?.message || 'Xatolik yuz berdi');
       setShowManual(true);
     } finally {
       setLoading(false);
