@@ -138,9 +138,9 @@ export class AIEngine {
         this.nodesEvaluated++;
         const inCheck = this.board.isInCheck(this.board.turn);
 
-        // Check Extension: Shohga shax berilganda chuqurroq hisoblash (blunder va nozik xatolarni oldini oladi)
-        if (inCheck && ply < 6) {
-            depth++;
+        // Check Extension: Faqat ply < 3 bo'lgandagina va 1 marta chuqurroq hisoblash (cheksiz rekursiya yo'qotildi!)
+        if (inCheck && depth === 0 && ply < 3) {
+            depth = 1;
         }
 
         const hashKey = this.zobrist.hashBoard(this.board.grid, this.board.turn);
@@ -179,7 +179,6 @@ export class AIEngine {
         let bestMove = searchMoves[0];
         let bestScore = -999999;
         const savedRights = this.board.cloneCastlingRights();
-        const rootCandidates = [];
 
         for (const move of searchMoves) {
             this.board.makeMove(move);
@@ -188,10 +187,6 @@ export class AIEngine {
             this.board.undoMove(savedRights);
 
             if (this.stopSearch) return [0, null];
-
-            if (ply === 0) {
-                rootCandidates.push({ move, score });
-            }
 
             if (score > bestScore) {
                 bestScore = score;
@@ -212,18 +207,6 @@ export class AIEngine {
                     this.historyTable.set(hKey, (this.historyTable.get(hKey) || 0) + depth * depth);
                 }
                 break;
-            }
-        }
-
-        // Ildiz tugunida (ply === 0) teng kuchli yurishlar orasidan dinamik tanlash
-        // Bu 2 ta bot bir-biri bilan o'ynaganda doimo bir xil (mirror) o'ynamasligini ta'minlaydi
-        if (ply === 0 && rootCandidates.length > 1 && !this.stopSearch) {
-            const margin = this.aiLevel <= 2 ? 16 : 8;
-            const topMoves = rootCandidates.filter(c => c.score >= bestScore - margin);
-            if (topMoves.length > 1) {
-                const pick = topMoves[Math.floor(Math.random() * topMoves.length)];
-                bestMove = pick.move;
-                bestScore = pick.score;
             }
         }
 

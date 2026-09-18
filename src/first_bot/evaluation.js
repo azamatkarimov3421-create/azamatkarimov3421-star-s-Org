@@ -165,63 +165,6 @@ export function evaluateBoard(board, aiLevel = 3) {
                     break;
             }
 
-            // ===================================================
-            // NOZIK XATOLARNI OLDINI OLISH: HIMOYASIZ VA OSILGAN FIGURALARNI JAZOLASH
-            // ===================================================
-            if (p.type !== PIECE_KING) {
-                const isAttacked = board.isSquareAttacked(f, r, p.color);
-                if (isAttacked) {
-                    const friendlyColor = p.color === WHITE ? BLACK : WHITE;
-                    const isDefended = board.isSquareAttacked(f, r, friendlyColor);
-                    if (!isDefended) {
-                        // Butunlay himoyasiz va dushman zarbasi ostida!
-                        let hangPenalty = 0;
-                        switch (p.type) {
-                            case PIECE_QUEEN: hangPenalty = 380; break;
-                            case PIECE_NUR: hangPenalty = 280; break;
-                            case PIECE_ROOK: hangPenalty = 210; break;
-                            case PIECE_BISHOP:
-                            case PIECE_KNIGHT: hangPenalty = 130; break;
-                            case PIECE_PAWN: hangPenalty = 40; break;
-                        }
-                        pstVal -= hangPenalty;
-                    } else if (p.type !== PIECE_PAWN) {
-                        // Himoyalangan, lekin arzonroq dushman piyodasi hujum qilayotgan bo'lsa
-                        const enemyPawnRank = r + (p.color === WHITE ? 1 : -1);
-                        if (enemyPawnRank >= 0 && enemyPawnRank < 10) {
-                            const enemyColor = p.color === WHITE ? BLACK : WHITE;
-                            const leftPawn = f > 0 ? board.grid[enemyPawnRank][f - 1] : null;
-                            const rightPawn = f < 9 ? board.grid[enemyPawnRank][f + 1] : null;
-                            if ((leftPawn && leftPawn.color === enemyColor && leftPawn.type === PIECE_PAWN) ||
-                                (rightPawn && rightPawn.color === enemyColor && rightPawn.type === PIECE_PAWN)) {
-                                let pawnThreatPenalty = 0;
-                                switch (p.type) {
-                                    case PIECE_QUEEN: pawnThreatPenalty = 220; break;
-                                    case PIECE_NUR: pawnThreatPenalty = 180; break;
-                                    case PIECE_ROOK: pawnThreatPenalty = 140; break;
-                                    case PIECE_BISHOP:
-                                    case PIECE_KNIGHT: pawnThreatPenalty = 80; break;
-                                }
-                                pstVal -= pawnThreatPenalty;
-                            }
-                        }
-                    }
-                }
-            }
-
-            // Oq va Qora botlar uchun o'ziga xos strategik uslub (2 bot bir xil bo'lmasligi uchun)
-            if (p.color === WHITE) {
-                // Oq Bot: Markaziy bosim va tashabbus (E, D, N, M markazida faollik)
-                if (f >= 3 && f <= 6 && r >= 3 && r <= 6) {
-                    pstVal += 6;
-                }
-            } else {
-                // Qora Bot: Qanot qarshi zarbasi va mustahkam figura muvozanati
-                if ((f <= 2 || f >= 7) && r >= 5 && r <= 7 && (p.type === PIECE_KNIGHT || p.type === PIECE_BISHOP)) {
-                    pstVal += 6;
-                }
-            }
-
             const totalPieceVal = baseVal + pstVal;
             if (p.color === WHITE) {
                 score += totalPieceVal;
@@ -239,11 +182,9 @@ export function evaluateBoard(board, aiLevel = 3) {
     if (board.castlingRights[WHITE].castled) score += 60;
     if (board.castlingRights[BLACK].castled) score -= 60;
 
-    // Har xil o'yinlar uchun nozik xilma-xillik (Jitter) — 2 bot 1 xil o'ynamasligi uchun
-    if (aiLevel <= 2) {
-        score += (Math.random() * 16 - 8);
-    } else if (aiLevel === 3) {
-        score += (Math.random() * 8 - 4);
+    // Past darajalar uchun ozgina noaniqlik
+    if (aiLevel === 1) {
+        score += (Math.random() * 25 - 12);
     }
 
     return score;
