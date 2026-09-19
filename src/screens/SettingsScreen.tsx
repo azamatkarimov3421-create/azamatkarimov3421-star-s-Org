@@ -21,9 +21,7 @@ import {
 } from '../audio/sounds';
 import {
   SUPPORTED_LANGUAGES,
-  getAppLanguage,
-  setAppLanguage,
-  t,
+  useTranslation,
   AppLanguage,
 } from '../i18n/translations';
 
@@ -35,7 +33,7 @@ interface SettingsScreenProps {
 export default function SettingsScreen({ onBack, onOpenRules }: SettingsScreenProps) {
   const { state, dispatch } = useGame();
   const { boardTheme, soundEnabled, useNumericNotation, is3D } = state;
-  const [currentLang, setCurrentLangState] = useState<AppLanguage>(getAppLanguage());
+  const { t, lang: currentLang, setLanguage } = useTranslation();
   const [soundTheme, setSoundThemeState] = useState<SoundTheme>(getSoundTheme());
   const [vibrationEnabled, setVibrationEnabled] = useState(true);
   const [showLangModal, setShowLangModal] = useState(false);
@@ -290,8 +288,8 @@ export default function SettingsScreen({ onBack, onOpenRules }: SettingsScreenPr
                 <button
                   key={lang.code}
                   onClick={() => {
-                    setAppLanguage(lang.code);
-                    setCurrentLangState(lang.code);
+                    setLanguage(lang.code);
+                    dispatch({ type: 'SET_LANGUAGE', language: lang.code });
                     setShowLangModal(false);
                   }}
                   className={`w-full py-2.5 px-4 rounded-xl text-xs font-bold text-left flex items-center justify-between border transition-all ${

@@ -5,6 +5,7 @@
 import React, { useEffect, useState } from 'react';
 import { GameRecord, getGameHistory } from '../services/dbService';
 import { isSupabaseConfigured } from '../lib/supabase';
+import { useTranslation } from '../i18n/translations';
 
 interface LeaderboardModalProps {
   isOpen: boolean;
@@ -12,6 +13,7 @@ interface LeaderboardModalProps {
 }
 
 export default function LeaderboardModal({ isOpen, onClose }: LeaderboardModalProps) {
+  const { t } = useTranslation();
   const [history, setHistory] = useState<GameRecord[]>([]);
   const [loading, setLoading] = useState(false);
 
@@ -33,7 +35,7 @@ export default function LeaderboardModal({ isOpen, onClose }: LeaderboardModalPr
         {/* Yopish tugmasi */}
         <button
           onClick={onClose}
-          className="absolute top-4 right-4 w-8 h-8 rounded-full bg-slate-800 hover:bg-slate-700 text-slate-300 flex items-center justify-center font-bold text-sm transition-colors"
+          className="absolute top-4 right-4 w-8 h-8 rounded-full bg-slate-800 hover:bg-slate-700 text-slate-300 flex items-center justify-center font-bold text-sm transition-colors cursor-pointer"
         >
           ✕
         </button>
@@ -44,9 +46,9 @@ export default function LeaderboardModal({ isOpen, onClose }: LeaderboardModalPr
             🏆
           </div>
           <div>
-            <h3 className="text-xl font-black text-slate-100">O'yinlar Statistikasi va Baza</h3>
+            <h3 className="text-xl font-black text-slate-100">{t('lb_title')}</h3>
             <p className="text-slate-400 text-xs flex items-center gap-2">
-              <span>Baza holati:</span>
+              <span>{t('lb_status_label')}</span>
               <span
                 className={`px-2 py-0.5 rounded-full text-[10px] font-bold ${
                   isSupabaseConfigured
@@ -54,7 +56,7 @@ export default function LeaderboardModal({ isOpen, onClose }: LeaderboardModalPr
                     : 'bg-amber-500/20 text-amber-300 border border-amber-500/40'
                 }`}
               >
-                {isSupabaseConfigured ? '☁️ Supabase Bulut Baza' : '💾 Mahalliy Baza (LocalStorage)'}
+                {isSupabaseConfigured ? t('lb_supabase') : t('lb_local')}
               </span>
             </p>
           </div>
@@ -65,12 +67,12 @@ export default function LeaderboardModal({ isOpen, onClose }: LeaderboardModalPr
           {loading ? (
             <div className="text-center py-12 text-slate-400 text-xs">
               <span className="w-4 h-4 border-2 border-amber-400 border-t-transparent rounded-full inline-block animate-spin mr-2" />
-              Natijalar yuklanmoqda...
+              {t('lb_loading')}
             </div>
           ) : history.length === 0 ? (
             <div className="text-center py-12 text-slate-500 text-xs">
               <div className="text-3xl mb-2">📜</div>
-              Hali saqlangan o'yinlar mavjud emas.
+              {t('lb_empty')}
             </div>
           ) : (
             history.map((item, idx) => {
@@ -93,9 +95,9 @@ export default function LeaderboardModal({ isOpen, onClose }: LeaderboardModalPr
                         {item.white_player} vs {item.black_player}
                       </div>
                       <div className="text-[10px] text-slate-500 flex items-center gap-2 mt-0.5">
-                        <span>Rejim: {item.game_mode}</span>
+                        <span>{t('lb_mode_label')} {item.game_mode}</span>
                         <span>•</span>
-                        <span>{item.total_moves} ta harakat</span>
+                        <span>{item.total_moves} {t('lb_moves_suffix')}</span>
                       </div>
                     </div>
                   </div>
@@ -110,7 +112,7 @@ export default function LeaderboardModal({ isOpen, onClose }: LeaderboardModalPr
                           : 'bg-blue-900/60 text-blue-200'
                       }`}
                     >
-                      {item.winner === 'Durang' ? 'Durang' : `${item.winner} G'olib`}
+                      {item.winner === 'Durang' ? t('draw_title') : `${item.winner} ${t('lb_winner_suffix')}`}
                     </span>
                     <div className="text-[10px] text-slate-500 mt-1">{dateStr}</div>
                   </div>
@@ -122,12 +124,12 @@ export default function LeaderboardModal({ isOpen, onClose }: LeaderboardModalPr
 
         {/* Pastki eslatma */}
         <div className="mt-4 pt-3 border-t border-slate-800/80 flex items-center justify-between text-slate-500 text-[11px]">
-          <span>Jami saqlangan o'yinlar: {history.length} ta</span>
+          <span>{t('lb_total_games')} {history.length}</span>
           <button
             onClick={onClose}
-            className="px-4 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-200 font-bold rounded-xl text-xs transition-colors"
+            className="px-4 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-200 font-bold rounded-xl text-xs transition-colors cursor-pointer"
           >
-            Yopish
+            {t('close_btn')}
           </button>
         </div>
       </div>

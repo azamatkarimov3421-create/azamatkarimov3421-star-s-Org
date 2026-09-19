@@ -5,6 +5,7 @@
 
 import React, { useState } from 'react';
 import { BotIcon, PlayIcon } from './Icons';
+import { useTranslation } from '../i18n/translations';
 
 interface VsAiModalProps {
   isOpen: boolean;
@@ -28,8 +29,16 @@ export default function VsAiModal({
   initialDepth = 2,
   initialColor = 'white',
 }: VsAiModalProps) {
+  const { t } = useTranslation();
   const [selectedDepth, setSelectedDepth] = useState<number>(initialDepth);
   const [selectedColor, setSelectedColor] = useState<'white' | 'black'>(initialColor);
+
+  const localizedAiLevels = [
+    { depth: 1, label: t('ai_lvl_amateur'), sub: t('ai_lvl_amateur_sub'), rating: 1000, desc: t('ai_lvl_amateur_desc') },
+    { depth: 2, label: t('ai_lvl_experienced'), sub: t('ai_lvl_experienced_sub'), rating: 1400, desc: t('ai_lvl_experienced_desc') },
+    { depth: 3, label: t('ai_lvl_master'), sub: t('ai_lvl_master_sub'), rating: 1800, desc: t('ai_lvl_master_desc') },
+    { depth: 4, label: t('ai_lvl_grandmaster'), sub: t('ai_lvl_grandmaster_sub'), rating: 2200, desc: t('ai_lvl_grandmaster_desc') },
+  ];
 
   if (!isOpen) return null;
 
@@ -37,7 +46,7 @@ export default function VsAiModal({
     onStart(selectedDepth, selectedColor);
   };
 
-  const currentLevelObj = AI_LEVELS.find((l) => l.depth === selectedDepth) || AI_LEVELS[1];
+  const currentLevelObj = localizedAiLevels.find((l) => l.depth === selectedDepth) || localizedAiLevels[1];
 
   return (
     <div className="fixed inset-0 bg-black/80 backdrop-blur-md z-50 flex items-center justify-center p-3 sm:p-4 animate-fadeIn">
@@ -50,12 +59,12 @@ export default function VsAiModal({
             </div>
             <div>
               <div className="flex items-center gap-2">
-                <h3 className="text-base sm:text-lg font-black text-white">Bot bilan Oʻynash</h3>
+                <h3 className="text-base sm:text-lg font-black text-white">{t('vsai_title')}</h3>
                 <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-400 border border-emerald-500/30">
                   AI BOT
                 </span>
               </div>
-              <p className="text-xs text-[#9ca3af]">Qaysi darajadagi bot bilan oʻynamoqchisiz?</p>
+              <p className="text-xs text-[#9ca3af]">{t('vsai_subtitle')}</p>
             </div>
           </div>
           <button
@@ -71,13 +80,13 @@ export default function VsAiModal({
           {/* 1. Bot Darajasi */}
           <div>
             <div className="flex items-center justify-between mb-2.5">
-              <span className="text-xs font-black text-white uppercase tracking-wider">Bot Darajasini Tanlang</span>
+              <span className="text-xs font-black text-white uppercase tracking-wider">{t('vsai_difficulty')}</span>
               <span className="text-xs text-[#4ade80] font-bold font-mono">
-                {currentLevelObj.label} ({currentLevelObj.rating} reyting)
+                {currentLevelObj.label} ({currentLevelObj.rating} {t('rating_label')})
               </span>
             </div>
             <div className="grid grid-cols-2 gap-2.5">
-              {AI_LEVELS.map((lvl) => {
+              {localizedAiLevels.map((lvl) => {
                 const isSelected = selectedDepth === lvl.depth;
                 return (
                   <button
@@ -104,9 +113,9 @@ export default function VsAiModal({
           {/* 2. O'yinchi Rangi */}
           <div>
             <div className="flex items-center justify-between mb-2">
-              <span className="text-xs font-black text-white uppercase tracking-wider">Dona Rangini Tanlang</span>
+              <span className="text-xs font-black text-white uppercase tracking-wider">{t('vsai_color_label')}</span>
               <span className="text-xs text-zinc-400 font-mono">
-                {selectedColor === 'white' ? 'Siz Oqlarda (1-yurish)' : 'Siz Qoralarda (Bot boshlaydi)'}
+                {selectedColor === 'white' ? t('vsai_first_move_white') : t('vsai_first_move_black')}
               </span>
             </div>
             <div className="grid grid-cols-2 gap-2.5">
@@ -120,8 +129,8 @@ export default function VsAiModal({
               >
                 <span className="w-4 h-4 rounded-full bg-white shadow-[0_0_8px_rgba(255,255,255,0.8)]" />
                 <div className="text-left">
-                  <div className="text-xs font-black text-white">Oqlar bilan</div>
-                  <div className="text-[9.5px] text-zinc-400">Birinchi yurasiz</div>
+                  <div className="text-xs font-black text-white">{t('vsai_color_white')}</div>
+                  <div className="text-[9.5px] text-zinc-400">{t('vsai_white_desc')}</div>
                 </div>
               </button>
 
@@ -135,8 +144,8 @@ export default function VsAiModal({
               >
                 <span className="w-4 h-4 rounded-full bg-[#111] border border-white/60 shadow-[0_0_6px_rgba(0,0,0,0.8)]" />
                 <div className="text-left">
-                  <div className="text-xs font-black text-white">Qoralar bilan</div>
-                  <div className="text-[9.5px] text-zinc-400">Bot birinchi yuradi</div>
+                  <div className="text-xs font-black text-white">{t('vsai_color_black')}</div>
+                  <div className="text-[9.5px] text-zinc-400">{t('vsai_black_desc')}</div>
                 </div>
               </button>
             </div>
@@ -151,7 +160,7 @@ export default function VsAiModal({
             className="w-full py-3.5 px-4 rounded-2xl bg-gradient-to-r from-[#22c55e] to-[#16a34a] hover:from-[#4ade80] hover:to-[#22c55e] text-slate-950 font-black text-sm sm:text-base flex items-center justify-center gap-2 shadow-[0_4px_15px_rgba(34,197,94,0.35)] active:scale-[0.99] transition-all cursor-pointer"
           >
             <PlayIcon size={20} className="fill-slate-950" />
-            <span>JANGNI BOSHLASH ({currentLevelObj.label.toUpperCase()})</span>
+            <span>{t('vsai_start_btn')} ({currentLevelObj.label.toUpperCase()})</span>
           </button>
         </div>
       </div>

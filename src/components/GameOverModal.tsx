@@ -7,9 +7,11 @@ import { useGame } from '../store/gameStore';
 import { saveGameResult } from '../services/dbService';
 
 import { recordGameFinished, saveRecentGame, getRecentGames, RecentGame } from '../store/userProfileStore';
+import { useTranslation } from '../i18n/translations';
 
 export default function GameOverModal() {
   const { state, dispatch } = useGame();
+  const { t } = useTranslation();
   const { game, gameMode, aiColor, aiDepth, aiWhiteDepth, aiBlackDepth, onlinePlayerColor, roomCode } = state;
   const { status, moveHistory } = game;
 
@@ -177,7 +179,7 @@ export default function GameOverModal() {
         {/* Holat nishoni */}
         <div className="mb-2">
           <span className={`inline-block px-3 py-1 rounded-full text-xs font-black uppercase tracking-wider border ${badgeColor}`}>
-            Oʻyin Yakunlandi
+            {t('game_over_title')}
           </span>
         </div>
 
@@ -192,13 +194,13 @@ export default function GameOverModal() {
         {/* Statistika qutisi */}
         <div className="grid grid-cols-2 gap-2.5 p-3 bg-[#181715] rounded-xl border border-[#383531] mb-4 text-xs">
           <div>
-            <div className="text-[#9b9893] font-medium">Jami Harakatlar</div>
+            <div className="text-[#9b9893] font-medium">{t('total_moves_label')}</div>
             <div className="text-white font-bold text-sm mt-0.5 font-mono">
               {Math.ceil(moveHistory.length / 2)} ta
             </div>
           </div>
           <div>
-            <div className="text-[#9b9893] font-medium">Yeyilgan Donalar</div>
+            <div className="text-[#9b9893] font-medium">{t('captured_pieces_label')}</div>
             <div className="text-white font-bold text-sm mt-0.5 font-mono">
               {game.capturedByWhite.length + game.capturedByBlack.length} ta
             </div>
@@ -209,7 +211,7 @@ export default function GameOverModal() {
         {recentGames.length > 0 && (
           <div className="mb-4 p-2.5 bg-[#181715] rounded-xl border border-[#383531]">
             <div className="text-[10px] text-[#9b9893] font-bold uppercase tracking-wider mb-1.5 flex items-center justify-between px-1">
-              <span>Oxirgi oʻyinlar tarixi:</span>
+              <span>{t('recent_games_label')}</span>
               <span className="text-white font-mono">{Math.min(5, recentGames.length)} ta</span>
             </div>
             <div className="flex items-center justify-center gap-1.5">
@@ -225,7 +227,7 @@ export default function GameOverModal() {
                   }`}
                   title={`${g.opponent}: ${g.result === 'win' ? "G'alaba" : g.result === 'draw' ? 'Durang' : "Mag'lubiyat"}`}
                 >
-                  {g.result === 'win' ? '🏆 Gʻalaba' : g.result === 'draw' ? '🤝 Durang' : '❌ Magʻlub'}
+                  {g.result === 'win' ? t('result_win') : g.result === 'draw' ? t('result_draw') : t('result_loss')}
                 </div>
               ))}
             </div>
@@ -241,14 +243,14 @@ export default function GameOverModal() {
             }}
             className="w-full py-3 px-4 bg-[#81b64c] hover:bg-[#92c35a] text-white font-black text-sm rounded-xl shadow-[0_4px_0_#537a2e] active:translate-y-1 active:shadow-[0_0_0_#537a2e] transition-all flex items-center justify-center gap-2 cursor-pointer"
           >
-            <span>Yangi Oʻyin Boshlash</span>
+            <span>{t('btn_new_game')}</span>
           </button>
 
           <button
             onClick={() => setDismissed(true)}
             className="w-full py-2.5 px-4 bg-[#383531] hover:bg-[#45423c] text-[#c3c2be] hover:text-white font-bold text-xs rounded-xl border border-[#383531] shadow-[0_2px_0_#21201d] active:translate-y-0.5 transition-all"
           >
-            Doskani koʻzdan kechirish
+            {t('btn_review_board')}
           </button>
         </div>
       </div>

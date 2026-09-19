@@ -4,12 +4,14 @@
 
 import React from 'react';
 import { getAchievements } from '../store/userProfileStore';
+import { useTranslation } from '../i18n/translations';
 
 interface AchievementsScreenProps {
   onBack: () => void;
 }
 
 export default function AchievementsScreen({ onBack }: AchievementsScreenProps) {
+  const { t } = useTranslation();
   const achievements = getAchievements();
 
   return (
@@ -18,16 +20,16 @@ export default function AchievementsScreen({ onBack }: AchievementsScreenProps) 
       <header className="sticky top-0 z-30 backdrop-blur-xl bg-slate-950/85 border-b border-slate-800/80 px-4 py-3.5 flex items-center gap-3 pt-[max(0.8rem,env(safe-area-inset-top))]">
         <button
           onClick={onBack}
-          className="w-10 h-10 rounded-2xl bg-slate-900 border border-slate-800 text-slate-300 hover:text-amber-300 hover:border-amber-500/40 flex items-center justify-center text-lg font-bold transition-all active:scale-95"
-          title="Orqaga"
+          className="w-10 h-10 rounded-2xl bg-slate-900 border border-slate-800 text-slate-300 hover:text-amber-300 hover:border-amber-500/40 flex items-center justify-center text-lg font-bold transition-all active:scale-95 cursor-pointer"
+          title={t('back_btn')}
         >
           ←
         </button>
         <div>
           <h2 className="text-lg font-black tracking-tight text-slate-100">
-            Yutuqlar
+            {t('achievements_title')}
           </h2>
-          <p className="text-xs text-slate-400">Oʻyindagi yutuq va medallaringiz</p>
+          <p className="text-xs text-slate-400">{t('achievements_subtitle')}</p>
         </div>
       </header>
 

@@ -15,6 +15,7 @@ import {
 } from '../audio/sounds';
 import { speakUzbek, vibrateTouch } from '../audio/speech';
 import { onlineManager } from '../services/onlineService';
+import { AppLanguage, getAppLanguage, setAppLanguage } from '../i18n/translations';
 
 export type BoardTheme = 'wood' | 'emerald' | 'azure' | 'marble';
 export type TimeControl = 0 | 180 | 300 | 600; // 0=unlimited, 180=3m, 300=5m, 600=10m
@@ -29,6 +30,7 @@ export interface AppState {
   legalMoves: Move[];
   history: GameState[];           // Bekor qilish uchun tarix
   useNumericNotation: boolean;
+  language: AppLanguage;          // Tanlangan ilova tili
   gameMode: GameMode;
   aiColor: 'black' | 'white';
   aiDepth: number;                // 1=oson, 2=o'rta, 3=qiyin, 4=pro
@@ -83,7 +85,8 @@ type Action =
   | { type: 'SET_HINT'; move: Move | null }
   | { type: 'SET_ONLINE_ROOM'; roomCode: string | null; myColor: 'white' | 'black' | null }
   | { type: 'TOGGLE_3D' }
-  | { type: 'SET_3D'; enabled: boolean };
+  | { type: 'SET_3D'; enabled: boolean }
+  | { type: 'SET_LANGUAGE'; language: AppLanguage };
 
 // ── Boshlang'ich holat ────────────────────────────────
 
@@ -94,6 +97,7 @@ function createInitialAppState(): AppState {
     legalMoves: [],
     history: [],
     useNumericNotation: false,
+    language: getAppLanguage(),
     gameMode: 'pvp',
     aiColor: 'black',
     aiDepth: 2,
@@ -557,6 +561,11 @@ function gameReducer(state: AppState, action: Action): AppState {
 
     case 'DESELECT':
       return { ...state, selectedSquare: null, legalMoves: [] };
+
+    case 'SET_LANGUAGE': {
+      setAppLanguage(action.language);
+      return { ...state, language: action.language };
+    }
 
     default:
       return state;

@@ -25,6 +25,7 @@ import {
 } from '../components/Icons';
 import GoogleAuthModal from '../components/GoogleAuthModal';
 import { signOutGoogle } from '../services/authService';
+import { useTranslation } from '../i18n/translations';
 
 interface ProfileScreenProps {
   onBack: () => void;
@@ -59,6 +60,7 @@ export default function ProfileScreen({
   onOpenFriends,
   onOpenSettings,
 }: ProfileScreenProps) {
+  const { t } = useTranslation();
   const [profile, setProfile] = useState<UserProfile>(getUserProfile());
   const [isEditingName, setIsEditingName] = useState(false);
   const [nameInput, setNameInput] = useState(profile.name);
@@ -104,13 +106,13 @@ export default function ProfileScreen({
         </button>
 
         <h2 className="text-base font-extrabold text-white">
-          Foydalanuvchi Profili
+          {t('profile_title')}
         </h2>
 
         <button
           onClick={onOpenSettings}
           className="w-9 h-9 rounded-xl bg-[#383531] hover:bg-[#45423c] text-[#c3c2be] hover:text-white flex items-center justify-center transition-all active:scale-95 shadow-[0_2px_0_#21201d]"
-          title="Sozlamalar"
+          title={t('nav_settings')}
         >
           <SettingsIcon size={18} />
         </button>
@@ -153,7 +155,7 @@ export default function ProfileScreen({
               className="w-full max-w-xs py-3.5 px-5 rounded-2xl bg-white hover:bg-zinc-100 active:scale-95 text-slate-900 font-extrabold text-sm flex items-center justify-center gap-3 shadow-xl transition-all cursor-pointer border border-zinc-200"
             >
               <GoogleIcon size={20} />
-              <span>Google orqali kirish</span>
+              <span>{t('google_signin')}</span>
             </button>
           </div>
         ) : (
@@ -185,7 +187,7 @@ export default function ProfileScreen({
             {/* Google Tasdiq Belgisi */}
             <div className="flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-emerald-500/15 border border-emerald-500/30 text-[10px] font-bold text-emerald-400 mb-1.5">
               <GoogleIcon size={12} />
-              <span>Google bilan ulangan</span>
+              <span>{t('google_linked')}</span>
             </div>
 
             {/* Ism */}
@@ -201,7 +203,7 @@ export default function ProfileScreen({
                   onClick={handleSaveName}
                   className="px-3 py-1.5 bg-[#81b64c] hover:bg-[#92c35a] text-white font-bold text-xs rounded-xl shadow cursor-pointer"
                 >
-                  Saqlash
+                  {t('save_name_btn')}
                 </button>
               </div>
             ) : (
@@ -220,7 +222,7 @@ export default function ProfileScreen({
             {/* Reyting va Liga */}
             <div className="flex items-center gap-2 mt-2.5">
               <div className="flex items-center gap-1.5 px-3 py-1 rounded-xl bg-[#2c2a26] border border-[#383531] text-xs font-mono font-bold text-[#81b64c]">
-                <span>⭐ {profile.rating} reyting</span>
+                <span>⭐ {profile.rating} {t('rating_label')}</span>
               </div>
               <div className="px-3 py-1 rounded-xl bg-[#2c2a26] border border-[#383531] text-xs font-bold text-[#f5b041]">
                 {profile.league}
@@ -234,7 +236,7 @@ export default function ProfileScreen({
           {/* O'yinlar */}
           <div className="p-3 rounded-2xl bg-[#21201d] border border-[#383531] text-center shadow-sm">
             <div className="text-[10px] text-[#9b9893] font-bold uppercase tracking-wider mb-0.5">
-              Oʻyinlar
+              {t('stats_games')}
             </div>
             <div className="text-base font-black text-white font-mono">
               {profile.gamesPlayed}
@@ -244,7 +246,7 @@ export default function ProfileScreen({
           {/* G'alaba */}
           <div className="p-3 rounded-2xl bg-[#21201d] border border-[#383531] text-center shadow-sm">
             <div className="text-[10px] text-[#81b64c] font-bold uppercase tracking-wider mb-0.5">
-              Gʻalaba
+              {t('stats_wins')}
             </div>
             <div className="text-base font-black text-[#81b64c] font-mono">
               {profile.wins}
@@ -254,7 +256,7 @@ export default function ProfileScreen({
           {/* Durang */}
           <div className="p-3 rounded-2xl bg-[#21201d] border border-[#383531] text-center shadow-sm">
             <div className="text-[10px] text-[#5dade2] font-bold uppercase tracking-wider mb-0.5">
-              Durang
+              {t('stats_draws')}
             </div>
             <div className="text-base font-black text-[#5dade2] font-mono">
               {profile.draws}
@@ -264,7 +266,7 @@ export default function ProfileScreen({
           {/* Mag'lubiyat */}
           <div className="p-3 rounded-2xl bg-[#21201d] border border-[#383531] text-center shadow-sm">
             <div className="text-[10px] text-[#e74c3c] font-bold uppercase tracking-wider mb-0.5">
-              Magʻlub
+              {t('stats_losses')}
             </div>
             <div className="text-base font-black text-[#e74c3c] font-mono">
               {profile.losses}
@@ -275,7 +277,7 @@ export default function ProfileScreen({
         {/* G'alaba foizi indikatori */}
         <div className="p-3.5 rounded-2xl bg-[#21201d] border border-[#383531] shadow-sm">
           <div className="flex items-center justify-between text-xs mb-2 font-bold">
-            <span className="text-[#c3c2be]">Gʻalaba koʻrsatkichi:</span>
+            <span className="text-[#c3c2be]">{t('winrate_label')}:</span>
             <span className="text-[#81b64c] font-mono text-sm">{winRate}%</span>
           </div>
           <div className="w-full h-2 bg-[#181715] rounded-full overflow-hidden border border-[#383531]">
@@ -291,10 +293,10 @@ export default function ProfileScreen({
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
               <span className="text-base">📜</span>
-              <h4 className="text-sm font-black text-white">Oxirgi 5 ta Oʻyin Tarixi</h4>
+              <h4 className="text-sm font-black text-white">{t('recent_games_title')}</h4>
             </div>
             <span className="text-[10px] font-mono font-bold bg-[#181715] px-2.5 py-1 rounded-full border border-[#383531] text-amber-400">
-              {recentGames.slice(0, 5).length} / 5 ta saqlangan
+              {recentGames.slice(0, 5).length} / 5 {t('games_count_suffix')}
             </span>
           </div>
 
@@ -302,10 +304,10 @@ export default function ProfileScreen({
             <div className="p-4 rounded-2xl bg-[#181715] border border-[#383531] text-center space-y-1.5 py-5">
               <div className="text-2xl">♟️</div>
               <div className="text-xs font-bold text-slate-200">
-                Hali yakunlangan oʻyinlar mavjud emas
+                {t('no_recent_games')}
               </div>
               <p className="text-[11px] text-[#9b9893] max-w-xs mx-auto">
-                Kompyuter (AI) yoki onlayn raqib bilan oʻyin oʻynang va oxirgi 5 ta gʻalaba hamda duranglaringiz shu yerda saqlanadi.
+                {t('no_recent_games_desc')}
               </p>
             </div>
           ) : (
@@ -320,7 +322,7 @@ export default function ProfileScreen({
                   ? 'bg-sky-500/15 text-sky-400 border-sky-500/40'
                   : 'bg-red-500/15 text-red-400 border-red-500/40';
 
-                const badgeText = isWin ? '🏆 Gʻalaba' : isDraw ? '🤝 Durang' : '❌ Magʻlub';
+                const badgeText = isWin ? t('result_win') : isDraw ? t('result_draw') : t('result_loss');
 
                 return (
                   <div
@@ -379,7 +381,7 @@ export default function ProfileScreen({
                 <TrophyIcon size={18} />
               </div>
               <span className="font-bold text-sm text-white group-hover:text-[#81b64c] transition-colors">
-                Yutuqlar va Medallar
+                {t('action_achievements')}
               </span>
             </div>
             <div className="flex items-center gap-2">
@@ -397,7 +399,7 @@ export default function ProfileScreen({
                 <SwordsIcon size={18} />
               </div>
               <span className="font-bold text-sm text-white group-hover:text-[#81b64c] transition-colors">
-                Peshqadamlar Jadvali
+                {t('action_leaderboard')}
               </span>
             </div>
             <ChevronRightIcon size={16} className="text-[#686560]" />
@@ -413,7 +415,7 @@ export default function ProfileScreen({
                 <UsersIcon size={18} />
               </div>
               <span className="font-bold text-sm text-white group-hover:text-[#81b64c] transition-colors">
-                Doʻstlar & Onlayn Xonalar
+                {t('action_friends')}
               </span>
             </div>
             <ChevronRightIcon size={16} className="text-[#686560]" />
@@ -426,7 +428,7 @@ export default function ProfileScreen({
               className="w-full mt-4 p-3.5 rounded-2xl bg-red-500/10 hover:bg-red-500/20 border border-red-500/30 flex items-center justify-center gap-2.5 text-red-300 hover:text-red-200 text-xs font-bold transition-all active:scale-[0.99] shadow-sm cursor-pointer"
             >
               <LogOutIcon size={16} />
-              <span>Google hisobidan chiqish</span>
+              <span>{t('google_signout')}</span>
             </button>
           )}
         </div>

@@ -31,6 +31,7 @@ import {
   PauseIcon,
   StepForwardIcon,
 } from '../components/Icons';
+import { useTranslation } from '../i18n/translations';
 
 interface GameScreenProps {
   onBack: () => void;
@@ -39,6 +40,7 @@ interface GameScreenProps {
 
 export default function GameScreen({ onBack, onOpenSettings }: GameScreenProps) {
   const { state, dispatch } = useGame();
+  const { t } = useTranslation();
   const {
     game,
     gameMode,
@@ -240,18 +242,18 @@ export default function GameScreen({ onBack, onOpenSettings }: GameScreenProps) 
     dispatch({ type: 'SET_AI_VS_AI_SPEED', speed: nextSpeed });
   };
 
-  const AI_LEVEL_NAMES = ['', 'Havaskor (D-1)', "Tajribali (D-2)", 'Usta (D-3)', 'Grosmeyster (D-4)'];
+  const AI_LEVEL_NAMES = ['', t('ai_level_1'), t('ai_level_2'), t('ai_level_3'), t('ai_level_4')];
   const AI_LEVEL_RATINGS = [0, 1000, 1400, 1800, 2200];
 
   // Sarlavha matni
   const modeTitle =
     gameMode === 'online'
-      ? `Onlayn #${roomCode || ''}`
+      ? `${t('mode_online_title')} #${roomCode || ''}`
       : gameMode === 'vsAI'
-      ? `Bot bilan • ${AI_LEVEL_NAMES[aiDepth] || 'AI'}`
+      ? `${t('mode_vs_ai_title')} • ${AI_LEVEL_NAMES[aiDepth] || 'AI'}`
       : gameMode === 'aiVsAi'
-      ? 'Bot vs Bot (Avtomat)'
-      : "Doʻst bilan";
+      ? t('mode_ai_vs_ai_title')
+      : t('mode_pvp_title');
 
   // Maslahat olish
   const handleGetHint = async () => {
@@ -287,12 +289,12 @@ export default function GameScreen({ onBack, onOpenSettings }: GameScreenProps) 
   // Raqib va pastki o'yinchi ma'lumotlari
   const opponentName =
     gameMode === 'online'
-      ? 'Raqib'
+      ? t('player_label')
       : gameMode === 'vsAI'
       ? `Nur Bot (${AI_LEVEL_NAMES[aiDepth] || 'AI'})`
       : gameMode === 'aiVsAi'
-      ? (topColor === 'black' ? `Qora Bot (D-${aiBlackDepth})` : `Oq Bot (D-${aiWhiteDepth})`)
-      : '2-Oʻyinchi';
+      ? (topColor === 'black' ? `${t('black_color')} Bot (D-${aiBlackDepth})` : `${t('white_color')} Bot (D-${aiWhiteDepth})`)
+      : `2-${t('player_label')}`;
 
   const opponentRating =
     gameMode === 'online'
@@ -305,8 +307,8 @@ export default function GameScreen({ onBack, onOpenSettings }: GameScreenProps) 
 
   const bottomName =
     gameMode === 'aiVsAi'
-      ? (bottomColor === 'white' ? `Oq Bot (D-${aiWhiteDepth})` : `Qora Bot (D-${aiBlackDepth})`)
-      : (userProfile.name || 'Siz');
+      ? (bottomColor === 'white' ? `${t('white_color')} Bot (D-${aiWhiteDepth})` : `${t('black_color')} Bot (D-${aiBlackDepth})`)
+      : (userProfile.name || t('player_label'));
 
   const bottomRating =
     gameMode === 'aiVsAi'
@@ -350,32 +352,32 @@ export default function GameScreen({ onBack, onOpenSettings }: GameScreenProps) 
               {game.isInCheck && !isGameOver ? (
                 <span className="text-red-400 flex items-center gap-1 font-black animate-pulse">
                   <span>🔥</span>
-                  <span>SHOH! Shoh xavf ostida!</span>
+                  <span>{t('check_alert')}</span>
                 </span>
               ) : gameMode === 'online' && !isGameOver ? (
                 isMyTurn ? (
                   <span className="text-[#81b64c] flex items-center gap-1 font-bold">
                     <span className="w-2 h-2 rounded-full bg-[#81b64c] animate-ping" />
-                    Sizning navbatingiz ({onlinePlayerColor === 'white' ? 'Oq' : 'Qora'})
+                    {t('your_turn')} ({onlinePlayerColor === 'white' ? t('white_color') : t('black_color')})
                   </span>
                 ) : (
                   <span className="text-amber-400 flex items-center gap-1 font-semibold">
                     <span className="w-2 h-2 rounded-full bg-amber-400 animate-pulse" />
-                    Raqib yurishini kuting ({onlinePlayerColor === 'white' ? 'Qora' : 'Oq'})
+                    {t('wait_opponent')} ({onlinePlayerColor === 'white' ? t('black_color') : t('white_color')})
                   </span>
                 )
               ) : isMyTurn && !isGameOver ? (
                 <span className="text-[#81b64c] flex items-center gap-1">
                   <span className="w-1.5 h-1.5 rounded-full bg-[#81b64c] animate-ping" />
-                  Sizning navbatingiz
+                  {t('your_turn')}
                 </span>
               ) : !isGameOver ? (
                 <span className="text-[#9b9893] flex items-center gap-1">
                   <span className="w-1.5 h-1.5 rounded-full bg-amber-400/80 animate-pulse" />
-                  {gameMode === 'vsAI' && aiThinking ? "Bot oʻylamoqda..." : "Raqib yurishi"}
+                  {gameMode === 'vsAI' && aiThinking ? t('bot_thinking') : t('opponent_turn')}
                 </span>
               ) : (
-                <span className="text-[#9b9893]">Oʻyin yakunlandi</span>
+                <span className="text-[#9b9893]">{t('game_finished')}</span>
               )}
             </div>
           </div>
@@ -384,7 +386,7 @@ export default function GameScreen({ onBack, onOpenSettings }: GameScreenProps) 
             <button
               onClick={() => setShowHistoryModal(true)}
               className="lg:hidden relative w-9 h-9 rounded-xl bg-[#383531] hover:bg-[#45423c] text-[#c3c2be] hover:text-white flex items-center justify-center transition-all active:scale-95 shadow-[0_2px_0_#21201d]"
-              title="Harakatlar tarixi"
+              title={t('history_title')}
             >
               <ScrollTextIcon size={18} />
               {moveHistory.length > 0 && (
@@ -396,7 +398,7 @@ export default function GameScreen({ onBack, onOpenSettings }: GameScreenProps) 
             <button
               onClick={() => dispatch({ type: 'TOGGLE_FLIP' })}
               className="w-9 h-9 rounded-xl bg-[#383531] hover:bg-[#45423c] text-[#c3c2be] hover:text-white flex items-center justify-center transition-all active:scale-95 shadow-[0_2px_0_#21201d]"
-              title="Doskani aylantirish"
+              title={t('btn_flip')}
             >
               <RotateCwIcon size={18} />
             </button>
@@ -408,7 +410,7 @@ export default function GameScreen({ onBack, onOpenSettings }: GameScreenProps) 
                     ? 'bg-white text-[#21201d] shadow-sm'
                     : 'text-[#8e8b84] hover:text-[#c3c2be]'
                 }`}
-                title="2D Tekis ko'rinish"
+                title="2D"
               >
                 2D
               </button>
@@ -419,7 +421,7 @@ export default function GameScreen({ onBack, onOpenSettings }: GameScreenProps) 
                     ? 'bg-gradient-to-r from-amber-500 to-amber-600 text-slate-950 shadow-[0_0_8px_rgba(245,158,11,0.6)] ring-1 ring-amber-300'
                     : 'text-[#8e8b84] hover:text-[#c3c2be]'
                 }`}
-                title="Kitobdagidek 3D Fazoviy ko'rinish"
+                title="3D"
               >
                 <span>🎲</span>
                 <span>3D</span>
@@ -434,7 +436,7 @@ export default function GameScreen({ onBack, onOpenSettings }: GameScreenProps) 
                   ? 'bg-red-500/25 hover:bg-red-500/35 text-red-300 border-red-500/60 animate-pulse'
                   : 'bg-[#383531] hover:bg-[#45423c] text-[#c3c2be] hover:text-white border-[#45423c]'
               }`}
-              title="Tizim loglari va nosozliklar jurnali"
+              title="Log"
             >
               <span>{errorCount > 0 ? '⚠️' : '🛡️'}</span>
               <span className="hidden sm:inline">{errorCount > 0 ? `${errorCount} xato` : 'Log'}</span>
@@ -444,7 +446,7 @@ export default function GameScreen({ onBack, onOpenSettings }: GameScreenProps) 
               <button
                 onClick={onOpenSettings}
                 className="w-9 h-9 rounded-xl bg-[#383531] hover:bg-[#45423c] text-[#c3c2be] hover:text-white flex items-center justify-center transition-all active:scale-95 shadow-[0_2px_0_#21201d]"
-                title="Sozlamalar"
+                title={t('nav_settings')}
               >
                 <SettingsIcon size={18} />
               </button>
@@ -463,7 +465,7 @@ export default function GameScreen({ onBack, onOpenSettings }: GameScreenProps) 
             <span>⚠️</span>
             <span className="truncate">{lastWarning}</span>
           </div>
-          <span className="shrink-0 underline text-[11px] font-black">Loglarni koʻrish</span>
+          <span className="shrink-0 underline text-[11px] font-black">Log</span>
         </div>
       )}
 
@@ -495,13 +497,13 @@ export default function GameScreen({ onBack, onOpenSettings }: GameScreenProps) 
                     {opponentName}
                   </span>
                   <span className="text-[10px] font-bold text-[#81b64c] bg-[#81b64c]/15 px-1.5 py-0.2 rounded">
-                    {topColor === 'white' ? 'Oq' : 'Qora'}
+                    {topColor === 'white' ? t('white_color') : t('black_color')}
                   </span>
                   {gameMode === 'vsAI' && (
                     <button
                       onClick={() => setShowVsAiLevelModal(true)}
                       className="text-[10px] font-bold text-amber-300 bg-amber-500/20 hover:bg-amber-500/30 border border-amber-500/40 px-1.5 py-0.2 rounded-md flex items-center gap-1 transition-all cursor-pointer active:scale-95"
-                      title="Bot darajasini almashtirish"
+                      title={t('ai_level_change_title')}
                     >
                       <span>🎯 {AI_LEVEL_NAMES[aiDepth]}</span>
                       <span className="text-[8px] text-amber-400">✎</span>
@@ -510,17 +512,17 @@ export default function GameScreen({ onBack, onOpenSettings }: GameScreenProps) 
                   {(gameMode === 'vsAI' || gameMode === 'aiVsAi') && isTopTurn && aiThinking && (
                     <span className="text-[10px] font-bold text-amber-400 bg-amber-400/15 px-1.5 py-0.2 rounded flex items-center gap-1 animate-pulse">
                       <span className="w-1.5 h-1.5 rounded-full bg-amber-400 animate-ping" />
-                      Oʻylamoqda...
+                      {t('bot_thinking')}
                     </span>
                   )}
                   {gameMode === 'aiVsAi' && isTopTurn && aiVsAiPaused && !isGameOver && (
                     <span className="text-[10px] font-bold text-zinc-400 bg-zinc-800 px-1.5 py-0.2 rounded">
-                      Pauzada
+                      {t('paused_status')}
                     </span>
                   )}
                 </div>
                 <div className="text-[10px] text-[#9b9893] font-mono leading-none">
-                  {opponentRating} {gameMode === 'aiVsAi' ? '' : 'reyting'}
+                  {opponentRating} {gameMode === 'aiVsAi' ? '' : t('rating_label')}
                 </div>
               </div>
             </div>
@@ -548,14 +550,14 @@ export default function GameScreen({ onBack, onOpenSettings }: GameScreenProps) 
               <div className="flex items-center gap-1.5 font-semibold">
                 <span>Doska:</span>
                 <span className={is3D ? "text-amber-400 font-black flex items-center gap-1" : "text-white font-bold"}>
-                  {is3D ? "🎲 3D Fazoviy (Kitob)" : "📐 2D Tekis"}
+                  {is3D ? t('view_3d') : t('view_2d')}
                 </span>
               </div>
               <button
                 onClick={() => dispatch({ type: 'TOGGLE_3D' })}
                 className="text-[11px] font-extrabold text-amber-400 hover:text-amber-300 active:scale-95 transition-all underline underline-offset-2 flex items-center gap-1"
               >
-                {is3D ? "📐 2D ga oʻtish" : "🎲 3D ga oʻtish"}
+                {is3D ? t('switch_to_2d') : t('switch_to_3d')}
               </button>
             </div>
 
@@ -609,22 +611,22 @@ export default function GameScreen({ onBack, onOpenSettings }: GameScreenProps) 
                     {bottomName}
                   </span>
                   <span className="text-[10px] font-bold text-[#81b64c] bg-[#81b64c]/15 px-1.5 py-0.2 rounded">
-                    {bottomColor === 'white' ? 'Oq' : 'Qora'}
+                    {bottomColor === 'white' ? t('white_color') : t('black_color')}
                   </span>
                   {gameMode === 'aiVsAi' && isBottomTurn && aiThinking && (
                     <span className="text-[10px] font-bold text-amber-400 bg-amber-400/15 px-1.5 py-0.2 rounded flex items-center gap-1 animate-pulse">
                       <span className="w-1.5 h-1.5 rounded-full bg-amber-400 animate-ping" />
-                      Oʻylamoqda...
+                      {t('bot_thinking')}
                     </span>
                   )}
                   {gameMode === 'aiVsAi' && isBottomTurn && aiVsAiPaused && !isGameOver && (
                     <span className="text-[10px] font-bold text-zinc-400 bg-zinc-800 px-1.5 py-0.2 rounded">
-                      Pauzada
+                      {t('paused_status')}
                     </span>
                   )}
                 </div>
                 <div className="text-[10px] text-[#81b64c] font-mono font-semibold leading-none">
-                  {bottomRating} {gameMode === 'aiVsAi' ? '' : 'reyting'}
+                  {bottomRating} {gameMode === 'aiVsAi' ? '' : t('rating_label')}
                 </div>
               </div>
             </div>
@@ -657,7 +659,7 @@ export default function GameScreen({ onBack, onOpenSettings }: GameScreenProps) 
                 <button
                   onClick={() => setShowVsAiLevelModal(true)}
                   className="text-[10px] font-mono text-amber-400 bg-amber-400/15 hover:bg-amber-400/25 border border-amber-400/30 px-2 py-0.5 rounded-full font-bold flex items-center gap-1 cursor-pointer transition-all"
-                  title="Bot darajasini almashtirish"
+                  title={t('ai_level_change_title')}
                 >
                   <span>{AI_LEVEL_NAMES[aiDepth]}</span>
                   <span className="text-[8px]">✎</span>
@@ -674,12 +676,12 @@ export default function GameScreen({ onBack, onOpenSettings }: GameScreenProps) 
               <span className="text-[#9b9893] font-medium">Navbat:</span>
               {game.isInCheck && !isGameOver ? (
                 <span className="text-red-400 font-black animate-pulse flex items-center gap-1">
-                  🔥 SHOH XAVFDA!
+                  🔥 {t('check_alert')}
                 </span>
               ) : (
                 <span className="font-bold flex items-center gap-2 text-white">
                   <span className={`w-2.5 h-2.5 rounded-full ${currentTurn === 'white' ? 'bg-white shadow-[0_0_6px_rgba(255,255,255,0.8)]' : 'bg-[#383531] border border-white/60'}`} />
-                  {currentTurn === 'white' ? 'Oqlar yurishi' : 'Qoralar yurishi'}
+                  {currentTurn === 'white' ? t('turn_white') : t('turn_black')}
                 </span>
               )}
             </div>
@@ -708,7 +710,7 @@ export default function GameScreen({ onBack, onOpenSettings }: GameScreenProps) 
                     }`}
                   >
                     {aiVsAiPaused ? <PlayIcon size={16} /> : <PauseIcon size={16} />}
-                    <span>{aiVsAiPaused ? 'Davom (Play)' : 'Pauza'}</span>
+                    <span>{aiVsAiPaused ? t('btn_play') : t('btn_pause')}</span>
                   </button>
 
                   {/* Bitta qadam (Step) */}
@@ -716,10 +718,10 @@ export default function GameScreen({ onBack, onOpenSettings }: GameScreenProps) 
                     onClick={handleStepAiVsAi}
                     disabled={isGameOver || aiThinking}
                     className="py-2.5 px-3 rounded-xl bg-[#2b2926] hover:bg-[#383531] disabled:opacity-30 border border-[#3d3a34] text-sky-400 hover:text-sky-300 font-bold text-xs flex items-center justify-center gap-2 transition-all shadow-[0_2px_0_#1a1917] active:translate-y-0.5 cursor-pointer"
-                    title="Bitta yurish qildirish"
+                    title={t('btn_step')}
                   >
                     <StepForwardIcon size={16} />
-                    <span>Qadam</span>
+                    <span>{t('btn_step')}</span>
                   </button>
                 </div>
 
@@ -728,7 +730,7 @@ export default function GameScreen({ onBack, onOpenSettings }: GameScreenProps) 
                   <button
                     onClick={handleCycleSpeed}
                     className="py-2 px-1 rounded-xl bg-[#2b2926] hover:bg-[#383531] border border-[#3d3a34] text-amber-300 hover:text-amber-200 font-bold text-xs flex items-center justify-center gap-1 transition-all cursor-pointer"
-                    title="Yurishlar tezligini almashtirish"
+                    title="Speed"
                   >
                     <span>⚡</span>
                     <span className="text-[11px]">{aiVsAiSpeed >= 1000 ? `${aiVsAiSpeed / 1000}s` : `${aiVsAiSpeed}ms`}</span>
@@ -738,10 +740,10 @@ export default function GameScreen({ onBack, onOpenSettings }: GameScreenProps) 
                   <button
                     onClick={() => dispatch({ type: 'NEW_GAME' })}
                     className="py-2 px-1 rounded-xl bg-[#2b2926] hover:bg-[#383531] border border-[#3d3a34] text-[#c3c2be] hover:text-white font-bold text-xs flex items-center justify-center gap-1 transition-all cursor-pointer"
-                    title="Yangi jangni boshlash"
+                    title={t('btn_restart')}
                   >
                     <RotateCwIcon size={14} />
-                    <span className="text-[11px]">Qayta</span>
+                    <span className="text-[11px]">{t('btn_restart')}</span>
                   </button>
 
                   {/* To'xtatish */}
@@ -749,10 +751,10 @@ export default function GameScreen({ onBack, onOpenSettings }: GameScreenProps) 
                     onClick={() => dispatch({ type: 'RESIGN' })}
                     disabled={isGameOver}
                     className="py-2 px-1 rounded-xl bg-[#2b2926] hover:bg-[#383531] disabled:opacity-30 border border-[#3d3a34] text-[#e74c3c] hover:text-[#ec7063] font-bold text-xs flex items-center justify-center gap-1 transition-all cursor-pointer"
-                    title="O'yinni to'xtatish"
+                    title={t('btn_resign')}
                   >
                     <FlagIcon size={14} />
-                    <span className="text-[11px]">Toʻxtat</span>
+                    <span className="text-[11px]">{t('btn_resign')}</span>
                   </button>
                 </div>
               </div>
@@ -766,7 +768,7 @@ export default function GameScreen({ onBack, onOpenSettings }: GameScreenProps) 
                     className="py-2.5 px-3 rounded-xl bg-[#2b2926] hover:bg-[#383531] disabled:opacity-30 border border-[#3d3a34] text-[#c3c2be] hover:text-white font-bold text-xs flex items-center justify-center gap-2 transition-all shadow-[0_2px_0_#1a1917] active:translate-y-0.5 cursor-pointer"
                   >
                     <RotateCcwIcon size={16} />
-                    <span>Bekor qilish</span>
+                    <span>{t('btn_undo')}</span>
                   </button>
 
                   <button
@@ -775,7 +777,7 @@ export default function GameScreen({ onBack, onOpenSettings }: GameScreenProps) 
                     className="py-2.5 px-3 rounded-xl bg-[#2b2926] hover:bg-[#383531] disabled:opacity-30 border border-[#3d3a34] text-[#81b64c] hover:text-[#99cc59] font-bold text-xs flex items-center justify-center gap-2 transition-all shadow-[0_2px_0_#1a1917] active:translate-y-0.5 cursor-pointer"
                   >
                     <LightbulbIcon size={16} />
-                    <span>{hintLoading ? '...' : 'Maslahat'}</span>
+                    <span>{hintLoading ? '...' : t('btn_hint')}</span>
                   </button>
                 </div>
 
@@ -783,30 +785,30 @@ export default function GameScreen({ onBack, onOpenSettings }: GameScreenProps) 
                   <button
                     onClick={() => dispatch({ type: 'TOGGLE_FLIP' })}
                     className="py-2 px-1.5 rounded-xl bg-[#2b2926] hover:bg-[#383531] border border-[#3d3a34] text-[#c3c2be] hover:text-white font-bold text-xs flex items-center justify-center gap-1.5 transition-all shadow-[0_2px_0_#1a1917] active:translate-y-0.5 cursor-pointer"
-                    title="Doskani aylantirish"
+                    title={t('btn_flip')}
                   >
                     <RotateCwIcon size={14} />
-                    <span className="text-[11px]">Aylantir</span>
+                    <span className="text-[11px]">{t('btn_flip')}</span>
                   </button>
 
                   <button
                     onClick={() => dispatch({ type: 'OFFER_DRAW' })}
                     disabled={isGameOver}
                     className="py-2 px-1.5 rounded-xl bg-[#2b2926] hover:bg-[#383531] disabled:opacity-30 border border-[#3d3a34] text-[#5dade2] hover:text-[#7fb3d5] font-bold text-xs flex items-center justify-center gap-1.5 transition-all shadow-[0_2px_0_#1a1917] active:translate-y-0.5 cursor-pointer"
-                    title="Durang taklif qilish"
+                    title={t('btn_draw')}
                   >
                     <HandshakeIcon size={14} />
-                    <span className="text-[11px]">Durang</span>
+                    <span className="text-[11px]">{t('btn_draw')}</span>
                   </button>
 
                   <button
                     onClick={() => dispatch({ type: 'RESIGN' })}
                     disabled={isGameOver}
                     className="py-2 px-1.5 rounded-xl bg-[#2b2926] hover:bg-[#383531] disabled:opacity-30 border border-[#3d3a34] text-[#e74c3c] hover:text-[#ec7063] font-bold text-xs flex items-center justify-center gap-1.5 transition-all shadow-[0_2px_0_#1a1917] active:translate-y-0.5 cursor-pointer"
-                    title="Taslim bo'lish"
+                    title={t('btn_resign')}
                   >
                     <FlagIcon size={14} />
-                    <span className="text-[11px]">Taslim</span>
+                    <span className="text-[11px]">{t('btn_resign')}</span>
                   </button>
                 </div>
               </>
@@ -817,9 +819,9 @@ export default function GameScreen({ onBack, onOpenSettings }: GameScreenProps) 
               <button
                 onClick={handleEmergencyReset}
                 className="w-full py-1.5 px-2 rounded-xl bg-amber-500/20 hover:bg-amber-500/30 border border-amber-500/50 text-amber-300 font-bold text-xs flex items-center justify-center gap-1.5 transition-all animate-pulse cursor-pointer"
-                title="Bot hisoblashini to'xtatish va doskani tiklash"
+                title={t('btn_emergency_unfreeze')}
               >
-                <span>⚡ Majburiy tiklash (Unfreeze)</span>
+                <span>{t('btn_emergency_unfreeze')}</span>
               </button>
             )}
           </div>
@@ -841,7 +843,7 @@ export default function GameScreen({ onBack, onOpenSettings }: GameScreenProps) 
               }`}
             >
               {aiVsAiPaused ? <PlayIcon size={18} /> : <PauseIcon size={18} />}
-              <span className="text-[10px]">{aiVsAiPaused ? 'Davom' : 'Pauza'}</span>
+              <span className="text-[10px]">{aiVsAiPaused ? t('btn_play') : t('btn_pause')}</span>
             </button>
 
             {/* Step */}
@@ -851,7 +853,7 @@ export default function GameScreen({ onBack, onOpenSettings }: GameScreenProps) 
               className="py-2 px-2 rounded-xl bg-[#2b2926] hover:bg-[#383531] disabled:opacity-30 border border-[#3d3a34] text-sky-400 font-bold text-xs flex flex-col items-center justify-center gap-1 transition-all shadow-[0_2px_0_#1a1917] active:translate-y-0.5"
             >
               <StepForwardIcon size={18} />
-              <span className="text-[10px]">Qadam</span>
+              <span className="text-[10px]">{t('btn_step')}</span>
             </button>
 
             {/* Tezlik */}
@@ -869,7 +871,7 @@ export default function GameScreen({ onBack, onOpenSettings }: GameScreenProps) 
               className="py-2 px-2 rounded-xl bg-[#2b2926] hover:bg-[#383531] border border-[#3d3a34] text-[#c3c2be] hover:text-white font-bold text-xs flex flex-col items-center justify-center gap-1 transition-all shadow-[0_2px_0_#1a1917] active:translate-y-0.5"
             >
               <RotateCwIcon size={18} />
-              <span className="text-[10px]">Qayta</span>
+              <span className="text-[10px]">{t('btn_restart')}</span>
             </button>
           </div>
         ) : (
@@ -879,10 +881,10 @@ export default function GameScreen({ onBack, onOpenSettings }: GameScreenProps) 
               onClick={() => dispatch({ type: 'UNDO' })}
               disabled={history.length === 0 || isGameOver || gameMode === 'online'}
               className="py-2 px-2 rounded-xl bg-[#2b2926] hover:bg-[#383531] disabled:opacity-30 border border-[#3d3a34] text-[#c3c2be] hover:text-white font-bold text-xs flex flex-col items-center justify-center gap-1 transition-all shadow-[0_2px_0_#1a1917] active:translate-y-0.5 active:shadow-[0_0_0_#1a1917]"
-              title="Yurishni bekor qilish"
+              title={t('btn_undo')}
             >
               <RotateCcwIcon size={18} />
-              <span className="text-[10px]">Bekor</span>
+              <span className="text-[10px]">{t('btn_undo')}</span>
             </button>
 
             {/* Maslahat */}
@@ -890,10 +892,10 @@ export default function GameScreen({ onBack, onOpenSettings }: GameScreenProps) 
               onClick={handleGetHint}
               disabled={isGameOver || hintLoading}
               className="py-2.5 px-2 rounded-xl bg-[#2b2926] hover:bg-[#383531] disabled:opacity-30 border border-[#3d3a34] text-[#81b64c] hover:text-[#99cc59] font-bold text-xs flex flex-col items-center justify-center gap-1 transition-all shadow-[0_2px_0_#1a1917] active:translate-y-0.5 active:shadow-[0_0_0_#1a1917]"
-              title="Maslahat"
+              title={t('btn_hint')}
             >
               <LightbulbIcon size={18} />
-              <span className="text-[10px]">{hintLoading ? '...' : 'Maslahat'}</span>
+              <span className="text-[10px]">{hintLoading ? '...' : t('btn_hint')}</span>
             </button>
 
             {/* Durang taklif */}
@@ -903,10 +905,10 @@ export default function GameScreen({ onBack, onOpenSettings }: GameScreenProps) 
               }}
               disabled={isGameOver}
               className="py-2.5 px-2 rounded-xl bg-[#2b2926] hover:bg-[#383531] disabled:opacity-30 border border-[#3d3a34] text-[#5dade2] hover:text-[#7fb3d5] font-bold text-xs flex flex-col items-center justify-center gap-1 transition-all shadow-[0_2px_0_#1a1917] active:translate-y-0.5 active:shadow-[0_0_0_#1a1917]"
-              title="Durang taklifi"
+              title={t('btn_draw')}
             >
               <HandshakeIcon size={18} />
-              <span className="text-[10px]">Durang</span>
+              <span className="text-[10px]">{t('btn_draw')}</span>
             </button>
 
             {/* Taslim */}
@@ -916,10 +918,10 @@ export default function GameScreen({ onBack, onOpenSettings }: GameScreenProps) 
               }}
               disabled={isGameOver}
               className="py-2.5 px-2 rounded-xl bg-[#2b2926] hover:bg-[#383531] disabled:opacity-30 border border-[#3d3a34] text-[#e74c3c] hover:text-[#ec7063] font-bold text-xs flex flex-col items-center justify-center gap-1 transition-all shadow-[0_2px_0_#1a1917] active:translate-y-0.5 active:shadow-[0_0_0_#1a1917]"
-              title="Taslim bo'lish"
+              title={t('btn_resign')}
             >
               <FlagIcon size={18} />
-              <span className="text-[10px]">Taslim</span>
+              <span className="text-[10px]">{t('btn_resign')}</span>
             </button>
           </div>
         )}
@@ -932,7 +934,7 @@ export default function GameScreen({ onBack, onOpenSettings }: GameScreenProps) 
             <div className="flex items-center justify-between pb-3 border-b border-[#383531] mb-2">
               <div className="flex items-center gap-2 font-bold text-sm text-white">
                 <ScrollTextIcon size={18} className="text-[#81b64c]" />
-                <span>Harakatlar Tarixi</span>
+                <span>{t('history_title')}</span>
               </div>
               <button
                 onClick={() => setShowHistoryModal(false)}
@@ -962,7 +964,7 @@ export default function GameScreen({ onBack, onOpenSettings }: GameScreenProps) 
             <div className="flex items-center justify-between pb-3 border-b border-[#383531]">
               <div className="flex items-center gap-2">
                 <BotIcon size={20} className="text-[#81b64c]" />
-                <h3 className="font-bold text-white text-base">Bot Darajasini Tanlang</h3>
+                <h3 className="font-bold text-white text-base">{t('ai_level_change_title')}</h3>
               </div>
               <button
                 onClick={() => setShowVsAiLevelModal(false)}
@@ -974,10 +976,10 @@ export default function GameScreen({ onBack, onOpenSettings }: GameScreenProps) 
 
             <div className="space-y-2">
               {[
-                { depth: 1, name: 'Havaskor', rating: '1000 reyting', desc: 'Tez va qulay oʻyin, yangi oʻrganuvchilar uchun', badge: 'D-1' },
-                { depth: 2, name: 'Tajribali', rating: '1400 reyting', desc: 'Standart taktikalar va mustahkam himoya', badge: 'D-2' },
-                { depth: 3, name: 'Usta', rating: '1800 reyting', desc: 'Chuqur hisob-kitob va xavfli kombinatsiyalar', badge: 'D-3' },
-                { depth: 4, name: 'Grosmeyster', rating: '2200 reyting', desc: 'Maksimal chuqurlikdagi mukammal tahlil', badge: 'D-4' },
+                { depth: 1, name: AI_LEVEL_NAMES[1], rating: '1000 ' + t('rating_label'), desc: 'D-1', badge: 'D-1' },
+                { depth: 2, name: AI_LEVEL_NAMES[2], rating: '1400 ' + t('rating_label'), desc: 'D-2', badge: 'D-2' },
+                { depth: 3, name: AI_LEVEL_NAMES[3], rating: '1800 ' + t('rating_label'), desc: 'D-3', badge: 'D-3' },
+                { depth: 4, name: AI_LEVEL_NAMES[4], rating: '2200 ' + t('rating_label'), desc: 'D-4', badge: 'D-4' },
               ].map((lvl) => {
                 const isSelected = aiDepth === lvl.depth;
                 return (
@@ -986,7 +988,7 @@ export default function GameScreen({ onBack, onOpenSettings }: GameScreenProps) 
                     onClick={() => {
                       dispatch({ type: 'SET_AI_DEPTH', depth: lvl.depth });
                       setShowVsAiLevelModal(false);
-                      logger.logInfo('UI', `Bot darajasi o'zgartirildi: ${lvl.name} (D-${lvl.depth})`);
+                      logger.logInfo('UI', `Bot darajasi: ${lvl.name} (D-${lvl.depth})`);
                     }}
                     className={`w-full p-3 rounded-xl border text-left flex items-center justify-between transition-all cursor-pointer ${
                       isSelected
@@ -1008,7 +1010,7 @@ export default function GameScreen({ onBack, onOpenSettings }: GameScreenProps) 
                     <div className="text-right shrink-0">
                       <span className="text-xs font-mono font-bold text-amber-400 block">{lvl.rating}</span>
                       {isSelected && (
-                        <span className="text-[10px] text-[#81b64c] font-bold">Faol ✓</span>
+                        <span className="text-[10px] text-[#81b64c] font-bold">✓</span>
                       )}
                     </div>
                   </button>
@@ -1020,7 +1022,7 @@ export default function GameScreen({ onBack, onOpenSettings }: GameScreenProps) 
               onClick={() => setShowVsAiLevelModal(false)}
               className="w-full py-2.5 rounded-xl bg-[#383531] hover:bg-[#45423c] text-white font-bold text-sm transition-all cursor-pointer"
             >
-              Yopish
+              {t('close_btn')}
             </button>
           </div>
         </div>

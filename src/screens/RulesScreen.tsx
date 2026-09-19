@@ -14,6 +14,7 @@ import BoardDiagram, {
 } from '../components/BoardDiagram';
 import { PieceType, FILES } from '../engine/types';
 import { ArrowLeftIcon } from '../components/Icons';
+import { useTranslation } from '../i18n/translations';
 
 interface RulesScreenProps {
   onBack: () => void;
@@ -22,6 +23,7 @@ interface RulesScreenProps {
 type TabKey = 'basic' | 'pieces' | 'special' | 'openings';
 
 export default function RulesScreen({ onBack }: RulesScreenProps) {
+  const { t } = useTranslation();
   const [activeTab, setActiveTab] = useState<TabKey>('basic');
   const [selectedPieceIndex, setSelectedPieceIndex] = useState<number>(0);
   const [openAccordions, setOpenAccordions] = useState<Record<string, boolean>>({
@@ -387,8 +389,8 @@ export default function RulesScreen({ onBack }: RulesScreenProps) {
       <header className="sticky top-0 z-30 bg-[#21201d]/95 backdrop-blur-md border-b border-[#383531] px-4 py-3 flex items-center gap-3 pt-[max(0.7rem,env(safe-area-inset-top))]">
         <button
           onClick={onBack}
-          className="w-9 h-9 rounded-xl bg-[#383531] hover:bg-[#45423c] text-[#c3c2be] hover:text-white flex items-center justify-center transition-all active:scale-95 shadow-[0_2px_0_#21201d]"
-          title="Orqaga"
+          className="w-9 h-9 rounded-xl bg-[#383531] hover:bg-[#45423c] text-[#c3c2be] hover:text-white flex items-center justify-center transition-all active:scale-95 shadow-[0_2px_0_#21201d] cursor-pointer"
+          title={t('back_btn')}
         >
           <ArrowLeftIcon size={18} />
         </button>
@@ -396,7 +398,7 @@ export default function RulesScreen({ onBack }: RulesScreenProps) {
           <h2 className="text-base font-extrabold text-white flex items-center gap-2">
             <span>NUR CHESS 100</span>
             <span className="text-[10px] uppercase font-mono px-1.5 py-0.5 rounded bg-[#81b64c]/20 text-[#81b64c] border border-[#81b64c]/30">
-              Qoidalar & Darslik
+              {t('nav_rules')}
             </span>
           </h2>
           <p className="text-[11px] text-[#9b9893]">
@@ -411,43 +413,43 @@ export default function RulesScreen({ onBack }: RulesScreenProps) {
         <div className="grid grid-cols-4 bg-[#21201d] p-1 rounded-xl border border-[#383531] gap-1 text-[11px] font-bold">
           <button
             onClick={() => setActiveTab('basic')}
-            className={`py-2 rounded-lg transition-all ${
+            className={`py-2 rounded-lg transition-all cursor-pointer ${
               activeTab === 'basic'
                 ? 'bg-[#81b64c] text-white shadow-sm font-black'
                 : 'text-[#9b9893] hover:text-white'
             }`}
           >
-            Asosiy
+            {t('rules_tab_basic')}
           </button>
           <button
             onClick={() => setActiveTab('pieces')}
-            className={`py-2 rounded-lg transition-all ${
+            className={`py-2 rounded-lg transition-all cursor-pointer ${
               activeTab === 'pieces'
                 ? 'bg-[#81b64c] text-white shadow-sm font-black'
                 : 'text-[#9b9893] hover:text-white'
             }`}
           >
-            Donalar
+            {t('rules_tab_pieces')}
           </button>
           <button
             onClick={() => setActiveTab('special')}
-            className={`py-2 rounded-lg transition-all ${
+            className={`py-2 rounded-lg transition-all cursor-pointer ${
               activeTab === 'special'
                 ? 'bg-[#81b64c] text-white shadow-sm font-black'
                 : 'text-[#9b9893] hover:text-white'
             }`}
           >
-            Rokirovka
+            {t('rules_tab_castling')}
           </button>
           <button
             onClick={() => setActiveTab('openings')}
-            className={`py-2 rounded-lg transition-all ${
+            className={`py-2 rounded-lg transition-all cursor-pointer ${
               activeTab === 'openings'
                 ? 'bg-[#81b64c] text-white shadow-sm font-black'
                 : 'text-[#9b9893] hover:text-white'
             }`}
           >
-            Debyutlar
+            {t('rules_tab_openings')}
           </button>
         </div>
       </div>

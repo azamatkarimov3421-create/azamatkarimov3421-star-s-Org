@@ -13,7 +13,7 @@ import {
   PlayIcon,
   GoogleIcon,
 } from '../components/Icons';
-import { t } from '../i18n/translations';
+import { useTranslation } from '../i18n/translations';
 import { getUserProfile } from '../store/userProfileStore';
 
 interface HomeScreenProps {
@@ -36,54 +36,55 @@ export default function HomeScreen({
   onOpenSettings,
 }: HomeScreenProps) {
   const { state, dispatch } = useGame();
+  const { t } = useTranslation();
   const profile = getUserProfile();
 
   const gameModes = [
     {
       id: 'vsAI',
-      title: 'Kompyuter bilan (Bot)',
-      subtitle: 'Oson, oʻrta va kuchli darajalar',
+      title: t('mode_vs_ai_title'),
+      subtitle: t('mode_vs_ai_desc'),
       icon: <BotIcon size={22} className="text-[#4ade80]" />,
       iconBg: 'bg-[#183622] border-[#275535]',
       action: onStartVsAI,
     },
     {
       id: 'aiVsAi',
-      title: 'Bot vs Bot (Avtomat)',
-      subtitle: 'Botlar jangi va tahlil rejimi',
+      title: t('mode_ai_vs_ai_title'),
+      subtitle: t('mode_ai_vs_ai_desc'),
       icon: <SwordsIcon size={22} className="text-amber-400" />,
       iconBg: 'bg-[#332616] border-[#553c20]',
-      badge: 'YANGI',
+      badge: t('badge_new'),
       action: onOpenBotVsBot,
     },
     {
       id: 'pvp',
-      title: "Doʻst bilan oʻynash",
-      subtitle: 'Bitta qurilmada 2 oʻyinchi',
+      title: t('mode_pvp_title'),
+      subtitle: t('mode_pvp_desc'),
       icon: <UsersIcon size={22} className="text-[#60a5fa]" />,
       iconBg: 'bg-[#182a3c] border-[#23425e]',
       action: onStartLocal,
     },
     {
       id: 'online',
-      title: "Onlayn oʻyin",
-      subtitle: 'Internet orqali doʻst bilan',
+      title: t('mode_online_title'),
+      subtitle: t('mode_online_desc'),
       icon: <GlobeIcon size={22} className="text-[#c084fc]" />,
       iconBg: 'bg-[#2a1d3d] border-[#442c62]',
       action: onOpenOnline,
     },
     {
       id: 'rules',
-      title: 'Qoidalar va Darslik',
-      subtitle: '10x10 doska va Nur donasi harakati',
+      title: t('mode_rules_title'),
+      subtitle: t('mode_rules_desc'),
       icon: <BookOpenIcon size={22} className="text-[#fbbf24]" />,
       iconBg: 'bg-[#332616] border-[#553c20]',
       action: onOpenRules,
     },
     {
       id: 'stats',
-      title: 'Statistika va Reyting',
-      subtitle: 'Shaxsiy yutuqlar va natijalar',
+      title: t('mode_stats_title'),
+      subtitle: t('mode_stats_desc'),
       icon: <TrophyIcon size={22} className="text-[#f472b6]" />,
       iconBg: 'bg-[#351a24] border-[#592539]',
       action: onOpenStats,
@@ -119,28 +120,28 @@ export default function HomeScreen({
                 className="px-4 py-2 rounded-xl text-xs font-black bg-[#1f3f27] text-[#4ade80] border border-[#22c55e]/50 shadow-[0_0_12px_rgba(34,197,94,0.25)] flex items-center gap-2 transition-all cursor-pointer"
               >
                 <SwordsIcon size={16} className="text-[#4ade80]" />
-                <span>Oʻyin</span>
+                <span>{t('nav_game')}</span>
               </button>
               <button
                 onClick={onOpenRules}
                 className="px-4 py-2 rounded-xl text-xs font-bold text-[#9ca3af] hover:text-white hover:bg-[#1f2a22] transition-all flex items-center gap-2 cursor-pointer"
               >
                 <BookOpenIcon size={16} />
-                <span>Qoidalar</span>
+                <span>{t('nav_rules')}</span>
               </button>
               <button
                 onClick={onOpenStats}
                 className="px-4 py-2 rounded-xl text-xs font-bold text-[#9ca3af] hover:text-white hover:bg-[#1f2a22] transition-all flex items-center gap-2 cursor-pointer"
               >
                 <TrophyIcon size={16} />
-                <span>Reyting</span>
+                <span>{t('nav_leaderboard')}</span>
               </button>
               <button
                 onClick={onOpenSettings}
                 className="px-4 py-2 rounded-xl text-xs font-bold text-[#9ca3af] hover:text-white hover:bg-[#1f2a22] transition-all flex items-center gap-2 cursor-pointer"
               >
                 <SettingsIcon size={16} />
-                <span>Sozlamalar</span>
+                <span>{t('nav_settings')}</span>
               </button>
 
               {/* Desktop Google Profil Tugmasi */}
@@ -148,7 +149,7 @@ export default function HomeScreen({
                 <button
                   onClick={onOpenStats}
                   className="ml-1 px-3 py-1.5 rounded-xl text-xs font-bold bg-[#1d2b21] hover:bg-[#25372a] border border-[#304736] text-white transition-all flex items-center gap-2 cursor-pointer shadow-sm"
-                  title="Google Profilingiz"
+                  title={t('nav_profile')}
                 >
                   {profile.avatarUrl ? (
                     <img
@@ -167,10 +168,10 @@ export default function HomeScreen({
                 <button
                   onClick={onOpenStats}
                   className="ml-1 px-3.5 py-1.5 rounded-xl text-xs font-black bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-slate-950 flex items-center gap-2 transition-all cursor-pointer shadow-[0_0_12px_rgba(245,158,11,0.35)]"
-                  title="Google bilan profil ochish"
+                  title={t('google_profile_btn')}
                 >
                   <GoogleIcon size={15} />
-                  <span>Google bilan profil ochish</span>
+                  <span>{t('google_profile_btn')}</span>
                 </button>
               )}
             </nav>
@@ -184,7 +185,7 @@ export default function HomeScreen({
                     ? 'bg-[#233027] border-[#2e4235] text-white'
                     : 'bg-amber-500/20 border-amber-500/40 text-amber-300'
                 }`}
-                title="Profil"
+                title={t('nav_profile')}
               >
                 {profile.isGoogleLinked && profile.avatarUrl ? (
                   <img
@@ -197,14 +198,14 @@ export default function HomeScreen({
                   <GoogleIcon size={16} />
                 )}
                 <span className="text-[11px] max-w-[70px] truncate">
-                  {profile.isGoogleLinked ? profile.name : 'Profil'}
+                  {profile.isGoogleLinked ? profile.name : t('nav_profile')}
                 </span>
               </button>
 
               <button
                 onClick={onOpenSettings}
                 className="w-10 h-10 rounded-xl bg-[#233027] border border-[#2e4235] text-[#c3c2be] hover:text-white flex items-center justify-center transition-all active:scale-95 cursor-pointer"
-                title="Sozlamalar"
+                title={t('nav_settings')}
               >
                 <SettingsIcon size={18} />
               </button>
@@ -221,8 +222,8 @@ export default function HomeScreen({
                 <SwordsIcon size={26} />
               </div>
               <div>
-                <h2 className="text-lg sm:text-xl font-black text-white">Yangi Oʻyin Boshlash</h2>
-                <p className="text-xs text-[#9ca3af] mt-0.5">100 katak • Nur donasi • Yangi strategiya</p>
+                <h2 className="text-lg sm:text-xl font-black text-white">{t('start_new_game')}</h2>
+                <p className="text-xs text-[#9ca3af] mt-0.5">{t('game_motto_1')}</p>
               </div>
             </div>
 
@@ -241,13 +242,13 @@ export default function HomeScreen({
                   <span className="text-xl sm:text-2xl shrink-0">🎲</span>
                   <div className="min-w-0">
                     <div className="text-[11px] sm:text-xs font-black text-white flex items-center gap-1 flex-wrap">
-                      <span>3D Fazoviy</span>
+                      <span>3D</span>
                       <span className="text-[8.5px] font-bold px-1.5 py-0.2 rounded bg-amber-400/20 text-amber-300 border border-amber-400/30">
-                        Kitobdagidek
+                        {t('as_in_book')}
                       </span>
                     </div>
                     <div className="text-[10px] sm:text-[11px] text-[#9ca3af] truncate">
-                      {state.is3D ? 'Tik fazoviy koʻrinish' : 'Standart 2D tekis koʻrinish'}
+                      {state.is3D ? t('perspective_3d_desc') : t('flat_2d_desc')}
                     </div>
                   </div>
                 </div>
@@ -272,10 +273,10 @@ export default function HomeScreen({
                   <span className="text-xl sm:text-2xl shrink-0">📐</span>
                   <div className="min-w-0">
                     <div className="text-[11px] sm:text-xs font-black text-white">
-                      2D Tekis
+                      2D
                     </div>
                     <div className="text-[10px] sm:text-[11px] text-[#9ca3af] truncate">
-                      Oddiy tekis doska
+                      {t('flat_2d_desc')}
                     </div>
                   </div>
                 </div>
@@ -294,12 +295,12 @@ export default function HomeScreen({
               className="w-full py-4 px-4 rounded-2xl bg-gradient-to-b from-[#6cb83e] to-[#559b2d] hover:from-[#76c444] hover:to-[#5ea833] text-white font-black text-base flex items-center justify-center gap-2.5 shadow-[0_5px_0_#386b1c] active:translate-y-1 active:shadow-[0_1px_0_#386b1c] transition-all cursor-pointer mt-1"
             >
               <PlayIcon size={20} className="fill-white" />
-              <span>OʻYNASH (Kompyuter bilan)</span>
+              <span>{t('play_vs_ai_big')}</span>
             </button>
 
             {/* Mualliflik ma'lumoti */}
             <div className="pt-3 border-t border-[#27372d] flex items-center justify-between text-xs text-[#9ca3af]">
-              <span>Muallif: <strong className="text-white font-semibold">Nurfullo Nurmatov</strong></span>
+              <span>{t('author_label')}</span>
               <span className="text-xs text-amber-400 font-bold font-mono">10×10 Standart</span>
             </div>
           </div>
@@ -307,7 +308,7 @@ export default function HomeScreen({
           {/* O'ng ustun: O'yin Turlari Ro'yxati (md:col-span-7) */}
           <div className="w-full md:col-span-7 flex flex-col gap-3">
             <div className="px-1 text-xs font-black text-[#9ca3af] uppercase tracking-wider flex items-center justify-between">
-              <span>OʻYIN TURLARI & BOʻLIMLAR</span>
+              <span>{t('game_modes_header')}</span>
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
@@ -353,7 +354,7 @@ export default function HomeScreen({
           <div className="flex items-center justify-center gap-4 w-full">
             <div className="h-[1px] flex-1 bg-gradient-to-r from-transparent via-[#4b5563]/40 to-transparent" />
             <p className="font-serif italic text-xs sm:text-sm text-[#9ca3af]/90 tracking-wide">
-              “Aql va sabr — eng yaxshi strategiya”
+              {t('quote_motto')}
             </p>
             <div className="h-[1px] flex-1 bg-gradient-to-r from-transparent via-[#4b5563]/40 to-transparent" />
           </div>

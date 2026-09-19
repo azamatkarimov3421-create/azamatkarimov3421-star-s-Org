@@ -5,7 +5,7 @@
 
 import React from 'react';
 import { SwordsIcon, TrophyIcon, UserIcon } from './Icons';
-import { t } from '../i18n/translations';
+import { useTranslation } from '../i18n/translations';
 
 export type TabType = 'home' | 'leaderboard' | 'profile';
 
@@ -15,10 +15,12 @@ interface BottomNavBarProps {
 }
 
 export default function BottomNavBar({ activeTab, onSelectTab }: BottomNavBarProps) {
+  const { t } = useTranslation();
+
   const tabs: { id: TabType; label: string; icon: React.ReactNode }[] = [
     { id: 'home', label: t('nav_game'), icon: <SwordsIcon size={21} /> },
-    { id: 'leaderboard', label: t('nav_achievements'), icon: <TrophyIcon size={21} /> },
-    { id: 'profile', label: 'Profil', icon: <UserIcon size={21} /> },
+    { id: 'leaderboard', label: t('nav_leaderboard'), icon: <TrophyIcon size={21} /> },
+    { id: 'profile', label: t('nav_profile'), icon: <UserIcon size={21} /> },
   ];
 
   return (

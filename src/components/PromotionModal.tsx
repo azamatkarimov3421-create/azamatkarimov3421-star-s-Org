@@ -6,22 +6,24 @@ import React from 'react';
 import { Color, PieceType } from '../engine/types';
 import { useGame } from '../store/gameStore';
 import PieceIcon from './PieceIcon';
-
-const PROMOTION_PIECES: Array<{ type: PieceType; name: string; score: number; desc: string }> = [
-  { type: 'Queen', name: 'Vazir', score: 9, desc: 'Eng kuchli barcha yoʻnalishdagi dona' },
-  { type: 'Nur', name: 'Nur', score: 7, desc: 'Donalar ustidan 3 kvadrat sakrovchi maxsus dona' },
-  { type: 'Rook', name: 'Tura', score: 5, desc: 'Toʻgʻri chiziqlar boʻylab kuchli qalʼa' },
-  { type: 'Bishop', name: 'Fil', score: 3, desc: 'Diagonal chiziqlar ustasi' },
-  { type: 'Knight', name: 'Ot', score: 3, desc: 'L-shaklidagi chaqqon sakrovchi' },
-];
+import { useTranslation } from '../i18n/translations';
 
 export default function PromotionModal() {
   const { state, dispatch } = useGame();
   const { showPromotionFor, game, is3D } = state;
+  const { t } = useTranslation();
 
   if (!showPromotionFor) return null;
 
   const color: Color = game.currentTurn === 'white' ? 'white' : 'black';
+
+  const PROMOTION_PIECES: Array<{ type: PieceType; name: string; score: number; desc: string }> = [
+    { type: 'Queen', name: t('piece_queen'), score: 9, desc: t('desc_queen') },
+    { type: 'Nur', name: t('piece_nur'), score: 7, desc: t('desc_nur') },
+    { type: 'Rook', name: t('piece_rook'), score: 5, desc: t('desc_rook') },
+    { type: 'Bishop', name: t('piece_bishop'), score: 3, desc: t('desc_bishop') },
+    { type: 'Knight', name: t('piece_knight'), score: 3, desc: t('desc_knight') },
+  ];
 
   const handleSelect = (pieceType: PieceType) => {
     dispatch({ type: 'PROMOTE', pieceType });
@@ -39,10 +41,10 @@ export default function PromotionModal() {
             👑
           </span>
           <h2 className="text-2xl sm:text-3xl font-black text-transparent bg-clip-text bg-gradient-to-r from-amber-200 via-amber-400 to-yellow-500">
-            Piyoda Marragacha Yetdi!
+            {t('promotion_title')}
           </h2>
           <p className="text-slate-400 text-xs sm:text-sm mt-1">
-            {color === 'white' ? 'Oq' : 'Qora'} piyodani qaysi buyuk donga aylantirasiz?
+            {t('promotion_desc')}
           </p>
         </div>
 
@@ -63,7 +65,7 @@ export default function PromotionModal() {
                 {/* Maxsus Nur nishoni */}
                 {isNur && (
                   <span className="absolute -top-2 bg-gradient-to-r from-amber-400 to-yellow-300 text-slate-950 text-[9px] font-black px-1.5 py-0.2 rounded-full uppercase tracking-tighter shadow-sm">
-                    Yangi
+                    {t('badge_new')}
                   </span>
                 )}
 
@@ -84,11 +86,6 @@ export default function PromotionModal() {
               </button>
             );
           })}
-        </div>
-
-        {/* Pastki eslatma */}
-        <div className="text-center mt-6 text-slate-500 text-[11px]">
-          Tanlangan dona darhol doskada o'z o'rnini egallaydi
         </div>
       </div>
     </div>
