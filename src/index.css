@@ -105,10 +105,10 @@
 
   @keyframes piece-glide-3d {
     from {
-      transform: translate(var(--slide-x), var(--slide-y)) translateZ(6px) rotateX(-30deg) translateY(-2px);
+      transform: translate(var(--slide-x), var(--slide-y)) translateZ(6px) rotateX(-30deg) translateY(0px);
     }
     to {
-      transform: translate(0, 0) translateZ(6px) rotateX(-30deg) translateY(-2px);
+      transform: translate(0, 0) translateZ(6px) rotateX(-30deg) translateY(0px);
     }
   }
 

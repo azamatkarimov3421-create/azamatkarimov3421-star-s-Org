@@ -18,7 +18,7 @@ export default function NurLogo({ size = 72, className = '', showGlow = true }: 
   return (
     <div
       style={{ width: dimension, height: dimension }}
-      className={`relative inline-flex items-center justify-center select-none flex-shrink-0 ${
+      className={`relative inline-flex items-center justify-center select-none flex-shrink-0 pointer-events-none ${
         showGlow ? 'drop-shadow-[0_0_20px_rgba(245,158,11,0.45)]' : ''
       } ${className}`}
       title="NUR CHESS 100 — Rasmiy Logotip (Muallif: Nurfullo Nurmatov)"

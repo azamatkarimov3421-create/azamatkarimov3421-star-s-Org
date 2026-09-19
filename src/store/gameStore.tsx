@@ -198,7 +198,12 @@ function gameReducer(state: AppState, action: Action): AppState {
         };
       }
 
-      // Yangi don tanlash
+      // Agar tanlangan kvadratning o'zi qayta bosilsa — tanlashni bekor qilish (toggle off)
+      if (selectedSquare && squaresEqual(sq, selectedSquare)) {
+        return { ...state, selectedSquare: null, legalMoves: [] };
+      }
+
+      // Yangi dona tanlash
       const piece = game.board[sq.rank]?.[sq.file];
       if (piece && piece.color === game.currentTurn) {
         // Onlayn rejimda faqat o'z donasini tanlay oladi!

@@ -317,7 +317,7 @@ export default function Board() {
                 const pieceStyle: React.CSSProperties = is3D
                   ? {
                       ...slideStyle,
-                      transform: 'translateZ(6px) rotateX(-30deg) translateY(-2px)',
+                      transform: 'translateZ(6px) rotateX(-30deg) translateY(0px)',
                       transformOrigin: 'bottom center',
                       filter: isSelected
                         ? 'drop-shadow(0 4px 6px rgba(0,0,0,0.85))'
@@ -329,16 +329,33 @@ export default function Board() {
                 return (
                   <div
                     key={key}
-                    onClick={() => handleSquareClick(sq)}
-                    onTouchEnd={(e) => {
-                      e.preventDefault();
-                      handleSquareClick(sq);
-                    }}
                     onDrop={(e) => handleDrop(e, sq)}
                     onDragOver={handleDragOver}
-                    className={`relative w-full h-full aspect-square flex items-center justify-center cursor-pointer transition-colors duration-150 touch-none select-none ${squareBgClass}`}
+                    className={`relative w-full h-full aspect-square flex items-center justify-center transition-colors duration-150 touch-none select-none ${squareBgClass}`}
                     style={is3D ? { transformStyle: 'preserve-3d' } : undefined}
                   >
+                    {/* 100% to'liq qamrovli interaktiv tugma: Kvadratning istalgan 4 burchagi yoki markaziga bosilganda bexato ishlaydi */}
+                    <button
+                      type="button"
+                      aria-label={`${FILES[fileIdx]}${rankIdx + 1}`}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleSquareClick(sq);
+                      }}
+                      draggable={
+                        !is3D &&
+                        Boolean(
+                          piece &&
+                          piece.color === game.currentTurn &&
+                          (gameMode !== 'online' || !onlinePlayerColor || piece.color === onlinePlayerColor)
+                        )
+                      }
+                      onDragStart={(e) => piece && handleDragStart(e, piece, sq)}
+                      onDragEnd={handleDragEnd}
+                      className="absolute inset-0 w-full h-full z-30 cursor-pointer bg-transparent border-0 p-0 m-0 outline-none focus:outline-none select-none active:bg-black/5"
+                      style={{ WebkitTapHighlightColor: 'transparent', touchAction: 'manipulation' }}
+                    />
+
                     {/* So'nggi Harakat Izlari */}
                     {(isLastMoveFrom || isLastMoveTo) && (
                       <div className={`absolute inset-0 pointer-events-none ${themeStyle.lastMove} z-[1]`} />
@@ -419,24 +436,15 @@ export default function Board() {
                     {piece && (
                       <div
                         key={piece.id}
-                        draggable={
-                          !is3D &&
-                          piece.color === game.currentTurn &&
-                          (gameMode !== 'online' || !onlinePlayerColor || piece.color === onlinePlayerColor)
-                        }
-                        onDragStart={(e) => handleDragStart(e, piece, sq)}
-                        onDragEnd={handleDragEnd}
                         style={pieceStyle}
-                        className={`relative z-10 w-full h-full flex items-center justify-center select-none ${
-                          is3D ? 'pointer-events-none' : 'touch-none'
-                        } ${
+                        className={`relative z-10 w-full h-full flex items-center justify-center select-none pointer-events-none ${
                           isCurrentlyAnimating
                             ? is3D
-                              ? 'animate-glide-3d z-30'
-                              : 'animate-glide-2d z-30'
+                              ? 'animate-glide-3d z-20'
+                              : 'animate-glide-2d z-20'
                             : ''
                         } ${
-                          !is3D && isSelected ? 'scale-110 -translate-y-0.5' : !is3D ? 'hover:scale-105 active:scale-95' : ''
+                          !is3D && isSelected ? 'scale-110 -translate-y-0.5' : ''
                         }`}
                       >
                         <PieceIcon
@@ -444,7 +452,7 @@ export default function Board() {
                           color={piece.color}
                           is3D={is3D}
                           isSelected={isSelected}
-                          className="w-[94%] h-[94%] pointer-events-none select-none"
+                          className={`${is3D ? 'w-[84%] h-[84%]' : 'w-[92%] h-[92%]'} pointer-events-none select-none`}
                         />
                       </div>
                     )}
