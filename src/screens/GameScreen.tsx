@@ -471,11 +471,11 @@ export default function GameScreen({ onBack, onOpenSettings }: GameScreenProps) 
 
       {/* ── 2. ASOSIY MAYDON (RESPONSIVE: MOBILDA TIK, KOMPYUTERDA YONMA-YON) ────── */}
       <main className="relative z-10 flex-1 w-full max-w-[1550px] mx-auto flex flex-col md:flex-row items-center justify-center gap-2.5 md:gap-4 lg:gap-6 px-2 sm:px-4 lg:px-6 py-0.5 md:py-1 overflow-hidden min-h-0 touch-manipulation">
-        {/* CHAP / MARKAZIY QISM: Doska va O'yinchilar HUD */}
+        {/* CHAP / MARKAZIY QISM: Doska va (faqat mobilda) O'yinchilar HUD */}
         <div className="flex-1 flex flex-col items-center justify-center min-h-0 w-full overflow-hidden my-auto">
-          {/* Yuqoridagi O'yinchi Kartasi (Opponent HUD) */}
+          {/* Yuqoridagi O'yinchi Kartasi (Opponent HUD — FAQAT MOBILDA ko'rinadi) */}
           <div
-            className={`h-9 sm:h-10 flex items-center justify-between px-2.5 sm:px-3 rounded-xl border transition-all duration-200 shrink-0 ${
+            className={`md:hidden h-9 sm:h-10 flex items-center justify-between px-2.5 sm:px-3 rounded-xl border transition-all duration-200 shrink-0 mb-1 ${
               is3D ? 'chess-board-box-3d' : 'chess-board-box'
             } ${
               isTopTurn
@@ -542,8 +542,8 @@ export default function GameScreen({ onBack, onOpenSettings }: GameScreenProps) 
           </div>
 
           {/* 10x10 Dosqa va Baholash Indikatori */}
-          <div className={`w-full flex flex-col items-center justify-center gap-0.5 max-h-full touch-manipulation shrink-0 ${
-            is3D ? 'chess-board-box-3d -mt-1 sm:-mt-1.5 mb-2 sm:mb-2.5' : 'chess-board-box my-0.5'
+          <div className={`w-full flex flex-col items-center justify-center max-h-full touch-manipulation shrink-0 ${
+            is3D ? 'chess-board-box-3d' : 'chess-board-box'
           }`}>
             {/* 3D / 2D Ko'rinish bildirishnomasi (faqat mobil ekranda) */}
             <div className="w-full md:hidden flex items-center justify-between px-1.5 py-0.5 text-[11px] text-[#9b9893] shrink-0">
@@ -569,7 +569,7 @@ export default function GameScreen({ onBack, onOpenSettings }: GameScreenProps) 
             {/* Dosqa va (kompyuterda) chapdagi vertikal EvalBar */}
             <div className="w-full flex items-center justify-center gap-2">
               {/* Kompyuterda: doskaning chap yonida vertikal EvalBar */}
-              <div className={`hidden md:flex ${is3D ? 'self-center h-[88%] my-auto py-1' : 'self-stretch items-stretch py-0.5'}`}>
+              <div className={`hidden md:flex ${is3D ? 'self-center h-[90%] my-auto py-1' : 'self-stretch items-stretch py-0.5'}`}>
                 <EvalBar orientation="vertical" />
               </div>
 
@@ -580,9 +580,9 @@ export default function GameScreen({ onBack, onOpenSettings }: GameScreenProps) 
             </div>
           </div>
 
-          {/* Pastdagi O'yinchi Kartasi (Sizning HUD) */}
+          {/* Pastdagi O'yinchi Kartasi (Sizning HUD — FAQAT MOBILDA ko'rinadi) */}
           <div
-            className={`h-9 sm:h-10 flex items-center justify-between px-2.5 sm:px-3 rounded-xl border transition-all duration-200 shrink-0 ${
+            className={`md:hidden h-9 sm:h-10 flex items-center justify-between px-2.5 sm:px-3 rounded-xl border transition-all duration-200 shrink-0 mt-1 ${
               is3D ? 'chess-board-box-3d' : 'chess-board-box'
             } ${
               isBottomTurn
@@ -647,55 +647,150 @@ export default function GameScreen({ onBack, onOpenSettings }: GameScreenProps) 
         </div>
 
         {/* O'NG QISM: Desktop Sidebar (Planshet va Kompyuter ekranlarida ko'rinadi) */}
-        <aside className="hidden md:flex flex-col w-[280px] lg:w-[320px] xl:w-[360px] h-full max-h-[calc(100dvh-65px)] bg-[#21201d] rounded-2xl lg:rounded-3xl border border-[#383531] p-3.5 shadow-2xl shrink-0 justify-between overflow-hidden my-auto">
-          {/* Sidebar Yuqori: Rejim va Navbat */}
-          <div className="shrink-0 space-y-2.5 pb-2.5 border-b border-[#383531]">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-2">
-                <span className="w-2.5 h-2.5 rounded-full bg-[#81b64c] animate-pulse" />
-                <span className="font-extrabold text-sm text-white tracking-wide">{modeTitle}</span>
-              </div>
-              {gameMode === 'vsAI' ? (
-                <button
-                  onClick={() => setShowVsAiLevelModal(true)}
-                  className="text-[10px] font-mono text-amber-400 bg-amber-400/15 hover:bg-amber-400/25 border border-amber-400/30 px-2 py-0.5 rounded-full font-bold flex items-center gap-1 cursor-pointer transition-all"
-                  title={t('ai_level_change_title')}
-                >
-                  <span>{AI_LEVEL_NAMES[aiDepth]}</span>
-                  <span className="text-[8px]">✎</span>
-                </button>
-              ) : (
-                <span className="text-[10px] font-mono text-amber-400 bg-amber-400/15 px-2 py-0.5 rounded-full font-bold">
-                  10×10 DOSQA
+        <aside className="hidden md:flex flex-col w-[300px] lg:w-[340px] xl:w-[370px] h-full max-h-[calc(100dvh-60px)] bg-[#21201d] rounded-2xl lg:rounded-3xl border border-[#383531] p-3 shadow-2xl shrink-0 justify-between overflow-hidden my-auto gap-2">
+          {/* 1. Sidebar Yuqori: Rejim Sarlavhasi & Raqib O'yinchi Kartasi */}
+          <div className="shrink-0 space-y-2 pb-2 border-b border-[#383531]/80">
+            <div className="flex items-center justify-between px-1">
+              <div className="flex items-center gap-2 min-w-0">
+                <span className="w-2.5 h-2.5 rounded-full bg-[#81b64c] animate-pulse shrink-0" />
+                <span className="font-extrabold text-xs sm:text-sm text-white tracking-wide truncate max-w-[170px] lg:max-w-[210px]">
+                  {modeTitle}
                 </span>
-              )}
+              </div>
+              <span className="text-[10px] font-mono uppercase px-2 py-0.5 rounded bg-amber-500/20 text-amber-300 border border-amber-500/30 font-black shrink-0">
+                10×10 NUR CHESS
+              </span>
             </div>
 
-            {/* Navbat & Shoh bildirishnomasi */}
-            <div className="p-2.5 rounded-2xl bg-[#1a1917] border border-[#383531] text-xs flex items-center justify-between">
-              <span className="text-[#9b9893] font-medium">Navbat:</span>
-              {game.isInCheck && !isGameOver ? (
-                <span className="text-red-400 font-black animate-pulse flex items-center gap-1">
-                  🔥 {t('check_alert')}
-                </span>
-              ) : (
-                <span className="font-bold flex items-center gap-2 text-white">
-                  <span className={`w-2.5 h-2.5 rounded-full ${currentTurn === 'white' ? 'bg-white shadow-[0_0_6px_rgba(255,255,255,0.8)]' : 'bg-[#383531] border border-white/60'}`} />
-                  {currentTurn === 'white' ? t('turn_white') : t('turn_black')}
-                </span>
-              )}
+            {/* Raqib O'yinchi Kartasi (Opponent HUD) */}
+            <div
+              className={`p-2.5 rounded-xl border transition-all duration-200 flex items-center justify-between ${
+                isTopTurn
+                  ? 'bg-[#282723] border-[#81b64c]/70 shadow-[0_0_12px_rgba(129,182,76,0.15)] ring-1 ring-[#81b64c]/50'
+                  : 'bg-[#181715] border-[#383531]'
+              }`}
+            >
+              <div className="flex items-center gap-2 min-w-0">
+                <div className="w-8 h-8 rounded-lg bg-[#2c2a26] border border-[#3d3a34] flex items-center justify-center text-[#c3c2be] shrink-0">
+                  {topColor === 'black' || gameMode === 'aiVsAi' ? (
+                    <BotIcon size={18} className="text-[#81b64c]" />
+                  ) : (
+                    <UserIcon size={18} className="text-[#c3c2be]" />
+                  )}
+                </div>
+                <div className="min-w-0">
+                  <div className="flex items-center gap-1.5 flex-wrap">
+                    <span className="font-bold text-xs sm:text-sm text-white truncate max-w-[110px] lg:max-w-[140px]">
+                      {opponentName}
+                    </span>
+                    <span className="text-[10px] font-bold text-[#81b64c] bg-[#81b64c]/15 px-1.5 py-0.2 rounded">
+                      {topColor === 'white' ? t('white_color') : t('black_color')}
+                    </span>
+                    {gameMode === 'vsAI' && (
+                      <button
+                        onClick={() => setShowVsAiLevelModal(true)}
+                        className="text-[10px] font-bold text-amber-300 bg-amber-500/20 hover:bg-amber-500/30 border border-amber-500/40 px-1.5 py-0.2 rounded-md flex items-center gap-1 transition-all cursor-pointer active:scale-95"
+                        title={t('ai_level_change_title')}
+                      >
+                        <span>🎯 {AI_LEVEL_NAMES[aiDepth]}</span>
+                      </button>
+                    )}
+                    {(gameMode === 'vsAI' || gameMode === 'aiVsAi') && isTopTurn && aiThinking && (
+                      <span className="text-[10px] font-bold text-amber-400 bg-amber-400/15 px-1.5 py-0.2 rounded flex items-center gap-1 animate-pulse">
+                        <span className="w-1.5 h-1.5 rounded-full bg-amber-400 animate-ping" />
+                        {t('bot_thinking')}
+                      </span>
+                    )}
+                  </div>
+                  <div className="text-[10px] text-[#9b9893] font-mono leading-none mt-0.5">
+                    {opponentRating} {gameMode === 'aiVsAi' ? '' : t('rating_label')}
+                  </div>
+                </div>
+              </div>
+
+              <div className="flex items-center gap-2 shrink-0">
+                <div
+                  className={`flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-mono font-bold transition-all ${
+                    isTopTurn
+                      ? 'bg-[#81b64c] text-white shadow-md ring-1 ring-[#9ad35f]'
+                      : 'bg-[#11100f] text-[#9b9893] border border-[#383531]'
+                  }`}
+                >
+                  <ClockIcon size={13} />
+                  <ChessClock color={topColor} />
+                </div>
+              </div>
             </div>
           </div>
 
-          {/* Sidebar O'rta: Harakatlar Tarixi (MoveHistory) */}
-          <div className="flex-1 min-h-0 py-2 flex flex-col overflow-hidden">
-            <div className="flex-1 min-h-0 bg-[#1a1917] rounded-2xl border border-[#383531]/80 overflow-hidden">
+          {/* 2. Sidebar O'rta: Harakatlar Tarixi (MoveHistory) */}
+          <div className="flex-1 min-h-0 flex flex-col overflow-hidden py-1">
+            <div className="flex-1 min-h-0 bg-[#181715] rounded-xl border border-[#383531]/80 overflow-hidden">
               <MoveHistory className="h-full w-full border-none shadow-none bg-transparent" />
             </div>
           </div>
 
-          {/* Sidebar Pastki: Boshqaruv Tugmalari */}
-          <div className="shrink-0 pt-2.5 border-t border-[#383531] space-y-2">
+          {/* 3. Sidebar Pastki: Foydalanuvchi Kartasi & Boshqaruv Tugmalari */}
+          <div className="shrink-0 space-y-2 pt-1 border-t border-[#383531]/80">
+            {/* Foydalanuvchi Kartasi (User HUD) */}
+            <div
+              className={`p-2.5 rounded-xl border transition-all duration-200 flex items-center justify-between ${
+                isBottomTurn
+                  ? 'bg-[#282723] border-white/60 shadow-[0_0_12px_rgba(255,255,255,0.1)] ring-1 ring-white/40'
+                  : 'bg-[#181715] border-[#383531]'
+              }`}
+            >
+              <div className="flex items-center gap-2 min-w-0">
+                <div className="w-8 h-8 rounded-lg bg-[#2c2a26] border border-[#3d3a34] flex items-center justify-center text-[#81b64c] shrink-0 overflow-hidden">
+                  {gameMode === 'aiVsAi' ? (
+                    <BotIcon size={18} className="text-[#81b64c]" />
+                  ) : userProfile.avatarUrl ? (
+                    <img
+                      src={userProfile.avatarUrl}
+                      alt=""
+                      className="w-full h-full object-cover rounded-lg"
+                      referrerPolicy="no-referrer"
+                    />
+                  ) : (
+                    <UserIcon size={18} />
+                  )}
+                </div>
+                <div className="min-w-0">
+                  <div className="flex items-center gap-1.5 flex-wrap">
+                    <span className="font-bold text-xs sm:text-sm text-white truncate max-w-[110px] lg:max-w-[140px]">
+                      {bottomName}
+                    </span>
+                    <span className="text-[10px] font-bold text-[#81b64c] bg-[#81b64c]/15 px-1.5 py-0.2 rounded">
+                      {bottomColor === 'white' ? t('white_color') : t('black_color')}
+                    </span>
+                    {gameMode === 'aiVsAi' && isBottomTurn && aiThinking && (
+                      <span className="text-[10px] font-bold text-amber-400 bg-amber-400/15 px-1.5 py-0.2 rounded flex items-center gap-1 animate-pulse">
+                        <span className="w-1.5 h-1.5 rounded-full bg-amber-400 animate-ping" />
+                        {t('bot_thinking')}
+                      </span>
+                    )}
+                  </div>
+                  <div className="text-[10px] text-[#81b64c] font-mono font-semibold leading-none mt-0.5">
+                    {bottomRating} {gameMode === 'aiVsAi' ? '' : t('rating_label')}
+                  </div>
+                </div>
+              </div>
+
+              <div className="flex items-center gap-2 shrink-0">
+                <div
+                  className={`flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-mono font-bold transition-all ${
+                    isBottomTurn
+                      ? 'bg-white text-[#21201d] font-black shadow-md'
+                      : 'bg-[#11100f] text-[#9b9893] border border-[#383531]'
+                  }`}
+                >
+                  <ClockIcon size={13} />
+                  <ChessClock color={bottomColor} />
+                </div>
+              </div>
+            </div>
+
+            {/* Boshqaruv Tugmalari */}
             {gameMode === 'aiVsAi' ? (
               <div className="space-y-2">
                 <div className="grid grid-cols-2 gap-2">
@@ -818,10 +913,9 @@ export default function GameScreen({ onBack, onOpenSettings }: GameScreenProps) 
             {aiThinking && (
               <button
                 onClick={handleEmergencyReset}
-                className="w-full py-1.5 px-2 rounded-xl bg-amber-500/20 hover:bg-amber-500/30 border border-amber-500/50 text-amber-300 font-bold text-xs flex items-center justify-center gap-1.5 transition-all animate-pulse cursor-pointer"
-                title={t('btn_emergency_unfreeze')}
+                className="w-full py-1.5 px-3 rounded-xl bg-amber-500/20 hover:bg-amber-500/30 border border-amber-500/40 text-amber-300 font-bold text-xs flex items-center justify-center gap-2 transition-all active:scale-95 animate-pulse cursor-pointer"
               >
-                <span>{t('btn_emergency_unfreeze')}</span>
+                <span>⚡ {t('bot_unfreeze_btn')}</span>
               </button>
             )}
           </div>
