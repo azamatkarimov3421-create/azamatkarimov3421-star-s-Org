@@ -319,13 +319,13 @@ export default function GameScreen({ onBack, onOpenSettings }: GameScreenProps) 
   const isBottomTurn = currentTurn === bottomColor && !isGameOver;
 
   return (
-    <div className="h-[100dvh] max-h-[100dvh] w-full bg-[#121614] md:bg-[url('/desktop-bg.jpg')] bg-cover bg-center text-[#f1f1f1] flex flex-col justify-between font-sans select-none pb-[max(0.6rem,env(safe-area-inset-bottom))] lg:pb-3 fixed inset-0 overflow-hidden touch-none overscroll-none">
+    <div className="h-[100dvh] max-h-[100dvh] w-full bg-[#121614] md:bg-[url('/desktop-bg.jpg')] bg-cover bg-center text-[#f1f1f1] flex flex-col justify-between font-sans select-none pb-1 sm:pb-1.5 fixed inset-0 overflow-hidden touch-none overscroll-none">
       {/* Desktop fondagi qorong'i atmosfera qatlami */}
       <div className="hidden md:block absolute inset-0 bg-gradient-to-b from-[#0b100d]/88 via-[#0d1310]/78 to-[#0b100d]/92 pointer-events-none z-0" />
 
       {/* ── 1. YUQORI HEADER (RESPONSIVE CHESS HEADER) ─────────────────── */}
-      <header className="relative z-30 shrink-0 bg-[#141b17]/95 backdrop-blur-md border-b border-[#27372d] px-3 sm:px-6 py-2 pt-[max(0.5rem,env(safe-area-inset-top))]">
-        <div className="w-full max-w-7xl mx-auto flex items-center justify-between">
+      <header className="relative z-30 shrink-0 bg-[#141b17]/95 backdrop-blur-md border-b border-[#27372d] px-3 sm:px-5 py-1.5 pt-[max(0.4rem,env(safe-area-inset-top))]">
+        <div className="w-full max-w-[1550px] mx-auto flex items-center justify-between">
           <button
             onClick={() => {
               if (gameMode === 'online' || roomCode) {
@@ -470,12 +470,12 @@ export default function GameScreen({ onBack, onOpenSettings }: GameScreenProps) 
       )}
 
       {/* ── 2. ASOSIY MAYDON (RESPONSIVE: MOBILDA TIK, KOMPYUTERDA YONMA-YON) ────── */}
-      <main className="relative z-10 flex-1 w-full max-w-7xl mx-auto flex flex-col md:flex-row items-center justify-center gap-3 md:gap-5 lg:gap-8 px-2 sm:px-4 lg:px-6 py-0.5 lg:py-2 overflow-hidden min-h-0 touch-manipulation">
+      <main className="relative z-10 flex-1 w-full max-w-[1550px] mx-auto flex flex-col md:flex-row items-center justify-center gap-2.5 md:gap-4 lg:gap-6 px-2 sm:px-4 lg:px-6 py-0.5 md:py-1 overflow-hidden min-h-0 touch-manipulation">
         {/* CHAP / MARKAZIY QISM: Doska va O'yinchilar HUD */}
         <div className="flex-1 flex flex-col items-center justify-center min-h-0 w-full overflow-hidden my-auto">
           {/* Yuqoridagi O'yinchi Kartasi (Opponent HUD) */}
           <div
-            className={`h-10 sm:h-11 flex items-center justify-between px-3 rounded-xl border transition-all duration-200 shrink-0 ${
+            className={`h-9 sm:h-10 flex items-center justify-between px-2.5 sm:px-3 rounded-xl border transition-all duration-200 shrink-0 ${
               is3D ? 'chess-board-box-3d' : 'chess-board-box'
             } ${
               isTopTurn
@@ -484,11 +484,11 @@ export default function GameScreen({ onBack, onOpenSettings }: GameScreenProps) 
             }`}
           >
             <div className="flex items-center gap-2">
-              <div className="w-8 h-8 rounded-lg bg-[#2c2a26] border border-[#3d3a34] flex items-center justify-center text-[#c3c2be]">
+              <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-lg bg-[#2c2a26] border border-[#3d3a34] flex items-center justify-center text-[#c3c2be]">
                 {topColor === 'black' || gameMode === 'aiVsAi' ? (
-                  <BotIcon size={18} className="text-[#81b64c]" />
+                  <BotIcon size={17} className="text-[#81b64c]" />
                 ) : (
-                  <UserIcon size={18} className="text-[#c3c2be]" />
+                  <UserIcon size={17} className="text-[#c3c2be]" />
                 )}
               </div>
               <div>
@@ -529,13 +529,13 @@ export default function GameScreen({ onBack, onOpenSettings }: GameScreenProps) 
 
             <div className="flex items-center gap-2">
               <div
-                className={`flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-mono font-bold transition-all ${
+                className={`flex items-center gap-1.5 px-2 py-0.5 sm:py-1 rounded-lg text-xs font-mono font-bold transition-all ${
                   isTopTurn
                     ? 'bg-[#81b64c] text-white shadow-sm'
                     : 'bg-[#1a1917] text-[#9b9893] border border-[#383531]'
                 }`}
               >
-                <ClockIcon size={13} />
+                <ClockIcon size={12} />
                 <ChessClock color={topColor} />
               </div>
             </div>
@@ -582,7 +582,7 @@ export default function GameScreen({ onBack, onOpenSettings }: GameScreenProps) 
 
           {/* Pastdagi O'yinchi Kartasi (Sizning HUD) */}
           <div
-            className={`h-10 sm:h-11 flex items-center justify-between px-3 rounded-xl border transition-all duration-200 shrink-0 ${
+            className={`h-9 sm:h-10 flex items-center justify-between px-2.5 sm:px-3 rounded-xl border transition-all duration-200 shrink-0 ${
               is3D ? 'chess-board-box-3d' : 'chess-board-box'
             } ${
               isBottomTurn
@@ -591,9 +591,9 @@ export default function GameScreen({ onBack, onOpenSettings }: GameScreenProps) 
             }`}
           >
             <div className="flex items-center gap-2">
-              <div className="w-8 h-8 rounded-lg bg-[#2c2a26] border border-[#3d3a34] flex items-center justify-center text-[#81b64c] overflow-hidden">
+              <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-lg bg-[#2c2a26] border border-[#3d3a34] flex items-center justify-center text-[#81b64c] overflow-hidden">
                 {gameMode === 'aiVsAi' ? (
-                  <BotIcon size={18} className="text-[#81b64c]" />
+                  <BotIcon size={17} className="text-[#81b64c]" />
                 ) : userProfile.avatarUrl ? (
                   <img
                     src={userProfile.avatarUrl}
@@ -602,7 +602,7 @@ export default function GameScreen({ onBack, onOpenSettings }: GameScreenProps) 
                     referrerPolicy="no-referrer"
                   />
                 ) : (
-                  <UserIcon size={18} />
+                  <UserIcon size={17} />
                 )}
               </div>
               <div>
@@ -633,13 +633,13 @@ export default function GameScreen({ onBack, onOpenSettings }: GameScreenProps) 
 
             <div className="flex items-center gap-2">
               <div
-                className={`flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-mono font-bold transition-all ${
+                className={`flex items-center gap-1.5 px-2 py-0.5 sm:py-1 rounded-lg text-xs font-mono font-bold transition-all ${
                   isBottomTurn
                     ? 'bg-white text-[#21201d] font-black shadow-md'
                     : 'bg-[#1a1917] text-[#9b9893] border border-[#383531]'
                 }`}
               >
-                <ClockIcon size={13} />
+                <ClockIcon size={12} />
                 <ChessClock color={bottomColor} />
               </div>
             </div>
@@ -647,7 +647,7 @@ export default function GameScreen({ onBack, onOpenSettings }: GameScreenProps) 
         </div>
 
         {/* O'NG QISM: Desktop Sidebar (Planshet va Kompyuter ekranlarida ko'rinadi) */}
-        <aside className="hidden md:flex flex-col w-[280px] lg:w-[320px] xl:w-[360px] h-full max-h-[calc(100dvh-75px)] bg-[#21201d] rounded-2xl lg:rounded-3xl border border-[#383531] p-3.5 shadow-2xl shrink-0 justify-between overflow-hidden my-auto">
+        <aside className="hidden md:flex flex-col w-[280px] lg:w-[320px] xl:w-[360px] h-full max-h-[calc(100dvh-65px)] bg-[#21201d] rounded-2xl lg:rounded-3xl border border-[#383531] p-3.5 shadow-2xl shrink-0 justify-between overflow-hidden my-auto">
           {/* Sidebar Yuqori: Rejim va Navbat */}
           <div className="shrink-0 space-y-2.5 pb-2.5 border-b border-[#383531]">
             <div className="flex items-center justify-between">

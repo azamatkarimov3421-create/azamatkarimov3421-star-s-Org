@@ -7,31 +7,31 @@
 /* ── NUR CHESS 100 — KOMPYUTER VA MOBIL MOSLASHUVCHAN O'LCHAMLARI ── */
 :root {
   /* Mobil ekranlar (< 768px): doska vertikal va gorizontal 100% sig'adi */
-  --board-size: min(calc(100vw - 16px), calc(100dvh - 195px), 480px);
-  --board-size-3d: min(calc(100vw - 16px), calc(100dvh - 215px), 440px);
+  --board-size: min(calc(100vw - 12px), calc(100dvh - 180px), 480px);
+  --board-size-3d: min(calc(100vw - 12px), calc(100dvh - 200px), 440px);
 }
 
 /* Planshet va Noutbuklar (>= 768px) */
 @media (min-width: 768px) {
   :root {
-    --board-size: min(calc(100dvh - 145px), calc(100vw - 370px), 560px);
-    --board-size-3d: min(calc(100dvh - 170px), calc(100vw - 370px), 520px);
+    --board-size: min(calc(100dvh - 165px), calc(100vw - 340px), 640px);
+    --board-size-3d: min(calc(100dvh - 185px), calc(100vw - 340px), 590px);
   }
 }
 
-/* Standart va Katta Monitorlar (>= 1200px) */
-@media (min-width: 1200px) {
+/* Standart va Katta Monitorlar (>= 1100px) */
+@media (min-width: 1100px) {
   :root {
-    --board-size: min(calc(100dvh - 140px), calc(100vw - 420px), 660px);
-    --board-size-3d: min(calc(100dvh - 165px), calc(100vw - 420px), 610px);
+    --board-size: min(calc(100dvh - 160px), calc(100vw - 380px), 740px);
+    --board-size-3d: min(calc(100dvh - 180px), calc(100vw - 380px), 680px);
   }
 }
 
-/* 2K va Katta ekranlar (>= 1536px) */
-@media (min-width: 1536px) {
+/* 2K va Keng Monitorlar (>= 1440px) */
+@media (min-width: 1440px) {
   :root {
-    --board-size: min(calc(100dvh - 130px), calc(100vw - 460px), 720px);
-    --board-size-3d: min(calc(100dvh - 155px), calc(100vw - 460px), 660px);
+    --board-size: min(calc(100dvh - 155px), calc(100vw - 420px), 820px);
+    --board-size-3d: min(calc(100dvh - 175px), calc(100vw - 420px), 760px);
   }
 }
 

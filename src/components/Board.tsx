@@ -74,7 +74,7 @@ export default function Board() {
   } = state;
   const boardRef = useRef<HTMLDivElement>(null);
 
-  // ── UNIFIED DRAG & DROP & CLICK SYSTEM (2D & 3D, MOUSE & TOUCH) ──
+  // ── UNIFIED ZERO-RERENDER DRAG & DROP SYSTEM (2D & 3D, MOUSE & TOUCH) ──
   const pointerStartRef = useRef<{
     piece: Piece;
     from: Square;
@@ -85,14 +85,17 @@ export default function Board() {
     squareSize: number;
   } | null>(null);
 
-  // Active floating ghost state (only rendered during a deliberate drag >= 14px)
+  // Active floating ghost state: FAQAT drag boshlanganda 1 marta va tugaganda 1 marta yangilanadi.
+  // Harakat davomida React qayta render qilinmaydi (Zero-Rerender GPU Hardware Acceleration)
   const [activeDrag, setActiveDrag] = useState<{
     piece: Piece;
     from: Square;
-    x: number;
-    y: number;
     squareSize: number;
   } | null>(null);
+
+  const dragGhostRef = useRef<HTMLDivElement>(null);
+  const is3DRef = useRef(is3D);
+  is3DRef.current = is3D;
 
   // Timestamp to ignore synthetic clicks immediately after a completed drag
   const ignoreClickUntilRef = useRef<number>(0);
@@ -191,21 +194,26 @@ export default function Board() {
       const dy = e.clientY - tracker.startY;
       const dist = Math.sqrt(dx * dx + dy * dy);
 
-      // Faqat qasddan 14px dan ko'proq surilgandagina drag boshlanadi (tasodifiy teginishlarni click sifatida saqlaydi)
+      // Faqat qasddan 14px dan ko'proq surilgandagina drag boshlanadi
       if (!tracker.isDragging && dist >= 14) {
         tracker.isDragging = true;
         // Yurish mumkin bo'lgan nuqtalar darhol ko'rinishi uchun donani tanlaymiz
         dispatchRef.current({ type: 'SELECT_SQUARE', square: tracker.from });
-      }
-
-      if (tracker.isDragging) {
+        // React holatini FAQAT 1 marta yangilaymiz (origin donani xiralashtirish va ghost DOM ni ochish uchun)
         setActiveDrag({
           piece: tracker.piece,
           from: tracker.from,
-          x: e.clientX,
-          y: e.clientY,
           squareSize: tracker.squareSize,
         });
+      }
+
+      // Harakat davomida to'g'ridan-to'g'ri GPU transformatsiyasi (0ms kechikish, 0 React re-render!)
+      if (tracker.isDragging && dragGhostRef.current) {
+        const x = e.clientX;
+        const y = e.clientY;
+        dragGhostRef.current.style.transform = is3DRef.current
+          ? `translate3d(${x}px, ${y}px, 0) translate(-50%, -62%) scale(1.18) rotateX(-20deg)`
+          : `translate3d(${x}px, ${y}px, 0) translate(-50%, -50%) scale(1.12)`;
       }
     };
 
@@ -239,8 +247,6 @@ export default function Board() {
           }
         }
       }
-      // Agar drag bo'lmagan bo'lsa (dist < 14px): bu oddiy chertish (tap/click)!
-      // Uni <button> ning onClick hodisasi to'g'ridan-to'g'ri va ishonchli hal qiladi!
     };
 
     const handleGlobalPointerCancel = () => {
@@ -259,26 +265,26 @@ export default function Board() {
     };
   }, []);
 
-  // Shoh shahda bo'lsa
-  const checkSquare = game.isInCheck
-    ? (() => {
-        for (let r = 0; r < 10; r++) {
-          for (let f = 0; f < 10; f++) {
-            const p = game.board[r][f];
-            if (p?.type === 'King' && p.color === game.currentTurn) {
-              return { file: f, rank: r };
-            }
-          }
+  // Shoh shahda bo'lsa (useMemo orqali qayta hisoblashni keshlaymiz)
+  const checkSquare = useMemo(() => {
+    if (!game.isInCheck) return null;
+    for (let r = 0; r < 10; r++) {
+      for (let f = 0; f < 10; f++) {
+        const p = game.board[r][f];
+        if (p?.type === 'King' && p.color === game.currentTurn) {
+          return { file: f, rank: r };
         }
-        return null;
-      })()
-    : null;
+      }
+    }
+    return null;
+  }, [game.isInCheck, game.board, game.currentTurn]);
 
-  // Fayllar va Ranklar ro'yxati (aylantirish hisobga olingan holda)
-  const displayedFiles = isFlipped ? [...FILES].reverse() : FILES;
-  const displayedRanks = isFlipped
-    ? Array.from({ length: 10 }, (_, i) => i) // 0 dan 9 gacha (pastdan yuqoriga o'rniga teskari)
-    : Array.from({ length: 10 }, (_, i) => 9 - i); // 9 dan 0 gacha
+  // Fayllar va Ranklar ro'yxati (useMemo orqali ortiqcha massiv ajratishlarni yo'qotamiz)
+  const displayedFiles = useMemo(() => (isFlipped ? [...FILES].reverse() : FILES), [isFlipped]);
+  const displayedRanks = useMemo(
+    () => (isFlipped ? Array.from({ length: 10 }, (_, i) => i) : Array.from({ length: 10 }, (_, i) => 9 - i)),
+    [isFlipped]
+  );
 
   return (
     <div
@@ -432,7 +438,7 @@ export default function Board() {
                 return (
                   <div
                     key={key}
-                    className={`relative w-full h-full aspect-square flex items-center justify-center transition-colors duration-150 touch-manipulation select-none ${squareBgClass}`}
+                    className={`relative w-full h-full aspect-square flex items-center justify-center touch-manipulation select-none ${squareBgClass}`}
                     style={is3D && (piece || isLegalTarget) ? { transformStyle: 'preserve-3d' } : undefined}
                   >
                     {/* 100% to'liq qamrovli interaktiv tugma: Chertish va Sudrab tashlash (Drag & Drop) */}
@@ -598,22 +604,20 @@ export default function Board() {
         </div>
       </div>
 
-      {/* ── DRAGGED PIECE FLOATING GHOST (2D va 3D da ushlab turilganda kursor/barmoqni kuzatib boradi) ── */}
+      {/* ── DRAGGED PIECE FLOATING GHOST (2D va 3D apparat tezlashuvli GPU ghost) ── */}
       {activeDrag && activeDrag.piece && (
         <div
-          className="fixed pointer-events-none z-[9999] select-none touch-none"
+          ref={dragGhostRef}
+          className="fixed top-0 left-0 pointer-events-none z-[9999] select-none touch-none will-change-transform"
           style={{
-            left: activeDrag.x,
-            top: activeDrag.y,
-            width: activeDrag.squareSize * (is3D ? 0.94 : 0.94),
-            height: activeDrag.squareSize * (is3D ? 0.94 : 0.94),
+            width: activeDrag.squareSize * 0.94,
+            height: activeDrag.squareSize * 0.94,
             transform: is3D
-              ? 'translate(-50%, -62%) scale(1.18) rotateX(-20deg)'
-              : 'translate(-50%, -50%) scale(1.12)',
+              ? `translate3d(${pointerStartRef.current?.startX ?? 0}px, ${pointerStartRef.current?.startY ?? 0}px, 0) translate(-50%, -62%) scale(1.18) rotateX(-20deg)`
+              : `translate3d(${pointerStartRef.current?.startX ?? 0}px, ${pointerStartRef.current?.startY ?? 0}px, 0) translate(-50%, -50%) scale(1.12)`,
             filter: is3D
               ? 'drop-shadow(0 20px 18px rgba(0,0,0,0.8)) drop-shadow(0 0 20px rgba(234,179,8,0.85))'
               : 'drop-shadow(0 12px 10px rgba(0,0,0,0.55))',
-            willChange: 'left, top, transform',
           }}
         >
           <PieceIcon
