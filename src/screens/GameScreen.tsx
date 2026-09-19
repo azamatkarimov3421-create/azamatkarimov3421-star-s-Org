@@ -468,7 +468,7 @@ export default function GameScreen({ onBack, onOpenSettings }: GameScreenProps) 
       )}
 
       {/* ── 2. ASOSIY MAYDON (RESPONSIVE: MOBILDA TIK, KOMPYUTERDA YONMA-YON) ────── */}
-      <main className="relative z-10 flex-1 w-full max-w-7xl mx-auto flex flex-col md:flex-row items-center justify-center gap-3 md:gap-5 lg:gap-8 px-2 sm:px-4 lg:px-6 py-0.5 lg:py-2 overflow-hidden min-h-0 touch-none">
+      <main className="relative z-10 flex-1 w-full max-w-7xl mx-auto flex flex-col md:flex-row items-center justify-center gap-3 md:gap-5 lg:gap-8 px-2 sm:px-4 lg:px-6 py-0.5 lg:py-2 overflow-hidden min-h-0 touch-manipulation">
         {/* CHAP / MARKAZIY QISM: Doska va O'yinchilar HUD */}
         <div className="flex-1 flex flex-col items-center justify-center min-h-0 w-full overflow-hidden my-auto">
           {/* Yuqoridagi O'yinchi Kartasi (Opponent HUD) */}
@@ -540,7 +540,7 @@ export default function GameScreen({ onBack, onOpenSettings }: GameScreenProps) 
           </div>
 
           {/* 10x10 Dosqa va Baholash Indikatori */}
-          <div className={`w-full flex flex-col items-center justify-center gap-0.5 my-0.5 max-h-full touch-none shrink-0 ${
+          <div className={`w-full flex flex-col items-center justify-center gap-0.5 my-0.5 max-h-full touch-manipulation shrink-0 ${
             is3D ? 'chess-board-box-3d' : 'chess-board-box'
           }`}>
             {/* 3D / 2D Ko'rinish bildirishnomasi (faqat mobil ekranda) */}

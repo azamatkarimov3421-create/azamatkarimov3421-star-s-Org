@@ -74,18 +74,28 @@ export default function Board() {
   } = state;
   const boardRef = useRef<HTMLDivElement>(null);
 
-  // ── UNIFIED DRAG & DROP (2D & 3D, MOUSE & TOUCH) ──
-  const [dragState, setDragState] = useState<{
+  // ── UNIFIED DRAG & DROP & CLICK SYSTEM (2D & 3D, MOUSE & TOUCH) ──
+  const pointerStartRef = useRef<{
     piece: Piece;
     from: Square;
-    startPos: { x: number; y: number };
-    currentPos: { x: number; y: number };
+    startX: number;
+    startY: number;
+    pointerId: number;
     isDragging: boolean;
     squareSize: number;
   } | null>(null);
 
-  // Drag tamomlanganda tasodifiy onClick chaqirilishini oldini oluvchi ref
-  const wasJustDraggedRef = useRef<boolean>(false);
+  // Active floating ghost state (only rendered during a deliberate drag >= 14px)
+  const [activeDrag, setActiveDrag] = useState<{
+    piece: Piece;
+    from: Square;
+    x: number;
+    y: number;
+    squareSize: number;
+  } | null>(null);
+
+  // Timestamp to ignore synthetic clicks immediately after a completed drag
+  const ignoreClickUntilRef = useRef<number>(0);
 
   // Dona harakati animatsiyasini qat'iy nazorat qilish (280ms davomida)
   const [animatingMoveIndex, setAnimatingMoveIndex] = useState<number | null>(null);
@@ -111,7 +121,7 @@ export default function Board() {
     return map;
   }, [legalMoves]);
 
-  // Kvadratni bosish
+  // Kvadratni bosish (Click-to-move va Tanlash)
   const handleSquareClick = useCallback((sq: Square) => {
     // Bot vs Bot rejimida qo'lda harakatlanish taqiqlanadi
     if (gameMode === 'aiVsAi') return;
@@ -153,84 +163,101 @@ export default function Board() {
     const rect = boardRef.current?.getBoundingClientRect();
     const sqSize = rect ? rect.width / 10 : 44;
 
-    setDragState({
+    pointerStartRef.current = {
       piece,
       from: sq,
-      startPos: { x: e.clientX, y: e.clientY },
-      currentPos: { x: e.clientX, y: e.clientY },
+      startX: e.clientX,
+      startY: e.clientY,
+      pointerId: e.pointerId,
       isDragging: false,
       squareSize: sqSize,
-    });
+    };
   }, [gameMode, game.currentTurn, game.status, game.board, aiColor, aiThinking, onlinePlayerColor]);
 
-  // Window darajasidagi pointermove va pointerup (ekrandan chiqib ketganda ham uzilmaydi)
+  // Window darajasidagi yagona, barqaror pointer tinglovchilari
+  const handleSquareClickRef = useRef(handleSquareClick);
+  handleSquareClickRef.current = handleSquareClick;
+
+  const dispatchRef = useRef(dispatch);
+  dispatchRef.current = dispatch;
+
   useEffect(() => {
-    if (!dragState) return;
+    const handleGlobalPointerMove = (e: PointerEvent) => {
+      const tracker = pointerStartRef.current;
+      if (!tracker) return;
+      if (tracker.pointerId !== e.pointerId) return;
 
-    const handlePointerMove = (e: PointerEvent) => {
-      setDragState((prev) => {
-        if (!prev) return null;
-        const dx = e.clientX - prev.startPos.x;
-        const dy = e.clientY - prev.startPos.y;
-        const dist = Math.sqrt(dx * dx + dy * dy);
-        const isDragging = prev.isDragging || dist >= 6; // 6px siljiganda drag boshlanadi
+      const dx = e.clientX - tracker.startX;
+      const dy = e.clientY - tracker.startY;
+      const dist = Math.sqrt(dx * dx + dy * dy);
 
-        // Ilk bor sudrash boshlanayotganda, qonuniy yurish joylari ko'rinishi uchun tanlaymiz
-        if (!prev.isDragging && isDragging) {
-          dispatch({ type: 'SELECT_SQUARE', square: prev.from });
-        }
+      // Faqat qasddan 14px dan ko'proq surilgandagina drag boshlanadi (tasodifiy teginishlarni click sifatida saqlaydi)
+      if (!tracker.isDragging && dist >= 14) {
+        tracker.isDragging = true;
+        // Yurish mumkin bo'lgan nuqtalar darhol ko'rinishi uchun donani tanlaymiz
+        dispatchRef.current({ type: 'SELECT_SQUARE', square: tracker.from });
+      }
 
-        return {
-          ...prev,
-          currentPos: { x: e.clientX, y: e.clientY },
-          isDragging,
-        };
-      });
+      if (tracker.isDragging) {
+        setActiveDrag({
+          piece: tracker.piece,
+          from: tracker.from,
+          x: e.clientX,
+          y: e.clientY,
+          squareSize: tracker.squareSize,
+        });
+      }
     };
 
-    const handlePointerUp = (e: PointerEvent) => {
-      setDragState((prev) => {
-        if (!prev) return null;
+    const handleGlobalPointerUp = (e: PointerEvent) => {
+      const tracker = pointerStartRef.current;
+      if (!tracker) return;
+      if (tracker.pointerId !== e.pointerId) return;
 
-        if (prev.isDragging) {
-          wasJustDraggedRef.current = true;
-          setTimeout(() => {
-            wasJustDraggedRef.current = false;
-          }, 80);
+      const wasDragging = tracker.isDragging;
+      const fromSq = tracker.from;
 
-          // Qaysi kvadrat ustida qo'yib yuborilganini aniqlaymiz
-          const elem = document.elementFromPoint(e.clientX, e.clientY);
-          const sqBtn = elem?.closest('[data-square]');
-          if (sqBtn) {
-            const file = Number(sqBtn.getAttribute('data-file'));
-            const rank = Number(sqBtn.getAttribute('data-rank'));
-            if (!isNaN(file) && !isNaN(rank)) {
-              const toSq: Square = { file, rank };
-              if (!squaresEqual(prev.from, toSq)) {
-                // Yangi kvadratga tashlandi: Harakatni darhol amalga oshiramiz
-                handleSquareClick(toSq);
-              }
+      pointerStartRef.current = null;
+      setActiveDrag(null);
+
+      if (wasDragging) {
+        // Drag yakunlandi — orqasidan keladigan sintetik onClick ni 250ms ga bloklaymiz
+        ignoreClickUntilRef.current = Date.now() + 250;
+
+        // Qaysi kvadrat ustida qo'yib yuborilganini aniqlaymiz
+        const elem = document.elementFromPoint(e.clientX, e.clientY);
+        const sqBtn = elem?.closest('[data-square]');
+        if (sqBtn) {
+          const file = Number(sqBtn.getAttribute('data-file'));
+          const rank = Number(sqBtn.getAttribute('data-rank'));
+          if (!isNaN(file) && !isNaN(rank)) {
+            const toSq: Square = { file, rank };
+            if (!squaresEqual(fromSq, toSq)) {
+              // Boshqa kvadratga tashlandi: Harakatni darhol bajaramiz
+              handleSquareClickRef.current(toSq);
             }
           }
         }
-        return null;
-      });
+      }
+      // Agar drag bo'lmagan bo'lsa (dist < 14px): bu oddiy chertish (tap/click)!
+      // Uni <button> ning onClick hodisasi to'g'ridan-to'g'ri va ishonchli hal qiladi!
     };
 
-    const handlePointerCancel = () => {
-      setDragState(null);
+    const handleGlobalPointerCancel = () => {
+      pointerStartRef.current = null;
+      setActiveDrag(null);
     };
 
-    window.addEventListener('pointermove', handlePointerMove, { passive: true });
-    window.addEventListener('pointerup', handlePointerUp);
-    window.addEventListener('pointercancel', handlePointerCancel);
+    window.addEventListener('pointermove', handleGlobalPointerMove, { passive: true });
+    window.addEventListener('pointerup', handleGlobalPointerUp);
+    window.addEventListener('pointercancel', handleGlobalPointerCancel);
 
     return () => {
-      window.removeEventListener('pointermove', handlePointerMove);
-      window.removeEventListener('pointerup', handlePointerUp);
-      window.removeEventListener('pointercancel', handlePointerCancel);
+      window.removeEventListener('pointermove', handleGlobalPointerMove);
+      window.removeEventListener('pointerup', handleGlobalPointerUp);
+      window.removeEventListener('pointercancel', handleGlobalPointerCancel);
     };
-  }, [dragState, handleSquareClick, dispatch]);
+  }, []);
 
   // Shoh shahda bo'lsa
   const checkSquare = game.isInCheck
@@ -255,7 +282,7 @@ export default function Board() {
 
   return (
     <div
-      className={`relative select-none flex flex-col items-center w-full mx-auto touch-none transition-all duration-300 ${
+      className={`relative select-none flex flex-col items-center w-full mx-auto touch-manipulation transition-all duration-300 ${
         is3D ? 'chess-board-box-3d pt-0.5 pb-2' : 'chess-board-box'
       }`}
       style={
@@ -266,14 +293,11 @@ export default function Board() {
             }
           : undefined
       }
-      onTouchMove={(e) => {
-        if (e.cancelable) e.preventDefault();
-      }}
       onContextMenu={(e) => e.preventDefault()}
     >
       {/* Tashqi Zargarona Ramka (3D rejimida kitobdagidek qalin yog'och taxta) */}
       <div
-        className={`w-full transition-all duration-300 select-none touch-none ${
+        className={`w-full transition-all duration-300 select-none touch-manipulation ${
           is3D
             ? 'p-1.5 sm:p-2.5 rounded-2xl sm:rounded-3xl border-4 sm:border-[5px] border-[#381f14] bg-gradient-to-b from-[#2e1810] via-[#1c0f0a] to-[#120906]'
             : `p-1 sm:p-2 rounded-xl sm:rounded-2xl border-2 sm:border-[3px] ${themeStyle.frameBorder} ${themeStyle.frameBg} shadow-xl`
@@ -329,7 +353,7 @@ export default function Board() {
           {/* 10x10 Dosqa Grid (To'liq Fluid va Aspect-Square) */}
           <div
             ref={boardRef}
-            className={`grid grid-cols-10 grid-rows-10 aspect-square w-full rounded sm:rounded-md touch-none select-none ${
+            className={`grid grid-cols-10 grid-rows-10 aspect-square w-full rounded sm:rounded-md touch-manipulation select-none ${
               is3D
                 ? 'border-2 sm:border-[3px] border-[#5a331c] shadow-[inset_0_2px_8px_rgba(0,0,0,0.7)]'
                 : 'overflow-hidden border sm:border-2 border-slate-400/80 shadow-[inset_0_2px_10px_rgba(0,0,0,0.3)]'
@@ -408,7 +432,7 @@ export default function Board() {
                 return (
                   <div
                     key={key}
-                    className={`relative w-full h-full aspect-square flex items-center justify-center transition-colors duration-150 touch-none select-none ${squareBgClass}`}
+                    className={`relative w-full h-full aspect-square flex items-center justify-center transition-colors duration-150 touch-manipulation select-none ${squareBgClass}`}
                     style={is3D && (piece || isLegalTarget) ? { transformStyle: 'preserve-3d' } : undefined}
                   >
                     {/* 100% to'liq qamrovli interaktiv tugma: Chertish va Sudrab tashlash (Drag & Drop) */}
@@ -421,10 +445,10 @@ export default function Board() {
                       onPointerDown={(e) => handlePointerDown(e, sq)}
                       onClick={(e) => {
                         e.stopPropagation();
-                        if (wasJustDraggedRef.current) return;
+                        if (Date.now() < ignoreClickUntilRef.current) return;
                         handleSquareClick(sq);
                       }}
-                      className="absolute inset-0 w-full h-full z-30 cursor-pointer bg-transparent border-0 p-0 m-0 outline-none focus:outline-none select-none touch-none active:bg-black/5"
+                      className="absolute inset-0 w-full h-full z-30 cursor-pointer bg-transparent border-0 p-0 m-0 outline-none focus:outline-none select-none touch-manipulation active:bg-black/5"
                       style={{ WebkitTapHighlightColor: 'transparent' }}
                     />
 
@@ -510,7 +534,7 @@ export default function Board() {
                         key={piece.id}
                         style={pieceStyle}
                         className={`relative z-10 w-full h-full flex items-center justify-center select-none pointer-events-none transition-opacity duration-150 ${
-                          dragState?.isDragging && squaresEqual(sq, dragState.from)
+                          activeDrag && squaresEqual(sq, activeDrag.from)
                             ? 'opacity-30 scale-95'
                             : ''
                         } ${
@@ -520,7 +544,7 @@ export default function Board() {
                               : 'animate-glide-2d z-20'
                             : ''
                         } ${
-                          !is3D && isSelected && !(dragState?.isDragging && squaresEqual(sq, dragState.from))
+                          !is3D && isSelected && !(activeDrag && squaresEqual(sq, activeDrag.from))
                             ? 'scale-110 -translate-y-0.5'
                             : ''
                         }`}
@@ -575,14 +599,14 @@ export default function Board() {
       </div>
 
       {/* ── DRAGGED PIECE FLOATING GHOST (2D va 3D da ushlab turilganda kursor/barmoqni kuzatib boradi) ── */}
-      {dragState?.isDragging && dragState.piece && (
+      {activeDrag && activeDrag.piece && (
         <div
           className="fixed pointer-events-none z-[9999] select-none touch-none"
           style={{
-            left: dragState.currentPos.x,
-            top: dragState.currentPos.y,
-            width: dragState.squareSize * (is3D ? 0.94 : 0.94),
-            height: dragState.squareSize * (is3D ? 0.94 : 0.94),
+            left: activeDrag.x,
+            top: activeDrag.y,
+            width: activeDrag.squareSize * (is3D ? 0.94 : 0.94),
+            height: activeDrag.squareSize * (is3D ? 0.94 : 0.94),
             transform: is3D
               ? 'translate(-50%, -62%) scale(1.18) rotateX(-20deg)'
               : 'translate(-50%, -50%) scale(1.12)',
@@ -593,8 +617,8 @@ export default function Board() {
           }}
         >
           <PieceIcon
-            type={dragState.piece.type}
-            color={dragState.piece.color}
+            type={activeDrag.piece.type}
+            color={activeDrag.piece.color}
             is3D={is3D}
             isSelected={true}
             className="w-full h-full pointer-events-none select-none"
