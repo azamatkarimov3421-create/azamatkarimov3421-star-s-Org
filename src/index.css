@@ -8,14 +8,14 @@
 :root {
   /* Mobil ekranlar (< 768px): doska vertikal va gorizontal 100% sig'adi */
   --board-size: min(calc(100vw - 12px), calc(100dvh - 180px), 480px);
-  --board-size-3d: min(calc(100vw - 12px), calc(100dvh - 200px), 440px);
+  --board-size-3d: min(calc(100vw - 12px), calc(100dvh - 205px), 440px);
 }
 
 /* Planshet va Noutbuklar (>= 768px) */
 @media (min-width: 768px) {
   :root {
     --board-size: min(calc(100dvh - 165px), calc(100vw - 340px), 640px);
-    --board-size-3d: min(calc(100dvh - 185px), calc(100vw - 340px), 590px);
+    --board-size-3d: min(calc(100dvh - 195px), calc(100vw - 340px), 590px);
   }
 }
 
@@ -23,7 +23,7 @@
 @media (min-width: 1100px) {
   :root {
     --board-size: min(calc(100dvh - 160px), calc(100vw - 380px), 740px);
-    --board-size-3d: min(calc(100dvh - 180px), calc(100vw - 380px), 680px);
+    --board-size-3d: min(calc(100dvh - 190px), calc(100vw - 380px), 670px);
   }
 }
 
@@ -31,7 +31,7 @@
 @media (min-width: 1440px) {
   :root {
     --board-size: min(calc(100dvh - 155px), calc(100vw - 420px), 820px);
-    --board-size-3d: min(calc(100dvh - 175px), calc(100vw - 420px), 760px);
+    --board-size-3d: min(calc(100dvh - 185px), calc(100vw - 420px), 750px);
   }
 }
 
@@ -105,10 +105,10 @@
 
   @keyframes piece-glide-3d {
     from {
-      transform: translate(var(--slide-x), var(--slide-y)) translateZ(6px) rotateX(-30deg) translateY(0px);
+      transform: translate(var(--slide-x), var(--slide-y)) translateZ(6px) rotateX(-26deg) translateY(0px);
     }
     to {
-      transform: translate(0, 0) translateZ(6px) rotateX(-30deg) translateY(0px);
+      transform: translate(0, 0) translateZ(6px) rotateX(-26deg) translateY(0px);
     }
   }
 

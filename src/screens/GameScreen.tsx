@@ -542,8 +542,8 @@ export default function GameScreen({ onBack, onOpenSettings }: GameScreenProps) 
           </div>
 
           {/* 10x10 Dosqa va Baholash Indikatori */}
-          <div className={`w-full flex flex-col items-center justify-center gap-0.5 my-0.5 max-h-full touch-manipulation shrink-0 ${
-            is3D ? 'chess-board-box-3d' : 'chess-board-box'
+          <div className={`w-full flex flex-col items-center justify-center gap-0.5 max-h-full touch-manipulation shrink-0 ${
+            is3D ? 'chess-board-box-3d -mt-1 sm:-mt-1.5 mb-2 sm:mb-2.5' : 'chess-board-box my-0.5'
           }`}>
             {/* 3D / 2D Ko'rinish bildirishnomasi (faqat mobil ekranda) */}
             <div className="w-full md:hidden flex items-center justify-between px-1.5 py-0.5 text-[11px] text-[#9b9893] shrink-0">
@@ -569,7 +569,7 @@ export default function GameScreen({ onBack, onOpenSettings }: GameScreenProps) 
             {/* Dosqa va (kompyuterda) chapdagi vertikal EvalBar */}
             <div className="w-full flex items-center justify-center gap-2">
               {/* Kompyuterda: doskaning chap yonida vertikal EvalBar */}
-              <div className="hidden md:flex self-stretch items-stretch py-0.5">
+              <div className={`hidden md:flex ${is3D ? 'self-center h-[88%] my-auto py-1' : 'self-stretch items-stretch py-0.5'}`}>
                 <EvalBar orientation="vertical" />
               </div>
 

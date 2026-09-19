@@ -289,13 +289,13 @@ export default function Board() {
   return (
     <div
       className={`relative select-none flex flex-col items-center w-full mx-auto touch-manipulation transition-all duration-300 ${
-        is3D ? 'chess-board-box-3d pt-0.5 pb-2' : 'chess-board-box'
+        is3D ? 'chess-board-box-3d pt-0 pb-1' : 'chess-board-box'
       }`}
       style={
         is3D
           ? {
-              perspective: '1100px',
-              perspectiveOrigin: '50% 68%',
+              perspective: '1200px',
+              perspectiveOrigin: '50% 50%',
             }
           : undefined
       }
@@ -311,10 +311,11 @@ export default function Board() {
         style={
           is3D
             ? {
-                transform: 'rotateX(30deg)',
+                transform: 'rotateX(26deg) translateY(-8px)',
+                transformOrigin: '50% 48% 0',
                 transformStyle: 'preserve-3d',
                 boxShadow:
-                  '0 24px 36px -4px rgba(0,0,0,0.9), 0 8px 0 0 #3d1e10, 0 14px 0 0 #2a1309, 0 20px 0 0 #190a04, inset 0 2px 4px rgba(255,255,255,0.22)',
+                  '0 18px 26px -4px rgba(0,0,0,0.85), 0 5px 0 0 #3d1e10, 0 9px 0 0 #2a1309, 0 13px 0 0 #190a04, inset 0 2px 4px rgba(255,255,255,0.22)',
               }
             : undefined
         }
@@ -428,7 +429,7 @@ export default function Board() {
                 const pieceStyle: React.CSSProperties = is3D
                   ? {
                       ...slideStyle,
-                      transform: 'translateZ(6px) rotateX(-30deg) translateY(0px)',
+                      transform: 'translateZ(6px) rotateX(-26deg) translateY(0px)',
                       transformOrigin: 'bottom center',
                       filter: isSelected ? 'drop-shadow(0 4px 6px rgba(0,0,0,0.85))' : undefined,
                       transition: isCurrentlyAnimating ? undefined : 'transform 0.15s ease-out',
