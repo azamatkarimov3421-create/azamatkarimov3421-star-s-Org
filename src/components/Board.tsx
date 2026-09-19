@@ -74,8 +74,18 @@ export default function Board() {
   } = state;
   const boardRef = useRef<HTMLDivElement>(null);
 
-  // Drag & Drop
-  const [dragPiece, setDragPiece] = useState<{ piece: Piece; from: Square } | null>(null);
+  // ── UNIFIED DRAG & DROP (2D & 3D, MOUSE & TOUCH) ──
+  const [dragState, setDragState] = useState<{
+    piece: Piece;
+    from: Square;
+    startPos: { x: number; y: number };
+    currentPos: { x: number; y: number };
+    isDragging: boolean;
+    squareSize: number;
+  } | null>(null);
+
+  // Drag tamomlanganda tasodifiy onClick chaqirilishini oldini oluvchi ref
+  const wasJustDraggedRef = useRef<boolean>(false);
 
   // Dona harakati animatsiyasini qat'iy nazorat qilish (280ms davomida)
   const [animatingMoveIndex, setAnimatingMoveIndex] = useState<number | null>(null);
@@ -121,39 +131,106 @@ export default function Board() {
     dispatch({ type: 'SELECT_SQUARE', square: sq });
   }, [dispatch, gameMode, onlinePlayerColor, selectedSquare, game.board, game.currentTurn, aiColor, aiThinking]);
 
-  // Drag boshlanishi
-  const handleDragStart = useCallback((e: React.DragEvent, piece: Piece, from: Square) => {
+  // Drag boshlanishi (PointerDown: sichqoncha yoki barmoq tekkanda)
+  const handlePointerDown = useCallback((e: React.PointerEvent, sq: Square) => {
+    // Faqat chap sichqoncha tugmasi yoki teginish (barmoq/stylus)
+    if (e.button !== 0 && e.pointerType === 'mouse') return;
+
     // Bot vs Bot rejimida qo'lda harakatlanish taqiqlanadi
     if (gameMode === 'aiVsAi') return;
-
     if (gameMode === 'vsAI' && (game.currentTurn === aiColor || aiThinking)) return;
-    if (piece.color !== game.currentTurn) return;
     if (game.status !== 'playing' && game.status !== 'check') return;
-    // Onlaynda raqib donasini siljitish taqiqlanadi
+
+    const piece = game.board[sq.rank]?.[sq.file];
+    if (!piece) return;
+
+    // Onlayn rejimda faqat o'z rangimizdagi donani ushlash mumkin
     if (gameMode === 'online' && onlinePlayerColor && piece.color !== onlinePlayerColor) return;
 
-    setDragPiece({ piece, from });
-    dispatch({ type: 'SELECT_SQUARE', square: from });
-    e.dataTransfer.effectAllowed = 'move';
-    e.dataTransfer.setData('text/plain', `${from.file},${from.rank}`);
-  }, [game.currentTurn, game.status, gameMode, onlinePlayerColor, dispatch]);
+    // Faqat o'z navbatidagi donani ushlab surish mumkin
+    if (piece.color !== game.currentTurn) return;
 
-  // Drag tugashi / tashlash
-  const handleDrop = useCallback((e: React.DragEvent, to: Square) => {
-    e.preventDefault();
-    setDragPiece(null);
-    if (!dragPiece) return;
-    dispatch({ type: 'SELECT_SQUARE', square: to });
-  }, [dragPiece, dispatch]);
+    const rect = boardRef.current?.getBoundingClientRect();
+    const sqSize = rect ? rect.width / 10 : 44;
 
-  const handleDragOver = useCallback((e: React.DragEvent) => {
-    e.preventDefault();
-    e.dataTransfer.dropEffect = 'move';
-  }, []);
+    setDragState({
+      piece,
+      from: sq,
+      startPos: { x: e.clientX, y: e.clientY },
+      currentPos: { x: e.clientX, y: e.clientY },
+      isDragging: false,
+      squareSize: sqSize,
+    });
+  }, [gameMode, game.currentTurn, game.status, game.board, aiColor, aiThinking, onlinePlayerColor]);
 
-  const handleDragEnd = useCallback(() => {
-    setDragPiece(null);
-  }, []);
+  // Window darajasidagi pointermove va pointerup (ekrandan chiqib ketganda ham uzilmaydi)
+  useEffect(() => {
+    if (!dragState) return;
+
+    const handlePointerMove = (e: PointerEvent) => {
+      setDragState((prev) => {
+        if (!prev) return null;
+        const dx = e.clientX - prev.startPos.x;
+        const dy = e.clientY - prev.startPos.y;
+        const dist = Math.sqrt(dx * dx + dy * dy);
+        const isDragging = prev.isDragging || dist >= 6; // 6px siljiganda drag boshlanadi
+
+        // Ilk bor sudrash boshlanayotganda, qonuniy yurish joylari ko'rinishi uchun tanlaymiz
+        if (!prev.isDragging && isDragging) {
+          dispatch({ type: 'SELECT_SQUARE', square: prev.from });
+        }
+
+        return {
+          ...prev,
+          currentPos: { x: e.clientX, y: e.clientY },
+          isDragging,
+        };
+      });
+    };
+
+    const handlePointerUp = (e: PointerEvent) => {
+      setDragState((prev) => {
+        if (!prev) return null;
+
+        if (prev.isDragging) {
+          wasJustDraggedRef.current = true;
+          setTimeout(() => {
+            wasJustDraggedRef.current = false;
+          }, 80);
+
+          // Qaysi kvadrat ustida qo'yib yuborilganini aniqlaymiz
+          const elem = document.elementFromPoint(e.clientX, e.clientY);
+          const sqBtn = elem?.closest('[data-square]');
+          if (sqBtn) {
+            const file = Number(sqBtn.getAttribute('data-file'));
+            const rank = Number(sqBtn.getAttribute('data-rank'));
+            if (!isNaN(file) && !isNaN(rank)) {
+              const toSq: Square = { file, rank };
+              if (!squaresEqual(prev.from, toSq)) {
+                // Yangi kvadratga tashlandi: Harakatni darhol amalga oshiramiz
+                handleSquareClick(toSq);
+              }
+            }
+          }
+        }
+        return null;
+      });
+    };
+
+    const handlePointerCancel = () => {
+      setDragState(null);
+    };
+
+    window.addEventListener('pointermove', handlePointerMove, { passive: true });
+    window.addEventListener('pointerup', handlePointerUp);
+    window.addEventListener('pointercancel', handlePointerCancel);
+
+    return () => {
+      window.removeEventListener('pointermove', handlePointerMove);
+      window.removeEventListener('pointerup', handlePointerUp);
+      window.removeEventListener('pointercancel', handlePointerCancel);
+    };
+  }, [dragState, handleSquareClick, dispatch]);
 
   // Shoh shahda bo'lsa
   const checkSquare = game.isInCheck
@@ -331,31 +408,24 @@ export default function Board() {
                 return (
                   <div
                     key={key}
-                    onDrop={(e) => handleDrop(e, sq)}
-                    onDragOver={handleDragOver}
                     className={`relative w-full h-full aspect-square flex items-center justify-center transition-colors duration-150 touch-none select-none ${squareBgClass}`}
                     style={is3D && (piece || isLegalTarget) ? { transformStyle: 'preserve-3d' } : undefined}
                   >
-                    {/* 100% to'liq qamrovli interaktiv tugma: Kvadratning istalgan 4 burchagi yoki markaziga bosilganda bexato ishlaydi */}
+                    {/* 100% to'liq qamrovli interaktiv tugma: Chertish va Sudrab tashlash (Drag & Drop) */}
                     <button
                       type="button"
                       aria-label={`${FILES[fileIdx]}${rankIdx + 1}`}
+                      data-square={`${fileIdx},${rankIdx}`}
+                      data-file={fileIdx}
+                      data-rank={rankIdx}
+                      onPointerDown={(e) => handlePointerDown(e, sq)}
                       onClick={(e) => {
                         e.stopPropagation();
+                        if (wasJustDraggedRef.current) return;
                         handleSquareClick(sq);
                       }}
-                      draggable={
-                        !is3D &&
-                        Boolean(
-                          piece &&
-                          piece.color === game.currentTurn &&
-                          (gameMode !== 'online' || !onlinePlayerColor || piece.color === onlinePlayerColor)
-                        )
-                      }
-                      onDragStart={(e) => piece && handleDragStart(e, piece, sq)}
-                      onDragEnd={handleDragEnd}
-                      className="absolute inset-0 w-full h-full z-30 cursor-pointer bg-transparent border-0 p-0 m-0 outline-none focus:outline-none select-none active:bg-black/5"
-                      style={{ WebkitTapHighlightColor: 'transparent', touchAction: 'manipulation' }}
+                      className="absolute inset-0 w-full h-full z-30 cursor-pointer bg-transparent border-0 p-0 m-0 outline-none focus:outline-none select-none touch-none active:bg-black/5"
+                      style={{ WebkitTapHighlightColor: 'transparent' }}
                     />
 
                     {/* So'nggi Harakat Izlari */}
@@ -439,14 +509,20 @@ export default function Board() {
                       <div
                         key={piece.id}
                         style={pieceStyle}
-                        className={`relative z-10 w-full h-full flex items-center justify-center select-none pointer-events-none ${
+                        className={`relative z-10 w-full h-full flex items-center justify-center select-none pointer-events-none transition-opacity duration-150 ${
+                          dragState?.isDragging && squaresEqual(sq, dragState.from)
+                            ? 'opacity-30 scale-95'
+                            : ''
+                        } ${
                           isCurrentlyAnimating
                             ? is3D
                               ? 'animate-glide-3d z-20'
                               : 'animate-glide-2d z-20'
                             : ''
                         } ${
-                          !is3D && isSelected ? 'scale-110 -translate-y-0.5' : ''
+                          !is3D && isSelected && !(dragState?.isDragging && squaresEqual(sq, dragState.from))
+                            ? 'scale-110 -translate-y-0.5'
+                            : ''
                         }`}
                       >
                         <PieceIcon
@@ -497,6 +573,34 @@ export default function Board() {
           <div />
         </div>
       </div>
+
+      {/* ── DRAGGED PIECE FLOATING GHOST (2D va 3D da ushlab turilganda kursor/barmoqni kuzatib boradi) ── */}
+      {dragState?.isDragging && dragState.piece && (
+        <div
+          className="fixed pointer-events-none z-[9999] select-none touch-none"
+          style={{
+            left: dragState.currentPos.x,
+            top: dragState.currentPos.y,
+            width: dragState.squareSize * (is3D ? 0.94 : 0.94),
+            height: dragState.squareSize * (is3D ? 0.94 : 0.94),
+            transform: is3D
+              ? 'translate(-50%, -62%) scale(1.18) rotateX(-20deg)'
+              : 'translate(-50%, -50%) scale(1.12)',
+            filter: is3D
+              ? 'drop-shadow(0 20px 18px rgba(0,0,0,0.8)) drop-shadow(0 0 20px rgba(234,179,8,0.85))'
+              : 'drop-shadow(0 12px 10px rgba(0,0,0,0.55))',
+            willChange: 'left, top, transform',
+          }}
+        >
+          <PieceIcon
+            type={dragState.piece.type}
+            color={dragState.piece.color}
+            is3D={is3D}
+            isSelected={true}
+            className="w-full h-full pointer-events-none select-none"
+          />
+        </div>
+      )}
     </div>
   );
 }
