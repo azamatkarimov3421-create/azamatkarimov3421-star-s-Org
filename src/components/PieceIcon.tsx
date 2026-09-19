@@ -26,7 +26,7 @@ const PIECE_SRC_MAP: Record<PieceType, { white: string; black: string }> = {
   Nur: { white: '/pieces/wNur.png', black: '/pieces/bNur.png' },
 };
 
-export default function PieceIcon({
+function PieceIconComponent({
   type,
   color,
   size,
@@ -70,3 +70,6 @@ export default function PieceIcon({
     </div>
   );
 }
+
+const PieceIcon = React.memo(PieceIconComponent);
+export default PieceIcon;

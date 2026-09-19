@@ -15,7 +15,7 @@ interface Piece3DProps {
   isSelected?: boolean;
 }
 
-export default function Piece3D({
+function Piece3DComponent({
   type,
   color,
   size = '100%',
@@ -42,13 +42,17 @@ export default function Piece3D({
         xmlns="http://www.w3.org/2000/svg"
       >
         <defs>
-          {/* 1. Soya xiralashtirish filtrlari */}
-          <filter id="p3d-shadow-blur" x="-30%" y="-30%" width="160%" height="160%">
-            <feGaussianBlur in="SourceGraphic" stdDeviation="2.5" />
-          </filter>
-          <filter id="p3d-soft-blur" x="-20%" y="-20%" width="140%" height="140%">
-            <feGaussianBlur in="SourceGraphic" stdDeviation="1.2" />
-          </filter>
+          {/* 1. Apparat tezlashuvli fizik kontakt soyasi (feGaussianBlur o'rniga toza GPU gradient, 0ms render) */}
+          <radialGradient id={`p3d-sh-amb-${p}`} cx="50%" cy="50%" r="50%">
+            <stop offset="0%" stopColor="#000000" stopOpacity="0.75" />
+            <stop offset="55%" stopColor="#000000" stopOpacity="0.32" />
+            <stop offset="100%" stopColor="#000000" stopOpacity="0" />
+          </radialGradient>
+          <radialGradient id={`p3d-sh-cnt-${p}`} cx="50%" cy="50%" r="50%">
+            <stop offset="0%" stopColor="#000000" stopOpacity="0.9" />
+            <stop offset="70%" stopColor="#000000" stopOpacity="0.4" />
+            <stop offset="100%" stopColor="#000000" stopOpacity="0" />
+          </radialGradient>
 
           {/* 2. OQ DONALAR MATERIALI (Fil suyagi / Sayqallangan Oq Marmar) */}
           {/* Asosiy old yuzasi (Front Body) */}
@@ -137,25 +141,23 @@ export default function Piece3D({
           </linearGradient>
         </defs>
 
-        {/* ── A. YERGA TUSHUVCHI FIZIK SOYALAR (REALISTIK STATIK KONTAKT SOYA) ── */}
-        <g id="ground-shadows" filter="url(#p3d-shadow-blur)">
+        {/* ── A. YERGA TUSHUVCHI FIZIK SOYALAR (REALISTIK STATIK KONTAKT SOYA, GPU TEZLASHUVI BILAN) ── */}
+        <g id="ground-shadows">
           {/* Katta tarqoq ambient soya */}
           <ellipse
             cx="50"
             cy="92"
-            rx="28"
-            ry="6.5"
-            fill="#000000"
-            opacity={0.65}
+            rx="30"
+            ry="7"
+            fill={`url(#p3d-sh-amb-${p})`}
           />
           {/* Zich asos kontakt soyasi */}
           <ellipse
             cx="50"
             cy="91"
-            rx="21"
+            rx="22"
             ry="4.5"
-            fill="#000000"
-            opacity={0.85}
+            fill={`url(#p3d-sh-cnt-${p})`}
           />
         </g>
 
@@ -720,3 +722,6 @@ function renderSculptedPiece(type: PieceType, isWhite: boolean, p: string, isSel
       return null;
   }
 }
+
+const Piece3D = React.memo(Piece3DComponent);
+export default Piece3D;

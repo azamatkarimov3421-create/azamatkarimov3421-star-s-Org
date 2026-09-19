@@ -2,7 +2,7 @@
 // NUR SHAXMAT 100 — Yuqori Sifatli Dosqa Komponenti (10x10)
 // =====================================================
 
-import React, { useCallback, useEffect, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { BoardTheme, useGame } from '../store/gameStore';
 import { FILES, Move, Piece, Square, squaresEqual } from '../engine/types';
 import PieceIcon from './PieceIcon';
@@ -91,11 +91,15 @@ export default function Board() {
 
   const themeStyle = THEME_STYLES[boardTheme] || THEME_STYLES.wood;
 
-  // Qonuniy harakatlar xaritasi
-  const legalTargetMap = new Map<string, Move>();
-  legalMoves.forEach((m) => {
-    legalTargetMap.set(`${m.to.file},${m.to.rank}`, m);
-  });
+  // Qonuniy harakatlar xaritasi (useMemo orqali qayta hisoblashni keshlaymiz)
+  const legalTargetMap = useMemo(() => {
+    const map = new Map<string, Move>();
+    for (let i = 0; i < legalMoves.length; i++) {
+      const m = legalMoves[i];
+      map.set(`${m.to.file},${m.to.rank}`, m);
+    }
+    return map;
+  }, [legalMoves]);
 
   // Kvadratni bosish
   const handleSquareClick = useCallback((sq: Square) => {
@@ -319,9 +323,7 @@ export default function Board() {
                       ...slideStyle,
                       transform: 'translateZ(6px) rotateX(-30deg) translateY(0px)',
                       transformOrigin: 'bottom center',
-                      filter: isSelected
-                        ? 'drop-shadow(0 4px 6px rgba(0,0,0,0.85))'
-                        : 'drop-shadow(0 4px 5px rgba(0,0,0,0.6))',
+                      filter: isSelected ? 'drop-shadow(0 4px 6px rgba(0,0,0,0.85))' : undefined,
                       transition: isCurrentlyAnimating ? undefined : 'transform 0.15s ease-out',
                     }
                   : slideStyle || {};
@@ -332,7 +334,7 @@ export default function Board() {
                     onDrop={(e) => handleDrop(e, sq)}
                     onDragOver={handleDragOver}
                     className={`relative w-full h-full aspect-square flex items-center justify-center transition-colors duration-150 touch-none select-none ${squareBgClass}`}
-                    style={is3D ? { transformStyle: 'preserve-3d' } : undefined}
+                    style={is3D && (piece || isLegalTarget) ? { transformStyle: 'preserve-3d' } : undefined}
                   >
                     {/* 100% to'liq qamrovli interaktiv tugma: Kvadratning istalgan 4 burchagi yoki markaziga bosilganda bexato ishlaydi */}
                     <button
@@ -371,7 +373,7 @@ export default function Board() {
                       <div
                         className={`absolute inset-0 pointer-events-none z-[5] ${
                           is3D
-                            ? 'bg-[#eab308]/75 ring-4 ring-amber-300 shadow-[inset_0_0_20px_rgba(234,179,8,0.95),0_0_15px_rgba(250,204,21,0.85)] animate-pulse'
+                            ? 'bg-[#eab308]/85 ring-4 ring-amber-300 shadow-[inset_0_0_14px_rgba(234,179,8,0.95),0_0_10px_rgba(250,204,21,0.8)]'
                             : themeStyle.selectedSquare
                         }`}
                       />
@@ -379,7 +381,7 @@ export default function Board() {
 
                     {/* Shoh shahda bo'lgandagi xavf aulasi */}
                     {isCheck && (
-                      <div className="absolute inset-0 pointer-events-none z-[6] bg-red-600/60 ring-2 sm:ring-4 ring-red-500 animate-pulse shadow-[inset_0_0_20px_rgba(239,68,68,0.9)]" />
+                      <div className="absolute inset-0 pointer-events-none z-[6] bg-red-600/60 ring-2 sm:ring-4 ring-red-500 shadow-[inset_0_0_16px_rgba(239,68,68,0.85)]" />
                     )}
 
                     {/* 1-100 Raqamli Notatsiya belgisi */}
@@ -405,7 +407,7 @@ export default function Board() {
                       <div className="absolute inset-0 bg-emerald-500/20 shadow-[inset_0_0_14px_rgba(16,185,129,0.45)] pointer-events-none z-[3]" />
                     )}
 
-                    {/* Qonuniy harakat nuqtasi / yeyish nishoni (Bosilish joylari juda aniq va yaqqol ko'rinadi) */}
+                    {/* Qonuniy harakat nuqtasi / yeyish nishoni (Bosilish joylari juda aniq va 0ms kechikish) */}
                     {isLegalTarget && (
                       <div
                         className="absolute inset-0 flex items-center justify-center pointer-events-none z-20"
@@ -414,16 +416,16 @@ export default function Board() {
                         {piece ? (
                           // Yeyish nishoni: Qizil yoqut rangli xavf foni va o'tkir nishon doirasi
                           <div className="relative w-[92%] h-[92%] flex items-center justify-center">
-                            <div className="absolute inset-0 rounded-xl bg-red-600/40 border-2 sm:border-[3.5px] border-red-400 shadow-[0_0_18px_rgba(239,68,68,0.95),inset_0_0_14px_rgba(239,68,68,0.7)] animate-pulse" />
-                            <div className="w-[78%] h-[78%] rounded-full border-2 border-white/90 ring-2 ring-red-500 shadow-md" />
+                            <div className="absolute inset-0 rounded-xl bg-red-600/35 border-2 sm:border-[3px] border-red-400 shadow-[0_0_12px_rgba(239,68,68,0.85),inset_0_0_10px_rgba(239,68,68,0.6)]" />
+                            <div className="w-[78%] h-[78%] rounded-full border-2 border-white/95 ring-2 ring-red-500 shadow-md" />
                           </div>
                         ) : (
-                          // Bo'sh kvadratga harakat nuqtasi: Yaqqol ko'zga tashlanadigan zümrad 3D nishon tugmasi
+                          // Bo'sh kvadratga harakat nuqtasi: Yaqqol ko'zga tashlanadigan zümrad 3D nishon tugmasi (Ultra yengil va 0ms kechikish)
                           <div className="relative flex items-center justify-center">
-                            {/* Kengayuvchi yorug'lik halqasi */}
-                            <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-emerald-400/30 animate-ping absolute" />
+                            {/* Tashqi mayin yashil halqa */}
+                            <div className="w-6 h-6 sm:w-7 sm:h-7 rounded-full border border-emerald-400/50 bg-emerald-400/20 absolute" />
                             {/* Zümrad 3D nishon diski */}
-                            <div className="w-4.5 h-4.5 sm:w-5.5 sm:h-5.5 rounded-full bg-gradient-to-br from-emerald-300 via-emerald-500 to-emerald-700 border-2 border-white shadow-[0_0_14px_rgba(16,185,129,0.95),0_3px_6px_rgba(0,0,0,0.6)] ring-2 ring-emerald-600/80 flex items-center justify-center">
+                            <div className="w-4.5 h-4.5 sm:w-5.5 sm:h-5.5 rounded-full bg-gradient-to-br from-emerald-300 via-emerald-500 to-emerald-700 border-2 border-white shadow-[0_2px_6px_rgba(16,185,129,0.8),0_2px_4px_rgba(0,0,0,0.5)] ring-2 ring-emerald-600/70 flex items-center justify-center">
                               {/* Markaziy oq nuqta */}
                               <div className="w-1.5 h-1.5 rounded-full bg-white shadow-sm" />
                             </div>
