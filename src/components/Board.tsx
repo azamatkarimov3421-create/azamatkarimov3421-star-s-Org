@@ -313,18 +313,16 @@ export default function Board() {
                 // 1-100 Raqamli notatsiya belgisi (A1=1, B1=2 ... H1=10, A2=11 ... H10=100)
                 const numericLabel = rankIdx * 10 + fileIdx + 1;
 
-                // 3D dona stilizatsiyasi (kitobdagidek tik turgan, nur-soya va asosi bilan)
+                // 3D dona stilizatsiyasi (kitobdagidek tik turgan, asosi bilan; donani bosganda tepaga sakramaydi)
                 const pieceStyle: React.CSSProperties = is3D
                   ? {
                       ...slideStyle,
-                      transform: isSelected
-                        ? 'translateZ(30px) rotateX(-30deg) translateY(-14px) scale(1.18)'
-                        : 'translateZ(8px) rotateX(-30deg) translateY(-4px) scale(1.06)',
+                      transform: 'translateZ(6px) rotateX(-30deg) translateY(-2px)',
                       transformOrigin: 'bottom center',
                       filter: isSelected
-                        ? 'drop-shadow(0 14px 12px rgba(0,0,0,0.85)) drop-shadow(0 0 16px rgba(245,158,11,0.9))'
+                        ? 'drop-shadow(0 4px 6px rgba(0,0,0,0.85))'
                         : 'drop-shadow(0 4px 5px rgba(0,0,0,0.6))',
-                      transition: isCurrentlyAnimating ? undefined : 'transform 0.18s cubic-bezier(0.2, 0.9, 0.3, 1), filter 0.18s ease-out',
+                      transition: isCurrentlyAnimating ? undefined : 'transform 0.15s ease-out',
                     }
                   : slideStyle || {};
 
@@ -351,12 +349,12 @@ export default function Board() {
                       <div className="absolute inset-0 pointer-events-none z-[4] bg-cyan-400/40 ring-2 sm:ring-4 ring-cyan-300 animate-pulse shadow-[0_0_15px_rgba(34,211,238,0.8)]" />
                     )}
 
-                    {/* Tanlangan kvadrat auralari */}
+                    {/* Tanlangan kvadrat: O'sha dona turgan joy butunlay o'zgacha yorqin oltin rangga kiradi */}
                     {isSelected && (
                       <div
                         className={`absolute inset-0 pointer-events-none z-[5] ${
                           is3D
-                            ? 'bg-amber-400/35 ring-2 sm:ring-4 ring-amber-400 shadow-[inset_0_0_15px_rgba(245,158,11,0.7)]'
+                            ? 'bg-[#eab308]/75 ring-4 ring-amber-300 shadow-[inset_0_0_20px_rgba(234,179,8,0.95),0_0_15px_rgba(250,204,21,0.85)] animate-pulse'
                             : themeStyle.selectedSquare
                         }`}
                       />
@@ -385,30 +383,34 @@ export default function Board() {
                       </div>
                     )}
 
-                    {/* Qonuniy harakat nuqtasi / yeyish nishoni (3D elevatsiyasi bilan) */}
+                    {/* Bo'sh qonuniy kvadratning zamin yoritgichi (Landing Floor Glow) */}
+                    {isLegalTarget && !piece && (
+                      <div className="absolute inset-0 bg-emerald-500/20 shadow-[inset_0_0_14px_rgba(16,185,129,0.45)] pointer-events-none z-[3]" />
+                    )}
+
+                    {/* Qonuniy harakat nuqtasi / yeyish nishoni (Bosilish joylari juda aniq va yaqqol ko'rinadi) */}
                     {isLegalTarget && (
                       <div
                         className="absolute inset-0 flex items-center justify-center pointer-events-none z-20"
                         style={is3D ? { transform: 'translateZ(6px)' } : undefined}
                       >
                         {piece ? (
-                          // Yeyish nishoni: Xavf halqasi (3D rejimida ambar/qizil yorug'lik)
-                          <div
-                            className={`rounded-full border-2 sm:border-[3.5px] ${
-                              is3D
-                                ? 'w-[88%] h-[88%] border-amber-400 bg-red-500/30 shadow-[0_0_15px_rgba(245,158,11,0.95)] ring-2 ring-red-400/80 animate-pulse'
-                                : 'w-[78%] h-[78%] border-emerald-400 bg-emerald-500/25 shadow-[0_0_10px_rgba(52,211,153,0.8)] animate-pulse'
-                            }`}
-                          />
+                          // Yeyish nishoni: Qizil yoqut rangli xavf foni va o'tkir nishon doirasi
+                          <div className="relative w-[92%] h-[92%] flex items-center justify-center">
+                            <div className="absolute inset-0 rounded-xl bg-red-600/40 border-2 sm:border-[3.5px] border-red-400 shadow-[0_0_18px_rgba(239,68,68,0.95),inset_0_0_14px_rgba(239,68,68,0.7)] animate-pulse" />
+                            <div className="w-[78%] h-[78%] rounded-full border-2 border-white/90 ring-2 ring-red-500 shadow-md" />
+                          </div>
                         ) : (
-                          // Bo'sh kvadratga harakat nuqtasi (3D rejimida nurlanuvchi zümrad disk)
-                          <div
-                            className={
-                              is3D
-                                ? 'w-3.5 h-3.5 sm:w-4.5 sm:h-4.5 rounded-full bg-gradient-to-tr from-emerald-500 to-emerald-300 shadow-[0_0_12px_rgba(52,211,153,0.95)] ring-2 ring-white/70 animate-pulse'
-                                : 'w-2.5 h-2.5 sm:w-3.5 sm:h-3.5 rounded-full bg-emerald-400/90 shadow-[0_0_8px_rgba(52,211,153,0.9)] ring-1 sm:ring-2 ring-emerald-600/40'
-                            }
-                          />
+                          // Bo'sh kvadratga harakat nuqtasi: Yaqqol ko'zga tashlanadigan zümrad 3D nishon tugmasi
+                          <div className="relative flex items-center justify-center">
+                            {/* Kengayuvchi yorug'lik halqasi */}
+                            <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-emerald-400/30 animate-ping absolute" />
+                            {/* Zümrad 3D nishon diski */}
+                            <div className="w-4.5 h-4.5 sm:w-5.5 sm:h-5.5 rounded-full bg-gradient-to-br from-emerald-300 via-emerald-500 to-emerald-700 border-2 border-white shadow-[0_0_14px_rgba(16,185,129,0.95),0_3px_6px_rgba(0,0,0,0.6)] ring-2 ring-emerald-600/80 flex items-center justify-center">
+                              {/* Markaziy oq nuqta */}
+                              <div className="w-1.5 h-1.5 rounded-full bg-white shadow-sm" />
+                            </div>
+                          </div>
                         )}
                       </div>
                     )}

@@ -137,25 +137,25 @@ export default function Piece3D({
           </linearGradient>
         </defs>
 
-        {/* ── A. YERGA TUSHUVCHI FIZIK SOYALAR (2 QATLAMLI KONTAKT VA AMBIENT SOYA) ── */}
+        {/* ── A. YERGA TUSHUVCHI FIZIK SOYALAR (REALISTIK STATIK KONTAKT SOYA) ── */}
         <g id="ground-shadows" filter="url(#p3d-shadow-blur)">
-          {/* Katta tarqoq soya */}
+          {/* Katta tarqoq ambient soya */}
           <ellipse
             cx="50"
-            cy={isSelected ? 94 : 92}
-            rx={isSelected ? 36 : 28}
-            ry={isSelected ? 10 : 6.5}
+            cy="92"
+            rx="28"
+            ry="6.5"
             fill="#000000"
-            opacity={isSelected ? 0.35 : 0.65}
+            opacity={0.65}
           />
-          {/* Zich kontakt soya */}
+          {/* Zich asos kontakt soyasi */}
           <ellipse
             cx="50"
-            cy={isSelected ? 93 : 91}
-            rx={isSelected ? 24 : 20}
-            ry={isSelected ? 6 : 4.5}
+            cy="91"
+            rx="21"
+            ry="4.5"
             fill="#000000"
-            opacity={isSelected ? 0.45 : 0.85}
+            opacity={0.85}
           />
         </g>
 
