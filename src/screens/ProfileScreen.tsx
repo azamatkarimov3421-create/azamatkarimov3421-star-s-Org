@@ -4,7 +4,14 @@
 // =====================================================
 
 import React, { useState, useEffect } from 'react';
-import { getUserProfile, saveUserProfile, UserProfile, isGoogleUser } from '../store/userProfileStore';
+import {
+  getUserProfile,
+  saveUserProfile,
+  UserProfile,
+  isGoogleUser,
+  getRecentGames,
+  RecentGame,
+} from '../store/userProfileStore';
 import {
   ArrowLeftIcon,
   SettingsIcon,
@@ -27,6 +34,24 @@ interface ProfileScreenProps {
   onOpenSettings: () => void;
 }
 
+function formatUzbekDate(isoStr: string): string {
+  try {
+    const d = new Date(isoStr);
+    const now = new Date();
+    const isToday = d.toDateString() === now.toDateString();
+    const yesterday = new Date(now);
+    yesterday.setDate(now.getDate() - 1);
+    const isYesterday = d.toDateString() === yesterday.toDateString();
+    const timeStr = d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+    if (isToday) return `Bugun, ${timeStr}`;
+    if (isYesterday) return `Kecha, ${timeStr}`;
+    const months = ['Yan', 'Fev', 'Mar', 'Apr', 'May', 'Iyun', 'Iyul', 'Avg', 'Sen', 'Okt', 'Noy', 'Dek'];
+    return `${d.getDate()}-${months[d.getMonth()]}, ${timeStr}`;
+  } catch {
+    return 'Yaqinda';
+  }
+}
+
 export default function ProfileScreen({
   onBack,
   onOpenAchievements,
@@ -38,9 +63,11 @@ export default function ProfileScreen({
   const [isEditingName, setIsEditingName] = useState(false);
   const [nameInput, setNameInput] = useState(profile.name);
   const [showAuthModal, setShowAuthModal] = useState(false);
+  const [recentGames, setRecentGames] = useState<RecentGame[]>([]);
 
   useEffect(() => {
     setProfile(getUserProfile());
+    setRecentGames(getRecentGames());
   }, []);
 
   const winRate = profile.gamesPlayed > 0
@@ -257,6 +284,87 @@ export default function ProfileScreen({
               style={{ width: `${winRate}%` }}
             />
           </div>
+        </div>
+
+        {/* ── OXIRGI 5 TA O'YIN TARIXI (G'ALABA, DURANG, MAG'LUBIYAT) ── */}
+        <div className="p-4 rounded-3xl bg-[#21201d] border border-[#383531] shadow-md space-y-3">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <span className="text-base">📜</span>
+              <h4 className="text-sm font-black text-white">Oxirgi 5 ta Oʻyin Tarixi</h4>
+            </div>
+            <span className="text-[10px] font-mono font-bold bg-[#181715] px-2.5 py-1 rounded-full border border-[#383531] text-amber-400">
+              {recentGames.slice(0, 5).length} / 5 ta saqlangan
+            </span>
+          </div>
+
+          {recentGames.length === 0 ? (
+            <div className="p-4 rounded-2xl bg-[#181715] border border-[#383531] text-center space-y-1.5 py-5">
+              <div className="text-2xl">♟️</div>
+              <div className="text-xs font-bold text-slate-200">
+                Hali yakunlangan oʻyinlar mavjud emas
+              </div>
+              <p className="text-[11px] text-[#9b9893] max-w-xs mx-auto">
+                Kompyuter (AI) yoki onlayn raqib bilan oʻyin oʻynang va oxirgi 5 ta gʻalaba hamda duranglaringiz shu yerda saqlanadi.
+              </p>
+            </div>
+          ) : (
+            <div className="space-y-2">
+              {recentGames.slice(0, 5).map((game) => {
+                const isWin = game.result === 'win';
+                const isDraw = game.result === 'draw';
+
+                const badgeBg = isWin
+                  ? 'bg-emerald-500/15 text-emerald-400 border-emerald-500/40'
+                  : isDraw
+                  ? 'bg-sky-500/15 text-sky-400 border-sky-500/40'
+                  : 'bg-red-500/15 text-red-400 border-red-500/40';
+
+                const badgeText = isWin ? '🏆 Gʻalaba' : isDraw ? '🤝 Durang' : '❌ Magʻlub';
+
+                return (
+                  <div
+                    key={game.id}
+                    className="p-3 rounded-2xl bg-[#181715] border border-[#383531] flex items-center justify-between gap-2.5 hover:border-[#45423c] transition-colors"
+                  >
+                    {/* Chap: Natija nishoni va Raqib nomi */}
+                    <div className="flex items-center gap-2.5 min-w-0">
+                      <span className={`px-2.5 py-1 rounded-xl text-[10px] font-black tracking-wider border shrink-0 ${badgeBg}`}>
+                        {badgeText}
+                      </span>
+                      <div className="min-w-0">
+                        <div className="text-xs font-bold text-white truncate flex items-center gap-1.5">
+                          <span>{game.opponent}</span>
+                          <span className="text-[10px] font-mono text-[#9b9893]">
+                            {game.myColor === 'white' ? '⬜' : '⬛'}
+                          </span>
+                        </div>
+                        <div className="text-[10px] text-[#9b9893] flex items-center gap-2 mt-0.5">
+                          <span>{game.totalMoves} ta yurish</span>
+                          {game.reason && (
+                            <>
+                              <span>•</span>
+                              <span className="font-medium text-slate-300">{game.reason}</span>
+                            </>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* O'ng: Sana va Vaqt */}
+                    <div className="text-right shrink-0">
+                      <div className="text-[10px] font-mono font-semibold text-[#81b64c]">
+                        {formatUzbekDate(game.date)}
+                      </div>
+                      <div className="text-[9px] text-[#9b9893] font-medium capitalize mt-0.5">
+                        {game.gameMode === 'vsAI' ? 'Kompyuter' : game.gameMode === 'online' ? 'Onlayn' : 'PVP'}
+                      </div>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          )}
         </div>
 
         {/* Amallar Ro'yxati */}

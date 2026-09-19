@@ -6,15 +6,20 @@ import React, { useState, useEffect } from 'react';
 import { useGame } from '../store/gameStore';
 import { saveGameResult } from '../services/dbService';
 
-import { recordGameFinished } from '../store/userProfileStore';
+import { recordGameFinished, saveRecentGame, getRecentGames, RecentGame } from '../store/userProfileStore';
 
 export default function GameOverModal() {
   const { state, dispatch } = useGame();
-  const { game, gameMode, aiColor, aiDepth, aiWhiteDepth, aiBlackDepth, onlinePlayerColor } = state;
+  const { game, gameMode, aiColor, aiDepth, aiWhiteDepth, aiBlackDepth, onlinePlayerColor, roomCode } = state;
   const { status, moveHistory } = game;
 
   const [dismissed, setDismissed] = useState(false);
   const [saved, setSaved] = useState(false);
+  const [recentGames, setRecentGames] = useState<RecentGame[]>([]);
+
+  useEffect(() => {
+    setRecentGames(getRecentGames());
+  }, [status]);
 
   useEffect(() => {
     if (status !== 'playing' && status !== 'check' && !saved) {
@@ -48,18 +53,34 @@ export default function GameOverModal() {
 
       // Profil statistikasini faqat haqiqiy o'yinchi rejimlarida yangilash
       if (gameMode !== 'aiVsAi') {
+        const isPlayerWhite = gameMode === 'online' ? onlinePlayerColor === 'white' : !state.isFlipped;
         let userResult: 'win' | 'loss' | 'draw' = 'draw';
         if (winnerName === 'Durang') {
           userResult = 'draw';
         } else {
-          const isPlayerWhite = gameMode === 'online' ? onlinePlayerColor === 'white' : true;
           const isWinnerPlayer = (winnerName === 'Oq' && isPlayerWhite) || (winnerName === 'Qora' && !isPlayerWhite);
           userResult = isWinnerPlayer ? 'win' : 'loss';
         }
         recordGameFinished(userResult, gameMode === 'online');
+
+        const opponentTitle = gameMode === 'vsAI'
+          ? `AI Bot (${aiDepth}-daraja)`
+          : gameMode === 'online'
+          ? `Onlayn (${roomCode ? `#${roomCode}` : 'Tezkor'})`
+          : `Doʻst bilan (PVP)`;
+
+        const updated = saveRecentGame({
+          result: userResult,
+          opponent: opponentTitle,
+          gameMode,
+          myColor: isPlayerWhite ? 'white' : 'black',
+          totalMoves: Math.ceil(moveHistory.length / 2),
+          reason: status === 'checkmate' ? 'Mot' : status.includes('resigned') ? 'Taslim' : 'Durang',
+        });
+        setRecentGames(updated);
       }
     }
-  }, [status, saved, game.currentTurn, gameMode, aiDepth, aiWhiteDepth, aiBlackDepth, moveHistory.length, onlinePlayerColor]);
+  }, [status, saved, game.currentTurn, gameMode, aiDepth, aiWhiteDepth, aiBlackDepth, moveHistory.length, onlinePlayerColor, state.isFlipped, roomCode]);
 
   // O'yin davom etayotgan bo'lsa yoki modal vaqtincha yopilgan bo'lsa
   if (status === 'playing' || status === 'check' || dismissed) {
@@ -169,7 +190,7 @@ export default function GameOverModal() {
         </p>
 
         {/* Statistika qutisi */}
-        <div className="grid grid-cols-2 gap-2.5 p-3 bg-[#181715] rounded-xl border border-[#383531] mb-5 text-xs">
+        <div className="grid grid-cols-2 gap-2.5 p-3 bg-[#181715] rounded-xl border border-[#383531] mb-4 text-xs">
           <div>
             <div className="text-[#9b9893] font-medium">Jami Harakatlar</div>
             <div className="text-white font-bold text-sm mt-0.5 font-mono">
@@ -183,6 +204,33 @@ export default function GameOverModal() {
             </div>
           </div>
         </div>
+
+        {/* Oxirgi 5 ta o'yin natijalari */}
+        {recentGames.length > 0 && (
+          <div className="mb-4 p-2.5 bg-[#181715] rounded-xl border border-[#383531]">
+            <div className="text-[10px] text-[#9b9893] font-bold uppercase tracking-wider mb-1.5 flex items-center justify-between px-1">
+              <span>Oxirgi oʻyinlar tarixi:</span>
+              <span className="text-white font-mono">{Math.min(5, recentGames.length)} ta</span>
+            </div>
+            <div className="flex items-center justify-center gap-1.5">
+              {recentGames.slice(0, 5).map((g, idx) => (
+                <div
+                  key={idx}
+                  className={`px-2.5 py-1 rounded-lg flex items-center justify-center font-black text-[11px] border ${
+                    g.result === 'win'
+                      ? 'bg-emerald-500/20 text-emerald-400 border-emerald-500/40'
+                      : g.result === 'draw'
+                      ? 'bg-sky-500/20 text-sky-400 border-sky-500/40'
+                      : 'bg-red-500/20 text-red-400 border-red-500/40'
+                  }`}
+                  title={`${g.opponent}: ${g.result === 'win' ? "G'alaba" : g.result === 'draw' ? 'Durang' : "Mag'lubiyat"}`}
+                >
+                  {g.result === 'win' ? '🏆 Gʻalaba' : g.result === 'draw' ? '🤝 Durang' : '❌ Magʻlub'}
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
 
         {/* Tugmalar */}
         <div className="flex flex-col gap-2.5">

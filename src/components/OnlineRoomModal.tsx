@@ -1,10 +1,13 @@
 // =====================================================
 // NUR SHAXMAT 100 — Onlayn Xona Modali (P2P Realtime Multiplayer)
+// 1. Tezkor Raqib Qidirish (Random Matchmaking)
+// 2. Do'stlar Bilan (Xona ochish & Kod bilan kirish)
 // =====================================================
 
 import React, { useEffect, useState, useRef } from 'react';
 import { useGame } from '../store/gameStore';
 import { onlineManager, OnlineStatus } from '../services/onlineService';
+import { getUserProfile } from '../store/userProfileStore';
 
 interface OnlineRoomModalProps {
   isOpen: boolean;
@@ -13,15 +16,22 @@ interface OnlineRoomModalProps {
   initialRoomCode?: string;
 }
 
-export default function OnlineRoomModal({ isOpen, onClose, onStartGame, initialRoomCode }: OnlineRoomModalProps) {
+export default function OnlineRoomModal({
+  isOpen,
+  onClose,
+  onStartGame,
+  initialRoomCode,
+}: OnlineRoomModalProps) {
   const { state, dispatch } = useGame();
   const { roomCode, onlinePlayerColor } = state;
 
+  const [activeTab, setActiveTab] = useState<'quick' | 'friends'>('quick');
   const [inputCode, setInputCode] = useState(initialRoomCode || '');
   const [onlineStatus, setOnlineStatus] = useState<OnlineStatus>(onlineManager.status);
   const [statusText, setStatusText] = useState<string>(onlineManager.statusMessage);
   const [copiedLink, setCopiedLink] = useState(false);
   const [copiedCode, setCopiedCode] = useState(false);
+  const [searchDuration, setSearchDuration] = useState<number>(0);
 
   const hasTransitionedRef = useRef(false);
   const onCloseRef = useRef(onClose);
@@ -64,16 +74,61 @@ export default function OnlineRoomModal({ isOpen, onClose, onStartGame, initialR
     };
   }, [isOpen, dispatch]);
 
-  // URL dan kod kelganda maydonga yozish
+  // URL dan kod kelganda avtomatik 'friends' tabiga o'tib maydonga yozish
   useEffect(() => {
     if (initialRoomCode) {
       setInputCode(initialRoomCode);
+      setActiveTab('friends');
     }
   }, [initialRoomCode]);
 
+  // Matchmaking qidiruv hisoblagichi
+  useEffect(() => {
+    let interval: any = null;
+    if (onlineStatus === 'searching') {
+      interval = setInterval(() => {
+        setSearchDuration((prev) => prev + 1);
+      }, 1000);
+    } else {
+      setSearchDuration(0);
+    }
+    return () => {
+      if (interval) clearInterval(interval);
+    };
+  }, [onlineStatus]);
+
   if (!isOpen) return null;
 
-  // 1. Yangi xona yaratish (Oq donalar)
+  // 1. Tezkor Raqib Qidirishni Boshlash
+  const handleStartMatchmaking = async () => {
+    try {
+      hasTransitionedRef.current = false;
+      const profile = getUserProfile();
+      await onlineManager.startMatchmaking(profile.name, profile.rating);
+    } catch (err: any) {
+      console.error('Matchmaking xatosi:', err);
+    }
+  };
+
+  // Qidiruvni to'xtatish
+  const handleCancelMatchmaking = () => {
+    onlineManager.stopMatchmaking();
+    setSearchDuration(0);
+  };
+
+  // Bot bilan darhol boshlash (Fallback)
+  const handleStartVsAIFallback = () => {
+    handleCancelMatchmaking();
+    dispatch({ type: 'SET_GAME_MODE', mode: 'vsAI' });
+    dispatch({ type: 'SET_AI_DEPTH', depth: 2 });
+    dispatch({ type: 'SET_AI_COLOR', color: 'black' });
+    dispatch({ type: 'SET_FLIPPED', flipped: false });
+    dispatch({ type: 'NEW_GAME' });
+    onClose();
+    onStartGame?.();
+  };
+
+  // 2. Yangi xona yaratish (Oq donalar - Do'st uchun)
   const handleCreateRoom = async () => {
     try {
       hasTransitionedRef.current = false;
@@ -88,7 +143,7 @@ export default function OnlineRoomModal({ isOpen, onClose, onStartGame, initialR
     }
   };
 
-  // 2. Mavjud xonaga ulanish (Qora donalar)
+  // 3. Mavjud xonaga ulanish (Qora donalar)
   const handleJoinRoom = async () => {
     const clean = inputCode.trim();
     if (!clean) return;
@@ -132,10 +187,20 @@ export default function OnlineRoomModal({ isOpen, onClose, onStartGame, initialR
 
   // Xonadan chiqish / Aloqani uzish
   const handleLeaveRoom = () => {
-    onlineManager.disconnect();
-    dispatch({ type: 'SET_ONLINE_ROOM', roomCode: null, myColor: null });
-    dispatch({ type: 'SET_GAME_MODE', mode: 'vsAI' });
+    if (onlineStatus === 'searching') {
+      onlineManager.stopMatchmaking();
+    } else {
+      onlineManager.disconnect();
+      dispatch({ type: 'SET_ONLINE_ROOM', roomCode: null, myColor: null });
+      dispatch({ type: 'SET_GAME_MODE', mode: 'vsAI' });
+    }
     onClose();
+  };
+
+  const formatTime = (secs: number) => {
+    const m = Math.floor(secs / 60);
+    const s = secs % 60;
+    return `${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
   };
 
   const activeCode = onlineManager.roomCode || roomCode;
@@ -148,26 +213,58 @@ export default function OnlineRoomModal({ isOpen, onClose, onStartGame, initialR
       }}
       className="fixed inset-0 bg-black/85 backdrop-blur-md flex items-center justify-center z-50 p-4 animate-fadeIn"
     >
-      <div className="relative max-w-md w-full bg-gradient-to-b from-slate-900 via-slate-900 to-slate-950 rounded-3xl p-6 sm:p-8 shadow-2xl border border-slate-700/80">
+      <div className="relative max-w-md w-full bg-gradient-to-b from-slate-900 via-slate-900 to-slate-950 rounded-3xl p-5 sm:p-7 shadow-2xl border border-slate-700/80">
         <button
           onClick={handleLeaveRoom}
-          className="absolute top-4 right-4 w-8 h-8 rounded-full bg-slate-800 hover:bg-slate-700 text-slate-300 flex items-center justify-center font-bold text-sm transition-colors"
+          className="absolute top-4 right-4 w-8 h-8 rounded-full bg-slate-800 hover:bg-slate-700 text-slate-300 flex items-center justify-center font-bold text-sm transition-colors cursor-pointer"
         >
           ✕
         </button>
 
         {/* Sarlavha */}
-        <div className="flex items-center gap-3 mb-5">
-          <div className="w-12 h-12 rounded-2xl bg-amber-500/20 border border-amber-500/40 flex items-center justify-center text-2xl shadow-inner">
+        <div className="flex items-center gap-3 mb-4">
+          <div className="w-11 h-11 rounded-2xl bg-amber-500/20 border border-amber-500/40 flex items-center justify-center text-2xl shadow-inner shrink-0">
             🌐
           </div>
           <div>
             <h3 className="text-xl font-black text-slate-100">Onlayn Shaxmat</h3>
-            <p className="text-slate-400 text-xs">P2P Realtime (WebRTC orqali bevosita aloqa)</p>
+            <p className="text-slate-400 text-xs">Realtime P2P va Matchmaking tizimi</p>
           </div>
         </div>
 
-        {/* Agar xona allaqachon faol bo'lsa (yoki yaratilayotgan bo'lsa) */}
+        {/* 2 Ta Asosiy Rejim Tablari (Faqat xona faol bo'lmaganda) */}
+        {!activeCode && (
+          <div className="flex bg-slate-950/80 p-1 rounded-2xl border border-slate-800 mb-4">
+            <button
+              onClick={() => {
+                if (onlineStatus === 'searching') handleCancelMatchmaking();
+                setActiveTab('quick');
+              }}
+              className={`flex-1 py-2 rounded-xl font-extrabold text-xs flex items-center justify-center gap-1.5 transition-all cursor-pointer ${
+                activeTab === 'quick'
+                  ? 'bg-amber-500 text-slate-950 shadow-md'
+                  : 'text-slate-400 hover:text-white'
+              }`}
+            >
+              <span>⚡ Tezkor Raqib</span>
+            </button>
+            <button
+              onClick={() => {
+                if (onlineStatus === 'searching') handleCancelMatchmaking();
+                setActiveTab('friends');
+              }}
+              className={`flex-1 py-2 rounded-xl font-extrabold text-xs flex items-center justify-center gap-1.5 transition-all cursor-pointer ${
+                activeTab === 'friends'
+                  ? 'bg-amber-500 text-slate-950 shadow-md'
+                  : 'text-slate-400 hover:text-white'
+              }`}
+            >
+              <span>👥 Doʻst Bilan Xona</span>
+            </button>
+          </div>
+        )}
+
+        {/* Agar xona allaqachon faol bo'lsa (yoki ulanayotgan bo'lsa) */}
         {activeCode ? (
           <div className="space-y-4 text-center py-2">
             <div className="p-5 bg-slate-950/90 rounded-2xl border border-amber-500/40 space-y-3">
@@ -178,7 +275,10 @@ export default function OnlineRoomModal({ isOpen, onClose, onStartGame, initialR
 
               {/* Rang ko'rsatkichi */}
               <div className="text-xs font-semibold py-1 px-3 rounded-xl bg-slate-900 inline-block border border-slate-800">
-                Sizning donalaringiz: <span className="font-bold text-amber-300">{activeColor === 'white' ? '⬜ Oq (Host)' : '⬛ Qora (Mehmon)'}</span>
+                Sizning donalaringiz:{' '}
+                <span className="font-bold text-amber-300">
+                  {activeColor === 'white' ? '⬜ Oq (Host)' : '⬛ Qora (Mehmon)'}
+                </span>
               </div>
 
               {/* Holat signali */}
@@ -215,14 +315,14 @@ export default function OnlineRoomModal({ isOpen, onClose, onStartGame, initialR
             <div className="flex flex-col gap-2">
               <button
                 onClick={handleCopyLink}
-                className="w-full py-2.5 bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-slate-950 font-extrabold rounded-xl text-xs transition-all shadow-md active:scale-95"
+                className="w-full py-2.5 bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-slate-950 font-extrabold rounded-xl text-xs transition-all shadow-md active:scale-95 cursor-pointer"
               >
                 {copiedLink ? '✓ Havola nusxalandi!' : '🔗 Oʻyin havolasini nusxalash (Doʻstga yuborish)'}
               </button>
               <div className="flex gap-2">
                 <button
                   onClick={handleCopyCode}
-                  className="flex-1 py-2 bg-slate-800 hover:bg-slate-700 text-slate-200 font-bold rounded-xl text-xs border border-slate-700 transition-colors"
+                  className="flex-1 py-2 bg-slate-800 hover:bg-slate-700 text-slate-200 font-bold rounded-xl text-xs border border-slate-700 transition-colors cursor-pointer"
                 >
                   {copiedCode ? '✓ Nusxalandi' : '📋 Kodni nusxalash'}
                 </button>
@@ -240,23 +340,113 @@ export default function OnlineRoomModal({ isOpen, onClose, onStartGame, initialR
                       onClose();
                       onStartGame?.();
                     }}
-                    className="flex-1 py-2 bg-emerald-600 hover:bg-emerald-500 text-white font-extrabold rounded-xl text-xs shadow-md transition-all"
+                    className="flex-1 py-2 bg-emerald-600 hover:bg-emerald-500 text-white font-extrabold rounded-xl text-xs shadow-md transition-all cursor-pointer"
                   >
                     Doskaga oʻtish ♟️
                   </button>
                 )}
                 <button
                   onClick={handleLeaveRoom}
-                  className="py-2 px-4 bg-red-950/60 hover:bg-red-900/60 text-red-300 font-bold rounded-xl text-xs border border-red-800/60 transition-colors"
+                  className="py-2 px-4 bg-red-950/60 hover:bg-red-900/60 text-red-300 font-bold rounded-xl text-xs border border-red-800/60 transition-colors cursor-pointer"
                 >
                   Tark etish
                 </button>
               </div>
             </div>
           </div>
+        ) : activeTab === 'quick' ? (
+          /* ── TAB 1: TEZKOR RAQIB QIDIRISH (MATCHMAKING) ── */
+          <div className="space-y-4 pt-1">
+            {onlineStatus === 'searching' ? (
+              /* Qidiruv radari va hisoblagich */
+              <div className="p-6 bg-slate-950/90 rounded-2xl border border-amber-500/40 flex flex-col items-center text-center space-y-4">
+                <div className="relative flex items-center justify-center my-2">
+                  <span className="absolute w-20 h-20 rounded-full bg-amber-500/20 animate-ping pointer-events-none" />
+                  <span className="absolute w-14 h-14 rounded-full bg-amber-500/30 animate-pulse pointer-events-none" />
+                  <div className="w-12 h-12 rounded-full bg-amber-500 text-slate-950 flex items-center justify-center text-2xl shadow-lg relative z-10 font-bold">
+                    ♟️
+                  </div>
+                </div>
+
+                <div>
+                  <div className="text-sm font-black text-amber-300 animate-pulse">
+                    Jonli raqib qidirilmoqda...
+                  </div>
+                  <div className="text-2xl font-black text-white font-mono mt-1">
+                    {formatTime(searchDuration)}
+                  </div>
+                  <p className="text-[11px] text-slate-400 mt-1 max-w-xs">
+                    Internetdagi boshqa onlayn oʻyinchilar bilan avtomatik juftlanmoqda.
+                  </p>
+                </div>
+
+                {/* 10 soniyadan so'ng Bot bilan o'ynash varianti */}
+                {searchDuration >= 8 && (
+                  <div className="w-full pt-2 border-t border-slate-800/80 space-y-2 animate-fadeIn">
+                    <p className="text-[11px] text-amber-200/90 font-semibold">
+                      Hozircha boshqa oʻyinchi topilmadi. AI Bot bilan oʻynaysizmi?
+                    </p>
+                    <button
+                      onClick={handleStartVsAIFallback}
+                      className="w-full py-2 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white font-bold rounded-xl text-xs transition-all shadow cursor-pointer active:scale-95"
+                    >
+                      🤖 AI Bot bilan darhol boshlash
+                    </button>
+                  </div>
+                )}
+
+                <button
+                  onClick={handleCancelMatchmaking}
+                  className="w-full py-2.5 bg-slate-800 hover:bg-slate-700 text-slate-200 font-bold rounded-xl text-xs border border-slate-700 transition-colors cursor-pointer"
+                >
+                  🛑 Qidiruvni toʻxtatish
+                </button>
+              </div>
+            ) : (
+              /* Qidiruvni boshlash kartasi */
+              <div className="p-5 bg-slate-950/70 rounded-2xl border border-slate-800/80 space-y-4 text-center">
+                <div className="flex flex-col items-center gap-1.5">
+                  <span className="text-3xl mb-1">⚡</span>
+                  <h4 className="font-black text-base text-white">
+                    Tezkor Onlayn Raqib Qidirish
+                  </h4>
+                  <p className="text-slate-400 text-xs max-w-xs leading-relaxed">
+                    Xona kodi kiritmasdan, butun dunyo boʻylab hozir oʻynayotgan boshqa foydalanuvchilar bilan avtomatik juftlaning.
+                  </p>
+                </div>
+
+                <div className="grid grid-cols-2 gap-2 text-left bg-slate-900/80 p-3 rounded-xl border border-slate-800 text-[11px] text-slate-300">
+                  <div className="flex items-center gap-1.5">
+                    <span className="text-amber-400 font-bold">✓</span>
+                    <span>Tezkor avto-juftlik</span>
+                  </div>
+                  <div className="flex items-center gap-1.5">
+                    <span className="text-amber-400 font-bold">✓</span>
+                    <span>10x10 Nur Shaxmat</span>
+                  </div>
+                  <div className="flex items-center gap-1.5">
+                    <span className="text-amber-400 font-bold">✓</span>
+                    <span>Reyting hisobi</span>
+                  </div>
+                  <div className="flex items-center gap-1.5">
+                    <span className="text-amber-400 font-bold">✓</span>
+                    <span>Tasodifiy rang</span>
+                  </div>
+                </div>
+
+                <button
+                  onClick={handleStartMatchmaking}
+                  className="w-full py-3.5 bg-gradient-to-r from-amber-500 via-yellow-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-slate-950 font-black text-sm rounded-2xl shadow-xl transition-all active:scale-95 cursor-pointer flex items-center justify-center gap-2"
+                >
+                  <span>🔍</span>
+                  <span>Raqib Qidirishni Boshlash</span>
+                </button>
+              </div>
+            )}
+          </div>
         ) : (
-          /* Xona hali ochilmagan: Yangi xona yoki Ulanish */
-          <div className="space-y-5 pt-1">
+          /* ── TAB 2: DO'STLAR BILAN (XONA OCHISH / KOD BILAN KIRISH) ── */
+          <div className="space-y-4 pt-1">
             {/* 1. Yangi Xona Ochish */}
             <div className="p-4 bg-slate-950/70 rounded-2xl border border-slate-800/80">
               <h4 className="font-bold text-sm text-slate-200 mb-1 flex items-center gap-2">
@@ -266,12 +456,12 @@ export default function OnlineRoomModal({ isOpen, onClose, onStartGame, initialR
                 </span>
               </h4>
               <p className="text-slate-400 text-xs mb-3">
-                Xona yaratib, kod yoki taklif havolasini do'stingizga yuborasiz.
+                Xona yaratib, kod yoki taklif havolasini doʻstingizga yuborasiz.
               </p>
               <button
                 onClick={handleCreateRoom}
                 disabled={onlineStatus === 'creating'}
-                className="w-full py-3 bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-slate-950 font-black text-xs rounded-xl shadow-lg transition-all active:scale-95 disabled:opacity-50"
+                className="w-full py-3 bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-slate-950 font-black text-xs rounded-xl shadow-lg transition-all active:scale-95 disabled:opacity-50 cursor-pointer"
               >
                 {onlineStatus === 'creating' ? '⏳ Xona ochilmoqda...' : '✨ Yangi Xona Ochish'}
               </button>
@@ -300,7 +490,7 @@ export default function OnlineRoomModal({ isOpen, onClose, onStartGame, initialR
                 <button
                   onClick={handleJoinRoom}
                   disabled={!inputCode.trim() || onlineStatus === 'connecting'}
-                  className="py-2.5 px-5 bg-emerald-600 hover:bg-emerald-500 text-white font-extrabold rounded-xl text-xs transition-all shadow-md active:scale-95 disabled:opacity-50"
+                  className="py-2.5 px-5 bg-emerald-600 hover:bg-emerald-500 text-white font-extrabold rounded-xl text-xs transition-all shadow-md active:scale-95 disabled:opacity-50 cursor-pointer"
                 >
                   {onlineStatus === 'connecting' ? '...' : 'Kirish'}
                 </button>
@@ -318,4 +508,3 @@ export default function OnlineRoomModal({ isOpen, onClose, onStartGame, initialR
     </div>
   );
 }
-

@@ -9,6 +9,7 @@ import { Move } from '../engine/types';
 
 export type OnlineStatus =
   | 'idle'
+  | 'searching'
   | 'creating'
   | 'waiting'
   | 'connecting'
@@ -31,6 +32,7 @@ export type StatusCallback = (status: OnlineStatus, extra?: string) => void;
 
 class OnlineManager {
   private channel: RealtimeChannel | null = null;
+  private matchChannel: RealtimeChannel | null = null;
   private messageListeners = new Set<MessageCallback>();
   private statusListeners = new Set<StatusCallback>();
 
@@ -38,6 +40,7 @@ class OnlineManager {
   public roomCode: string | null = null;
   public myColor: 'white' | 'black' | null = null;
   public statusMessage: string = '';
+  public isMatchmaking: boolean = false;
 
   public addMessageListener(cb: MessageCallback): () => void {
     this.messageListeners.add(cb);
@@ -248,9 +251,124 @@ class OnlineManager {
   }
 
   /**
+   * 3. Tezkor tasodifiy raqib qidirish (Random Matchmaking Lobby)
+   */
+  public startMatchmaking(playerName?: string, rating?: number): Promise<string> {
+    this.disconnect();
+    this.stopMatchmaking();
+
+    this.isMatchmaking = true;
+    const clientId = `user_${Date.now()}_${Math.random().toString(36).substring(2, 7)}`;
+    this.notifyStatus('searching', 'Jonli raqib qidirilmoqda...');
+
+    return new Promise((resolve, reject) => {
+      try {
+        const mCh = supabase.channel('nur_matchmaking_lobby_v1', {
+          config: {
+            broadcast: { self: false },
+            presence: { key: clientId },
+          },
+        });
+        this.matchChannel = mCh;
+
+        // Boshqa o'yinchi tomonidan juftlik e'lon qilinganda
+        mCh.on('broadcast', { event: 'match_paired' }, async ({ payload }) => {
+          if (!payload || !this.isMatchmaking) return;
+          const { hostId, guestId, roomCode } = payload;
+          if (clientId === hostId || clientId === guestId) {
+            this.stopMatchmaking();
+            if (clientId === hostId) {
+              await this.createRoom(roomCode);
+              resolve(roomCode);
+            } else {
+              await this.joinRoom(roomCode);
+              resolve(roomCode);
+            }
+          }
+        });
+
+        // Presence yangilanganda kutayotgan boshqa o'yinchini aniqlash
+        mCh.on('presence', { event: 'sync' }, async () => {
+          if (!this.isMatchmaking) return;
+          const state = mCh.presenceState();
+          const presences = Object.values(state).flat() as any[];
+          const opponents = presences.filter(
+            (p) => p && p.id && p.id !== clientId && p.status === 'searching'
+          );
+
+          if (opponents.length > 0) {
+            // Eng birinchi kutayotgan raqibni tanlaymiz
+            const opponent = opponents[0];
+            // Deterministic matchmaker: kichikroq ID ga ega o'yinchi host bo'ladi
+            if (clientId < opponent.id) {
+              const matchedRoomCode = `${Math.floor(10000 + Math.random() * 90000)}`;
+              try {
+                await mCh.send({
+                  type: 'broadcast',
+                  event: 'match_paired',
+                  payload: {
+                    hostId: clientId,
+                    guestId: opponent.id,
+                    roomCode: matchedRoomCode,
+                  },
+                });
+              } catch {}
+
+              this.stopMatchmaking();
+              await this.createRoom(matchedRoomCode);
+              resolve(matchedRoomCode);
+            }
+          }
+        });
+
+        mCh.subscribe(async (status) => {
+          if (status === 'SUBSCRIBED') {
+            try {
+              await mCh.track({
+                id: clientId,
+                name: playerName || 'Oʻyinchi',
+                rating: rating || 1200,
+                status: 'searching',
+                joined_at: Date.now(),
+              });
+            } catch {}
+            this.notifyStatus('searching', 'Jonli raqib qidirilmoqda...');
+          } else if (status === 'CHANNEL_ERROR' || status === 'TIMED_OUT') {
+            this.notifyStatus('error', 'Qidiruv serveriga ulanishda xatolik yuz berdi');
+            reject(new Error(status));
+          }
+        });
+      } catch (err: any) {
+        this.notifyStatus('error', err.message || 'Xatolik');
+        reject(err);
+      }
+    });
+  }
+
+  /**
+   * Qidiruvni to'xtatish
+   */
+  public stopMatchmaking() {
+    this.isMatchmaking = false;
+    if (this.matchChannel) {
+      try {
+        this.matchChannel.untrack();
+        this.matchChannel.unsubscribe();
+        supabase.removeChannel(this.matchChannel);
+      } catch {}
+      this.matchChannel = null;
+    }
+    if (this.status === 'searching') {
+      this.status = 'idle';
+      this.statusMessage = '';
+    }
+  }
+
+  /**
    * Aloqani to'xtatish
    */
   public disconnect() {
+    this.stopMatchmaking();
     if (this.channel) {
       try {
         this.channel.send({

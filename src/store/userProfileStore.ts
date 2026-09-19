@@ -30,6 +30,17 @@ export interface Achievement {
   unlocked: boolean;
 }
 
+export interface RecentGame {
+  id: string;
+  date: string; // ISO string
+  result: 'win' | 'loss' | 'draw';
+  opponent: string;
+  gameMode: 'vsAI' | 'online' | 'pvp' | 'aiVsAi';
+  myColor: 'white' | 'black';
+  totalMoves: number;
+  reason?: string;
+}
+
 export const DEFAULT_UNLINKED_PROFILE: UserProfile = {
   name: 'Mehmon Oʻyinchi',
   rating: 1200,
@@ -241,3 +252,34 @@ export function recordGameFinished(result: 'win' | 'loss' | 'draw', isOnline: bo
 
   return profile;
 }
+
+const RECENT_GAMES_KEY = 'nurchess_recent_games_v1';
+
+export function getRecentGames(): RecentGame[] {
+  try {
+    const data = localStorage.getItem(RECENT_GAMES_KEY);
+    if (data) {
+      const list = JSON.parse(data);
+      if (Array.isArray(list)) return list;
+    }
+  } catch {}
+  return [];
+}
+
+export function saveRecentGame(game: Omit<RecentGame, 'id' | 'date'>): RecentGame[] {
+  try {
+    const existing = getRecentGames();
+    const newEntry: RecentGame = {
+      ...game,
+      id: `game_${Date.now()}_${Math.random().toString(36).substring(2, 6)}`,
+      date: new Date().toISOString(),
+    };
+    // Keep up to 20 games in history (latest first)
+    const updated = [newEntry, ...existing].slice(0, 20);
+    localStorage.setItem(RECENT_GAMES_KEY, JSON.stringify(updated));
+    return updated;
+  } catch {
+    return [];
+  }
+}
+
