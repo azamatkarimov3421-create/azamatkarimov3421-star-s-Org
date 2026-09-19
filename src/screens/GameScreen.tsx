@@ -430,14 +430,14 @@ export default function GameScreen({ onBack, onOpenSettings }: GameScreenProps) 
               </button>
             </div>
 
-            {/* 3D Ot Modelini 360° Ko'rish tugmasi */}
+            {/* 3D Modellar (Ot & Rux) 360° Ko'rish tugmasi */}
             <button
               onClick={() => setShowModelViewer(true)}
               className="h-9 px-2.5 rounded-xl bg-gradient-to-r from-amber-500/20 to-amber-600/30 hover:from-amber-500/30 hover:to-amber-600/40 border border-amber-500/40 text-amber-300 hover:text-amber-200 text-xs font-bold flex items-center gap-1.5 transition-all active:scale-95 shadow-[0_2px_0_#21201d]"
-              title="3D Ot Modelini ko'rish (360°)"
+              title="3D Modellar (Ot & Rux) ni ko'rish (360°)"
             >
-              <span>🐎</span>
-              <span className="hidden sm:inline">3D Ot</span>
+              <span>🏛️</span>
+              <span className="hidden sm:inline">3D Modellar</span>
             </button>
 
             {/* Tizim Loglari va Xatoliklar jurnali tugmasi */}
@@ -569,10 +569,10 @@ export default function GameScreen({ onBack, onOpenSettings }: GameScreenProps) 
                 <button
                   onClick={() => setShowModelViewer(true)}
                   className="text-[11px] font-bold text-amber-300 hover:text-amber-200 active:scale-95 transition-all flex items-center gap-1 bg-amber-500/15 border border-amber-500/30 px-2 py-0.5 rounded-lg shadow-sm"
-                  title="3D Ot Modelini ko'rish"
+                  title="3D Modellar (Ot & Rux) ni ko'rish"
                 >
-                  <span>🐎</span>
-                  <span>3D Ot</span>
+                  <span>🏛️</span>
+                  <span>3D Donalar</span>
                 </button>
                 <button
                   onClick={() => dispatch({ type: 'TOGGLE_3D' })}

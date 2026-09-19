@@ -7,6 +7,7 @@
 import React from 'react';
 import { Color, PieceType } from '../engine/types';
 import GLBKnight from './GLBKnight';
+import GLBRook from './GLBRook';
 
 interface Piece3DProps {
   type: PieceType;
@@ -27,6 +28,18 @@ function Piece3DComponent({
   if (type === 'Knight') {
     return (
       <GLBKnight
+        color={color}
+        size={size}
+        className={className}
+        isSelected={isSelected}
+      />
+    );
+  }
+
+  // Haqiqiy 3D GLB Rux (Rook) modeli
+  if (type === 'Rook') {
+    return (
+      <GLBRook
         color={color}
         size={size}
         className={className}

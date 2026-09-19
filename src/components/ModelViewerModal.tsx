@@ -15,6 +15,7 @@ interface ModelViewerModalProps {
 
 export default function ModelViewerModal({ isOpen, onClose }: ModelViewerModalProps) {
   const containerRef = useRef<HTMLDivElement>(null);
+  const [selectedPiece, setSelectedPiece] = useState<'Knight' | 'Rook'>('Knight');
   const [colorMode, setColorMode] = useState<'white' | 'black'>('black');
   const [autoRotate, setAutoRotate] = useState(true);
   const [isLoading, setIsLoading] = useState(true);
@@ -90,9 +91,10 @@ export default function ModelViewerModal({ isOpen, onClose }: ModelViewerModalPr
     scene.add(rimLight);
 
     // 5. Load GLB Model
+    const modelPath = selectedPiece === 'Knight' ? '/models/knight.glb' : '/models/rook.glb';
     const loader = new GLTFLoader();
     loader.load(
-      '/models/knight.glb',
+      modelPath,
       (gltf) => {
         const model = gltf.scene;
         modelRef.current = model;
@@ -218,7 +220,7 @@ export default function ModelViewerModal({ isOpen, onClose }: ModelViewerModalPr
       }
       renderer.dispose();
     };
-  }, [isOpen]);
+  }, [isOpen, selectedPiece]);
 
   // Rangni o'zgartirish (Oq Marmar / Qora Obsidian)
   useEffect(() => {
@@ -255,6 +257,8 @@ export default function ModelViewerModal({ isOpen, onClose }: ModelViewerModalPr
 
   if (!isOpen) return null;
 
+  const isKnight = selectedPiece === 'Knight';
+
   return (
     <div className="fixed inset-0 bg-black/90 backdrop-blur-lg flex items-center justify-center z-[9999] p-3 sm:p-4 animate-fadeIn">
       <div className="relative w-full max-w-2xl bg-gradient-to-b from-slate-900 via-slate-900 to-slate-950 border border-amber-500/40 rounded-3xl p-5 sm:p-6 shadow-2xl flex flex-col max-h-[94vh] overflow-hidden">
@@ -266,21 +270,51 @@ export default function ModelViewerModal({ isOpen, onClose }: ModelViewerModalPr
           ✕
         </button>
 
-        {/* Sarlavha */}
-        <div className="flex items-center gap-3 mb-3 shrink-0">
-          <div className="w-11 h-11 rounded-2xl bg-amber-500/20 border border-amber-500/40 flex items-center justify-center text-2xl shadow-inner shrink-0">
-            🐎
-          </div>
-          <div>
-            <div className="flex items-center gap-2">
-              <h3 className="text-lg font-black text-white">3D Ot (Knight) Modeli</h3>
-              <span className="text-[10px] font-extrabold uppercase px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-400 border border-emerald-500/30">
-                GLB • 2.3 MB
-              </span>
+        {/* Sarlavha & Dona tanlash tablari */}
+        <div className="flex flex-wrap items-center justify-between gap-3 mb-3 shrink-0 pr-12">
+          <div className="flex items-center gap-3">
+            <div className="w-11 h-11 rounded-2xl bg-amber-500/20 border border-amber-500/40 flex items-center justify-center text-2xl shadow-inner shrink-0">
+              {isKnight ? '🐎' : '🏰'}
             </div>
-            <p className="text-slate-400 text-xs">
-              Tripo 3D-dan olingan haqiqiy relyefli PBR model
-            </p>
+            <div>
+              <div className="flex items-center gap-2">
+                <h3 className="text-lg font-black text-white">
+                  {isKnight ? '3D Ot (Knight)' : '3D Rux (Rook)'}
+                </h3>
+                <span className="text-[10px] font-extrabold uppercase px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-400 border border-emerald-500/30">
+                  GLB • {isKnight ? '2.3 MB' : '2.4 MB'}
+                </span>
+              </div>
+              <p className="text-slate-400 text-xs">
+                Tripo 3D relyefli va PBR teksturali model
+              </p>
+            </div>
+          </div>
+
+          {/* Dona Tanlash (Ot / Rux) Tablari */}
+          <div className="flex items-center bg-slate-800/90 p-1 rounded-2xl border border-slate-700 shadow-inner">
+            <button
+              onClick={() => setSelectedPiece('Knight')}
+              className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer ${
+                isKnight
+                  ? 'bg-gradient-to-r from-amber-500 to-amber-600 text-slate-950 font-black shadow-md'
+                  : 'text-slate-300 hover:text-white'
+              }`}
+            >
+              <span>🐎</span>
+              <span>Ot</span>
+            </button>
+            <button
+              onClick={() => setSelectedPiece('Rook')}
+              className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer ${
+                !isKnight
+                  ? 'bg-gradient-to-r from-amber-500 to-amber-600 text-slate-950 font-black shadow-md'
+                  : 'text-slate-300 hover:text-white'
+              }`}
+            >
+              <span>🏰</span>
+              <span>Rux</span>
+            </button>
           </div>
         </div>
 

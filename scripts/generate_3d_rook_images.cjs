@@ -1,0 +1,234 @@
+const http = require('http');
+const fs = require('fs');
+const path = require('path');
+const { exec } = require('child_process');
+
+const PORT = 8766;
+const ROOT = path.resolve(__dirname, '..');
+
+const server = http.createServer((req, res) => {
+  if (req.method === 'POST' && req.url === '/save') {
+    let body = '';
+    req.on('data', chunk => { body += chunk; });
+    req.on('end', () => {
+      try {
+        const data = JSON.parse(body);
+        for (const [filename, dataUrl] of Object.entries(data)) {
+          const base64Data = dataUrl.replace(/^data:image\/png;base64,/, '');
+          const buffer = Buffer.from(base64Data, 'base64');
+          
+          const pubPath = path.join(ROOT, 'public', 'pieces', filename);
+          const distPath = path.join(ROOT, 'dist', 'pieces', filename);
+          
+          fs.mkdirSync(path.dirname(pubPath), { recursive: true });
+          fs.writeFileSync(pubPath, buffer);
+          console.log('Saved:', pubPath, buffer.length, 'bytes');
+
+          if (fs.existsSync(path.join(ROOT, 'dist'))) {
+            fs.mkdirSync(path.dirname(distPath), { recursive: true });
+            fs.writeFileSync(distPath, buffer);
+            console.log('Saved to dist:', distPath);
+          }
+        }
+        res.writeHead(200, { 'Content-Type': 'application/json' });
+        res.end(JSON.stringify({ success: true }));
+        console.log('All rook images saved successfully! Shutting down server...');
+        setTimeout(() => {
+          server.close();
+          process.exit(0);
+        }, 1000);
+      } catch (err) {
+        console.error('Error saving image:', err);
+        res.writeHead(500);
+        res.end(err.message);
+      }
+    });
+    return;
+  }
+
+  if (req.url === '/render') {
+    res.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8' });
+    res.end(`<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>3D Rook Renderer</title>
+  <script type="importmap">
+    {
+      "imports": {
+        "three": "/node_modules/three/build/three.module.js",
+        "three/addons/": "/node_modules/three/examples/jsm/"
+      }
+    }
+  </script>
+</head>
+<body style="background: transparent; margin: 0; overflow: hidden;">
+  <canvas id="c" width="512" height="512"></canvas>
+  <script type="module">
+    import * as THREE from 'three';
+    import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
+
+    const canvas = document.getElementById('c');
+    const width = 512;
+    const height = 512;
+
+    const renderer = new THREE.WebGLRenderer({
+      canvas,
+      alpha: true,
+      antialias: true,
+      preserveDrawingBuffer: true,
+      powerPreference: 'high-performance'
+    });
+    renderer.setSize(width, height);
+    renderer.setPixelRatio(1);
+    renderer.toneMapping = THREE.ACESFilmicToneMapping;
+    renderer.toneMappingExposure = 1.2;
+    renderer.shadowMap.enabled = true;
+    renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+
+    const loader = new GLTFLoader();
+    loader.load('/public/models/rook.glb', (gltf) => {
+      const results = {};
+
+      function renderPiece(isWhite, facingDeg) {
+        const scene = new THREE.Scene();
+
+        // Ambient Light
+        const amb = new THREE.AmbientLight(0xffffff, isWhite ? 0.75 : 0.95);
+        scene.add(amb);
+
+        // Key Light (top front right)
+        const key = new THREE.DirectionalLight(0xfff8ee, isWhite ? 2.2 : 2.6);
+        key.position.set(3.0, 4.2, 3.2);
+        scene.add(key);
+
+        // Fill Light (left cool)
+        const fill = new THREE.DirectionalLight(0xa5c9eb, isWhite ? 1.0 : 1.3);
+        fill.position.set(-3.5, 2.2, 1.8);
+        scene.add(fill);
+
+        // Rim Light (sharp background edge light)
+        const rim = new THREE.DirectionalLight(isWhite ? 0xfff0cb : 0x7eb5ff, isWhite ? 2.0 : 3.4);
+        rim.position.set(0, 3.5, -4.0);
+        scene.add(rim);
+
+        // Soft floor reflection bounce
+        const bounce = new THREE.DirectionalLight(0xffe8cc, 0.5);
+        bounce.position.set(0, -2, 2);
+        scene.add(bounce);
+
+        // Clone scene
+        const model = gltf.scene.clone(true);
+
+        // Apply materials
+        model.traverse((child) => {
+          if (child.isMesh) {
+            const orig = Array.isArray(child.material) ? child.material[0] : child.material;
+            const origNormal = orig?.normalMap || null;
+            const origMap = orig?.map || null;
+
+            if (isWhite) {
+              child.material = new THREE.MeshStandardMaterial({
+                color: new THREE.Color(0xf2ece1),
+                roughness: 0.36,
+                metalness: 0.08,
+                normalMap: origNormal,
+                normalScale: new THREE.Vector2(2.2, 2.2)
+              });
+            } else {
+              child.material = new THREE.MeshStandardMaterial({
+                map: origMap,
+                color: new THREE.Color(0x2f2d2b),
+                roughness: 0.38,
+                metalness: 0.32,
+                normalMap: origNormal,
+                normalScale: new THREE.Vector2(1.8, 1.8)
+              });
+            }
+          }
+        });
+
+        // Center and scale model
+        const box = new THREE.Box3().setFromObject(model);
+        const center = new THREE.Vector3();
+        const size = new THREE.Vector3();
+        box.getCenter(center);
+        box.getSize(size);
+
+        const maxDim = Math.max(size.x, size.y, size.z);
+        const scale = 1.48 / maxDim; // Clean padding so battlements never clip
+        model.scale.set(scale, scale, scale);
+
+        model.position.x = -center.x * scale;
+        model.position.y = -box.min.y * scale - 0.70;
+        model.position.z = -center.z * scale;
+
+        model.rotation.y = (facingDeg * Math.PI) / 180;
+        scene.add(model);
+
+        // Camera: elevated slightly to look nicely into the castle crenellations
+        const camera = new THREE.PerspectiveCamera(36, width / height, 0.1, 100);
+        camera.position.set(0, 0.55, 2.65);
+        camera.lookAt(0, 0.05, 0);
+
+        renderer.render(scene, camera);
+        return canvas.toDataURL('image/png');
+      }
+
+      results['3d_rook_white.png'] = renderPiece(true, 25);
+      results['3d_rook_black.png'] = renderPiece(false, 25);
+
+      console.log('Rendered both White and Black 3D Rooks. Sending to server...');
+      fetch('/save', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(results)
+      }).then(r => r.json()).then(data => {
+        document.body.innerHTML = '<h1 style="color: green">DONE</h1>';
+      }).catch(err => {
+        document.body.innerHTML = '<h1 style="color: red">' + err + '</h1>';
+      });
+    }, undefined, (err) => {
+      console.error('GLB load error:', err);
+      document.body.innerHTML = '<h1 style="color: red">' + err + '</h1>';
+    });
+  </script>
+</body>
+</html>`);
+    return;
+  }
+
+  // Static files
+  let safePath = path.normalize(req.url.split('?')[0]);
+  if (safePath === '/') safePath = '/index.html';
+  const filePath = path.join(ROOT, safePath);
+
+  if (fs.existsSync(filePath) && fs.statSync(filePath).isFile()) {
+    const ext = path.extname(filePath).toLowerCase();
+    const mimeTypes = {
+      '.html': 'text/html',
+      '.js': 'application/javascript',
+      '.json': 'application/json',
+      '.css': 'text/css',
+      '.png': 'image/png',
+      '.jpg': 'image/jpeg',
+      '.svg': 'image/svg+xml',
+      '.glb': 'model/gltf-binary'
+    };
+    res.writeHead(200, { 'Content-Type': mimeTypes[ext] || 'application/octet-stream' });
+    fs.createReadStream(filePath).pipe(res);
+  } else {
+    res.writeHead(404);
+    res.end('Not found: ' + req.url);
+  }
+});
+
+server.listen(PORT, () => {
+  console.log('Rook render server running on http://localhost:' + PORT);
+  const edgePath = 'C:\\Program Files (x86)\\Microsoft\\Edge\\Application\\msedge.exe';
+  const cmd = `"${edgePath}" --headless --disable-gpu=false --use-gl=angle --remote-debugging-port=0 http://localhost:${PORT}/render`;
+  console.log('Launching Edge to render 3D rook pieces...');
+  exec(cmd, (err) => {
+    if (err) console.error('Edge exec notice:', err);
+  });
+});
