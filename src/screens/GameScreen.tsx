@@ -15,7 +15,6 @@ import { getBestMove, getBestMoveAsync } from '../ai/minimax';
 import { onlineManager } from '../services/onlineService';
 import { logger } from '../services/loggerService';
 import ErrorModal from '../components/ErrorModal';
-import ModelViewerModal from '../components/ModelViewerModal';
 import {
   ArrowLeftIcon,
   RotateCwIcon,
@@ -64,7 +63,6 @@ export default function GameScreen({ onBack, onOpenSettings }: GameScreenProps) 
   const [showHistoryModal, setShowHistoryModal] = useState(false);
   const [showErrorModal, setShowErrorModal] = useState(false);
   const [showVsAiLevelModal, setShowVsAiLevelModal] = useState(false);
-  const [showModelViewer, setShowModelViewer] = useState(false);
   const [errorCount, setErrorCount] = useState(0);
   const [lastWarning, setLastWarning] = useState<string | null>(null);
   const userProfile = getUserProfile();
@@ -430,16 +428,6 @@ export default function GameScreen({ onBack, onOpenSettings }: GameScreenProps) 
               </button>
             </div>
 
-            {/* 3D Modellar (Ot & Rux) 360° Ko'rish tugmasi */}
-            <button
-              onClick={() => setShowModelViewer(true)}
-              className="h-9 px-2.5 rounded-xl bg-gradient-to-r from-amber-500/20 to-amber-600/30 hover:from-amber-500/30 hover:to-amber-600/40 border border-amber-500/40 text-amber-300 hover:text-amber-200 text-xs font-bold flex items-center gap-1.5 transition-all active:scale-95 shadow-[0_2px_0_#21201d]"
-              title="3D Modellar (Ot & Rux) ni ko'rish (360°)"
-            >
-              <span>🏛️</span>
-              <span className="hidden sm:inline">3D Modellar</span>
-            </button>
-
             {/* Tizim Loglari va Xatoliklar jurnali tugmasi */}
             <button
               onClick={() => setShowErrorModal(true)}
@@ -565,22 +553,12 @@ export default function GameScreen({ onBack, onOpenSettings }: GameScreenProps) 
                   {is3D ? t('view_3d') : t('view_2d')}
                 </span>
               </div>
-              <div className="flex items-center gap-2">
-                <button
-                  onClick={() => setShowModelViewer(true)}
-                  className="text-[11px] font-bold text-amber-300 hover:text-amber-200 active:scale-95 transition-all flex items-center gap-1 bg-amber-500/15 border border-amber-500/30 px-2 py-0.5 rounded-lg shadow-sm"
-                  title="3D Modellar (Ot & Rux) ni ko'rish"
-                >
-                  <span>🏛️</span>
-                  <span>3D Donalar</span>
-                </button>
-                <button
-                  onClick={() => dispatch({ type: 'TOGGLE_3D' })}
-                  className="text-[11px] font-extrabold text-amber-400 hover:text-amber-300 active:scale-95 transition-all underline underline-offset-2 flex items-center gap-1"
-                >
-                  {is3D ? t('switch_to_2d') : t('switch_to_3d')}
-                </button>
-              </div>
+              <button
+                onClick={() => dispatch({ type: 'TOGGLE_3D' })}
+                className="text-[11px] font-extrabold text-amber-400 hover:text-amber-300 active:scale-95 transition-all underline underline-offset-2 flex items-center gap-1"
+              >
+                {is3D ? t('switch_to_2d') : t('switch_to_3d')}
+              </button>
             </div>
 
             {/* Mobil ekranda doska ustidagi gorizontal EvalBar */}
@@ -1050,11 +1028,6 @@ export default function GameScreen({ onBack, onOpenSettings }: GameScreenProps) 
         </div>
       )}
 
-      {/* 3D Ot Modelini 360° Interaktiv Ko'rish Modali */}
-      <ModelViewerModal
-        isOpen={showModelViewer}
-        onClose={() => setShowModelViewer(false)}
-      />
     </div>
   );
 }
