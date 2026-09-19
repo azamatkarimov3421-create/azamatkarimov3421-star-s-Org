@@ -313,17 +313,18 @@ export default function Board() {
                 // 1-100 Raqamli notatsiya belgisi (A1=1, B1=2 ... H1=10, A2=11 ... H10=100)
                 const numericLabel = rankIdx * 10 + fileIdx + 1;
 
-                // 3D dona stilizatsiyasi (kitobdagidek tik turgan va soya tashlagan)
+                // 3D dona stilizatsiyasi (kitobdagidek tik turgan, nur-soya va asosi bilan)
                 const pieceStyle: React.CSSProperties = is3D
                   ? {
                       ...slideStyle,
                       transform: isSelected
-                        ? 'translateZ(26px) rotateX(-28deg) translateY(-10px) scale(1.18)'
-                        : 'translateZ(8px) rotateX(-28deg) translateY(-4px) scale(1.08)',
+                        ? 'translateZ(24px) rotateX(-28deg) translateY(-8px) scale(1.15)'
+                        : 'translateZ(6px) rotateX(-28deg) translateY(-3px) scale(1.04)',
                       transformOrigin: 'bottom center',
                       filter: isSelected
-                        ? 'drop-shadow(0 10px 8px rgba(0,0,0,0.85)) drop-shadow(0 0 10px rgba(245,158,11,0.95))'
-                        : 'drop-shadow(0 4px 5px rgba(0,0,0,0.65))',
+                        ? 'drop-shadow(0 12px 10px rgba(0,0,0,0.85)) drop-shadow(0 0 12px rgba(245,158,11,0.85))'
+                        : 'drop-shadow(0 3px 4px rgba(0,0,0,0.5))',
+                      transition: isCurrentlyAnimating ? undefined : 'transform 0.18s cubic-bezier(0.2, 0.9, 0.3, 1), filter 0.18s ease-out',
                     }
                   : slideStyle || {};
 
@@ -348,7 +349,13 @@ export default function Board() {
 
                     {/* Tanlangan kvadrat auralari */}
                     {isSelected && (
-                      <div className={`absolute inset-0 pointer-events-none z-[5] ${themeStyle.selectedSquare}`} />
+                      <div
+                        className={`absolute inset-0 pointer-events-none z-[5] ${
+                          is3D
+                            ? 'bg-amber-400/35 ring-2 sm:ring-4 ring-amber-400 shadow-[inset_0_0_15px_rgba(245,158,11,0.7)]'
+                            : themeStyle.selectedSquare
+                        }`}
+                      />
                     )}
 
                     {/* Shoh shahda bo'lgandagi xavf aulasi */}
@@ -374,15 +381,30 @@ export default function Board() {
                       </div>
                     )}
 
-                    {/* Qonuniy harakat nuqtasi / yeyish nishoni */}
+                    {/* Qonuniy harakat nuqtasi / yeyish nishoni (3D elevatsiyasi bilan) */}
                     {isLegalTarget && (
-                      <div className="absolute inset-0 flex items-center justify-center pointer-events-none z-20">
+                      <div
+                        className="absolute inset-0 flex items-center justify-center pointer-events-none z-20"
+                        style={is3D ? { transform: 'translateZ(4px)' } : undefined}
+                      >
                         {piece ? (
-                          // Yeyish nishoni: Xavf halqasi
-                          <div className="w-[78%] h-[78%] rounded-full border-2 sm:border-[3.5px] border-emerald-400 bg-emerald-500/25 shadow-[0_0_10px_rgba(52,211,153,0.8)] animate-pulse" />
+                          // Yeyish nishoni: Xavf halqasi (3D rejimida ambar/qizil yorug'lik)
+                          <div
+                            className={`rounded-full border-2 sm:border-[3.5px] ${
+                              is3D
+                                ? 'w-[88%] h-[88%] border-amber-400 bg-red-500/30 shadow-[0_0_15px_rgba(245,158,11,0.95)] ring-2 ring-red-400/80 animate-pulse'
+                                : 'w-[78%] h-[78%] border-emerald-400 bg-emerald-500/25 shadow-[0_0_10px_rgba(52,211,153,0.8)] animate-pulse'
+                            }`}
+                          />
                         ) : (
-                          // Bo'sh kvadratga harakat nuqtasi
-                          <div className="w-2.5 h-2.5 sm:w-3.5 sm:h-3.5 rounded-full bg-emerald-400/90 shadow-[0_0_8px_rgba(52,211,153,0.9)] ring-1 sm:ring-2 ring-emerald-600/40" />
+                          // Bo'sh kvadratga harakat nuqtasi (3D rejimida nurlanuvchi zümrad disk)
+                          <div
+                            className={
+                              is3D
+                                ? 'w-3.5 h-3.5 sm:w-4.5 sm:h-4.5 rounded-full bg-gradient-to-tr from-emerald-500 to-emerald-300 shadow-[0_0_12px_rgba(52,211,153,0.95)] ring-2 ring-white/70 animate-pulse'
+                                : 'w-2.5 h-2.5 sm:w-3.5 sm:h-3.5 rounded-full bg-emerald-400/90 shadow-[0_0_8px_rgba(52,211,153,0.9)] ring-1 sm:ring-2 ring-emerald-600/40'
+                            }
+                          />
                         )}
                       </div>
                     )}
@@ -411,7 +433,9 @@ export default function Board() {
                         <PieceIcon
                           type={piece.type}
                           color={piece.color}
-                          className="w-[88%] h-[88%] pointer-events-none drop-shadow-sm select-none"
+                          is3D={is3D}
+                          isSelected={isSelected}
+                          className="w-[92%] h-[92%] pointer-events-none select-none"
                         />
                       </div>
                     )}

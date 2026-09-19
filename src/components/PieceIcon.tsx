@@ -1,17 +1,19 @@
 // =====================================================
 // NUR SHAXMAT 100 — Rasmiy Shaxmat Donalari
-// Foydalanuvchi taqdim etgan cburnett klassik to'plami va
-// rasmiy Nur donalari (Muallif: Nurfullo Nurmatov) asosida
+// 2D (cburnett vektorlari) va 3D (Piece3D volumetrik)
 // =====================================================
 
 import React from 'react';
 import { Color, PieceType } from '../engine/types';
+import Piece3D from './Piece3D';
 
 interface PieceIconProps {
   type: PieceType;
   color: Color;
   size?: number | string;
   className?: string;
+  is3D?: boolean;
+  isSelected?: boolean;
 }
 
 const PIECE_SRC_MAP: Record<PieceType, { white: string; black: string }> = {
@@ -24,7 +26,28 @@ const PIECE_SRC_MAP: Record<PieceType, { white: string; black: string }> = {
   Nur: { white: '/pieces/wNur.png', black: '/pieces/bNur.png' },
 };
 
-export default function PieceIcon({ type, color, size, className = '' }: PieceIconProps) {
+export default function PieceIcon({
+  type,
+  color,
+  size,
+  className = '',
+  is3D = false,
+  isSelected = false,
+}: PieceIconProps) {
+  // Agar 3D rejim bo'lsa — to'liq 3D SVG figurasi ishlatiladi
+  if (is3D) {
+    return (
+      <Piece3D
+        type={type}
+        color={color}
+        size={size}
+        className={className}
+        isSelected={isSelected}
+      />
+    );
+  }
+
+  // 2D rejim — klassik yuqori sifatli SVG
   const isWhite = color === 'white';
   const src = PIECE_SRC_MAP[type][color];
 

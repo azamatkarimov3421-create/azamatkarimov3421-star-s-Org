@@ -17,7 +17,7 @@ const PROMOTION_PIECES: Array<{ type: PieceType; name: string; score: number; de
 
 export default function PromotionModal() {
   const { state, dispatch } = useGame();
-  const { showPromotionFor, game } = state;
+  const { showPromotionFor, game, is3D } = state;
 
   if (!showPromotionFor) return null;
 
@@ -69,7 +69,7 @@ export default function PromotionModal() {
 
                 {/* Don ikonkasi */}
                 <div className="w-14 h-14 sm:w-16 sm:h-16 flex items-center justify-center my-1 group-hover:scale-110 transition-transform">
-                  <PieceIcon type={type} color={color} size={54} />
+                  <PieceIcon type={type} color={color} size={54} is3D={is3D} />
                 </div>
 
                 {/* Nomi */}
