@@ -191,56 +191,29 @@ export default function GLBKnight({
   className = '',
   isSelected = false,
 }: GLBKnightProps) {
-  const [imgSrc, setImgSrc] = useState<string | null>(null);
-  const [loadFailed, setLoadFailed] = useState(false);
-
-  useEffect(() => {
-    let isMounted = true;
-    renderKnightToDataUrl(color, isSelected)
-      .then((url) => {
-        if (isMounted) setImgSrc(url);
-      })
-      .catch((err) => {
-        console.warn('GLB Knight render xatosi, SVG fallback ishlatiladi:', err);
-        if (isMounted) setLoadFailed(true);
-      });
-
-    return () => {
-      isMounted = false;
-    };
-  }, [color, isSelected]);
+  const imgSrc = color === 'white' ? '/pieces/3d_knight_white.png' : '/pieces/3d_knight_black.png';
 
   const containerStyle: React.CSSProperties = {
     width: typeof size === 'number' ? `${size}px` : size,
     height: typeof size === 'number' ? `${size}px` : size,
   };
 
-  // Agar GLB yuklanish jarayonida bo'lsa yoki xatolik bersa — orqa fonda chiroyli turadi
   return (
     <div
       style={containerStyle}
       className={`relative flex items-center justify-center pointer-events-none select-none ${className}`}
       title={`3D Ot (Knight) — ${color === 'white' ? 'Oq' : 'Qora'}`}
     >
-      {imgSrc ? (
-        <img
-          src={imgSrc}
-          alt={`3D ${color} Knight`}
-          className={`w-full h-full object-contain pointer-events-none select-none transition-transform duration-150 ${
-            isSelected
-              ? 'scale-110 -translate-y-1 drop-shadow-[0_12px_14px_rgba(245,158,11,0.65)]'
-              : 'drop-shadow-[0_8px_10px_rgba(0,0,0,0.6)]'
-          }`}
-          draggable={false}
-        />
-      ) : (
-        <img
-          src={color === 'white' ? '/pieces/wN.svg' : '/pieces/bN.svg'}
-          alt={`Knight ${color}`}
-          className="w-[88%] h-[88%] object-contain pointer-events-none select-none opacity-85"
-          draggable={false}
-        />
-      )}
+      <img
+        src={imgSrc}
+        alt={`3D ${color} Knight`}
+        className={`w-full h-full object-contain pointer-events-none select-none transition-transform duration-150 ${
+          isSelected
+            ? 'scale-110 -translate-y-1 drop-shadow-[0_12px_14px_rgba(245,158,11,0.65)]'
+            : 'drop-shadow-[0_8px_10px_rgba(0,0,0,0.6)]'
+        }`}
+        draggable={false}
+      />
     </div>
   );
 }

@@ -21,7 +21,7 @@ const PIECE_SRC_MAP: Record<PieceType, { white: string; black: string }> = {
   Queen: { white: '/pieces/wQ.svg', black: '/pieces/bQ.svg' },
   Rook: { white: '/pieces/wR.svg', black: '/pieces/bR.svg' },
   Bishop: { white: '/pieces/wB.svg', black: '/pieces/bB.svg' },
-  Knight: { white: '/pieces/wN.svg', black: '/pieces/bN.svg' },
+  Knight: { white: '/pieces/3d_knight_white.png', black: '/pieces/3d_knight_black.png' },
   Pawn: { white: '/pieces/wP.svg', black: '/pieces/bP.svg' },
   Nur: { white: '/pieces/wNur.png', black: '/pieces/bNur.png' },
 };
