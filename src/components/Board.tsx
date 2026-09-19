@@ -180,8 +180,8 @@ export default function Board() {
       style={
         is3D
           ? {
-              perspective: '1000px',
-              perspectiveOrigin: '50% 65%',
+              perspective: '1100px',
+              perspectiveOrigin: '50% 68%',
             }
           : undefined
       }
@@ -200,10 +200,10 @@ export default function Board() {
         style={
           is3D
             ? {
-                transform: 'rotateX(28deg)',
+                transform: 'rotateX(30deg)',
                 transformStyle: 'preserve-3d',
                 boxShadow:
-                  '0 20px 28px -4px rgba(0,0,0,0.85), 0 6px 0 0 #3d1e10, 0 10px 0 0 #2a1309, 0 14px 0 0 #190a04, inset 0 2px 4px rgba(255,255,255,0.18)',
+                  '0 24px 36px -4px rgba(0,0,0,0.9), 0 8px 0 0 #3d1e10, 0 14px 0 0 #2a1309, 0 20px 0 0 #190a04, inset 0 2px 4px rgba(255,255,255,0.22)',
               }
             : undefined
         }
@@ -318,12 +318,12 @@ export default function Board() {
                   ? {
                       ...slideStyle,
                       transform: isSelected
-                        ? 'translateZ(24px) rotateX(-28deg) translateY(-8px) scale(1.15)'
-                        : 'translateZ(6px) rotateX(-28deg) translateY(-3px) scale(1.04)',
+                        ? 'translateZ(30px) rotateX(-30deg) translateY(-14px) scale(1.18)'
+                        : 'translateZ(8px) rotateX(-30deg) translateY(-4px) scale(1.06)',
                       transformOrigin: 'bottom center',
                       filter: isSelected
-                        ? 'drop-shadow(0 12px 10px rgba(0,0,0,0.85)) drop-shadow(0 0 12px rgba(245,158,11,0.85))'
-                        : 'drop-shadow(0 3px 4px rgba(0,0,0,0.5))',
+                        ? 'drop-shadow(0 14px 12px rgba(0,0,0,0.85)) drop-shadow(0 0 16px rgba(245,158,11,0.9))'
+                        : 'drop-shadow(0 4px 5px rgba(0,0,0,0.6))',
                       transition: isCurrentlyAnimating ? undefined : 'transform 0.18s cubic-bezier(0.2, 0.9, 0.3, 1), filter 0.18s ease-out',
                     }
                   : slideStyle || {};
@@ -332,6 +332,10 @@ export default function Board() {
                   <div
                     key={key}
                     onClick={() => handleSquareClick(sq)}
+                    onTouchEnd={(e) => {
+                      e.preventDefault();
+                      handleSquareClick(sq);
+                    }}
                     onDrop={(e) => handleDrop(e, sq)}
                     onDragOver={handleDragOver}
                     className={`relative w-full h-full aspect-square flex items-center justify-center cursor-pointer transition-colors duration-150 touch-none select-none ${squareBgClass}`}
@@ -385,7 +389,7 @@ export default function Board() {
                     {isLegalTarget && (
                       <div
                         className="absolute inset-0 flex items-center justify-center pointer-events-none z-20"
-                        style={is3D ? { transform: 'translateZ(4px)' } : undefined}
+                        style={is3D ? { transform: 'translateZ(6px)' } : undefined}
                       >
                         {piece ? (
                           // Yeyish nishoni: Xavf halqasi (3D rejimida ambar/qizil yorug'lik)
@@ -412,15 +416,18 @@ export default function Board() {
                     {/* Shaxmat Donasi */}
                     {piece && (
                       <div
-                        key={isCurrentlyAnimating ? `${piece.id}-${game.moveHistory.length}` : piece.id}
+                        key={piece.id}
                         draggable={
+                          !is3D &&
                           piece.color === game.currentTurn &&
                           (gameMode !== 'online' || !onlinePlayerColor || piece.color === onlinePlayerColor)
                         }
                         onDragStart={(e) => handleDragStart(e, piece, sq)}
                         onDragEnd={handleDragEnd}
                         style={pieceStyle}
-                        className={`relative z-10 w-full h-full flex items-center justify-center touch-none select-none ${
+                        className={`relative z-10 w-full h-full flex items-center justify-center select-none ${
+                          is3D ? 'pointer-events-none' : 'touch-none'
+                        } ${
                           isCurrentlyAnimating
                             ? is3D
                               ? 'animate-glide-3d z-30'
@@ -435,7 +442,7 @@ export default function Board() {
                           color={piece.color}
                           is3D={is3D}
                           isSelected={isSelected}
-                          className="w-[92%] h-[92%] pointer-events-none select-none"
+                          className="w-[94%] h-[94%] pointer-events-none select-none"
                         />
                       </div>
                     )}
