@@ -151,10 +151,19 @@ export class Board {
         const promotionRank = color === WHITE ? 9 : 0;
         const promoPieces = [PIECE_QUEEN, PIECE_NUR, PIECE_ROOK, PIECE_BISHOP, PIECE_KNIGHT];
 
-        // Piyoda faqat birinchi yurishida (boshlang'ich katagida: Oqlar r=1, Qoralar r=8) 1, 2 yoki 3 katak yura oladi.
-        // Keyingi barcha yurishlarda esa qat'iy 1 qadamdan yuradi!
-        const isInitialRank = (color === WHITE && r === 1) || (color === BLACK && r === 8);
-        const maxForward = isInitialRank ? 3 : 1;
+        // Nur Shaxmat 100 qoidasi:
+        // Piyoda o'z hududida chegaragacha xohishiga ko'ra 1, 2 yoki 3 katak yura oladi.
+        // Raqib hududiga o'tgach (va chegaradan boshlab) FAQAT 1 katakdan yuradi!
+        let maxForward = 1;
+        if (color === WHITE) {
+            if (r >= 1 && r <= 3) {
+                maxForward = Math.min(3, 4 - r);
+            }
+        } else {
+            if (r >= 6 && r <= 8) {
+                maxForward = Math.min(3, r - 5);
+            }
+        }
 
         // Oldinga surilish
         for (let dist = 1; dist <= maxForward; dist++) {

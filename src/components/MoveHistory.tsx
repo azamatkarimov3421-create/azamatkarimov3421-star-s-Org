@@ -206,8 +206,8 @@ export default function MoveHistory({ className = '' }: MoveHistoryProps) {
               <span>♟️</span> Piyoda o'ziga xosligi
             </h4>
             <ul className="space-y-1 text-[11px] text-slate-400 list-disc list-inside">
-              <li>Boshlang'ich joyidan 1, 2 yoki 3 kvadrat oldinga siljishi mumkin.</li>
-              <li>Raqib hududiga kirgach faqat 1 kvadrat harakatlanadi.</li>
+              <li>O'z maydonida (chegaragacha) xohishiga ko'ra 1, 2 yoki 3 kvadrat siljishi mumkin.</li>
+              <li>Raqib maydoniga o'tgach faqat 1 kvadratdan harakatlanadi.</li>
               <li>Oxirgi qatorda Vazir, Nur, Tura, Fil yoki Otga aylanadi.</li>
             </ul>
           </div>

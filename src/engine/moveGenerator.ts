@@ -128,9 +128,23 @@ function generateNurMoves(board: Board, from: Square, piece: Piece): Move[] {
 function generatePawnMoves(board: Board, from: Square, piece: Piece, state: GameState): Move[] {
   const moves: Move[] = [];
   const dir = piece.color === 'white' ? 1 : -1;
-  const startRank = piece.color === 'white' ? 1 : 8;
-  // Piyoda faqat birinchi yurishida (boshlang'ich gorizontaldan) 1-3 qadam yura oladi
-  const maxSteps = from.rank === startRank ? 3 : 1;
+
+  // Nur Shaxmat 100 qoidasi:
+  // Piyoda o'z hududida (Oqlar: 1-5 qatorlar, ya'ni rank 1..4; Qoralar: 6-10 qatorlar, ya'ni rank 8..5)
+  // o'z hududi chegarasigacha xohishiga ko'ra 1, 2 yoki 3 qadam siljiy oladi!
+  // - Oqlar: rank 1 da 1-3 qadam (rank 2,3,4 gacha); rank 2 da 1-2 qadam (rank 3,4 gacha); rank 3 da 1 qadam (rank 4 gacha).
+  // - Qoralar: rank 8 da 1-3 qadam (rank 7,6,5 gacha); rank 7 da 1-2 qadam (rank 6,5 gacha); rank 6 da 1 qadam (rank 5 gacha).
+  // Raqib hududiga o'tgach (va chegaradan boshlab) FAQAT 1 qadamdan yuradi!
+  let maxSteps = 1;
+  if (piece.color === 'white') {
+    if (from.rank >= 1 && from.rank <= 3) {
+      maxSteps = Math.min(3, 4 - from.rank);
+    }
+  } else {
+    if (from.rank >= 6 && from.rank <= 8) {
+      maxSteps = Math.min(3, from.rank - 5);
+    }
+  }
 
   // Oldinga harakatlar
   for (let steps = 1; steps <= maxSteps; steps++) {
