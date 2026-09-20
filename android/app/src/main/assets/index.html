@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="uz">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/png" href="./nur-icon.png" />
+    <link rel="apple-touch-icon" href="./nur-icon.png" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover"
+    />
+    <title>Nur Shaxmat 100 — O'zbek Shaxmati</title>
+    <meta
+      name="description"
+      content="10x10 Nur Shaxmat 100 - O'zbekiston milliy shaxmati. Nur donasi va 3 xil rokirovka bilan."
+    />
+
+    <!-- Mobile APK & PWA Optimization -->
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta name="apple-mobile-web-app-title" content="Nur Shaxmat" />
+    <meta name="theme-color" content="#21201d" />
+    <link rel="manifest" href="./manifest.json" />
+
+    <style>
+      :root {
+        --board-size: min(calc(100vw - 16px), calc(100dvh - 195px), 480px);
+        --board-size-3d: min(calc(100vw - 16px), calc(100dvh - 215px), 440px);
+      }
+      @media (min-width: 768px) {
+        :root {
+          --board-size: min(calc(100dvh - 145px), calc(100vw - 370px), 560px);
+          --board-size-3d: min(calc(100dvh - 170px), calc(100vw - 370px), 520px);
+        }
+      }
+      @media (min-width: 1200px) {
+        :root {
+          --board-size: min(calc(100dvh - 140px), calc(100vw - 420px), 660px);
+          --board-size-3d: min(calc(100dvh - 165px), calc(100vw - 420px), 610px);
+        }
+      }
+      @media (min-width: 1536px) {
+        :root {
+          --board-size: min(calc(100dvh - 130px), calc(100vw - 460px), 720px);
+          --board-size-3d: min(calc(100dvh - 155px), calc(100vw - 460px), 660px);
+        }
+      }
+      .chess-board-box {
+        width: 100% !important;
+        max-width: var(--board-size) !important;
+        margin-left: auto !important;
+        margin-right: auto !important;
+      }
+      .chess-board-box-3d {
+        width: 100% !important;
+        max-width: var(--board-size-3d) !important;
+        margin-left: auto !important;
+        margin-right: auto !important;
+      }
+    </style>
+    <script type="module" crossorigin src="./assets/index-B-s6P3qs.js"></script>
+    <link rel="stylesheet" crossorigin href="./assets/index-pEn_6yJt.css">
+  </head>
+  <body class="overscroll-none select-none touch-manipulation">
+    <div id="root"></div>
+  </body>
+</html>

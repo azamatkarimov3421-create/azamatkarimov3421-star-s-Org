@@ -25,8 +25,22 @@ dist-ssr
 
 # Binaries and archives
 *.apk
+*.aab
+*.keystore
+*.jks
 *.zip
 *.bat
 .env
 test.txt
+
+# Android build outputs
+.gradle
+android/**/build/
+android/.gradle/
+android/app/build/
+android/local.properties
+play_store_assets/*.aab
+play_store_assets/*.apk
+play_store_assets/*.keystore
+
 
