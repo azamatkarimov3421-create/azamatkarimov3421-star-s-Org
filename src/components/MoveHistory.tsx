@@ -229,6 +229,27 @@ export default function MoveHistory({ className = '' }: MoveHistoryProps) {
               </div>
             </div>
           </div>
+
+          {/* NURCHESS100 — Vaqt Nazorati Reglamenti */}
+          <div className="bg-gradient-to-br from-slate-800/80 to-slate-900 border border-amber-500/30 rounded-xl p-3">
+            <h4 className="font-bold text-amber-300 text-xs mb-1.5 flex items-center gap-1.5">
+              <span>⏱️</span> NURCHESS100 — Vaqt Nazorati Reglamenti
+            </h4>
+            <div className="space-y-1.5 text-[11px] text-slate-300">
+              <div className="p-1.5 bg-slate-950/60 rounded border border-slate-800">
+                <span className="font-bold text-amber-400">1. Klassik:</span> Har bir oʻyinchiga <strong className="text-white">90 daqiqa</strong> va har bir amalga oshirilgan yurish uchun <strong className="text-amber-300">+30 soniya</strong>.
+              </div>
+              <div className="p-1.5 bg-slate-950/60 rounded border border-slate-800">
+                <span className="font-bold text-amber-400">2. Rapid:</span> Har bir oʻyinchiga <strong className="text-white">25 daqiqa</strong> va har bir yurish uchun <strong className="text-amber-300">+10 soniya</strong>.
+              </div>
+              <div className="p-1.5 bg-slate-950/60 rounded border border-slate-800">
+                <span className="font-bold text-amber-400">3. Blits:</span> Har bir oʻyinchiga <strong className="text-white">5 daqiqa</strong> va har bir yurish uchun <strong className="text-amber-300">+3 soniya</strong>.
+              </div>
+              <p className="text-[10px] text-slate-400 italic mt-1">
+                * Musobaqa talablariga muvofiq, vaqt tugashi texnik magʻlubiyat hisoblanadi.
+              </p>
+            </div>
+          </div>
         </div>
       )}
     </div>

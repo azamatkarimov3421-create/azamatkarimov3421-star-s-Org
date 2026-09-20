@@ -18,7 +18,7 @@ import { onlineManager } from '../services/onlineService';
 import { AppLanguage, getAppLanguage, setAppLanguage } from '../i18n/translations';
 
 export type BoardTheme = 'wood' | 'emerald' | 'azure' | 'marble';
-export type TimeControl = 0 | 180 | 300 | 600; // 0=unlimited, 180=3m, 300=5m, 600=10m
+export type TimeControl = number; // in seconds (0=unlimited)
 
 export type GameMode = 'pvp' | 'vsAI' | 'online' | 'aiVsAi';
 
@@ -45,6 +45,7 @@ export interface AppState {
   isFlipped: boolean;
   soundEnabled: boolean;
   timeControl: TimeControl;
+  timeIncrement: number;          // Har bir yurishga qo'shiladigan soniya (masalan: 3s, 5s, 10s, 30s)
   whiteTime: number;              // qolgan soniyalar
   blackTime: number;              // qolgan soniyalar
   hintMove: Move | null;          // Maslahat harakati
@@ -80,7 +81,7 @@ type Action =
   | { type: 'SET_THEME'; theme: BoardTheme }
   | { type: 'TOGGLE_FLIP' }
   | { type: 'TOGGLE_SOUND' }
-  | { type: 'SET_TIME_CONTROL'; seconds: TimeControl }
+  | { type: 'SET_TIME_CONTROL'; seconds: number; increment?: number }
   | { type: 'TICK_TIMER' }
   | { type: 'SET_HINT'; move: Move | null }
   | { type: 'SET_ONLINE_ROOM'; roomCode: string | null; myColor: 'white' | 'black' | null }
@@ -112,6 +113,7 @@ function createInitialAppState(): AppState {
     isFlipped: false,
     soundEnabled: isSoundEnabled(),
     timeControl: 0,
+    timeIncrement: 0,
     whiteTime: 0,
     blackTime: 0,
     hintMove: null,
@@ -192,9 +194,20 @@ function gameReducer(state: AppState, action: Action): AppState {
           speakUzbek('Pat! Durang natija.');
         }
 
+        const currentTurn = state.game.currentTurn;
+        const inc = state.timeIncrement || 0;
+        let newWhiteTime = state.whiteTime;
+        let newBlackTime = state.blackTime;
+        if (state.timeControl > 0 && inc > 0) {
+          if (currentTurn === 'white') newWhiteTime += inc;
+          else newBlackTime += inc;
+        }
+
         return {
           ...state,
           game: newGame,
+          whiteTime: newWhiteTime,
+          blackTime: newBlackTime,
           selectedSquare: null,
           legalMoves: [],
           hintMove: null,
@@ -259,9 +272,20 @@ function gameReducer(state: AppState, action: Action): AppState {
         playGameOverSound();
         speakUzbek('Pat! Durang natija.');
       }
+      const movedColor = state.game.currentTurn;
+      const inc = state.timeIncrement || 0;
+      let newWhiteTime = state.whiteTime;
+      let newBlackTime = state.blackTime;
+      if (state.timeControl > 0 && inc > 0) {
+        if (movedColor === 'white') newWhiteTime += inc;
+        else newBlackTime += inc;
+      }
+
       return {
         ...state,
         game: newGame,
+        whiteTime: newWhiteTime,
+        blackTime: newBlackTime,
         selectedSquare: null,
         legalMoves: [],
         hintMove: null,
@@ -301,9 +325,20 @@ function gameReducer(state: AppState, action: Action): AppState {
         speakUzbek('Pat! Durang natija.');
       }
 
+      const remoteMovedColor = state.game.currentTurn;
+      const remoteInc = state.timeIncrement || 0;
+      let remoteWhiteTime = state.whiteTime;
+      let remoteBlackTime = state.blackTime;
+      if (state.timeControl > 0 && remoteInc > 0) {
+        if (remoteMovedColor === 'white') remoteWhiteTime += remoteInc;
+        else remoteBlackTime += remoteInc;
+      }
+
       return {
         ...state,
         game: newGame,
+        whiteTime: remoteWhiteTime,
+        blackTime: remoteBlackTime,
         selectedSquare: null,
         legalMoves: [],
         hintMove: null,
@@ -352,9 +387,20 @@ function gameReducer(state: AppState, action: Action): AppState {
       if (newGame.isInCheck) playCheckSound();
       if (newGame.status === 'checkmate' || newGame.status === 'stalemate') playGameOverSound();
 
+      const promoMovedColor = state.game.currentTurn;
+      const promoInc = state.timeIncrement || 0;
+      let promoWhiteTime = state.whiteTime;
+      let promoBlackTime = state.blackTime;
+      if (state.timeControl > 0 && promoInc > 0) {
+        if (promoMovedColor === 'white') promoWhiteTime += promoInc;
+        else promoBlackTime += promoInc;
+      }
+
       return {
         ...state,
         game: newGame,
+        whiteTime: promoWhiteTime,
+        blackTime: promoBlackTime,
         selectedSquare: null,
         legalMoves: [],
         showPromotionFor: null,
@@ -364,13 +410,16 @@ function gameReducer(state: AppState, action: Action): AppState {
       };
     }
 
-    case 'SET_TIME_CONTROL':
+    case 'SET_TIME_CONTROL': {
+      const inc = action.increment || 0;
       return {
         ...state,
         timeControl: action.seconds,
+        timeIncrement: inc,
         whiteTime: action.seconds,
         blackTime: action.seconds,
       };
+    }
 
     case 'TICK_TIMER': {
       if (state.timeControl === 0 || state.game.status !== 'playing' && state.game.status !== 'check') {
@@ -431,6 +480,10 @@ function gameReducer(state: AppState, action: Action): AppState {
         aiBlackDepth: state.aiBlackDepth,
         aiVsAiSpeed: state.aiVsAiSpeed,
         aiVsAiPaused: false,
+        timeControl: state.timeControl,
+        timeIncrement: state.timeIncrement,
+        whiteTime: state.timeControl,
+        blackTime: state.timeControl,
       };
 
     case 'UNDO': {
