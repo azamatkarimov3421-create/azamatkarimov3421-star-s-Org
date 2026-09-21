@@ -245,12 +245,12 @@ export default function GameScreen({ onBack, onOpenSettings }: GameScreenProps) 
   const AI_LEVEL_NAMES = ['', t('ai_level_1'), t('ai_level_2'), t('ai_level_3'), t('ai_level_4')];
   const AI_LEVEL_RATINGS = [0, 1000, 1400, 1800, 2200];
 
-  // Sarlavha matni
+  // Sarlavha matni (qisqa va aniq, matn sinib ketmasligi uchun)
   const modeTitle =
     gameMode === 'online'
       ? `${t('mode_online_title')} #${roomCode || ''}`
       : gameMode === 'vsAI'
-      ? `${t('mode_vs_ai_title')} • ${AI_LEVEL_NAMES[aiDepth] || 'AI'}`
+      ? t('mode_vs_ai_title')
       : gameMode === 'aiVsAi'
       ? t('mode_ai_vs_ai_title')
       : t('mode_pvp_title');
@@ -286,14 +286,14 @@ export default function GameScreen({ onBack, onOpenSettings }: GameScreenProps) 
   const topColor = isFlipped ? 'white' : 'black';
   const bottomColor = isFlipped ? 'black' : 'white';
 
-  // Raqib va pastki o'yinchi ma'lumotlari
+  // Raqib va pastki o'yinchi ma'lumotlari (qisqa, chiroyli va ustma-ust tushmaydigan)
   const opponentName =
     gameMode === 'online'
       ? t('player_label')
       : gameMode === 'vsAI'
-      ? `Nur Bot (${AI_LEVEL_NAMES[aiDepth] || 'AI'})`
+      ? 'Nur Bot'
       : gameMode === 'aiVsAi'
-      ? (topColor === 'black' ? `${t('black_color')} Bot (D-${aiBlackDepth})` : `${t('white_color')} Bot (D-${aiWhiteDepth})`)
+      ? (topColor === 'black' ? `${t('black_color')} Bot` : `${t('white_color')} Bot`)
       : `2-${t('player_label')}`;
 
   const opponentRating =
@@ -341,14 +341,11 @@ export default function GameScreen({ onBack, onOpenSettings }: GameScreenProps) 
             <ArrowLeftIcon size={18} />
           </button>
 
-          <div className="text-center">
-            <h2 className="text-sm sm:text-base font-extrabold text-white tracking-tight flex items-center justify-center gap-2">
-              <span>{modeTitle}</span>
-              <span className="hidden sm:inline-block text-[10px] font-mono uppercase px-2 py-0.5 rounded bg-amber-500/20 text-amber-300 border border-amber-500/30">
-                10×10 NUR CHESS
-              </span>
+          <div className="text-center min-w-0 flex-1 px-2">
+            <h2 className="text-sm sm:text-base font-extrabold text-white tracking-tight truncate">
+              {modeTitle}
             </h2>
-            <div className="text-[11px] font-semibold flex items-center justify-center gap-1.5 mt-0.5 h-4">
+            <div className="text-[11px] font-semibold flex items-center justify-center gap-1.5 mt-0.5 h-4 truncate">
               {game.isInCheck && !isGameOver ? (
                 <span className="text-red-400 flex items-center gap-1 font-black animate-pulse">
                   <span>🔥</span>
@@ -367,28 +364,28 @@ export default function GameScreen({ onBack, onOpenSettings }: GameScreenProps) 
                   </span>
                 )
               ) : isMyTurn && !isGameOver ? (
-                <span className="text-[#81b64c] flex items-center gap-1">
+                <span className="text-[#81b64c] flex items-center gap-1 font-bold">
                   <span className="w-1.5 h-1.5 rounded-full bg-[#81b64c] animate-ping" />
                   {t('your_turn')}
                 </span>
               ) : !isGameOver ? (
-                <span className="text-[#9b9893] flex items-center gap-1">
-                  <span className="w-1.5 h-1.5 rounded-full bg-amber-400/80 animate-pulse" />
+                <span className="text-amber-400 font-bold flex items-center gap-1">
+                  <span className="w-1.5 h-1.5 rounded-full bg-amber-400 animate-pulse" />
                   {gameMode === 'vsAI' && aiThinking ? t('bot_thinking') : t('opponent_turn')}
                 </span>
               ) : (
-                <span className="text-[#9b9893]">{t('game_finished')}</span>
+                <span className="text-[#9b9893] font-bold">{t('game_finished')}</span>
               )}
             </div>
           </div>
 
-          <div className="flex items-center gap-1.5">
+          <div className="flex items-center gap-1 sm:gap-1.5 shrink-0">
             <button
               onClick={() => setShowHistoryModal(true)}
-              className="lg:hidden relative w-9 h-9 rounded-xl bg-[#383531] hover:bg-[#45423c] text-[#c3c2be] hover:text-white flex items-center justify-center transition-all active:scale-95 shadow-[0_2px_0_#21201d]"
+              className="relative w-8 h-8 sm:w-9 sm:h-9 rounded-xl bg-[#383531] hover:bg-[#45423c] text-[#c3c2be] hover:text-white flex items-center justify-center transition-all active:scale-95 shadow-[0_2px_0_#21201d]"
               title={t('history_title')}
             >
-              <ScrollTextIcon size={18} />
+              <ScrollTextIcon size={16} />
               {moveHistory.length > 0 && (
                 <span className="absolute -top-1 -right-1 bg-[#81b64c] text-white text-[9px] font-black w-4 h-4 rounded-full flex items-center justify-center shadow-sm">
                   {moveHistory.length}
@@ -397,10 +394,10 @@ export default function GameScreen({ onBack, onOpenSettings }: GameScreenProps) 
             </button>
             <button
               onClick={() => dispatch({ type: 'TOGGLE_FLIP' })}
-              className="w-9 h-9 rounded-xl bg-[#383531] hover:bg-[#45423c] text-[#c3c2be] hover:text-white flex items-center justify-center transition-all active:scale-95 shadow-[0_2px_0_#21201d]"
+              className="w-8 h-8 sm:w-9 sm:h-9 rounded-xl bg-[#383531] hover:bg-[#45423c] text-[#c3c2be] hover:text-white flex items-center justify-center transition-all active:scale-95 shadow-[0_2px_0_#21201d]"
               title={t('btn_flip')}
             >
-              <RotateCwIcon size={18} />
+              <RotateCwIcon size={16} />
             </button>
             <div className="flex items-center bg-[#181715] p-0.5 rounded-xl border border-[#383531] shadow-inner">
               <button
@@ -428,27 +425,24 @@ export default function GameScreen({ onBack, onOpenSettings }: GameScreenProps) 
               </button>
             </div>
 
-            {/* Tizim Loglari va Xatoliklar jurnali tugmasi */}
-            <button
-              onClick={() => setShowErrorModal(true)}
-              className={`h-9 px-2.5 rounded-xl border text-xs font-bold flex items-center gap-1.5 transition-all active:scale-95 shadow-[0_2px_0_#21201d] ${
-                errorCount > 0
-                  ? 'bg-red-500/25 hover:bg-red-500/35 text-red-300 border-red-500/60 animate-pulse'
-                  : 'bg-[#383531] hover:bg-[#45423c] text-[#c3c2be] hover:text-white border-[#45423c]'
-              }`}
-              title="Log"
-            >
-              <span>{errorCount > 0 ? '⚠️' : '🛡️'}</span>
-              <span className="hidden sm:inline">{errorCount > 0 ? `${errorCount} xato` : 'Log'}</span>
-            </button>
+            {errorCount > 0 && (
+              <button
+                onClick={() => setShowErrorModal(true)}
+                className="h-8 sm:h-9 px-2 rounded-xl border text-xs font-bold flex items-center gap-1 transition-all active:scale-95 shadow-[0_2px_0_#21201d] bg-red-500/25 hover:bg-red-500/35 text-red-300 border-red-500/60 animate-pulse"
+                title="Log"
+              >
+                <span>⚠️</span>
+                <span>{errorCount}</span>
+              </button>
+            )}
 
             {onOpenSettings && (
               <button
                 onClick={onOpenSettings}
-                className="w-9 h-9 rounded-xl bg-[#383531] hover:bg-[#45423c] text-[#c3c2be] hover:text-white flex items-center justify-center transition-all active:scale-95 shadow-[0_2px_0_#21201d]"
+                className="w-8 h-8 sm:w-9 sm:h-9 rounded-xl bg-[#383531] hover:bg-[#45423c] text-[#c3c2be] hover:text-white flex items-center justify-center transition-all active:scale-95 shadow-[0_2px_0_#21201d]"
                 title={t('nav_settings')}
               >
-                <SettingsIcon size={18} />
+                <SettingsIcon size={16} />
               </button>
             )}
           </div>
@@ -475,61 +469,61 @@ export default function GameScreen({ onBack, onOpenSettings }: GameScreenProps) 
         <div className="flex-1 flex flex-col items-center justify-center min-h-0 w-full overflow-hidden my-auto">
           {/* Yuqoridagi O'yinchi Kartasi (Opponent HUD — FAQAT MOBILDA ko'rinadi) */}
           <div
-            className={`md:hidden h-9 sm:h-10 flex items-center justify-between px-2.5 sm:px-3 rounded-xl border transition-all duration-200 shrink-0 mb-1 ${
+            className={`md:hidden flex items-center justify-between px-3 py-1.5 rounded-xl border transition-all duration-200 shrink-0 mb-1 ${
               is3D ? 'chess-board-box-3d' : 'chess-board-box'
             } ${
               isTopTurn
                 ? 'bg-[#21201d] border-[#81b64c]/70 shadow-[0_0_12px_rgba(129,182,76,0.15)] ring-1 ring-[#81b64c]/50'
-                : 'bg-[#21201d]/80 border-[#383531]'
+                : 'bg-[#21201d]/90 border-[#383531]'
             }`}
           >
-            <div className="flex items-center gap-2">
-              <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-lg bg-[#2c2a26] border border-[#3d3a34] flex items-center justify-center text-[#c3c2be]">
+            <div className="flex items-center gap-2.5 min-w-0">
+              <div className="w-8 h-8 rounded-lg bg-[#2c2a26] border border-[#3d3a34] flex items-center justify-center text-[#c3c2be] shrink-0">
                 {topColor === 'black' || gameMode === 'aiVsAi' ? (
-                  <BotIcon size={17} className="text-[#81b64c]" />
+                  <BotIcon size={18} className="text-[#81b64c]" />
                 ) : (
-                  <UserIcon size={17} className="text-[#c3c2be]" />
+                  <UserIcon size={18} className="text-[#c3c2be]" />
                 )}
               </div>
-              <div>
-                <div className="flex items-center gap-1.5 flex-wrap">
-                  <span className="font-bold text-xs sm:text-sm text-white">
+              <div className="min-w-0">
+                <div className="flex items-center gap-1.5">
+                  <span className="font-bold text-xs sm:text-sm text-white truncate max-w-[130px]">
                     {opponentName}
                   </span>
-                  <span className="text-[10px] font-bold text-[#81b64c] bg-[#81b64c]/15 px-1.5 py-0.2 rounded">
+                  <span className="text-[10px] font-bold text-[#81b64c] bg-[#81b64c]/15 px-1.5 py-0.5 rounded shrink-0">
                     {topColor === 'white' ? t('white_color') : t('black_color')}
                   </span>
                   {gameMode === 'vsAI' && (
                     <button
                       onClick={() => setShowVsAiLevelModal(true)}
-                      className="text-[10px] font-bold text-amber-300 bg-amber-500/20 hover:bg-amber-500/30 border border-amber-500/40 px-1.5 py-0.2 rounded-md flex items-center gap-1 transition-all cursor-pointer active:scale-95"
+                      className="text-[10px] font-bold text-amber-300 bg-amber-500/20 hover:bg-amber-500/30 border border-amber-500/40 px-1.5 py-0.5 rounded-md flex items-center gap-1 transition-all cursor-pointer active:scale-95 shrink-0"
                       title={t('ai_level_change_title')}
                     >
                       <span>🎯 {AI_LEVEL_NAMES[aiDepth]}</span>
                       <span className="text-[8px] text-amber-400">✎</span>
                     </button>
                   )}
+                </div>
+                <div className="flex items-center gap-2 text-[10px] text-[#9b9893] font-mono leading-none mt-1">
+                  <span>{opponentRating} {gameMode === 'aiVsAi' ? '' : t('rating_label')}</span>
                   {(gameMode === 'vsAI' || gameMode === 'aiVsAi') && isTopTurn && aiThinking && (
-                    <span className="text-[10px] font-bold text-amber-400 bg-amber-400/15 px-1.5 py-0.2 rounded flex items-center gap-1 animate-pulse">
+                    <span className="text-amber-400 font-bold flex items-center gap-1 animate-pulse">
                       <span className="w-1.5 h-1.5 rounded-full bg-amber-400 animate-ping" />
                       {t('bot_thinking')}
                     </span>
                   )}
                   {gameMode === 'aiVsAi' && isTopTurn && aiVsAiPaused && !isGameOver && (
-                    <span className="text-[10px] font-bold text-zinc-400 bg-zinc-800 px-1.5 py-0.2 rounded">
+                    <span className="text-zinc-400 bg-zinc-800 px-1 rounded">
                       {t('paused_status')}
                     </span>
                   )}
                 </div>
-                <div className="text-[10px] text-[#9b9893] font-mono leading-none">
-                  {opponentRating} {gameMode === 'aiVsAi' ? '' : t('rating_label')}
-                </div>
               </div>
             </div>
 
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-2 shrink-0">
               <div
-                className={`flex items-center gap-1.5 px-2 py-0.5 sm:py-1 rounded-lg text-xs font-mono font-bold transition-all ${
+                className={`flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-mono font-bold transition-all ${
                   isTopTurn
                     ? 'bg-[#81b64c] text-white shadow-sm'
                     : 'bg-[#1a1917] text-[#9b9893] border border-[#383531]'
@@ -545,24 +539,8 @@ export default function GameScreen({ onBack, onOpenSettings }: GameScreenProps) 
           <div className={`w-full flex flex-col items-center justify-center max-h-full touch-manipulation shrink-0 ${
             is3D ? 'chess-board-box-3d' : 'chess-board-box'
           }`}>
-            {/* 3D / 2D Ko'rinish bildirishnomasi (faqat mobil ekranda) */}
-            <div className="w-full md:hidden flex items-center justify-between px-1.5 py-0.5 text-[11px] text-[#9b9893] shrink-0">
-              <div className="flex items-center gap-1.5 font-semibold">
-                <span>Doska:</span>
-                <span className={is3D ? "text-amber-400 font-black flex items-center gap-1" : "text-white font-bold"}>
-                  {is3D ? t('view_3d') : t('view_2d')}
-                </span>
-              </div>
-              <button
-                onClick={() => dispatch({ type: 'TOGGLE_3D' })}
-                className="text-[11px] font-extrabold text-amber-400 hover:text-amber-300 active:scale-95 transition-all underline underline-offset-2 flex items-center gap-1"
-              >
-                {is3D ? t('switch_to_2d') : t('switch_to_3d')}
-              </button>
-            </div>
-
             {/* Mobil ekranda doska ustidagi gorizontal EvalBar */}
-            <div className="w-full md:hidden">
+            <div className="w-full md:hidden mb-1">
               <EvalBar orientation="horizontal" />
             </div>
 
@@ -582,18 +560,18 @@ export default function GameScreen({ onBack, onOpenSettings }: GameScreenProps) 
 
           {/* Pastdagi O'yinchi Kartasi (Sizning HUD — FAQAT MOBILDA ko'rinadi) */}
           <div
-            className={`md:hidden h-9 sm:h-10 flex items-center justify-between px-2.5 sm:px-3 rounded-xl border transition-all duration-200 shrink-0 mt-1 ${
+            className={`md:hidden flex items-center justify-between px-3 py-1.5 rounded-xl border transition-all duration-200 shrink-0 mt-1 ${
               is3D ? 'chess-board-box-3d' : 'chess-board-box'
             } ${
               isBottomTurn
                 ? 'bg-[#21201d] border-white/60 shadow-[0_0_12px_rgba(255,255,255,0.1)] ring-1 ring-white/40'
-                : 'bg-[#21201d]/80 border-[#383531]'
+                : 'bg-[#21201d]/90 border-[#383531]'
             }`}
           >
-            <div className="flex items-center gap-2">
-              <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-lg bg-[#2c2a26] border border-[#3d3a34] flex items-center justify-center text-[#81b64c] overflow-hidden">
+            <div className="flex items-center gap-2.5 min-w-0">
+              <div className="w-8 h-8 rounded-lg bg-[#2c2a26] border border-[#3d3a34] flex items-center justify-center text-[#81b64c] overflow-hidden shrink-0">
                 {gameMode === 'aiVsAi' ? (
-                  <BotIcon size={17} className="text-[#81b64c]" />
+                  <BotIcon size={18} className="text-[#81b64c]" />
                 ) : userProfile.avatarUrl ? (
                   <img
                     src={userProfile.avatarUrl}
@@ -602,38 +580,27 @@ export default function GameScreen({ onBack, onOpenSettings }: GameScreenProps) 
                     referrerPolicy="no-referrer"
                   />
                 ) : (
-                  <UserIcon size={17} />
+                  <UserIcon size={18} />
                 )}
               </div>
-              <div>
+              <div className="min-w-0">
                 <div className="flex items-center gap-1.5">
-                  <span className="font-bold text-xs sm:text-sm text-white">
+                  <span className="font-bold text-xs sm:text-sm text-white truncate max-w-[150px]">
                     {bottomName}
                   </span>
-                  <span className="text-[10px] font-bold text-[#81b64c] bg-[#81b64c]/15 px-1.5 py-0.2 rounded">
+                  <span className="text-[10px] font-bold text-[#81b64c] bg-[#81b64c]/15 px-1.5 py-0.5 rounded shrink-0">
                     {bottomColor === 'white' ? t('white_color') : t('black_color')}
                   </span>
-                  {gameMode === 'aiVsAi' && isBottomTurn && aiThinking && (
-                    <span className="text-[10px] font-bold text-amber-400 bg-amber-400/15 px-1.5 py-0.2 rounded flex items-center gap-1 animate-pulse">
-                      <span className="w-1.5 h-1.5 rounded-full bg-amber-400 animate-ping" />
-                      {t('bot_thinking')}
-                    </span>
-                  )}
-                  {gameMode === 'aiVsAi' && isBottomTurn && aiVsAiPaused && !isGameOver && (
-                    <span className="text-[10px] font-bold text-zinc-400 bg-zinc-800 px-1.5 py-0.2 rounded">
-                      {t('paused_status')}
-                    </span>
-                  )}
                 </div>
-                <div className="text-[10px] text-[#81b64c] font-mono font-semibold leading-none">
+                <div className="text-[10px] text-[#81b64c] font-mono font-semibold leading-none mt-1">
                   {bottomRating} {gameMode === 'aiVsAi' ? '' : t('rating_label')}
                 </div>
               </div>
             </div>
 
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-2 shrink-0">
               <div
-                className={`flex items-center gap-1.5 px-2 py-0.5 sm:py-1 rounded-lg text-xs font-mono font-bold transition-all ${
+                className={`flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-mono font-bold transition-all ${
                   isBottomTurn
                     ? 'bg-white text-[#21201d] font-black shadow-md'
                     : 'bg-[#1a1917] text-[#9b9893] border border-[#383531]'
