@@ -108,7 +108,7 @@ export default function HomeScreen({
                   NUR SHAXMAT <span className="text-[#f59e0b]">100</span>
                 </h1>
                 <p className="text-[10px] font-bold text-amber-400 tracking-wider uppercase">
-                  V1.0.8 • OʻZBEK SHAXMATI (10X10)
+                  V1.1.3 • OʻZBEK SHAXMATI (10X10)
                 </p>
               </div>
             </div>

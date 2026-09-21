@@ -274,7 +274,7 @@ export default function SettingsScreen({ onBack, onOpenRules }: SettingsScreenPr
 
         {/* Ilova versiyasi (oddiy belgi) */}
         <div className="text-center text-xs text-[#686560] py-3 select-none">
-          Nur Shaxmat 100 • v1.0.8
+          Nur Shaxmat 100 • v1.1.3
         </div>
       </main>
 

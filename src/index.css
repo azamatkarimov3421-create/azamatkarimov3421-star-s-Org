@@ -95,30 +95,30 @@
 
   /* Shaxmat donasining kataklar bo'ylab silliq va qotmasdan siljish animatsiyasi (2D va 3D) */
   @keyframes piece-glide-2d {
-    from {
-      transform: translate(var(--slide-x), var(--slide-y));
+    0% {
+      transform: translate3d(var(--slide-x, 0), var(--slide-y, 0), 0);
     }
-    to {
-      transform: translate(0, 0);
+    100% {
+      transform: translate3d(0, 0, 0);
     }
   }
 
   @keyframes piece-glide-3d {
-    from {
-      transform: translate(var(--slide-x), var(--slide-y)) translateZ(6px) rotateX(-26deg) translateY(0px);
+    0% {
+      transform: translate3d(var(--slide-x, 0), var(--slide-y, 0), 0) translateZ(6px) rotateX(-26deg);
     }
-    to {
-      transform: translate(0, 0) translateZ(6px) rotateX(-26deg) translateY(0px);
+    100% {
+      transform: translate3d(0, 0, 0) translateZ(6px) rotateX(-26deg);
     }
   }
 
   .animate-glide-2d {
-    animation: piece-glide-2d 0.28s cubic-bezier(0.22, 1, 0.36, 1);
+    animation: piece-glide-2d 0.22s cubic-bezier(0.2, 0, 0, 1);
     will-change: transform;
   }
 
   .animate-glide-3d {
-    animation: piece-glide-3d 0.28s cubic-bezier(0.22, 1, 0.36, 1);
+    animation: piece-glide-3d 0.22s cubic-bezier(0.2, 0, 0, 1);
     will-change: transform;
   }
 

@@ -130,7 +130,7 @@ export default function Board() {
       setAnimatingMoveIndex(game.moveHistory.length - 1);
       const timer = setTimeout(() => {
         setAnimatingMoveIndex(null);
-      }, 280);
+      }, 230);
       return () => clearTimeout(timer);
     }
   }, [game.moveHistory.length]);
@@ -595,29 +595,34 @@ export default function Board() {
                       <div className="absolute inset-0 bg-emerald-500/20 shadow-[inset_0_0_14px_rgba(16,185,129,0.45)] pointer-events-none z-[3]" />
                     )}
 
-                    {/* Qonuniy harakat nuqtasi / yeyish nishoni (Bosilish joylari juda aniq va 0ms kechikish) */}
+                    {/* Qonuniy harakat nuqtasi / yeyish nishoni (Chess.com uslubidagi nozik va silliq) */}
                     {isLegalTarget && (
                       <div
                         className="absolute inset-0 flex items-center justify-center pointer-events-none z-20"
                         style={is3D ? { transform: 'translateZ(6px)' } : undefined}
                       >
                         {piece ? (
-                          // Yeyish nishoni: Qizil yoqut rangli xavf foni va o'tkir nishon doirasi
-                          <div className="relative w-[92%] h-[92%] flex items-center justify-center">
-                            <div className="absolute inset-0 rounded-xl bg-red-600/35 border-2 sm:border-[3px] border-red-400 shadow-[0_0_12px_rgba(239,68,68,0.85),inset_0_0_10px_rgba(239,68,68,0.6)]" />
-                            <div className="w-[78%] h-[78%] rounded-full border-2 border-white/95 ring-2 ring-red-500 shadow-md" />
-                          </div>
-                        ) : (
-                          // Bo'sh kvadratga harakat nuqtasi: Yaqqol ko'zga tashlanadigan zümrad 3D nishon tugmasi (Ultra yengil va 0ms kechikish)
-                          <div className="relative flex items-center justify-center">
-                            {/* Tashqi mayin yashil halqa */}
-                            <div className="w-6 h-6 sm:w-7 sm:h-7 rounded-full border border-emerald-400/50 bg-emerald-400/20 absolute" />
-                            {/* Zümrad 3D nishon diski */}
-                            <div className="w-4.5 h-4.5 sm:w-5.5 sm:h-5.5 rounded-full bg-gradient-to-br from-emerald-300 via-emerald-500 to-emerald-700 border-2 border-white shadow-[0_2px_6px_rgba(16,185,129,0.8),0_2px_4px_rgba(0,0,0,0.5)] ring-2 ring-emerald-600/70 flex items-center justify-center">
-                              {/* Markaziy oq nuqta */}
-                              <div className="w-1.5 h-1.5 rounded-full bg-white shadow-sm" />
+                          // Yeyish nishoni: Nozik va o'tkir qizil doira
+                          is3D ? (
+                            <div className="relative w-[92%] h-[92%] flex items-center justify-center">
+                              <div className="absolute inset-0 rounded-xl bg-red-600/35 border-2 sm:border-[3px] border-red-400 shadow-[0_0_12px_rgba(239,68,68,0.85)]" />
+                              <div className="w-[78%] h-[78%] rounded-full border-2 border-white/95 ring-2 ring-red-500 shadow-md" />
                             </div>
-                          </div>
+                          ) : (
+                            <div className="w-[88%] h-[88%] rounded-full border-[3px] sm:border-[4px] border-red-500/75 shadow-sm" />
+                          )
+                        ) : (
+                          // Bo'sh kvadratga harakat nuqtasi: 2D da nozik zümrad doira, 3D da disk
+                          is3D ? (
+                            <div className="relative flex items-center justify-center">
+                              <div className="w-6 h-6 sm:w-7 sm:h-7 rounded-full border border-emerald-400/50 bg-emerald-400/20 absolute" />
+                              <div className="w-4.5 h-4.5 sm:w-5.5 sm:h-5.5 rounded-full bg-gradient-to-br from-emerald-300 via-emerald-500 to-emerald-700 border-2 border-white shadow-md ring-2 ring-emerald-600/70 flex items-center justify-center">
+                                <div className="w-1.5 h-1.5 rounded-full bg-white shadow-sm" />
+                              </div>
+                            </div>
+                          ) : (
+                            <div className="w-3.5 h-3.5 sm:w-4 sm:h-4 rounded-full bg-[#10b981]/70 ring-2 ring-white/60 shadow-sm" />
+                          )
                         )}
                       </div>
                     )}
