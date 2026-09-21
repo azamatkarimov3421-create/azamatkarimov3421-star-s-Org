@@ -7,6 +7,7 @@ import { useGame } from '../store/gameStore';
 import { saveGameResult } from '../services/dbService';
 
 import { recordGameFinished, saveRecentGame, getRecentGames, RecentGame } from '../store/userProfileStore';
+import { onlineManager } from '../services/onlineService';
 import { useTranslation } from '../i18n/translations';
 
 export default function GameOverModal() {
@@ -18,6 +19,7 @@ export default function GameOverModal() {
   const [dismissed, setDismissed] = useState(false);
   const [saved, setSaved] = useState(false);
   const [recentGames, setRecentGames] = useState<RecentGame[]>([]);
+  const [ratingInfo, setRatingInfo] = useState<{ newRating: number; delta: number } | null>(null);
 
   useEffect(() => {
     setRecentGames(getRecentGames());
@@ -63,12 +65,22 @@ export default function GameOverModal() {
           const isWinnerPlayer = (winnerName === 'Oq' && isPlayerWhite) || (winnerName === 'Qora' && !isPlayerWhite);
           userResult = isWinnerPlayer ? 'win' : 'loss';
         }
-        recordGameFinished(userResult, gameMode === 'online');
+
+        const AI_LEVEL_RATINGS = [0, 1000, 1400, 1800, 2200];
+        const oppRating = gameMode === 'online'
+          ? (onlineManager.opponentRating || 1200)
+          : (AI_LEVEL_RATINGS[aiDepth] || 1400);
+
+        const updatedProfile = recordGameFinished(userResult, gameMode === 'online', oppRating);
+        setRatingInfo({
+          newRating: updatedProfile.rating,
+          delta: updatedProfile.deltaRating,
+        });
 
         const opponentTitle = gameMode === 'vsAI'
           ? `AI Bot (${aiDepth}-daraja)`
           : gameMode === 'online'
-          ? `Onlayn (${roomCode ? `#${roomCode}` : 'Tezkor'})`
+          ? `${onlineManager.opponentName || 'Raqib'} (${oppRating})`
           : `Doʻst bilan (PVP)`;
 
         const updated = saveRecentGame({
@@ -187,9 +199,31 @@ export default function GameOverModal() {
         <h2 className="text-xl sm:text-2xl font-black text-white mb-1">
           {title}
         </h2>
-        <p className="text-[#9b9893] text-xs sm:text-sm mb-5 leading-relaxed">
+        <p className="text-[#9b9893] text-xs sm:text-sm mb-4 leading-relaxed">
           {subtitle}
         </p>
+
+        {/* Reyting o'zgarishi indikatori */}
+        {ratingInfo && gameMode !== 'aiVsAi' && (
+          <div className="flex items-center justify-center mb-4 animate-fadeIn">
+            <div className={`px-4 py-2 rounded-xl font-mono font-bold text-xs flex items-center gap-2 border shadow-md ${
+              ratingInfo.delta > 0
+                ? 'bg-emerald-500/20 text-emerald-300 border-emerald-500/40'
+                : ratingInfo.delta < 0
+                ? 'bg-rose-500/20 text-rose-300 border-rose-500/40'
+                : 'bg-slate-700/40 text-slate-300 border-slate-600/40'
+            }`}>
+              <span className="text-sm font-black">
+                {ratingInfo.delta > 0 ? `+${ratingInfo.delta}` : `${ratingInfo.delta}`}
+              </span>
+              <span className="text-[10px] uppercase tracking-wider text-slate-300">{t('rating_label')}</span>
+              <span className="text-slate-500">→</span>
+              <span className="text-white font-extrabold flex items-center gap-1 text-sm">
+                <span>⭐</span> {ratingInfo.newRating}
+              </span>
+            </div>
+          </div>
+        )}
 
         {/* Statistika qutisi */}
         <div className="grid grid-cols-2 gap-2.5 p-3 bg-[#181715] rounded-xl border border-[#383531] mb-4 text-xs">
@@ -239,6 +273,7 @@ export default function GameOverModal() {
           <button
             onClick={() => {
               setDismissed(false);
+              setRatingInfo(null);
               dispatch({ type: 'NEW_GAME' });
             }}
             className="w-full py-3 px-4 bg-[#81b64c] hover:bg-[#92c35a] text-white font-black text-sm rounded-xl shadow-[0_4px_0_#537a2e] active:translate-y-1 active:shadow-[0_0_0_#537a2e] transition-all flex items-center justify-center gap-2 cursor-pointer"

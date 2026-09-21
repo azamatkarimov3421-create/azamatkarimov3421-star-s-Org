@@ -289,7 +289,7 @@ export default function GameScreen({ onBack, onOpenSettings }: GameScreenProps) 
   // Raqib va pastki o'yinchi ma'lumotlari (qisqa, chiroyli va ustma-ust tushmaydigan)
   const opponentName =
     gameMode === 'online'
-      ? t('player_label')
+      ? (onlineManager.opponentName || t('player_label'))
       : gameMode === 'vsAI'
       ? 'Nur Bot'
       : gameMode === 'aiVsAi'
@@ -298,7 +298,7 @@ export default function GameScreen({ onBack, onOpenSettings }: GameScreenProps) 
 
   const opponentRating =
     gameMode === 'online'
-      ? 1520
+      ? (onlineManager.opponentRating || 1200)
       : gameMode === 'vsAI'
       ? (AI_LEVEL_RATINGS[aiDepth] || 1400)
       : gameMode === 'aiVsAi'

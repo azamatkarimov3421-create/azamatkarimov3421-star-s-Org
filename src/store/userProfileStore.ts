@@ -203,19 +203,58 @@ export function saveAchievements(list: Achievement[]): void {
   } catch {}
 }
 
-export function recordGameFinished(result: 'win' | 'loss' | 'draw', isOnline: boolean): UserProfile {
+/**
+ * Standart Elo reytingini hisoblash
+ * Raqibning kuchi va o'yin natijasiga qarab reyting ballining o'zgarishini aniqlaydi
+ */
+export function calculateEloChange(
+  playerRating: number,
+  opponentRating: number,
+  result: 'win' | 'loss' | 'draw',
+  kFactor: number = 32
+): number {
+  const actualScore = result === 'win' ? 1.0 : result === 'draw' ? 0.5 : 0.0;
+  const exponent = (opponentRating - playerRating) / 400;
+  const expectedScore = 1 / (1 + Math.pow(10, exponent));
+
+  const rawDelta = kFactor * (actualScore - expectedScore);
+  let delta = Math.round(rawDelta);
+
+  // G'alabada kamida +1, mag'lubiyatda kamida -1 ta'minlash
+  if (result === 'win' && delta < 1) delta = 1;
+  if (result === 'loss' && delta > -1) delta = -1;
+
+  return delta;
+}
+
+export function recordGameFinished(
+  result: 'win' | 'loss' | 'draw',
+  isOnline: boolean,
+  opponentRating?: number
+): UserProfile & { deltaRating: number } {
   const profile = getUserProfile();
   profile.gamesPlayed += 1;
+
+  let delta = 0;
+  if (typeof opponentRating === 'number' && opponentRating > 0) {
+    delta = calculateEloChange(profile.rating, opponentRating, result, isOnline ? 32 : 24);
+  } else {
+    // Standart fallback
+    if (result === 'win') delta = 15;
+    else if (result === 'loss') delta = -12;
+    else delta = 2;
+  }
+
   if (result === 'win') {
     profile.wins += 1;
-    profile.rating += 15;
   } else if (result === 'loss') {
     profile.losses += 1;
-    profile.rating = Math.max(1000, profile.rating - 12);
   } else {
     profile.draws += 1;
-    profile.rating += 2;
   }
+
+  profile.rating = Math.max(100, profile.rating + delta);
+
   if (isOnline) {
     profile.onlineGames += 1;
   }
@@ -250,7 +289,7 @@ export function recordGameFinished(result: 'win' | 'loss' | 'draw', isOnline: bo
   });
   saveAchievements(achievements);
 
-  return profile;
+  return Object.assign(profile, { deltaRating: delta });
 }
 
 const RECENT_GAMES_KEY = 'nurchess_recent_games_v1';

@@ -6,6 +6,7 @@
 import { RealtimeChannel } from '@supabase/supabase-js';
 import { supabase } from '../lib/supabase';
 import { Move } from '../engine/types';
+import { getUserProfile } from '../store/userProfileStore';
 
 export type OnlineStatus =
   | 'idle'
@@ -23,9 +24,9 @@ export type MessageType =
   | { type: 'ACCEPT_DRAW' }
   | { type: 'RESIGN' }
   | { type: 'REMATCH' }
-  | { type: 'JOIN' }
+  | { type: 'JOIN'; playerName?: string; rating?: number }
   | { type: 'LEAVE' }
-  | { type: 'HANDSHAKE' };
+  | { type: 'HANDSHAKE'; playerName?: string; rating?: number };
 
 export type MessageCallback = (msg: MessageType) => void;
 export type StatusCallback = (status: OnlineStatus, extra?: string) => void;
@@ -39,6 +40,8 @@ class OnlineManager {
   public status: OnlineStatus = 'idle';
   public roomCode: string | null = null;
   public myColor: 'white' | 'black' | null = null;
+  public opponentName: string = 'Raqib';
+  public opponentRating: number = 1200;
   public statusMessage: string = '';
   public isMatchmaking: boolean = false;
 
@@ -93,12 +96,21 @@ class OnlineManager {
           if (!payload || !payload.type) return;
 
           if (payload.type === 'JOIN') {
-            this.notifyStatus('connected', 'Raqib muvaffaqiyatli ulandi!');
-            this.sendMessage({ type: 'HANDSHAKE' });
+            if (payload.playerName) this.opponentName = payload.playerName;
+            if (typeof payload.rating === 'number') this.opponentRating = payload.rating;
+            this.notifyStatus('connected', `${this.opponentName} ulandi!`);
+            const myProfile = getUserProfile();
+            this.sendMessage({
+              type: 'HANDSHAKE',
+              playerName: myProfile.name,
+              rating: myProfile.rating,
+            });
           } else if (payload.type === 'HANDSHAKE') {
-            this.notifyStatus('connected', 'Raqib tayyor!');
+            if (payload.playerName) this.opponentName = payload.playerName;
+            if (typeof payload.rating === 'number') this.opponentRating = payload.rating;
+            this.notifyStatus('connected', `${this.opponentName} tayyor!`);
           } else if (payload.type === 'LEAVE') {
-            this.notifyStatus('disconnected', 'Raqib oʻyindan chiqdi');
+            this.notifyStatus('disconnected', `${this.opponentName} oʻyindan chiqdi`);
           }
 
           this.notifyMessage(payload as MessageType);
@@ -106,25 +118,41 @@ class OnlineManager {
 
         ch.on('presence', { event: 'sync' }, () => {
           const state = ch.presenceState();
-          const presences = Object.values(state).flat();
-          const hasWhite = presences.some((p: any) => p.role === 'white');
-          const hasBlack = presences.some((p: any) => p.role === 'black');
+          const presences = Object.values(state).flat() as any[];
+          const opponent = presences.find((p: any) => p && p.role === 'black');
+          if (opponent) {
+            if (opponent.name) this.opponentName = opponent.name;
+            if (typeof opponent.rating === 'number') this.opponentRating = opponent.rating;
+          }
+          const hasWhite = presences.some((p: any) => p && p.role === 'white');
+          const hasBlack = presences.some((p: any) => p && p.role === 'black');
           if (hasWhite && hasBlack && this.status !== 'connected') {
-            this.notifyStatus('connected', 'Raqib muvaffaqiyatli ulandi!');
-            this.sendMessage({ type: 'HANDSHAKE' });
+            this.notifyStatus('connected', `${this.opponentName} ulandi!`);
+            const myProfile = getUserProfile();
+            this.sendMessage({
+              type: 'HANDSHAKE',
+              playerName: myProfile.name,
+              rating: myProfile.rating,
+            });
           }
         });
 
         ch.on('presence', { event: 'leave' }, () => {
           if (this.status === 'connected') {
-            this.notifyStatus('disconnected', 'Raqib aloqadan uzildi');
+            this.notifyStatus('disconnected', `${this.opponentName} aloqadan uzildi`);
           }
         });
 
         ch.subscribe(async (status) => {
           if (status === 'SUBSCRIBED') {
+            const myProfile = getUserProfile();
             try {
-              await ch.track({ role: 'white', joined_at: Date.now() });
+              await ch.track({
+                role: 'white',
+                name: myProfile.name,
+                rating: myProfile.rating,
+                joined_at: Date.now(),
+              });
             } catch {}
             this.notifyStatus('waiting', 'Raqib ulanishi kutilmoqda...');
             resolve(code);
@@ -166,9 +194,11 @@ class OnlineManager {
           if (!payload || !payload.type) return;
 
           if (payload.type === 'HANDSHAKE') {
-            this.notifyStatus('connected', 'Xonaga muvaffaqiyatli ulandingiz!');
+            if (payload.playerName) this.opponentName = payload.playerName;
+            if (typeof payload.rating === 'number') this.opponentRating = payload.rating;
+            this.notifyStatus('connected', `${this.opponentName} bilan o'yin boshlandi!`);
           } else if (payload.type === 'LEAVE') {
-            this.notifyStatus('disconnected', 'Raqib oʻyindan chiqdi');
+            this.notifyStatus('disconnected', `${this.opponentName} oʻyindan chiqdi`);
           }
 
           this.notifyMessage(payload as MessageType);
@@ -176,31 +206,48 @@ class OnlineManager {
 
         ch.on('presence', { event: 'sync' }, () => {
           const state = ch.presenceState();
-          const presences = Object.values(state).flat();
-          const hasWhite = presences.some((p: any) => p.role === 'white');
-          const hasBlack = presences.some((p: any) => p.role === 'black');
+          const presences = Object.values(state).flat() as any[];
+          const opponent = presences.find((p: any) => p && p.role === 'white');
+          if (opponent) {
+            if (opponent.name) this.opponentName = opponent.name;
+            if (typeof opponent.rating === 'number') this.opponentRating = opponent.rating;
+          }
+          const hasWhite = presences.some((p: any) => p && p.role === 'white');
+          const hasBlack = presences.some((p: any) => p && p.role === 'black');
           if (hasWhite && hasBlack && this.status !== 'connected') {
-            this.notifyStatus('connected', 'Xonaga muvaffaqiyatli ulandingiz!');
+            this.notifyStatus('connected', `${this.opponentName} bilan o'yin boshlandi!`);
           }
         });
 
         ch.on('presence', { event: 'leave' }, () => {
           if (this.status === 'connected') {
-            this.notifyStatus('disconnected', 'Raqib aloqadan uzildi');
+            this.notifyStatus('disconnected', `${this.opponentName} aloqadan uzildi`);
           }
         });
 
         ch.subscribe(async (status) => {
           if (status === 'SUBSCRIBED') {
+            const myProfile = getUserProfile();
             try {
-              await ch.track({ role: 'black', joined_at: Date.now() });
+              await ch.track({
+                role: 'black',
+                name: myProfile.name,
+                rating: myProfile.rating,
+                joined_at: Date.now(),
+              });
             } catch {}
+
+            const joinPayload = {
+              type: 'JOIN' as const,
+              playerName: myProfile.name,
+              rating: myProfile.rating,
+            };
 
             // JOIN xabarini ishonchli yetib borishi uchun yuboramiz
             ch.send({
               type: 'broadcast',
               event: 'game_event',
-              payload: { type: 'JOIN' },
+              payload: joinPayload,
             });
 
             let count = 0;
@@ -213,7 +260,7 @@ class OnlineManager {
               ch.send({
                 type: 'broadcast',
                 event: 'game_event',
-                payload: { type: 'JOIN' },
+                payload: joinPayload,
               });
             }, 600);
 
@@ -274,13 +321,17 @@ class OnlineManager {
         // Boshqa o'yinchi tomonidan juftlik e'lon qilinganda
         mCh.on('broadcast', { event: 'match_paired' }, async ({ payload }) => {
           if (!payload || !this.isMatchmaking) return;
-          const { hostId, guestId, roomCode } = payload;
+          const { hostId, guestId, roomCode, hostName, hostRating, guestName, guestRating } = payload;
           if (clientId === hostId || clientId === guestId) {
             this.stopMatchmaking();
             if (clientId === hostId) {
+              if (guestName) this.opponentName = guestName;
+              if (typeof guestRating === 'number') this.opponentRating = guestRating;
               await this.createRoom(roomCode);
               resolve(roomCode);
             } else {
+              if (hostName) this.opponentName = hostName;
+              if (typeof hostRating === 'number') this.opponentRating = hostRating;
               await this.joinRoom(roomCode);
               resolve(roomCode);
             }
@@ -302,13 +353,20 @@ class OnlineManager {
             // Deterministic matchmaker: kichikroq ID ga ega o'yinchi host bo'ladi
             if (clientId < opponent.id) {
               const matchedRoomCode = `${Math.floor(10000 + Math.random() * 90000)}`;
+              this.opponentName = opponent.name || 'Raqib';
+              if (typeof opponent.rating === 'number') this.opponentRating = opponent.rating;
+
               try {
                 await mCh.send({
                   type: 'broadcast',
                   event: 'match_paired',
                   payload: {
                     hostId: clientId,
+                    hostName: playerName || 'Oʻyinchi',
+                    hostRating: rating || 1200,
                     guestId: opponent.id,
+                    guestName: opponent.name || 'Raqib',
+                    guestRating: opponent.rating || 1200,
                     roomCode: matchedRoomCode,
                   },
                 });
@@ -384,6 +442,8 @@ class OnlineManager {
     this.status = 'idle';
     this.roomCode = null;
     this.myColor = null;
+    this.opponentName = 'Raqib';
+    this.opponentRating = 1200;
     this.statusMessage = '';
   }
 }

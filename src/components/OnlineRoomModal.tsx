@@ -118,18 +118,6 @@ export default function OnlineRoomModal({
     setSearchDuration(0);
   };
 
-  // Bot bilan darhol boshlash (Fallback)
-  const handleStartVsAIFallback = () => {
-    handleCancelMatchmaking();
-    dispatch({ type: 'SET_GAME_MODE', mode: 'vsAI' });
-    dispatch({ type: 'SET_AI_DEPTH', depth: 2 });
-    dispatch({ type: 'SET_AI_COLOR', color: 'black' });
-    dispatch({ type: 'SET_FLIPPED', flipped: false });
-    dispatch({ type: 'NEW_GAME' });
-    onClose();
-    onStartGame?.();
-  };
-
   // 2. Yangi xona yaratish (Oq donalar - Do'st uchun)
   const handleCreateRoom = async () => {
     try {
@@ -381,21 +369,6 @@ export default function OnlineRoomModal({
                     {t('searching_desc')}
                   </p>
                 </div>
-
-                {/* 10 soniyadan so'ng Bot bilan o'ynash varianti */}
-                {searchDuration >= 8 && (
-                  <div className="w-full pt-2 border-t border-slate-800/80 space-y-2 animate-fadeIn">
-                    <p className="text-[11px] text-amber-200/90 font-semibold">
-                      {t('no_player_found_prompt')}
-                    </p>
-                    <button
-                      onClick={handleStartVsAIFallback}
-                      className="w-full py-2 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white font-bold rounded-xl text-xs transition-all shadow cursor-pointer active:scale-95"
-                    >
-                      {t('play_ai_fallback')}
-                    </button>
-                  </div>
-                )}
 
                 <button
                   onClick={handleCancelMatchmaking}
