@@ -114,15 +114,23 @@ export default function Board() {
 
   // Timestamp to ignore synthetic clicks immediately after a completed touch/drag
   const ignoreClickUntilRef = useRef<number>(0);
+  const isDragMoveRef = useRef<boolean>(false);
 
   // Dona harakati animatsiyasini qat'iy nazorat qilish (280ms davomida)
   const [animatingMoveIndex, setAnimatingMoveIndex] = useState<number | null>(null);
   useEffect(() => {
     if (game.moveHistory.length > 0) {
+      if (isDragMoveRef.current) {
+        // Harakat barmoq bilan sudrab (drag) joyiga qo'yildi — ortiqcha sakrash animatsiyasi o'chiriladi
+        isDragMoveRef.current = false;
+        setAnimatingMoveIndex(null);
+        return;
+      }
+      // Tap-to-move yoki bot/raqib yurishida silliq siljish animatsiyasi
       setAnimatingMoveIndex(game.moveHistory.length - 1);
       const timer = setTimeout(() => {
         setAnimatingMoveIndex(null);
-      }, 290);
+      }, 280);
       return () => clearTimeout(timer);
     }
   }, [game.moveHistory.length]);
@@ -141,7 +149,7 @@ export default function Board() {
 
   // 10x10 dosqa uchun nuqta koordinatasidan aniq kvadratni topish (2D va 3D da 100% kafolatlangan)
   const getSquareFromPoint = useCallback((clientX: number, clientY: number): Square | null => {
-    // 1. Dastlab elementFromPoint orqali tugmani qidiramiz
+    // 1. Dastlab elementFromPoint orqali to'g'ridan-to'g'ri elementni tekshiramiz
     try {
       const elem = document.elementFromPoint(clientX, clientY);
       const sqBtn = elem?.closest('[data-square]');
@@ -154,21 +162,45 @@ export default function Board() {
       }
     } catch {}
 
-    // 2. Agar 3D transformatsiya sababli elementFromPoint topolmasa, geometrik aniq hisoblash
-    const rect = boardRef.current?.getBoundingClientRect();
-    if (!rect) return null;
-    if (clientX < rect.left || clientX > rect.right || clientY < rect.top || clientY > rect.bottom) {
-      return null;
-    }
-    const relX = clientX - rect.left;
-    const relY = clientY - rect.top;
-    const col = Math.floor((relX / rect.width) * 10);
-    const row = Math.floor((relY / rect.height) * 10);
-    if (col < 0 || col >= 10 || row < 0 || row >= 10) return null;
+    // 2. Haqiqiy kvadrat tugmalarining 2D ekran koordinatalari bo'yicha magnit tekshiruv
+    // Bu usul 3D burchak (perspective/rotateX) yoki har qanday ekran masshtabida 100% xatosiz ishlaydi!
+    const boardEl = boardRef.current;
+    if (boardEl) {
+      const buttons = boardEl.querySelectorAll<HTMLElement>('[data-square]');
+      if (buttons && buttons.length > 0) {
+        let closestSq: Square | null = null;
+        let minDistance = Infinity;
 
-    const file = isFlippedRef.current ? 9 - col : col;
-    const rank = isFlippedRef.current ? row : 9 - row;
-    return { file, rank };
+        for (let i = 0; i < buttons.length; i++) {
+          const btn = buttons[i];
+          const r = btn.getBoundingClientRect();
+
+          // Barmoq kvadrat maydoni ichida bo'lsa darhol qaytarish
+          if (clientX >= r.left && clientX <= r.right && clientY >= r.top && clientY <= r.bottom) {
+            const file = Number(btn.getAttribute('data-file'));
+            const rank = Number(btn.getAttribute('data-rank'));
+            return { file, rank };
+          }
+
+          // Chegara yoki oraliqqa tushganda eng yaqin katak markaziga magnitdek tortish
+          const centerX = (r.left + r.right) * 0.5;
+          const centerY = (r.top + r.bottom) * 0.5;
+          const dist = Math.hypot(clientX - centerX, clientY - centerY);
+          if (dist < minDistance) {
+            minDistance = dist;
+            const file = Number(btn.getAttribute('data-file'));
+            const rank = Number(btn.getAttribute('data-rank'));
+            closestSq = { file, rank };
+          }
+        }
+
+        if (closestSq && minDistance < 65) {
+          return closestSq;
+        }
+      }
+    }
+
+    return null;
   }, []);
 
   const getSquareFromPointRef = useRef(getSquareFromPoint);
@@ -245,8 +277,8 @@ export default function Board() {
       const dy = e.clientY - tracker.startY;
       const dist = Math.hypot(dx, dy);
 
-      // Faqat qasddan 16px dan ko'proq surilgandagina drag boshlanadi
-      if (!tracker.isDragging && dist >= 16) {
+      // Faqat qasddan 14px dan ko'proq surilgandagina drag boshlanadi
+      if (!tracker.isDragging && dist >= 14) {
         tracker.isDragging = true;
         // Donani tanlaymiz (forceSelect bilan, toggle-off bo'lmasligi uchun)
         dispatchRef.current({ type: 'SELECT_SQUARE', square: tracker.from, forceSelect: true });
@@ -279,12 +311,13 @@ export default function Board() {
       setActiveDrag(null);
 
       if (wasDragging) {
-        // Drag yakunlandi — 350ms sintetik click ni bloklaymiz
-        ignoreClickUntilRef.current = Date.now() + 350;
+        // Drag yakunlandi — 300ms sintetik click ni bloklaymiz
+        ignoreClickUntilRef.current = Date.now() + 300;
 
         const toSq = getSquareFromPointRef.current(e.clientX, e.clientY);
         if (toSq && !squaresEqual(fromSq, toSq)) {
-          // Boshqa kvadratga tashlandi: Harakatni darhol bajaramiz
+          // Boshqa kvadratga tashlandi: Sudrab tashlash harakati (animatsiyasiz joyiga tushadi)
+          isDragMoveRef.current = true;
           handleSquareClickRef.current(toSq);
         } else if (toSq && squaresEqual(fromSq, toSq)) {
           // Shu kvadratga qaytib tushdi: dona tanlanganligicha qolsin
@@ -292,11 +325,10 @@ export default function Board() {
         }
       } else {
         // Bu bosish (Tap / Click)!
-        // Mobil teginish (touch) bo'lsa, brauzerning 300ms kechikishini kutmasdan darhol bajaramiz
-        if (e.pointerType === 'touch' || e.pointerType === 'pen') {
-          ignoreClickUntilRef.current = Date.now() + 350;
-          handleSquareClickRef.current(fromSq);
-        }
+        // Bosilgan joy qaysi kvadratga to'g'ri kelishini barmoq nuqtasi orqali aniqlaymiz
+        const clickSq = getSquareFromPointRef.current(e.clientX, e.clientY) || fromSq;
+        ignoreClickUntilRef.current = Date.now() + 300;
+        handleSquareClickRef.current(clickSq);
       }
     };
 

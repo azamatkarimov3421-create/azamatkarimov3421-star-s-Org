@@ -127,7 +127,7 @@ export default function GameScreen({ onBack, onOpenSettings }: GameScreenProps) 
       }
     }, 10000);
 
-    // 250ms kutish: foydalanuvchi donasi silliq sirg'alib o'tishini tugatishi uchun
+    // 310ms kutish: foydalanuvchi donasining 280ms sirg'alib o'tish animatsiyasi to'liq va silliq tugashi uchun
     const timer = setTimeout(async () => {
       try {
         const bestMove = await getBestMoveAsync(game, aiDepth);
@@ -141,7 +141,7 @@ export default function GameScreen({ onBack, onOpenSettings }: GameScreenProps) 
         aiThinkingRef.current = false;
         dispatch({ type: 'SET_AI_THINKING', thinking: false });
       }
-    }, 250);
+    }, 310);
 
     return () => {
       isCancelled = true;

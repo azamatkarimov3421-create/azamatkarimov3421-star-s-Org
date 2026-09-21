@@ -224,6 +224,74 @@ export class AIEngine {
         return [bestScore, bestMove];
     }
 
+    async alphaBetaRootAsync(depth, alpha, beta, deadline) {
+        if (this.stopSearch || Date.now() > deadline) {
+            this.stopSearch = true;
+            return [0, null];
+        }
+
+        this.nodesEvaluated++;
+        const inCheck = this.board.isInCheck(this.board.turn);
+        const legalMoves = this.board.getLegalMoves();
+        if (legalMoves.length === 0) {
+            if (inCheck) return [-50000, null];
+            return [0, null];
+        }
+
+        const hashKey = this.zobrist.hashBoard(this.board.grid, this.board.turn);
+        let ttMove = null;
+        const entry = this.transpositionTable.get(hashKey);
+        if (entry) {
+            ttMove = entry.bestMove;
+            if (entry.depth >= depth) {
+                if (entry.flag === 'EXACT') return [entry.score, entry.bestMove];
+                else if (entry.flag === 'LOWERBOUND' && entry.score > alpha) alpha = entry.score;
+                else if (entry.flag === 'UPPERBOUND' && entry.score < beta) beta = entry.score;
+                if (alpha >= beta) return [entry.score, entry.bestMove];
+            }
+        }
+
+        const orderedMoves = this.orderMoves(legalMoves, ttMove, 0);
+        let bestMove = orderedMoves[0];
+        let bestScore = -999999;
+        const savedRights = this.board.cloneCastlingRights();
+
+        for (let i = 0; i < orderedMoves.length; i++) {
+            const move = orderedMoves[i];
+            this.board.makeMove(move);
+            const [rawScore] = this.alphaBeta(depth - 1, -beta, -alpha, 1, deadline);
+            const score = -rawScore;
+            this.board.undoMove(savedRights);
+
+            if (this.stopSearch) break;
+
+            if (score > bestScore) {
+                bestScore = score;
+                bestMove = move;
+            }
+            if (score > alpha) alpha = score;
+            if (alpha >= beta) break;
+
+            // Har 3 ta harakatdan so'ng event loop ga darhol nafas beramiz — UI umuman qotmaydi!
+            if (depth >= 2 && i % 3 === 2) {
+                await new Promise(res => setTimeout(res, 0));
+            }
+        }
+
+        let flag = 'EXACT';
+        if (bestScore <= alpha) flag = 'UPPERBOUND';
+        else if (bestScore >= beta) flag = 'LOWERBOUND';
+
+        this.transpositionTable.set(hashKey, {
+            depth,
+            score: bestScore,
+            bestMove,
+            flag
+        });
+
+        return [bestScore, bestMove];
+    }
+
     async getBestMoveAsync(maxDepth = 3, timeLimitMs = 2500, onProgress = null, aiLevel = 3) {
         this.nodesEvaluated = 0;
         this.stopSearch = false;
@@ -268,14 +336,14 @@ export class AIEngine {
             }
         }
 
-        // 2. Iterative Deepening (Standart Alpha-Beta Minimax)
+        // 2. Iterative Deepening (Asinxron Alpha-Beta Minimax)
         const deadline = startTime + timeLimitMs;
         let bestOverallMove = legalMoves[0];
         let bestOverallScore = 0;
 
         for (let d = 1; d <= maxDepth; d++) {
             if (this.stopSearch || Date.now() >= deadline) break;
-            const [score, move] = this.alphaBeta(d, -1000000, 1000000, 0, deadline);
+            const [score, move] = await this.alphaBetaRootAsync(d, -1000000, 1000000, deadline);
             if (this.stopSearch && d > 1) break;
 
             if (move) {

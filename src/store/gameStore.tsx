@@ -121,14 +121,14 @@ function createInitialAppState(): AppState {
     onlinePlayerColor: null,
     is3D: (() => {
       try {
-        const saved = localStorage.getItem('nur_chess_3d_v2');
+        const saved = localStorage.getItem('nur_chess_3d_v3');
         if (saved !== null) {
           return saved === 'true';
         }
-        localStorage.setItem('nur_chess_3d_v2', 'true');
-        return true;
+        localStorage.setItem('nur_chess_3d_v3', 'false');
+        return false;
       } catch {
-        return true;
+        return false;
       }
     })(),
   };
@@ -510,7 +510,7 @@ function gameReducer(state: AppState, action: Action): AppState {
     case 'TOGGLE_3D': {
       const next = !state.is3D;
       try {
-        localStorage.setItem('nur_chess_3d_v2', String(next));
+        localStorage.setItem('nur_chess_3d_v3', String(next));
         localStorage.setItem('nur_chess_3d', String(next));
       } catch {}
       return { ...state, is3D: next };
@@ -518,7 +518,7 @@ function gameReducer(state: AppState, action: Action): AppState {
 
     case 'SET_3D': {
       try {
-        localStorage.setItem('nur_chess_3d_v2', String(action.enabled));
+        localStorage.setItem('nur_chess_3d_v3', String(action.enabled));
         localStorage.setItem('nur_chess_3d', String(action.enabled));
       } catch {}
       return { ...state, is3D: action.enabled };
