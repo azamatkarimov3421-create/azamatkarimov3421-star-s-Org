@@ -41,22 +41,23 @@ export interface RecentGame {
   reason?: string;
 }
 
-export const DEFAULT_UNLINKED_PROFILE: UserProfile = {
-  name: 'Azamat Karimov',
-  email: 'karimovazamat3421@gmail.com',
-  rating: 1202,
-  league: 'Bronza liga',
-  avatar: 'A',
+export const DEFAULT_GUEST_PROFILE: UserProfile = {
+  name: 'Mehmon Oʻyinchi',
+  email: undefined,
+  rating: 1200,
+  league: 'Boshlangʻich liga',
+  avatar: '👤',
   avatarUrl: undefined,
-  gamesPlayed: 1,
+  gamesPlayed: 0,
   wins: 0,
-  draws: 1,
+  draws: 0,
   losses: 0,
-  onlineGames: 1,
-  isGoogleLinked: true,
+  onlineGames: 0,
+  isGoogleLinked: false,
 };
 
-const DEFAULT_PROFILE = DEFAULT_UNLINKED_PROFILE;
+export const DEFAULT_UNLINKED_PROFILE: UserProfile = DEFAULT_GUEST_PROFILE;
+const DEFAULT_PROFILE = DEFAULT_GUEST_PROFILE;
 
 const DEFAULT_ACHIEVEMENTS: Achievement[] = [
   {
@@ -123,28 +124,26 @@ export function getUserProfile(): UserProfile {
     const data = localStorage.getItem(PROFILE_KEY);
     if (data) {
       const parsed = JSON.parse(data);
-      // Agar eski mehmon holatida bo'lsa, Azamat Karimov profiliga yangilash
-      if (!parsed.name || parsed.name === 'Mehmon Oʻyinchi' || !parsed.email) {
-        const upgraded: UserProfile = {
-          ...DEFAULT_PROFILE,
-          ...parsed,
-          name: 'Azamat Karimov',
-          email: 'karimovazamat3421@gmail.com',
-          rating: parsed.rating && parsed.rating >= 1200 ? parsed.rating : 1202,
-          league: parsed.league || 'Bronza liga',
-          isGoogleLinked: true,
-        };
-        saveUserProfile(upgraded);
-        return upgraded;
-      }
+      const isLinked = Boolean(parsed.isGoogleLinked && parsed.email);
+      const fallbackName = isLinked ? 'Google Oʻyinchi' : 'Mehmon Oʻyinchi';
+      const cleanName = parsed.name && parsed.name.trim() ? parsed.name.trim() : fallbackName;
+      const avatarLetter = isLinked && cleanName && cleanName !== 'Mehmon Oʻyinchi'
+        ? cleanName.charAt(0).toUpperCase()
+        : '👤';
+
       return {
-        ...DEFAULT_PROFILE,
+        ...DEFAULT_GUEST_PROFILE,
         ...parsed,
-        isGoogleLinked: Boolean(parsed.isGoogleLinked && parsed.email),
+        isGoogleLinked: isLinked,
+        email: isLinked ? parsed.email : undefined,
+        name: cleanName,
+        avatar: avatarLetter,
+        rating: typeof parsed.rating === 'number' && parsed.rating >= 100 ? parsed.rating : 1200,
+        league: parsed.league || (isLinked ? 'Bronza liga' : 'Boshlangʻich liga'),
       };
     }
   } catch {}
-  return DEFAULT_PROFILE;
+  return DEFAULT_GUEST_PROFILE;
 }
 
 export function isGoogleUser(): boolean {
@@ -160,18 +159,22 @@ export function linkGoogleAccount(data: {
   googleId?: string;
 }): UserProfile {
   const current = getUserProfile();
+  const cleanName = data.name.trim() || 'Google Oʻyinchi';
+  const cleanEmail = data.email.trim().toLowerCase();
+  const avatarLetter = cleanName.charAt(0).toUpperCase() || 'A';
+
   const updated: UserProfile = {
     ...current,
     id: data.id || current.id || `user_${Date.now()}`,
-    name: data.name.trim() || 'Google Oʻyinchi',
-    email: data.email.trim(),
+    name: cleanName,
+    email: cleanEmail,
+    avatar: avatarLetter,
     avatarUrl: data.avatarUrl || current.avatarUrl,
     googleId: data.googleId || data.id,
     isGoogleLinked: true,
     lastLoginAt: new Date().toISOString(),
-    // Preserve or initialize rating
     rating: current.rating >= 1000 ? current.rating : 1200,
-    league: current.league || 'Boshlangʻich liga',
+    league: current.league && current.league !== 'Boshlangʻich liga' ? current.league : 'Bronza liga',
   };
   saveUserProfile(updated);
   return updated;
@@ -180,14 +183,16 @@ export function linkGoogleAccount(data: {
 export function unlinkGoogleAccount(): UserProfile {
   const current = getUserProfile();
   const reset: UserProfile = {
-    ...DEFAULT_UNLINKED_PROFILE,
-    rating: 1200,
+    ...DEFAULT_GUEST_PROFILE,
+    rating: current.rating >= 1000 ? current.rating : 1200,
     gamesPlayed: current.gamesPlayed,
     wins: current.wins,
     draws: current.draws,
     losses: current.losses,
     onlineGames: current.onlineGames,
     isGoogleLinked: false,
+    name: 'Mehmon Oʻyinchi',
+    avatar: '👤',
     email: undefined,
     avatarUrl: undefined,
     id: undefined,

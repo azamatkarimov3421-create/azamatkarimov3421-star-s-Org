@@ -232,6 +232,25 @@ export default function ProfileScreen({
                 {profile.league}
               </div>
             </div>
+
+            {/* Hisobni Almashtirish va Chiqish Tugmalari */}
+            <div className="flex items-center gap-2 mt-3.5 w-full max-w-xs">
+              <button
+                onClick={() => setShowAuthModal(true)}
+                className="flex-1 py-2 px-3 rounded-xl bg-[#2c2a26] hover:bg-[#383531] border border-[#44413c] hover:border-[#81b64c] text-white text-xs font-bold flex items-center justify-center gap-1.5 transition-all active:scale-95 cursor-pointer shadow-sm"
+              >
+                <span>🔄</span>
+                <span>{t('google_switch_account')}</span>
+              </button>
+              <button
+                onClick={handleSignOut}
+                className="py-2 px-3 rounded-xl bg-red-500/15 hover:bg-red-500/25 border border-red-500/30 text-red-300 text-xs font-bold flex items-center justify-center gap-1.5 transition-all active:scale-95 cursor-pointer shadow-sm"
+                title={t('guest_mode_switch')}
+              >
+                <LogOutIcon size={13} />
+                <span>Chiqish</span>
+              </button>
+            </div>
           </div>
         )}
 
@@ -425,14 +444,44 @@ export default function ProfileScreen({
             <ChevronRightIcon size={16} className="text-[#686560]" />
           </button>
 
-          {/* Chiqish (Faqat Google ulangan bo'lsa) */}
-          {profile.isGoogleLinked && (
+          {/* Agar Google ulangan bo'lsa: Almashtirish va Chiqish */}
+          {profile.isGoogleLinked ? (
+            <div className="space-y-2.5 mt-4">
+              <button
+                onClick={() => setShowAuthModal(true)}
+                className="w-full p-3.5 rounded-2xl bg-[#21201d] hover:bg-[#282622] border border-[#383531] flex items-center justify-between text-left transition-all active:scale-[0.99] shadow-sm cursor-pointer group"
+              >
+                <div className="flex items-center gap-3">
+                  <div className="w-9 h-9 rounded-xl bg-[#2a2824] border border-[#3d3a34] flex items-center justify-center text-[#81b64c]">
+                    🔄
+                  </div>
+                  <div>
+                    <div className="font-bold text-sm text-white group-hover:text-[#81b64c] transition-colors">
+                      {t('google_switch_account')}
+                    </div>
+                    <div className="text-[11px] text-[#9b9893]">
+                      Boshqa Google pochta yoki yangi ism bilan ulanish
+                    </div>
+                  </div>
+                </div>
+                <ChevronRightIcon size={16} className="text-[#686560]" />
+              </button>
+
+              <button
+                onClick={handleSignOut}
+                className="w-full p-3.5 rounded-2xl bg-red-500/10 hover:bg-red-500/20 border border-red-500/30 flex items-center justify-center gap-2.5 text-red-300 hover:text-red-200 text-xs font-bold transition-all active:scale-[0.99] shadow-sm cursor-pointer"
+              >
+                <LogOutIcon size={16} />
+                <span>{t('guest_mode_switch')}</span>
+              </button>
+            </div>
+          ) : (
             <button
-              onClick={handleSignOut}
-              className="w-full mt-4 p-3.5 rounded-2xl bg-red-500/10 hover:bg-red-500/20 border border-red-500/30 flex items-center justify-center gap-2.5 text-red-300 hover:text-red-200 text-xs font-bold transition-all active:scale-[0.99] shadow-sm cursor-pointer"
+              onClick={() => setShowAuthModal(true)}
+              className="w-full mt-4 p-3.5 rounded-2xl bg-[#81b64c]/15 hover:bg-[#81b64c]/25 border border-[#81b64c]/40 flex items-center justify-center gap-2.5 text-[#a4d471] text-xs font-bold transition-all active:scale-[0.99] shadow-sm cursor-pointer"
             >
-              <LogOutIcon size={16} />
-              <span>{t('google_signout')}</span>
+              <GoogleIcon size={16} />
+              <span>{t('google_signin')}</span>
             </button>
           )}
         </div>

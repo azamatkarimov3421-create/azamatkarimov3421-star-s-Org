@@ -1,12 +1,13 @@
 // =====================================================
 // NUR SHAXMAT 100 — Foydalanuvchi Profili va Ro'yxatdan O'tish Modali
+// 100% Ilova ichida tezkor va xavfsiz hisob boshqaruvi
 // =====================================================
 
-import React, { useState } from 'react';
-import { GoogleIcon } from './Icons';
+import React, { useState, useEffect } from 'react';
+import { GoogleIcon, LogOutIcon } from './Icons';
 import {
-  signInWithGoogle,
   signInWithGoogleDirect,
+  signOutGoogle,
 } from '../services/authService';
 import { getUserProfile, UserProfile } from '../store/userProfileStore';
 
@@ -17,15 +18,24 @@ interface GoogleAuthModalProps {
 }
 
 export default function GoogleAuthModal({ isOpen, onClose, onSuccess }: GoogleAuthModalProps) {
-  const currentProfile = getUserProfile();
-  const [loading, setLoading] = useState(false);
+  const [profile, setProfile] = useState<UserProfile>(getUserProfile());
+  const [name, setName] = useState('');
+  const [email, setEmail] = useState('');
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
-  const [name, setName] = useState(
-    currentProfile.name && currentProfile.name !== 'Mehmon Oʻyinchi' ? currentProfile.name : ''
-  );
-  const [email, setEmail] = useState(currentProfile.email || '');
+
+  useEffect(() => {
+    if (isOpen) {
+      const p = getUserProfile();
+      setProfile(p);
+      setName(p.name && p.name !== 'Mehmon Oʻyinchi' ? p.name : '');
+      setEmail(p.email || '');
+      setErrorMsg(null);
+    }
+  }, [isOpen]);
 
   if (!isOpen) return null;
+
+  const isCurrentlyLinked = Boolean(profile.isGoogleLinked && profile.email);
 
   const handleQuickSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -46,19 +56,11 @@ export default function GoogleAuthModal({ isOpen, onClose, onSuccess }: GoogleAu
     onClose();
   };
 
-  const handleOAuthSignIn = async () => {
-    setLoading(true);
-    setErrorMsg(null);
-    try {
-      const res = await signInWithGoogle();
-      if (!res.success) {
-        setErrorMsg(res.error || 'Google orqali ulanishda xatolik yuz berdi.');
-      }
-    } catch (e: any) {
-      setErrorMsg(e?.message || 'Xatolik yuz berdi');
-    } finally {
-      setLoading(false);
-    }
+  const handleSignOutModal = async () => {
+    await signOutGoogle();
+    const updated = getUserProfile();
+    onSuccess(updated);
+    onClose();
   };
 
   const firstLetter = (name.trim() || 'A').charAt(0).toUpperCase();
@@ -80,10 +82,12 @@ export default function GoogleAuthModal({ isOpen, onClose, onSuccess }: GoogleAu
             {firstLetter}
           </div>
           <h3 className="text-xl font-black text-white tracking-tight">
-            Profilni Faollashtirish
+            {isCurrentlyLinked ? 'Google Hisobini Almashtirish' : 'Profilni Faollashtirish'}
           </h3>
           <p className="text-xs text-[#9b9893] mt-1 max-w-xs leading-relaxed">
-            Ilova ichida 1 soniyada profilingizni yarating — barcha reyting, gʻalabalar va natijalaringiz saqlanib boradi.
+            {isCurrentlyLinked
+              ? 'Boshqa Google pochta manzilingiz yoki yangi ismingizni kiriting.'
+              : 'Ilova ichida 1 soniyada profilingizni yarating — reyting va gʻalabalar xavfsiz saqlanadi.'}
           </p>
         </div>
 
@@ -95,7 +99,7 @@ export default function GoogleAuthModal({ isOpen, onClose, onSuccess }: GoogleAu
           </div>
         )}
 
-        {/* Asosiy Tezkor Ro'yxatdan O'tish Formasi (Ilova ichida) */}
+        {/* Asosiy Tezkor Ro'yxatdan O'tish / Almashtirish Formasi */}
         <form onSubmit={handleQuickSubmit} className="space-y-3.5 pt-1">
           <div>
             <label className="block text-[11px] text-[#9b9893] mb-1 font-semibold uppercase tracking-wider">
@@ -131,39 +135,40 @@ export default function GoogleAuthModal({ isOpen, onClose, onSuccess }: GoogleAu
             />
           </div>
 
-          {/* Asosiy Saqlash Tugmasi */}
+          {/* Asosiy Saqlash / Almashtirish Tugmasi */}
           <button
             type="submit"
             className="w-full py-3.5 px-4 rounded-2xl bg-[#81b64c] hover:bg-[#92c35a] active:scale-[0.98] text-white font-black text-sm flex items-center justify-center gap-2.5 shadow-[0_4px_0_#537a2e] active:translate-y-1 active:shadow-none transition-all cursor-pointer"
           >
-            <span>✓</span>
-            <span>Profilni Saqlash va Faollashtirish</span>
+            <span>{isCurrentlyLinked ? '🔄' : '✓'}</span>
+            <span>{isCurrentlyLinked ? 'Hisobni Almashtirish va Saqlash' : 'Profilni Saqlash va Faollashtirish'}</span>
           </button>
         </form>
+
+        {/* Agar hisob ulangan bo'lsa - Chiqish imkoniyati */}
+        {isCurrentlyLinked && (
+          <div className="pt-2 border-t border-[#312e2b] flex items-center justify-center">
+            <button
+              type="button"
+              onClick={handleSignOutModal}
+              className="text-xs text-red-400 hover:text-red-300 flex items-center justify-center gap-1.5 font-medium transition-colors cursor-pointer py-1.5 px-3 rounded-xl hover:bg-red-500/10"
+            >
+              <LogOutIcon size={14} />
+              <span>Hisobdan chiqish (Mehmon rejimiga oʻtish)</span>
+            </button>
+          </div>
+        )}
 
         {/* Afzalliklar */}
         <div className="p-3 bg-[#181715] rounded-xl border border-[#2c2a26] space-y-1.5 text-xs text-[#c3c2be]">
           <div className="flex items-center gap-2">
             <span className="text-[#81b64c] font-bold">✓</span>
-            <span>Ilovadan chiqmasdan toʻliq oflayn va onlayn ishlaydi</span>
+            <span>100% ilova ichida ishlaydi, tashqi brauzer ochilmaydi</span>
           </div>
           <div className="flex items-center gap-2">
             <span className="text-[#81b64c] font-bold">✓</span>
-            <span>Onlayn reyting va gʻalabalar profilingizga yoziladi</span>
+            <span>Onlayn reyting va barcha gʻalabalar profilingizga yoziladi</span>
           </div>
-        </div>
-
-        {/* Qo'shimcha Google orqali ulanish varianti */}
-        <div className="pt-2 border-t border-[#312e2b] text-center">
-          <button
-            type="button"
-            onClick={handleOAuthSignIn}
-            disabled={loading}
-            className="text-xs text-slate-400 hover:text-white flex items-center justify-center gap-2 mx-auto font-medium transition-colors cursor-pointer py-1"
-          >
-            <GoogleIcon size={14} />
-            <span>{loading ? "Google ulanmoqda..." : "Yoki Google orqali avtomatik ulanish (OAuth)"}</span>
-          </button>
         </div>
       </div>
     </div>
