@@ -57,7 +57,7 @@ export interface AppState {
 // ── Harakatlar ────────────────────────────────────────
 
 type Action =
-  | { type: 'SELECT_SQUARE'; square: Square }
+  | { type: 'SELECT_SQUARE'; square: Square; forceSelect?: boolean }
   | { type: 'APPLY_MOVE'; move: Move }
   | { type: 'APPLY_REMOTE_MOVE'; move: Move }
   | { type: 'REMOTE_RESIGN' }
@@ -217,6 +217,7 @@ function gameReducer(state: AppState, action: Action): AppState {
 
       // Agar tanlangan kvadratning o'zi qayta bosilsa — tanlashni bekor qilish (toggle off)
       if (selectedSquare && squaresEqual(sq, selectedSquare)) {
+        if (action.forceSelect) return state;
         return { ...state, selectedSquare: null, legalMoves: [] };
       }
 

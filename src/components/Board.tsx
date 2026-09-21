@@ -76,17 +76,17 @@ export default function Board() {
 
   // ── UNIFIED ZERO-RERENDER DRAG & DROP SYSTEM (2D & 3D, MOUSE & TOUCH) ──
   const pointerStartRef = useRef<{
-    piece: Piece;
+    piece: Piece | null;
     from: Square;
     startX: number;
     startY: number;
     pointerId: number;
     isDragging: boolean;
     squareSize: number;
+    startTime: number;
   } | null>(null);
 
-  // Active floating ghost state: FAQAT drag boshlanganda 1 marta va tugaganda 1 marta yangilanadi.
-  // Harakat davomida React qayta render qilinmaydi (Zero-Rerender GPU Hardware Acceleration)
+  // Active floating ghost state
   const [activeDrag, setActiveDrag] = useState<{
     piece: Piece;
     from: Square;
@@ -97,7 +97,22 @@ export default function Board() {
   const is3DRef = useRef(is3D);
   is3DRef.current = is3D;
 
-  // Timestamp to ignore synthetic clicks immediately after a completed drag
+  const isFlippedRef = useRef(isFlipped);
+  isFlippedRef.current = isFlipped;
+
+  const gameRef = useRef(game);
+  gameRef.current = game;
+
+  const gameModeRef = useRef(gameMode);
+  gameModeRef.current = gameMode;
+
+  const onlinePlayerColorRef = useRef(onlinePlayerColor);
+  onlinePlayerColorRef.current = onlinePlayerColor;
+
+  const selectedSquareRef = useRef(selectedSquare);
+  selectedSquareRef.current = selectedSquare;
+
+  // Timestamp to ignore synthetic clicks immediately after a completed touch/drag
   const ignoreClickUntilRef = useRef<number>(0);
 
   // Dona harakati animatsiyasini qat'iy nazorat qilish (280ms davomida)
@@ -114,7 +129,7 @@ export default function Board() {
 
   const themeStyle = THEME_STYLES[boardTheme] || THEME_STYLES.wood;
 
-  // Qonuniy harakatlar xaritasi (useMemo orqali qayta hisoblashni keshlaymiz)
+  // Qonuniy harakatlar xaritasi
   const legalTargetMap = useMemo(() => {
     const map = new Map<string, Move>();
     for (let i = 0; i < legalMoves.length; i++) {
@@ -123,6 +138,41 @@ export default function Board() {
     }
     return map;
   }, [legalMoves]);
+
+  // 10x10 dosqa uchun nuqta koordinatasidan aniq kvadratni topish (2D va 3D da 100% kafolatlangan)
+  const getSquareFromPoint = useCallback((clientX: number, clientY: number): Square | null => {
+    // 1. Dastlab elementFromPoint orqali tugmani qidiramiz
+    try {
+      const elem = document.elementFromPoint(clientX, clientY);
+      const sqBtn = elem?.closest('[data-square]');
+      if (sqBtn) {
+        const file = Number(sqBtn.getAttribute('data-file'));
+        const rank = Number(sqBtn.getAttribute('data-rank'));
+        if (!isNaN(file) && !isNaN(rank) && file >= 0 && file < 10 && rank >= 0 && rank < 10) {
+          return { file, rank };
+        }
+      }
+    } catch {}
+
+    // 2. Agar 3D transformatsiya sababli elementFromPoint topolmasa, geometrik aniq hisoblash
+    const rect = boardRef.current?.getBoundingClientRect();
+    if (!rect) return null;
+    if (clientX < rect.left || clientX > rect.right || clientY < rect.top || clientY > rect.bottom) {
+      return null;
+    }
+    const relX = clientX - rect.left;
+    const relY = clientY - rect.top;
+    const col = Math.floor((relX / rect.width) * 10);
+    const row = Math.floor((relY / rect.height) * 10);
+    if (col < 0 || col >= 10 || row < 0 || row >= 10) return null;
+
+    const file = isFlippedRef.current ? 9 - col : col;
+    const rank = isFlippedRef.current ? row : 9 - row;
+    return { file, rank };
+  }, []);
+
+  const getSquareFromPointRef = useRef(getSquareFromPoint);
+  getSquareFromPointRef.current = getSquareFromPoint;
 
   // Kvadratni bosish (Click-to-move va Tanlash)
   const handleSquareClick = useCallback((sq: Square) => {
@@ -154,14 +204,7 @@ export default function Board() {
     if (gameMode === 'vsAI' && (game.currentTurn === aiColor || aiThinking)) return;
     if (game.status !== 'playing' && game.status !== 'check') return;
 
-    const piece = game.board[sq.rank]?.[sq.file];
-    if (!piece) return;
-
-    // Onlayn rejimda faqat o'z rangimizdagi donani ushlash mumkin
-    if (gameMode === 'online' && onlinePlayerColor && piece.color !== onlinePlayerColor) return;
-
-    // Faqat o'z navbatidagi donani ushlab surish mumkin
-    if (piece.color !== game.currentTurn) return;
+    const piece = game.board[sq.rank]?.[sq.file] || null;
 
     const rect = boardRef.current?.getBoundingClientRect();
     const sqSize = rect ? rect.width / 10 : 44;
@@ -174,8 +217,9 @@ export default function Board() {
       pointerId: e.pointerId,
       isDragging: false,
       squareSize: sqSize,
+      startTime: Date.now(),
     };
-  }, [gameMode, game.currentTurn, game.status, game.board, aiColor, aiThinking, onlinePlayerColor]);
+  }, [gameMode, game.currentTurn, game.status, game.board, aiColor, aiThinking]);
 
   // Window darajasidagi yagona, barqaror pointer tinglovchilari
   const handleSquareClickRef = useRef(handleSquareClick);
@@ -190,18 +234,24 @@ export default function Board() {
       if (!tracker) return;
       if (tracker.pointerId !== e.pointerId) return;
 
+      const currentPiece = tracker.piece;
+      const currentTurn = gameRef.current.currentTurn;
+
+      // Drag qilish faqat navbati kelgan o'z donasi uchun ruxsat etiladi
+      if (!currentPiece || currentPiece.color !== currentTurn) return;
+      if (gameModeRef.current === 'online' && onlinePlayerColorRef.current && currentPiece.color !== onlinePlayerColorRef.current) return;
+
       const dx = e.clientX - tracker.startX;
       const dy = e.clientY - tracker.startY;
-      const dist = Math.sqrt(dx * dx + dy * dy);
+      const dist = Math.hypot(dx, dy);
 
-      // Faqat qasddan 14px dan ko'proq surilgandagina drag boshlanadi
-      if (!tracker.isDragging && dist >= 14) {
+      // Faqat qasddan 16px dan ko'proq surilgandagina drag boshlanadi
+      if (!tracker.isDragging && dist >= 16) {
         tracker.isDragging = true;
-        // Yurish mumkin bo'lgan nuqtalar darhol ko'rinishi uchun donani tanlaymiz
-        dispatchRef.current({ type: 'SELECT_SQUARE', square: tracker.from });
-        // React holatini FAQAT 1 marta yangilaymiz (origin donani xiralashtirish va ghost DOM ni ochish uchun)
+        // Donani tanlaymiz (forceSelect bilan, toggle-off bo'lmasligi uchun)
+        dispatchRef.current({ type: 'SELECT_SQUARE', square: tracker.from, forceSelect: true });
         setActiveDrag({
-          piece: tracker.piece,
+          piece: currentPiece,
           from: tracker.from,
           squareSize: tracker.squareSize,
         });
@@ -229,22 +279,23 @@ export default function Board() {
       setActiveDrag(null);
 
       if (wasDragging) {
-        // Drag yakunlandi — orqasidan keladigan sintetik onClick ni 250ms ga bloklaymiz
-        ignoreClickUntilRef.current = Date.now() + 250;
+        // Drag yakunlandi — 350ms sintetik click ni bloklaymiz
+        ignoreClickUntilRef.current = Date.now() + 350;
 
-        // Qaysi kvadrat ustida qo'yib yuborilganini aniqlaymiz
-        const elem = document.elementFromPoint(e.clientX, e.clientY);
-        const sqBtn = elem?.closest('[data-square]');
-        if (sqBtn) {
-          const file = Number(sqBtn.getAttribute('data-file'));
-          const rank = Number(sqBtn.getAttribute('data-rank'));
-          if (!isNaN(file) && !isNaN(rank)) {
-            const toSq: Square = { file, rank };
-            if (!squaresEqual(fromSq, toSq)) {
-              // Boshqa kvadratga tashlandi: Harakatni darhol bajaramiz
-              handleSquareClickRef.current(toSq);
-            }
-          }
+        const toSq = getSquareFromPointRef.current(e.clientX, e.clientY);
+        if (toSq && !squaresEqual(fromSq, toSq)) {
+          // Boshqa kvadratga tashlandi: Harakatni darhol bajaramiz
+          handleSquareClickRef.current(toSq);
+        } else if (toSq && squaresEqual(fromSq, toSq)) {
+          // Shu kvadratga qaytib tushdi: dona tanlanganligicha qolsin
+          dispatchRef.current({ type: 'SELECT_SQUARE', square: fromSq, forceSelect: true });
+        }
+      } else {
+        // Bu bosish (Tap / Click)!
+        // Mobil teginish (touch) bo'lsa, brauzerning 300ms kechikishini kutmasdan darhol bajaramiz
+        if (e.pointerType === 'touch' || e.pointerType === 'pen') {
+          ignoreClickUntilRef.current = Date.now() + 350;
+          handleSquareClickRef.current(fromSq);
         }
       }
     };
@@ -360,12 +411,12 @@ export default function Board() {
           {/* 10x10 Dosqa Grid (To'liq Fluid va Aspect-Square) */}
           <div
             ref={boardRef}
-            className={`grid grid-cols-10 grid-rows-10 aspect-square w-full rounded sm:rounded-md touch-manipulation select-none ${
+            className={`grid grid-cols-10 grid-rows-10 aspect-square w-full rounded sm:rounded-md touch-none select-none ${
               is3D
                 ? 'border-2 sm:border-[3px] border-[#5a331c] shadow-[inset_0_2px_8px_rgba(0,0,0,0.7)]'
                 : 'overflow-hidden border sm:border-2 border-slate-400/80 shadow-[inset_0_2px_10px_rgba(0,0,0,0.3)]'
             }`}
-            style={is3D ? { transformStyle: 'preserve-3d' } : undefined}
+            style={is3D ? { transformStyle: 'preserve-3d', touchAction: 'none' } : { touchAction: 'none' }}
           >
             {displayedRanks.map((rankIdx) =>
               displayedFiles.map((fileLetter) => {
@@ -439,7 +490,7 @@ export default function Board() {
                 return (
                   <div
                     key={key}
-                    className={`relative w-full h-full aspect-square flex items-center justify-center touch-manipulation select-none ${squareBgClass}`}
+                    className={`relative w-full h-full aspect-square flex items-center justify-center touch-none select-none ${squareBgClass}`}
                     style={is3D && (piece || isLegalTarget) ? { transformStyle: 'preserve-3d' } : undefined}
                   >
                     {/* 100% to'liq qamrovli interaktiv tugma: Chertish va Sudrab tashlash (Drag & Drop) */}
@@ -455,8 +506,12 @@ export default function Board() {
                         if (Date.now() < ignoreClickUntilRef.current) return;
                         handleSquareClick(sq);
                       }}
-                      className="absolute inset-0 w-full h-full z-30 cursor-pointer bg-transparent border-0 p-0 m-0 outline-none focus:outline-none select-none touch-manipulation active:bg-black/5"
-                      style={{ WebkitTapHighlightColor: 'transparent' }}
+                      className="absolute inset-0 w-full h-full z-30 cursor-pointer bg-transparent border-0 p-0 m-0 outline-none focus:outline-none select-none touch-none active:bg-black/10"
+                      style={{
+                        WebkitTapHighlightColor: 'transparent',
+                        touchAction: 'none',
+                        transform: is3D ? 'translateZ(14px)' : undefined,
+                      }}
                     />
 
                     {/* So'nggi Harakat Izlari */}

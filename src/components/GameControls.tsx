@@ -20,35 +20,6 @@ export default function GameControls({ onOpenOnlineModal, className = '' }: Game
 
   const isGameOver = game.status !== 'playing' && game.status !== 'check';
 
-  // AI harakatini boshqarish
-  const makeAIMove = useCallback(() => {
-    if (gameMode !== 'vsAI') return;
-    if (game.currentTurn !== aiColor) return;
-    if (isGameOver) return;
-    if (aiThinking) return;
-
-    dispatch({ type: 'SET_AI_THINKING', thinking: true });
-
-    setTimeout(() => {
-      try {
-        const bestMove = getBestMove(game, aiDepth);
-        if (bestMove) {
-          dispatch({ type: 'APPLY_MOVE', move: bestMove });
-        }
-      } catch (e) {
-        console.error('AI hisoblash xatosi:', e);
-      } finally {
-        dispatch({ type: 'SET_AI_THINKING', thinking: false });
-      }
-    }, 400);
-  }, [game, gameMode, aiColor, aiDepth, aiThinking, isGameOver, dispatch]);
-
-  useEffect(() => {
-    if (gameMode === 'vsAI' && game.currentTurn === aiColor && !isGameOver) {
-      makeAIMove();
-    }
-  }, [game.currentTurn, gameMode, aiColor, isGameOver, makeAIMove]);
-
   const [hintLoading, setHintLoading] = React.useState(false);
 
   // Harakat maslahatini olish (Asinxron)
