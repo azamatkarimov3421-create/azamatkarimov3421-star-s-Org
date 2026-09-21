@@ -264,6 +264,8 @@ public class MainActivity extends AppCompatActivity {
         }
 
         webView = new WebView(this);
+        // Dark background qora fon - oq charaqlashni oldini olish
+        webView.setBackgroundColor(0xFF121614);
         // GPU apparat tezlatkichini qat'iy yoqish (3D animatsiya va silliq harakat uchun)
         webView.setLayerType(View.LAYER_TYPE_HARDWARE, null);
         webView.setOverScrollMode(View.OVER_SCROLL_NEVER);
@@ -280,6 +282,12 @@ public class MainActivity extends AppCompatActivity {
         settings.setMediaPlaybackRequiresUserGesture(false);
         settings.setRenderPriority(WebSettings.RenderPriority.HIGH);
         settings.setCacheMode(WebSettings.LOAD_DEFAULT);
+        settings.setSupportZoom(false);
+        settings.setBuiltInZoomControls(false);
+        settings.setDisplayZoomControls(false);
+        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
+            settings.setSafeBrowsingEnabled(false);
+        }
 
         // Javascript Bridge ulash
         webView.addJavascriptInterface(new AndroidBridge(), "AndroidBridge");
@@ -319,7 +327,12 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public boolean shouldOverrideUrlLoading(WebView view, WebResourceRequest request) {
                 String url = request.getUrl().toString();
-                if (url.endsWith(".apk") || (!url.startsWith("https://appassets.androidplatform.net") && !url.contains("supabase.co/realtime"))) {
+                if (url.startsWith("https://nurchess100.uz") || url.startsWith("nurchess://")) {
+                    handleDeepLinkUrl(url);
+                    return true;
+                }
+                // Faqat APK yuklab olish bo'lsa
+                if (url.endsWith(".apk")) {
                     try {
                         Intent intent = new Intent(Intent.ACTION_VIEW, request.getUrl());
                         intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
@@ -329,7 +342,12 @@ public class MainActivity extends AppCompatActivity {
                         Log.e("NurChess", "Override url error", e);
                     }
                 }
-                return false;
+                // App ichki resurslari va Supabase kanallari uchun
+                if (url.startsWith("https://appassets.androidplatform.net") || url.contains("supabase.co")) {
+                    return false;
+                }
+                // Boshqa HECH QANDAY holatda tashqi brauzerga chiqmaslik (100% app ichida qolish)
+                return true;
             }
 
             @Override
@@ -400,6 +418,29 @@ public class MainActivity extends AppCompatActivity {
 
         // Boshlang'ich sahifani yuklash
         webView.loadUrl("https://appassets.androidplatform.net/index.html");
+
+        if (getIntent() != null && getIntent().getData() != null) {
+            handleDeepLinkUrl(getIntent().getData().toString());
+        }
+    }
+
+    @Override
+    protected void onNewIntent(Intent intent) {
+        super.onNewIntent(intent);
+        setIntent(intent);
+        if (intent != null && intent.getData() != null) {
+            handleDeepLinkUrl(intent.getData().toString());
+        }
+    }
+
+    private void handleDeepLinkUrl(String url) {
+        if (webView == null || url == null) return;
+        webView.post(() -> {
+            webView.evaluateJavascript(
+                    "(function() { if (window.__handleAuthRedirect) { window.__handleAuthRedirect('" + url.replace("'", "\\'") + "'); } })()",
+                    null
+            );
+        });
     }
 
     @Override

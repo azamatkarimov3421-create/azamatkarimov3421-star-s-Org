@@ -187,13 +187,19 @@ export default function HomeScreen({
                 }`}
                 title={t('nav_profile')}
               >
-                {profile.isGoogleLinked && profile.avatarUrl ? (
-                  <img
-                    src={profile.avatarUrl}
-                    alt=""
-                    className="w-5 h-5 rounded-md object-cover border border-emerald-400/60"
-                    referrerPolicy="no-referrer"
-                  />
+                {profile.isGoogleLinked ? (
+                  profile.avatarUrl ? (
+                    <img
+                      src={profile.avatarUrl}
+                      alt=""
+                      className="w-5 h-5 rounded-md object-cover border border-emerald-400/60"
+                      referrerPolicy="no-referrer"
+                    />
+                  ) : (
+                    <span className="w-5 h-5 rounded-md bg-[#7a6652] text-white flex items-center justify-center text-[10px] font-black border border-emerald-400/60">
+                      {(profile.name || 'A').charAt(0).toUpperCase()}
+                    </span>
+                  )
                 ) : (
                   <GoogleIcon size={16} />
                 )}

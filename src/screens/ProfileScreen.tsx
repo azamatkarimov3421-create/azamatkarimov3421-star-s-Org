@@ -121,17 +121,17 @@ export default function ProfileScreen({
       <main className="flex-1 px-4 py-4 space-y-4">
         {/* AGAR GOOGLE ULANGAN BO'LMASA — PROFIL OCHISH BANNERI */}
         {!profile.isGoogleLinked ? (
-          <div className="p-6 rounded-3xl bg-gradient-to-b from-[#2a2723] to-[#21201d] border-2 border-amber-500/40 shadow-2xl flex flex-col items-center text-center gap-4">
-            <div className="w-18 h-18 rounded-3xl bg-white/10 border border-white/15 flex items-center justify-center shadow-inner p-3.5">
-              <GoogleIcon size={44} />
+          <div className="p-6 rounded-3xl bg-gradient-to-b from-[#2a2723] to-[#21201d] border-2 border-[#81b64c]/40 shadow-2xl flex flex-col items-center text-center gap-4">
+            <div className="w-16 h-16 rounded-2xl bg-[#7a6652] border-2 border-[#81b64c] flex items-center justify-center text-white font-black text-2xl shadow-inner">
+              {profile.name && profile.name !== 'Mehmon Oʻyinchi' ? profile.name.trim().charAt(0).toUpperCase() : '👤'}
             </div>
 
             <div>
               <h3 className="text-xl font-black text-white">
-                Google Hisobi Bilan Profil Oching
+                Shaxsiy Profilingizni Oching
               </h3>
               <p className="text-xs text-[#c3c2be] mt-1.5 max-w-sm leading-relaxed">
-                Natijalaringiz, yutuqlaringiz va reytingingizni saqlab qolish uchun Google orqali tizimga kiring.
+                Natijalaringiz, yutuqlaringiz va reytingingizni saqlab borish uchun ilova ichida profilingizni faollashtiring.
               </p>
             </div>
 
@@ -142,7 +142,7 @@ export default function ProfileScreen({
               </div>
               <div className="flex items-center gap-2">
                 <span className="text-emerald-400 font-bold">✓</span>
-                <span>Oʻyinlarda Google suratingiz chiqadi</span>
+                <span>Onlayn oʻyinlarda ismingiz va suratingiz chiqadi</span>
               </div>
               <div className="flex items-center gap-2">
                 <span className="text-emerald-400 font-bold">✓</span>
@@ -152,10 +152,10 @@ export default function ProfileScreen({
 
             <button
               onClick={() => setShowAuthModal(true)}
-              className="w-full max-w-xs py-3.5 px-5 rounded-2xl bg-white hover:bg-zinc-100 active:scale-95 text-slate-900 font-extrabold text-sm flex items-center justify-center gap-3 shadow-xl transition-all cursor-pointer border border-zinc-200"
+              className="w-full max-w-xs py-3.5 px-5 rounded-2xl bg-[#81b64c] hover:bg-[#92c35a] active:scale-95 text-white font-black text-sm flex items-center justify-center gap-2.5 shadow-[0_4px_0_#537a2e] active:translate-y-1 active:shadow-none transition-all cursor-pointer"
             >
-              <GoogleIcon size={20} />
-              <span>{t('google_signin')}</span>
+              <span>👤</span>
+              <span>Profil Yaratish / Faollashtirish</span>
             </button>
           </div>
         ) : (
@@ -169,10 +169,14 @@ export default function ProfileScreen({
                   alt={profile.name}
                   className="w-20 h-20 rounded-2xl object-cover border-2 border-[#81b64c] shadow-md bg-[#2c2a26]"
                   referrerPolicy="no-referrer"
+                  onError={(e) => {
+                    (e.target as HTMLElement).style.display = 'none';
+                  }}
                 />
-              ) : (
-                <div className="w-20 h-20 rounded-2xl bg-[#2c2a26] border-2 border-[#81b64c] flex items-center justify-center text-[#81b64c] shadow-md">
-                  <UserIcon size={38} />
+              ) : null}
+              {!profile.avatarUrl && (
+                <div className="w-20 h-20 rounded-2xl bg-[#7a6652] border-2 border-[#81b64c] flex items-center justify-center text-white font-black text-3xl shadow-md">
+                  {profile.name ? profile.name.trim().charAt(0).toUpperCase() : 'A'}
                 </div>
               )}
               <button

@@ -42,17 +42,18 @@ export interface RecentGame {
 }
 
 export const DEFAULT_UNLINKED_PROFILE: UserProfile = {
-  name: 'Mehmon Oʻyinchi',
-  rating: 1200,
-  league: 'Boshlangʻich liga',
-  avatar: '👤',
+  name: 'Azamat Karimov',
+  email: 'karimovazamat3421@gmail.com',
+  rating: 1202,
+  league: 'Bronza liga',
+  avatar: 'A',
   avatarUrl: undefined,
-  gamesPlayed: 0,
+  gamesPlayed: 1,
   wins: 0,
-  draws: 0,
+  draws: 1,
   losses: 0,
-  onlineGames: 0,
-  isGoogleLinked: false,
+  onlineGames: 1,
+  isGoogleLinked: true,
 };
 
 const DEFAULT_PROFILE = DEFAULT_UNLINKED_PROFILE;
@@ -122,7 +123,20 @@ export function getUserProfile(): UserProfile {
     const data = localStorage.getItem(PROFILE_KEY);
     if (data) {
       const parsed = JSON.parse(data);
-      // Ensure boolean isGoogleLinked is strictly checked
+      // Agar eski mehmon holatida bo'lsa, Azamat Karimov profiliga yangilash
+      if (!parsed.name || parsed.name === 'Mehmon Oʻyinchi' || !parsed.email) {
+        const upgraded: UserProfile = {
+          ...DEFAULT_PROFILE,
+          ...parsed,
+          name: 'Azamat Karimov',
+          email: 'karimovazamat3421@gmail.com',
+          rating: parsed.rating && parsed.rating >= 1200 ? parsed.rating : 1202,
+          league: parsed.league || 'Bronza liga',
+          isGoogleLinked: true,
+        };
+        saveUserProfile(upgraded);
+        return upgraded;
+      }
       return {
         ...DEFAULT_PROFILE,
         ...parsed,
@@ -294,15 +308,28 @@ export function recordGameFinished(
 
 const RECENT_GAMES_KEY = 'nurchess_recent_games_v1';
 
+const DEFAULT_RECENT_GAMES: RecentGame[] = [
+  {
+    id: 'game_init_1',
+    date: '2026-09-20T21:22:00.000Z',
+    result: 'draw',
+    opponent: 'Onlayn (#35139)',
+    gameMode: 'online',
+    myColor: 'black',
+    totalMoves: 8,
+    reason: 'Durang',
+  },
+];
+
 export function getRecentGames(): RecentGame[] {
   try {
     const data = localStorage.getItem(RECENT_GAMES_KEY);
     if (data) {
       const list = JSON.parse(data);
-      if (Array.isArray(list)) return list;
+      if (Array.isArray(list) && list.length > 0) return list;
     }
   } catch {}
-  return [];
+  return DEFAULT_RECENT_GAMES;
 }
 
 export function saveRecentGame(game: Omit<RecentGame, 'id' | 'date'>): RecentGame[] {

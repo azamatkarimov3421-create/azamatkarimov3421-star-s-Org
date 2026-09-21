@@ -56,6 +56,33 @@ export function initAuth(onProfileChange?: (profile: UserProfile) => void): () =
     }
   );
 
+  // 3. Android Intent / Deep Link orqali qaytgan tokenni qabul qilish
+  if (typeof window !== 'undefined') {
+    (window as any).__handleAuthRedirect = async (urlStr: string) => {
+      try {
+        if (!urlStr) return;
+        const hashIdx = urlStr.indexOf('#');
+        if (hashIdx !== -1) {
+          const hash = urlStr.substring(hashIdx + 1);
+          const params = new URLSearchParams(hash);
+          const access_token = params.get('access_token');
+          const refresh_token = params.get('refresh_token');
+          if (access_token && refresh_token && supabase) {
+            const { data } = await supabase.auth.setSession({
+              access_token,
+              refresh_token,
+            });
+            if (data?.user) {
+              handleSupabaseUser(data.user, onProfileChange);
+            }
+          }
+        }
+      } catch (e) {
+        logger.logError('NETWORK', 'Deep link auth xatosi', e);
+      }
+    };
+  }
+
   return () => {
     subscription.unsubscribe();
   };
@@ -144,7 +171,7 @@ export function signInWithGoogleDirect(
     id: `google_${Date.now()}`,
     name: cleanName,
     email: cleanEmail,
-    avatarUrl: avatarUrl || `https://api.dicebear.com/7.x/bottts/svg?seed=${cleanEmail}`,
+    avatarUrl: avatarUrl || undefined,
     googleId: `gid_${Date.now()}`,
   });
 
