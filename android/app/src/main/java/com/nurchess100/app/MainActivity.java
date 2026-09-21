@@ -229,9 +229,18 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        // Status bar va navigation bar fonini sozlash
+        // To'liq ekranli o'yin rejimi (Immersive Sticky - brauzerga o'xshamaydi, sof mobil o'yin)
         getWindow().getDecorView().setSystemUiVisibility(
                 View.SYSTEM_UI_FLAG_LAYOUT_STABLE
+                | View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
+                | View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
+                | View.SYSTEM_UI_FLAG_HIDE_NAVIGATION
+                | View.SYSTEM_UI_FLAG_FULLSCREEN
+                | View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY
+        );
+        getWindow().setFlags(
+                android.view.WindowManager.LayoutParams.FLAG_HARDWARE_ACCELERATED,
+                android.view.WindowManager.LayoutParams.FLAG_HARDWARE_ACCELERATED
         );
 
         // Agar yangi APK o'rnatilgan bo'lsa (apkCode >= liveCode), eski live_web keshini tozalash
@@ -255,9 +264,11 @@ public class MainActivity extends AppCompatActivity {
         }
 
         webView = new WebView(this);
-        webView.clearCache(true);
         // GPU apparat tezlatkichini qat'iy yoqish (3D animatsiya va silliq harakat uchun)
         webView.setLayerType(View.LAYER_TYPE_HARDWARE, null);
+        webView.setOverScrollMode(View.OVER_SCROLL_NEVER);
+        webView.setOnLongClickListener(v -> true);
+        webView.setHapticFeedbackEnabled(true);
         setContentView(webView);
 
         WebSettings settings = webView.getSettings();
@@ -352,13 +363,17 @@ public class MainActivity extends AppCompatActivity {
                     } catch (Exception ignored) {}
                 }
 
-                // 2. Agar live_web'da bo'lmasa, APK assets'dan olish
+                // 2. Agar live_web'da bo'lmasa, APK assets'dan olish (avval web/, keyin ildiz)
                 if (is == null) {
                     try {
-                        is = getAssets().open(path);
-                    } catch (IOException e) {
-                        Log.w("NurChess", "Asset not found: " + path);
-                        return null;
+                        is = getAssets().open("web/" + path);
+                    } catch (IOException e1) {
+                        try {
+                            is = getAssets().open(path);
+                        } catch (IOException e2) {
+                            Log.w("NurChess", "Asset not found: " + path);
+                            return null;
+                        }
                     }
                 }
 
@@ -378,6 +393,7 @@ public class MainActivity extends AppCompatActivity {
 
                 Map<String, String> headers = new HashMap<>();
                 headers.put("Access-Control-Allow-Origin", "*");
+                headers.put("Cache-Control", "public, max-age=31536000, immutable");
                 return new WebResourceResponse(mime, "UTF-8", 200, "OK", headers, is);
             }
         });
