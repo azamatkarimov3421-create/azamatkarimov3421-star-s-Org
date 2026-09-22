@@ -398,24 +398,11 @@ export default function GameScreen({ onBack, onOpenSettings }: GameScreenProps) 
         >
           <span className="text-xs font-black tracking-tighter">90°</span>
         </button>
-
-        {/* 3D / 2D Ko'rinishni yoqish/o'chirish */}
-        <button
-          onClick={() => dispatch({ type: 'TOGGLE_3D' })}
-          className={`w-10 h-10 sm:w-11 sm:h-11 rounded-xl backdrop-blur-md border border-white/15 shadow-[0_8px_16px_rgba(0,0,0,0.6)] flex items-center justify-center transition-all cursor-pointer font-black text-xs active:scale-95 ${
-            is3D
-              ? 'bg-amber-400 text-slate-950 shadow-[0_0_12px_rgba(251,191,36,0.7)]'
-              : 'bg-black/45 text-white hover:bg-black/70'
-          }`}
-          title="3D / 2D ko'rinish"
-        >
-          3D
-        </button>
       </div>
 
       {/* ── 2. MOBIL TIKKA REJIM: YUQORI BOSHQARUV PANELI (Ustma-ust tushmaydigan gorizontal panel) ── */}
       <header className="relative z-30 w-full max-w-[min(calc(100vw-12px),500px)] flex md:hidden landscape:hidden items-center justify-between px-2 pt-1.5 pb-1 shrink-0">
-        {/* Chap amallar: Menyu, 90° Burish, Doskani aylantirish, 3D */}
+        {/* Chap amallar: Menyu, 90° Burish, Doskani aylantirish */}
         <div className="flex items-center gap-1.5">
           <button
             onClick={() => setShowMenuModal(true)}
@@ -440,22 +427,10 @@ export default function GameScreen({ onBack, onOpenSettings }: GameScreenProps) 
           >
             <RotateCwIcon size={15} />
           </button>
-
-          <button
-            onClick={() => dispatch({ type: 'TOGGLE_3D' })}
-            className={`w-8 h-8 rounded-xl border border-white/15 flex items-center justify-center transition-all cursor-pointer shadow-md font-black text-xs active:scale-95 ${
-              is3D
-                ? 'bg-amber-400 text-slate-950 shadow-[0_0_10px_rgba(251,191,36,0.6)]'
-                : 'bg-black/60 text-[#c3c2be] hover:text-white'
-            }`}
-            title="3D / 2D ko'rinish"
-          >
-            3D
-          </button>
         </div>
 
         {/* Markaz: Rejim sarlavhasi */}
-        <div className="px-2 py-0.5 rounded-full bg-black/50 border border-white/10 text-white font-extrabold text-[10px] truncate max-w-[110px]">
+        <div className="px-2 py-0.5 rounded-full bg-black/50 border border-white/10 text-white font-extrabold text-[10px] truncate max-w-[130px]">
           {modeTitle}
         </div>
 

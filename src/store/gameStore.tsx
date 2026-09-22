@@ -121,14 +121,14 @@ function createInitialAppState(): AppState {
     onlinePlayerColor: null,
     is3D: (() => {
       try {
-        const saved = localStorage.getItem('nur_chess_3d_v4');
+        const saved = localStorage.getItem('nur_chess_3d_v3');
         if (saved !== null) {
           return saved === 'true';
         }
-        localStorage.setItem('nur_chess_3d_v4', 'true');
-        return true;
+        localStorage.setItem('nur_chess_3d_v3', 'false');
+        return false;
       } catch {
-        return true;
+        return false;
       }
     })(),
   };

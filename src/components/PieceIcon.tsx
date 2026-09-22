@@ -58,21 +58,14 @@ function PieceIconComponent({
   return (
     <div
       style={style}
-      className={`relative w-full h-full flex items-center justify-center select-none pointer-events-none transition-transform duration-100 ${className}`}
+      className={`relative flex items-center justify-center select-none pointer-events-none transition-transform duration-100 ${className}`}
       title={`${type} (${isWhite ? 'Oq' : 'Qora'})`}
     >
       <img
         src={src}
         alt={`${color} ${type}`}
-        className="w-[88%] h-[88%] object-contain drop-shadow-[0_2px_4px_rgba(0,0,0,0.35)] pointer-events-none select-none"
+        className="w-[88%] h-[88%] object-contain drop-shadow-[0_2px_4px_rgba(0,0,0,0.35)] pointer-events-none"
         draggable={false}
-        onError={(e) => {
-          const img = e.currentTarget;
-          if (!img.dataset.retried) {
-            img.dataset.retried = '1';
-            img.src = '.' + src;
-          }
-        }}
       />
     </div>
   );

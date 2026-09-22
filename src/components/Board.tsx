@@ -4,7 +4,7 @@
 
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { BoardTheme, useGame } from '../store/gameStore';
-import { FILES, Move, Piece, PieceType, Square, squaresEqual } from '../engine/types';
+import { FILES, Move, Piece, Square, squaresEqual } from '../engine/types';
 import PieceIcon from './PieceIcon';
 import NurLogo from './NurLogo';
 import { useTranslation } from '../i18n/translations';
@@ -550,74 +550,22 @@ export default function Board() {
                 // 1-100 Raqamli notatsiya belgisi (A1=1, B1=2 ... H1=10, A2=11 ... H10=100)
                 const numericLabel = rankIdx * 10 + fileIdx + 1;
 
-                // 3D da har bir figuraga mos fizik balandlik va proportsiya (Screenshotdagi 1 ga 1 Staunton)
-                const get3DPieceDimensions = (type: PieceType) => {
-                  switch (type) {
-                    case 'King':
-                      return { width: '98%', height: '160%', bottom: '4%' };
-                    case 'Queen':
-                      return { width: '96%', height: '152%', bottom: '4%' };
-                    case 'Nur':
-                      return { width: '94%', height: '144%', bottom: '4%' };
-                    case 'Bishop':
-                      return { width: '94%', height: '136%', bottom: '4%' };
-                    case 'Knight':
-                      return { width: '94%', height: '130%', bottom: '4%' };
-                    case 'Rook':
-                      return { width: '94%', height: '124%', bottom: '4%' };
-                    case 'Pawn':
-                    default:
-                      return { width: '90%', height: '114%', bottom: '4%' };
-                  }
-                };
-
-                const rowIndex = displayedRanks.indexOf(rankIdx); // 0 yuqorida (uzoqda), 9 pastda (yaqinda)
-                // 3D da yaqindagi qatorlar orqadagi qatorlar ustiga tushishi uchun qat'iy z-index
-                const squareZIndex = is3D ? (rowIndex + 1) * 4 + (isSelected ? 60 : 0) : undefined;
-                const pDims = piece ? get3DPieceDimensions(piece.type) : null;
-
-                // 3D dona stilizatsiyasi: Tagligi katak zaminiga mustahkam qo'yilgan va tik turgan holatda
-                const pieceContainerStyle: React.CSSProperties = is3D && pDims
+                // 3D dona stilizatsiyasi (kitobdagidek tik turgan, asosi bilan)
+                const pieceStyle: React.CSSProperties = is3D
                   ? {
                       ...slideStyle,
-                      position: 'absolute',
-                      bottom: pDims.bottom,
-                      left: '50%',
-                      width: pDims.width,
-                      height: pDims.height,
-                      transform: isCurrentlyAnimating
-                        ? undefined
-                        : `translate3d(-50%, 0, 8px) rotateX(-22deg)${isSelected ? ' scale(1.1) translateY(-2px)' : ''}`,
-                      transformOrigin: '50% 88%',
-                      zIndex: isCurrentlyAnimating ? 70 : (isSelected ? 50 : 12),
-                      filter: isSelected
-                        ? 'drop-shadow(0 0 12px rgba(234,179,8,0.95)) drop-shadow(0 6px 12px rgba(0,0,0,0.85))'
-                        : 'drop-shadow(0 4px 6px rgba(0,0,0,0.65))',
+                      transform: 'translateZ(6px) rotateX(-22deg) translateY(0px)',
+                      transformOrigin: 'bottom center',
+                      filter: isSelected ? 'drop-shadow(0 4px 6px rgba(0,0,0,0.85))' : undefined,
                       transition: isCurrentlyAnimating ? undefined : 'transform 0.15s ease-out',
                     }
-                  : {
-                      ...slideStyle,
-                      position: 'absolute',
-                      inset: 0,
-                      width: '100%',
-                      height: '100%',
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      zIndex: isSelected ? 40 : 10,
-                      transform: isSelected ? 'scale(1.1) -translate-y-0.5' : undefined,
-                    };
+                  : slideStyle || {};
 
                 return (
                   <div
                     key={key}
-                    className={`relative w-full h-full aspect-square touch-none select-none ${squareBgClass} ${
-                      is3D ? 'overflow-visible' : 'overflow-hidden flex items-center justify-center'
-                    }`}
-                    style={{
-                      zIndex: squareZIndex,
-                      transformStyle: is3D ? 'preserve-3d' : undefined,
-                    }}
+                    className={`relative w-full h-full aspect-square flex items-center justify-center touch-none select-none ${squareBgClass}`}
+                    style={is3D && (piece || isLegalTarget) ? { transformStyle: 'preserve-3d' } : undefined}
                   >
                     {/* 100% to'liq qamrovli interaktiv tugma: Chertish va Sudrab tashlash (Drag & Drop) */}
                     <button
@@ -742,16 +690,20 @@ export default function Board() {
                     {piece && (
                       <div
                         key={piece.id}
-                        style={pieceContainerStyle}
-                        className={`select-none pointer-events-none transition-opacity duration-150 ${
+                        style={pieceStyle}
+                        className={`relative z-10 w-full h-full flex items-center justify-center select-none pointer-events-none transition-opacity duration-150 ${
                           activeDrag && squaresEqual(sq, activeDrag.from)
-                            ? 'opacity-25 scale-95'
+                            ? 'opacity-30 scale-95'
                             : ''
                         } ${
                           isCurrentlyAnimating
                             ? is3D
-                              ? 'animate-glide-3d'
-                              : 'animate-glide-2d'
+                              ? 'animate-glide-3d z-20'
+                              : 'animate-glide-2d z-20'
+                            : ''
+                        } ${
+                          !is3D && isSelected && !(activeDrag && squaresEqual(sq, activeDrag.from))
+                            ? 'scale-110 -translate-y-0.5'
                             : ''
                         }`}
                       >
@@ -760,7 +712,7 @@ export default function Board() {
                           color={piece.color}
                           is3D={is3D}
                           isSelected={isSelected}
-                          className="w-full h-full pointer-events-none select-none"
+                          className={`${is3D ? 'w-[84%] h-[84%]' : 'w-[92%] h-[92%]'} pointer-events-none select-none`}
                         />
                       </div>
                     )}
