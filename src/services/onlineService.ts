@@ -53,7 +53,7 @@ class OnlineManager {
   public opponentRating: number = 1200;
   public statusMessage: string = '';
   public isMatchmaking: boolean = false;
-  public selectedTimeSeconds: number = 600;
+  public selectedTimeSeconds: number = 300;
   public selectedIncrement: number = 5;
 
   public addMessageListener(cb: MessageCallback): () => void {
@@ -159,9 +159,9 @@ class OnlineManager {
    * Faqat haqiqiy boshqa raqiblarni hisoblash (soxta raqamlar yo'q)
    */
   public getRealPresenceCounts(): LobbyPresenceCounts {
-    let real600 = 0;
     let real300 = 0;
-    let real180 = 0;
+    let real900 = 0;
+    let real1800 = 0;
 
     if (this.lobbyChannel) {
       try {
@@ -171,20 +171,20 @@ class OnlineManager {
           if (!p) return;
           // O'zimizni raqib sifatida hisoblamaymiz
           if (p.key && p.key === this.myLobbyKey) return;
-          if (p.timeSeconds === 180) real180++;
+          if (p.timeSeconds === 1800) real1800++;
+          else if (p.timeSeconds === 900) real900++;
           else if (p.timeSeconds === 300) real300++;
-          else if (p.timeSeconds === 600) real600++;
-          else real600++;
+          else real300++;
         });
       } catch {}
     }
 
     return {
-      total: real600 + real300 + real180,
+      total: real300 + real900 + real1800,
       byTime: {
-        600: real600,
         300: real300,
-        180: real180,
+        900: real900,
+        1800: real1800,
       },
     };
   }
@@ -433,7 +433,7 @@ class OnlineManager {
   public startMatchmaking(
     playerName?: string,
     rating?: number,
-    timeSeconds: number = 600,
+    timeSeconds: number = 300,
     increment: number = 5
   ): Promise<string> {
     this.disconnect();

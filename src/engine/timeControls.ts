@@ -142,6 +142,15 @@ export const TIME_CONTROL_PRESETS: TimeControlOption[] = [
     description: 'Yarim soatlik klassik o\'yin'
   },
   {
+    id: 'c_30_10',
+    category: 'classic',
+    seconds: 1800,
+    increment: 10,
+    label: '30 daq + 10s',
+    badge: '30 | 10',
+    description: '30 daqiqa har bir yurishga +10 soniya'
+  },
+  {
     id: 'c_60_0',
     category: 'classic',
     seconds: 3600,

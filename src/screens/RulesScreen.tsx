@@ -693,9 +693,10 @@ export default function RulesScreen({ onBack }: RulesScreenProps) {
 
               <BoardDiagram
                 cols={10}
-                rows={2}
-                rankLabels={[2, 1]}
+                rows={3}
+                rankLabels={[3, 2, 1]}
                 startRowIndex={0}
+                size="lg"
                 pieces={[
                   { file: 4, rank: 0, type: 'King', color: 'white', isGhost: true }, // E1 oldingi
                   { file: 0, rank: 0, type: 'Rook', color: 'white', isGhost: true }, // A1 oldingi
@@ -708,6 +709,7 @@ export default function RulesScreen({ onBack }: RulesScreenProps) {
                     to: { file: 2, rank: 0 },
                     color: '#81b64c',
                     curve: true,
+                    curveHeight: 7,
                     label: 'Shoh C1 ga',
                   },
                   {
@@ -715,11 +717,12 @@ export default function RulesScreen({ onBack }: RulesScreenProps) {
                     to: { file: 3, rank: 0 },
                     color: '#f5b041',
                     curve: true,
+                    curveHeight: 14,
                     label: 'Rux N1 ga',
                   },
                 ]}
                 caption="10-Rasm: Qisqa Rokirovka (0-0)"
-                subCaption="Shoh E1 dan C1 ga (2 katak chapga), Rux A1 dan N1 ga oʻtadi."
+                subCaption="Shoh E1 dan C1 ga (2 katak chapga), Rux A1 dan N1 ga (3 katak oʻngga) oʻtadi."
               />
             </div>
 
@@ -736,9 +739,10 @@ export default function RulesScreen({ onBack }: RulesScreenProps) {
 
               <BoardDiagram
                 cols={10}
-                rows={2}
-                rankLabels={[2, 1]}
+                rows={3}
+                rankLabels={[3, 2, 1]}
                 startRowIndex={0}
+                size="lg"
                 pieces={[
                   { file: 4, rank: 0, type: 'King', color: 'white', isGhost: true }, // E1
                   { file: 9, rank: 0, type: 'Rook', color: 'white', isGhost: true }, // H1
@@ -751,6 +755,7 @@ export default function RulesScreen({ onBack }: RulesScreenProps) {
                     to: { file: 6, rank: 0 },
                     color: '#81b64c',
                     curve: true,
+                    curveHeight: 7,
                     label: 'Shoh M1 ga',
                   },
                   {
@@ -758,11 +763,12 @@ export default function RulesScreen({ onBack }: RulesScreenProps) {
                     to: { file: 5, rank: 0 },
                     color: '#f5b041',
                     curve: true,
+                    curveHeight: 14,
                     label: 'Rux D1 ga',
                   },
                 ]}
                 caption="11-Rasm: Oʻrta Rokirovka (-0-0-)"
-                subCaption="Shoh E1 dan M1 ga (Farzin yoniga), Rux H1 dan D1 ga oʻtadi."
+                subCaption="Shoh E1 dan M1 ga (Farzin yoniga), Rux H1 dan D1 ga (4 katak chapga) oʻtadi."
               />
             </div>
 
@@ -779,9 +785,10 @@ export default function RulesScreen({ onBack }: RulesScreenProps) {
 
               <BoardDiagram
                 cols={10}
-                rows={2}
-                rankLabels={[2, 1]}
+                rows={3}
+                rankLabels={[3, 2, 1]}
                 startRowIndex={0}
+                size="lg"
                 pieces={[
                   { file: 4, rank: 0, type: 'King', color: 'white', isGhost: true }, // E1
                   { file: 9, rank: 0, type: 'Rook', color: 'white', isGhost: true }, // H1
@@ -794,6 +801,7 @@ export default function RulesScreen({ onBack }: RulesScreenProps) {
                     to: { file: 8, rank: 0 },
                     color: '#81b64c',
                     curve: true,
+                    curveHeight: 14,
                     label: 'Shoh G1 ga',
                   },
                   {
@@ -801,11 +809,12 @@ export default function RulesScreen({ onBack }: RulesScreenProps) {
                     to: { file: 7, rank: 0 },
                     color: '#f5b041',
                     curve: true,
+                    curveHeight: 7,
                     label: 'Rux F1 ga',
                   },
                 ]}
                 caption="12-Rasm: Uzun Rokirovka (0-0-0)"
-                subCaption="Shoh E1 dan G1 ga, Rux esa H1 dan F1 ga oʻtadi."
+                subCaption="Shoh E1 dan G1 ga (4 katak oʻngga), Rux H1 dan F1 ga (2 katak chapga) oʻtadi."
               />
             </div>
 

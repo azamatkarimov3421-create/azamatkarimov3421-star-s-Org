@@ -88,10 +88,10 @@ export default function GameScreen({ onBack, onOpenSettings }: GameScreenProps) 
     ? false
     : true;
 
-  // Rasmiy Turnir Shaxmat Soati (10 daqiqa + 5s qadam qo'shish bilan)
+  // Rasmiy Turnir Shaxmat Soati (5 daqiqa + 5s qadam qo'shish bilan)
   React.useEffect(() => {
     if (gameMode === 'online' && state.timeControl === 0) {
-      dispatch({ type: 'SET_TIME_CONTROL', seconds: 600, increment: 5 });
+      dispatch({ type: 'SET_TIME_CONTROL', seconds: 300, increment: 5 });
     }
   }, [gameMode, state.timeControl, dispatch]);
 

@@ -28,6 +28,7 @@ export interface DiagramArrow {
   to: { file: number; rank: number };
   color?: string;
   curve?: boolean;
+  curveHeight?: number;
   label?: string;
 }
 
@@ -108,11 +109,11 @@ export default function BoardDiagram({
         </div>
 
         {/* Asosiy doska maydoni */}
-        <div className="flex items-center w-full">
+        <div className="flex items-stretch w-full">
           {/* Chap qator raqamlari */}
-          <div className="flex flex-col justify-around h-full w-4 shrink-0 text-center font-mono font-bold text-[9px] sm:text-[10px] text-[#9b9893]">
+          <div className="flex flex-col justify-between w-4 shrink-0 text-center font-mono font-bold text-[9px] sm:text-[10px] text-[#9b9893]">
             {effectiveRanks.map((r, idx) => (
-              <span key={idx} className="aspect-square flex items-center justify-center">
+              <span key={idx} className="flex-1 flex items-center justify-center">
                 {r}
               </span>
             ))}
@@ -120,8 +121,9 @@ export default function BoardDiagram({
 
           {/* Doska kataklari (Grid) */}
           <div
-            className="relative flex-1 aspect-square rounded-lg overflow-hidden border-2 border-[#45423c] shadow-inner bg-[#262421]"
+            className="relative flex-1 rounded-lg overflow-hidden border-2 border-[#45423c] shadow-inner bg-[#262421]"
             style={{
+              aspectRatio: `${cols} / ${rows}`,
               display: 'grid',
               gridTemplateColumns: `repeat(${cols}, minmax(0, 1fr))`,
               gridTemplateRows: `repeat(${rows}, minmax(0, 1fr))`,
@@ -216,55 +218,58 @@ export default function BoardDiagram({
 
             {/* SVG Strelkalar Qatlami (Arched va Straight Arrows) */}
             {arrows.length > 0 && (
-              <svg className="absolute inset-0 w-full h-full pointer-events-none z-25">
+              <svg
+                viewBox={`0 0 ${cols * 100} ${rows * 100}`}
+                className="absolute inset-0 w-full h-full pointer-events-none z-25 overflow-visible"
+              >
                 <defs>
                   <marker
                     id="arrowhead-green"
-                    markerWidth="6"
-                    markerHeight="6"
-                    refX="4"
-                    refY="3"
+                    markerWidth="22"
+                    markerHeight="22"
+                    refX="18"
+                    refY="11"
                     orient="auto"
                   >
-                    <polygon points="0 0, 6 3, 0 6" fill="#81b64c" />
+                    <polygon points="0 3, 20 11, 0 19" fill="#81b64c" />
                   </marker>
                   <marker
                     id="arrowhead-amber"
-                    markerWidth="6"
-                    markerHeight="6"
-                    refX="4"
-                    refY="3"
+                    markerWidth="22"
+                    markerHeight="22"
+                    refX="18"
+                    refY="11"
                     orient="auto"
                   >
-                    <polygon points="0 0, 6 3, 0 6" fill="#f5b041" />
+                    <polygon points="0 3, 20 11, 0 19" fill="#f5b041" />
                   </marker>
                   <marker
                     id="arrowhead-cyan"
-                    markerWidth="6"
-                    markerHeight="6"
-                    refX="4"
-                    refY="3"
+                    markerWidth="22"
+                    markerHeight="22"
+                    refX="18"
+                    refY="11"
                     orient="auto"
                   >
-                    <polygon points="0 0, 6 3, 0 6" fill="#06b6d4" />
+                    <polygon points="0 3, 20 11, 0 19" fill="#06b6d4" />
                   </marker>
                   <marker
                     id="arrowhead-red"
-                    markerWidth="6"
-                    markerHeight="6"
-                    refX="4"
-                    refY="3"
+                    markerWidth="22"
+                    markerHeight="22"
+                    refX="18"
+                    refY="11"
                     orient="auto"
                   >
-                    <polygon points="0 0, 6 3, 0 6" fill="#ef4444" />
+                    <polygon points="0 3, 20 11, 0 19" fill="#ef4444" />
                   </marker>
                 </defs>
 
                 {arrows.map((arr, aIdx) => {
-                  const x1 = (arr.from.file - startColIndex + 0.5) * cellSizePercent;
-                  const y1 = (rows - 1 - (arr.from.rank - startRowIndex) + 0.5) * rowHeightPercent;
-                  const x2 = (arr.to.file - startColIndex + 0.5) * cellSizePercent;
-                  const y2 = (rows - 1 - (arr.to.rank - startRowIndex) + 0.5) * rowHeightPercent;
+                  const x1 = (arr.from.file - startColIndex + 0.5) * 100;
+                  const y1 = (rows - 1 - (arr.from.rank - startRowIndex) + 0.5) * 100;
+                  const x2 = (arr.to.file - startColIndex + 0.5) * 100;
+                  const y2 = (rows - 1 - (arr.to.rank - startRowIndex) + 0.5) * 100;
 
                   const color = arr.color || '#81b64c';
                   const markerId =
@@ -279,7 +284,10 @@ export default function BoardDiagram({
                   if (arr.curve) {
                     // Egri sakrash chizig'i (Jump arc)
                     const midX = (x1 + x2) / 2;
-                    const midY = Math.min(y1, y2) - 14;
+                    const dist = Math.abs(x2 - x1);
+                    const defaultHeight = Math.min(rows * 60, Math.max(50, dist * 0.38));
+                    const arcH = arr.curveHeight ? arr.curveHeight * 10 : defaultHeight;
+                    const midY = Math.min(y1, y2) - arcH;
                     const pathData = `M ${x1} ${y1} Q ${midX} ${midY} ${x2} ${y2}`;
 
                     return (
@@ -288,20 +296,26 @@ export default function BoardDiagram({
                           d={pathData}
                           fill="none"
                           stroke={color}
-                          strokeWidth="3.5"
-                          strokeDasharray="4,2"
+                          strokeWidth="14"
+                          strokeDasharray="18,10"
                           markerEnd={markerId}
                           strokeLinecap="round"
                         />
                         {arr.label && (
                           <text
                             x={midX}
-                            y={midY - 2}
+                            y={midY - 14}
                             textAnchor="middle"
                             fill={color}
-                            fontSize="8"
+                            fontSize="26"
                             fontWeight="bold"
-                            className="drop-shadow-[0_1px_2px_rgba(0,0,0,0.8)]"
+                            style={{
+                              paintOrder: 'stroke fill',
+                              stroke: '#0f172a',
+                              strokeWidth: 6,
+                              strokeLinecap: 'round',
+                              strokeLinejoin: 'round',
+                            }}
                           >
                             {arr.label}
                           </text>
@@ -313,24 +327,30 @@ export default function BoardDiagram({
                   return (
                     <g key={aIdx}>
                       <line
-                        x1={`${x1}%`}
-                        y1={`${y1}%`}
-                        x2={`${x2}%`}
-                        y2={`${y2}%`}
+                        x1={x1}
+                        y1={y1}
+                        x2={x2}
+                        y2={y2}
                         stroke={color}
-                        strokeWidth="3.5"
+                        strokeWidth="14"
                         markerEnd={markerId}
                         strokeLinecap="round"
                       />
                       {arr.label && (
                         <text
-                          x={`${(x1 + x2) / 2}%`}
-                          y={`${(y1 + y2) / 2 - 3}%`}
+                          x={(x1 + x2) / 2}
+                          y={(y1 + y2) / 2 - 16}
                           textAnchor="middle"
                           fill={color}
-                          fontSize="8"
+                          fontSize="26"
                           fontWeight="bold"
-                          className="drop-shadow-[0_1px_2px_rgba(0,0,0,0.8)]"
+                          style={{
+                            paintOrder: 'stroke fill',
+                            stroke: '#0f172a',
+                            strokeWidth: 6,
+                            strokeLinecap: 'round',
+                            strokeLinejoin: 'round',
+                          }}
                         >
                           {arr.label}
                         </text>

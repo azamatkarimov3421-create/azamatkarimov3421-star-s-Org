@@ -36,14 +36,14 @@ export default function OnlineRoomModal({
   const [searchDuration, setSearchDuration] = useState<number>(0);
 
   const [presenceCounts, setPresenceCounts] = useState<LobbyPresenceCounts>({
-    total: 49,
-    byTime: { 600: 24, 300: 16, 180: 9 },
+    total: 0,
+    byTime: { 300: 0, 900: 0, 1800: 0 },
   });
 
   const TIME_OPTIONS = [
-    { label: '10 daq + 5s', sub: '★ Turnir Rapid', seconds: 600, increment: 5 },
-    { label: '5 daq + 3s', sub: 'Turnir Blits', seconds: 300, increment: 3 },
-    { label: '3 daq + 2s', sub: 'Tezkor Oʻyin', seconds: 180, increment: 2 },
+    { label: '5 daq + 5s', sub: 'Blits', seconds: 300, increment: 5 },
+    { label: '15 daq + 10s', sub: '★ Rapid', seconds: 900, increment: 10 },
+    { label: '30 daq + 10s', sub: 'Klassik', seconds: 1800, increment: 10 },
   ];
   const [selectedTimeIdx, setSelectedTimeIdx] = useState<number>(0);
 
