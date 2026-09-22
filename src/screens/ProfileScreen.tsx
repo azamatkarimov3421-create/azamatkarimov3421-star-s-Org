@@ -24,7 +24,7 @@ import {
   LogOutIcon,
 } from '../components/Icons';
 import GoogleAuthModal from '../components/GoogleAuthModal';
-import { signOutGoogle } from '../services/authService';
+import { signOutGoogle, triggerAutoGooglePick } from '../services/authService';
 import { useTranslation } from '../i18n/translations';
 
 interface ProfileScreenProps {
@@ -150,13 +150,32 @@ export default function ProfileScreen({
               </div>
             </div>
 
-            <button
-              onClick={() => setShowAuthModal(true)}
-              className="w-full max-w-xs py-3.5 px-5 rounded-2xl bg-[#81b64c] hover:bg-[#92c35a] active:scale-95 text-white font-black text-sm flex items-center justify-center gap-2.5 shadow-[0_4px_0_#537a2e] active:translate-y-1 active:shadow-none transition-all cursor-pointer"
-            >
-              <GoogleIcon size={18} />
-              <span>Google Hisobini Ulash</span>
-            </button>
+            <div className="w-full max-w-xs space-y-2.5">
+              {/* Tezkor avtomatik Google hisob tanlash */}
+              <button
+                onClick={() => {
+                  const ok = triggerAutoGooglePick((updated) => {
+                    setProfile(updated);
+                    setNameInput(updated.name);
+                  });
+                  if (!ok) {
+                    setShowAuthModal(true);
+                  }
+                }}
+                className="w-full py-3.5 px-4 rounded-2xl bg-white hover:bg-zinc-100 active:scale-95 text-slate-900 font-black text-sm flex items-center justify-center gap-2.5 shadow-xl transition-all cursor-pointer border border-zinc-200"
+              >
+                <GoogleIcon size={20} />
+                <span>Google (Gmail) Bilan Kirish</span>
+              </button>
+
+              {/* Qo'lda profil ochish */}
+              <button
+                onClick={() => setShowAuthModal(true)}
+                className="w-full py-2.5 px-4 rounded-xl bg-[#2c2a26] hover:bg-[#383531] border border-[#44413c] active:scale-95 text-[#c3c2be] hover:text-white font-bold text-xs flex items-center justify-center gap-2 transition-all cursor-pointer"
+              >
+                <span>✎ Ism va pochtani kiritish</span>
+              </button>
+            </div>
           </div>
         ) : (
           /* PROFIL ASOSIY KARTOCHKASI (GOOGLE BILAN ULANGAN HOLDA) */

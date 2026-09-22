@@ -3,11 +3,13 @@
 // 100% Ilova ichida tezkor va xavfsiz hisob boshqaruvi
 // =====================================================
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { GoogleIcon, LogOutIcon } from './Icons';
 import {
   signInWithGoogleDirect,
   signOutGoogle,
+  triggerAutoGooglePick,
+  renderGoogleSignInButton,
 } from '../services/authService';
 import { getUserProfile, UserProfile } from '../store/userProfileStore';
 
@@ -22,6 +24,7 @@ export default function GoogleAuthModal({ isOpen, onClose, onSuccess }: GoogleAu
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
+  const googleBtnRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     if (isOpen) {
@@ -30,12 +33,41 @@ export default function GoogleAuthModal({ isOpen, onClose, onSuccess }: GoogleAu
       setName(p.name && p.name !== 'Mehmon Oʻyinchi' ? p.name : '');
       setEmail(p.email || '');
       setErrorMsg(null);
+
+      // Avtomatik Google hisob tanlashni ishga tushirish (Gmail avtomatik chiqadi)
+      const timer = setTimeout(() => {
+        triggerAutoGooglePick((updatedProfile) => {
+          onSuccess(updatedProfile);
+          onClose();
+        });
+      }, 100);
+
+      // Web GIS tugmasini render qilish (mavjud bo'lsa)
+      if (googleBtnRef.current) {
+        renderGoogleSignInButton(googleBtnRef.current, (updatedProfile) => {
+          onSuccess(updatedProfile);
+          onClose();
+        });
+      }
+
+      return () => clearTimeout(timer);
     }
   }, [isOpen]);
 
   if (!isOpen) return null;
 
   const isCurrentlyLinked = Boolean(profile.isGoogleLinked && profile.email);
+
+  const handleAutoPickClick = () => {
+    setErrorMsg(null);
+    const triggered = triggerAutoGooglePick((updatedProfile) => {
+      onSuccess(updatedProfile);
+      onClose();
+    });
+    if (!triggered) {
+      setErrorMsg('Google hisoblar roʻyxati ochilmadi. Quyidagi maydonga pochtangizni yozib saqlang.');
+    }
+  };
 
   const handleQuickSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -82,25 +114,47 @@ export default function GoogleAuthModal({ isOpen, onClose, onSuccess }: GoogleAu
             {firstLetter}
           </div>
           <h3 className="text-xl font-black text-white tracking-tight">
-            {isCurrentlyLinked ? 'Google Hisobini Almashtirish' : 'Profilni Faollashtirish'}
+            {isCurrentlyLinked ? 'Google Hisobini Almashtirish' : 'Google Bilan Kirish'}
           </h3>
           <p className="text-xs text-[#9b9893] mt-1 max-w-xs leading-relaxed">
             {isCurrentlyLinked
-              ? 'Boshqa Google pochta manzilingiz yoki yangi ismingizni kiriting.'
-              : 'Ilova ichida 1 soniyada profilingizni yarating — reyting va gʻalabalar xavfsiz saqlanadi.'}
+              ? 'Boshqa Google hisobingizni tanlang yoki yangi maʼlumotlarni kiriting.'
+              : 'Qurilmangizdagi Gmail hisobingiz orqali 1 soniyada xavfsiz va xatosiz ulaning.'}
           </p>
         </div>
 
         {/* Xatolik xabari */}
         {errorMsg && (
-          <div className="p-3 rounded-xl bg-red-500/15 border border-red-500/40 text-red-300 text-xs font-semibold flex items-center gap-2 animate-fadeIn">
-            <span>⚠️</span>
+          <div className="p-3 rounded-xl bg-amber-500/15 border border-amber-500/40 text-amber-300 text-xs font-semibold flex items-center gap-2 animate-fadeIn">
+            <span>ℹ️</span>
             <span>{errorMsg}</span>
           </div>
         )}
 
-        {/* Asosiy Tezkor Ro'yxatdan O'tish / Almashtirish Formasi */}
-        <form onSubmit={handleQuickSubmit} className="space-y-3.5 pt-1">
+        {/* ASOSIY AVTOMATIK GOOGLE / GMAIL TANLASH TUGMASI */}
+        <div className="space-y-2 pt-1">
+          <button
+            type="button"
+            onClick={handleAutoPickClick}
+            className="w-full py-3.5 px-4 rounded-2xl bg-white hover:bg-zinc-100 active:scale-[0.98] text-slate-900 font-black text-sm flex items-center justify-center gap-3 shadow-xl transition-all cursor-pointer border border-zinc-200"
+          >
+            <GoogleIcon size={22} />
+            <span>Google (Gmail) Hisobini Tanlash</span>
+          </button>
+
+          {/* Rasmiy GIS konteyneri (agar mavjud bo'lsa) */}
+          <div ref={googleBtnRef} className="flex justify-center min-h-[0px] overflow-hidden empty:hidden" />
+        </div>
+
+        {/* Ajratuvchi chiziq */}
+        <div className="flex items-center gap-2 text-[10px] text-[#716e68] font-bold uppercase tracking-wider my-0.5">
+          <div className="flex-1 h-px bg-[#312e2b]" />
+          <span>yoki ism va pochtani kiritish</span>
+          <div className="flex-1 h-px bg-[#312e2b]" />
+        </div>
+
+        {/* Tezkor Ro'yxatdan O'tish / Almashtirish Formasi */}
+        <form onSubmit={handleQuickSubmit} className="space-y-3 pt-0">
           <div>
             <label className="block text-[11px] text-[#9b9893] mb-1 font-semibold uppercase tracking-wider">
               Ismingiz yoki Taxallusingiz:
@@ -135,13 +189,13 @@ export default function GoogleAuthModal({ isOpen, onClose, onSuccess }: GoogleAu
             />
           </div>
 
-          {/* Asosiy Saqlash / Almashtirish Tugmasi */}
+          {/* Saqlash Tugmasi */}
           <button
             type="submit"
-            className="w-full py-3.5 px-4 rounded-2xl bg-[#81b64c] hover:bg-[#92c35a] active:scale-[0.98] text-white font-black text-sm flex items-center justify-center gap-2.5 shadow-[0_4px_0_#537a2e] active:translate-y-1 active:shadow-none transition-all cursor-pointer"
+            className="w-full py-3 px-4 rounded-2xl bg-[#81b64c] hover:bg-[#92c35a] active:scale-[0.98] text-white font-black text-sm flex items-center justify-center gap-2 shadow-[0_4px_0_#537a2e] active:translate-y-1 active:shadow-none transition-all cursor-pointer"
           >
             <span>{isCurrentlyLinked ? '🔄' : '✓'}</span>
-            <span>{isCurrentlyLinked ? 'Hisobni Almashtirish va Saqlash' : 'Profilni Saqlash va Faollashtirish'}</span>
+            <span>{isCurrentlyLinked ? 'Hisobni Saqlash' : 'Profilni Saqlash'}</span>
           </button>
         </form>
 
@@ -151,7 +205,7 @@ export default function GoogleAuthModal({ isOpen, onClose, onSuccess }: GoogleAu
             <button
               type="button"
               onClick={handleSignOutModal}
-              className="text-xs text-red-400 hover:text-red-300 flex items-center justify-center gap-1.5 font-medium transition-colors cursor-pointer py-1.5 px-3 rounded-xl hover:bg-red-500/10"
+              className="text-xs text-red-400 hover:text-red-300 flex items-center justify-center gap-1.5 font-medium transition-colors cursor-pointer py-1 px-3 rounded-xl hover:bg-red-500/10"
             >
               <LogOutIcon size={14} />
               <span>Hisobdan chiqish (Mehmon rejimiga oʻtish)</span>
@@ -160,7 +214,7 @@ export default function GoogleAuthModal({ isOpen, onClose, onSuccess }: GoogleAu
         )}
 
         {/* Afzalliklar */}
-        <div className="p-3 bg-[#181715] rounded-xl border border-[#2c2a26] space-y-1.5 text-xs text-[#c3c2be]">
+        <div className="p-3 bg-[#181715] rounded-xl border border-[#2c2a26] space-y-1 text-xs text-[#c3c2be]">
           <div className="flex items-center gap-2">
             <span className="text-[#81b64c] font-bold">✓</span>
             <span>100% ilova ichida ishlaydi, tashqi brauzer ochilmaydi</span>

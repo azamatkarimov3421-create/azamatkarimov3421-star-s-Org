@@ -81,6 +81,20 @@ export function initAuth(onProfileChange?: (profile: UserProfile) => void): () =
         logger.logError('NETWORK', 'Deep link auth xatosi', e);
       }
     };
+
+    (window as any).__onNativeGoogleAccountPicked = (email: string) => {
+      try {
+        if (!email) return;
+        const cleanEmail = email.trim();
+        const raw = cleanEmail.split('@')[0].replace(/[._0-9]/g, ' ').trim();
+        const name = raw ? (raw.charAt(0).toUpperCase() + raw.slice(1)) : 'Google Foydalanuvchisi';
+        const updated = signInWithGoogleDirect(name, cleanEmail);
+        logger.logInfo('UI', `Nativ Android Google hisobi tanlandi: ${name} (${cleanEmail})`);
+        if (onProfileChange) onProfileChange(updated);
+      } catch (e) {
+        logger.logError('UI', 'Native Google account handling error', e);
+      }
+    };
   }
 
   return () => {
@@ -263,12 +277,21 @@ export function initGoogleIdentityServices(onSuccess: (profile: UserProfile) => 
   const setupGIS = () => {
     const google = (window as any).google;
     if (google?.accounts?.id) {
-      google.accounts.id.initialize({
-        client_id: GOOGLE_CLIENT_ID,
-        callback: handleCredentialResponse,
-        auto_select: false,
-        cancel_on_tap_outside: true,
-      });
+      try {
+        google.accounts.id.initialize({
+          client_id: GOOGLE_CLIENT_ID,
+          callback: handleCredentialResponse,
+          auto_select: true,
+          cancel_on_tap_outside: true,
+        });
+        google.accounts.id.prompt((notification: any) => {
+          if (notification.isNotDisplayed()) {
+            logger.logWarn('NETWORK', `GIS One-Tap sababi: ${notification.getNotDisplayedReason()}`);
+          }
+        });
+      } catch (e) {
+        logger.logWarn('NETWORK', 'GIS initsializatsiya ogohlantirish', e);
+      }
     }
   };
 
@@ -285,6 +308,50 @@ export function initGoogleIdentityServices(onSuccess: (profile: UserProfile) => 
     }, 250);
     setTimeout(() => clearInterval(interval), 6000);
   }
+}
+
+/**
+ * Qurilmadagi Google hisoblarini avtomatik chiqarish (Android Nativ yoki Web One-Tap)
+ */
+export function triggerAutoGooglePick(onSuccess: (profile: UserProfile) => void): boolean {
+  if (typeof window === 'undefined') return false;
+
+  // 1. Android Nativ APK ilova muhitida (AndroidBridge)
+  if ((window as any).AndroidBridge?.pickGoogleAccount) {
+    (window as any).__onNativeGoogleAccountPicked = (email: string) => {
+      if (!email) return;
+      const cleanEmail = email.trim();
+      const raw = cleanEmail.split('@')[0].replace(/[._0-9]/g, ' ').trim();
+      const name = raw ? (raw.charAt(0).toUpperCase() + raw.slice(1)) : 'Google Foydalanuvchisi';
+      const profile = signInWithGoogleDirect(name, cleanEmail);
+      logger.logInfo('UI', `Nativ Android Google hisobi tanlandi: ${name} (${cleanEmail})`);
+      onSuccess(profile);
+    };
+    try {
+      (window as any).AndroidBridge.pickGoogleAccount();
+      return true;
+    } catch (e) {
+      logger.logWarn('UI', 'AndroidBridge.pickGoogleAccount chaqiruvida xatolik', e);
+    }
+  }
+
+  // 2. Google Identity Services One-Tap (Brauzer / Web)
+  const google = (window as any).google;
+  if (google?.accounts?.id) {
+    try {
+      initGoogleIdentityServices(onSuccess);
+      google.accounts.id.prompt((notification: any) => {
+        if (notification.isNotDisplayed()) {
+          logger.logWarn('NETWORK', `GIS One-Tap sababi: ${notification.getNotDisplayedReason()}`);
+        }
+      });
+      return true;
+    } catch (err) {
+      logger.logWarn('NETWORK', 'GIS prompt xatosi', err);
+    }
+  }
+
+  return false;
 }
 
 /**

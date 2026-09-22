@@ -183,6 +183,26 @@ public class MainActivity extends AppCompatActivity {
         }
 
         @JavascriptInterface
+        public void pickGoogleAccount() {
+            runOnUiThread(() -> {
+                try {
+                    Intent intent = android.accounts.AccountManager.newChooseAccountIntent(
+                        null,
+                        null,
+                        new String[]{"com.google"},
+                        null,
+                        null,
+                        null,
+                        null
+                    );
+                    startActivityForResult(intent, 1001);
+                } catch (Exception e) {
+                    Log.e("NurChess", "Failed to launch account picker", e);
+                }
+            });
+        }
+
+        @JavascriptInterface
         public void downloadAndInstallApk(String url) {
             try {
                 android.app.DownloadManager.Request request = new android.app.DownloadManager.Request(Uri.parse(url));
@@ -369,8 +389,8 @@ public class MainActivity extends AppCompatActivity {
                         Log.e("NurChess", "Override url error", e);
                     }
                 }
-                // App ichki resurslari va Supabase kanallari uchun
-                if (url.startsWith("https://appassets.androidplatform.net") || url.contains("supabase.co")) {
+                // App ichki resurslari, Supabase va Google GIS kanallari uchun
+                if (url.startsWith("https://appassets.androidplatform.net") || url.contains("supabase.co") || url.contains("accounts.google.com") || url.contains("apis.google.com")) {
                     return false;
                 }
                 // Boshqa HECH QANDAY holatda tashqi brauzerga chiqmaslik (100% app ichida qolish)
@@ -448,6 +468,25 @@ public class MainActivity extends AppCompatActivity {
 
         if (getIntent() != null && getIntent().getData() != null) {
             handleDeepLinkUrl(getIntent().getData().toString());
+        }
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        if (requestCode == 1001 && resultCode == RESULT_OK && data != null) {
+            String accountName = data.getStringExtra(android.accounts.AccountManager.KEY_ACCOUNT_NAME);
+            if (accountName != null && !accountName.isEmpty()) {
+                final String safeEmail = accountName.trim().replace("'", "\\'");
+                if (webView != null) {
+                    webView.post(() -> {
+                        webView.evaluateJavascript(
+                                "(function() { if (window.__onNativeGoogleAccountPicked) { window.__onNativeGoogleAccountPicked('" + safeEmail + "'); } })()",
+                                null
+                        );
+                    });
+                }
+            }
         }
     }
 
