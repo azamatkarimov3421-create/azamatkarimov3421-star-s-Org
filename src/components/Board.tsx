@@ -597,9 +597,14 @@ export default function Board() {
                     }
                   : {
                       ...slideStyle,
-                      position: 'relative',
-                      width: '92%',
-                      height: '92%',
+                      position: 'absolute',
+                      inset: 0,
+                      width: '100%',
+                      height: '100%',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      zIndex: isSelected ? 40 : 10,
                       transform: isSelected ? 'scale(1.1) -translate-y-0.5' : undefined,
                     };
 
@@ -607,7 +612,7 @@ export default function Board() {
                   <div
                     key={key}
                     className={`relative w-full h-full aspect-square touch-none select-none ${squareBgClass} ${
-                      is3D ? 'overflow-visible' : 'flex items-center justify-center overflow-hidden'
+                      is3D ? 'overflow-visible' : 'overflow-hidden flex items-center justify-center'
                     }`}
                     style={{
                       zIndex: squareZIndex,
