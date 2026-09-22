@@ -33,24 +33,6 @@ export default function GoogleAuthModal({ isOpen, onClose, onSuccess }: GoogleAu
       setName(p.name && p.name !== 'Mehmon Oʻyinchi' ? p.name : '');
       setEmail(p.email || '');
       setErrorMsg(null);
-
-      // Avtomatik Google hisob tanlashni ishga tushirish (Gmail avtomatik chiqadi)
-      const timer = setTimeout(() => {
-        triggerAutoGooglePick((updatedProfile) => {
-          onSuccess(updatedProfile);
-          onClose();
-        });
-      }, 100);
-
-      // Web GIS tugmasini render qilish (mavjud bo'lsa)
-      if (googleBtnRef.current) {
-        renderGoogleSignInButton(googleBtnRef.current, (updatedProfile) => {
-          onSuccess(updatedProfile);
-          onClose();
-        });
-      }
-
-      return () => clearTimeout(timer);
     }
   }, [isOpen]);
 

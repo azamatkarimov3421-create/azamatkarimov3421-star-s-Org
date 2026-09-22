@@ -389,8 +389,12 @@ public class MainActivity extends AppCompatActivity {
                         Log.e("NurChess", "Override url error", e);
                     }
                 }
-                // App ichki resurslari, Supabase va Google GIS kanallari uchun
-                if (url.startsWith("https://appassets.androidplatform.net") || url.contains("supabase.co") || url.contains("accounts.google.com") || url.contains("apis.google.com")) {
+                // accounts.google.com ochilishini to'xtatish (401 invalid_client xatolik chiqmasligi uchun)
+                if (url.contains("accounts.google.com")) {
+                    return true;
+                }
+                // App ichki resurslari va Supabase kanallari uchun
+                if (url.startsWith("https://appassets.androidplatform.net") || url.contains("supabase.co")) {
                     return false;
                 }
                 // Boshqa HECH QANDAY holatda tashqi brauzerga chiqmaslik (100% app ichida qolish)

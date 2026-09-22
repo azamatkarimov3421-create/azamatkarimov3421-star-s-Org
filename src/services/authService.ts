@@ -236,10 +236,16 @@ export function parseJwt(token: string): any {
 }
 
 /**
- * Google Identity Services (GIS) mijoz tizimini initsializatsiya qilish
+/**
+ * Google Identity Services (GIS) mijoz tizimi (faqat mos keladigan veb muhitlarida)
  */
 export function initGoogleIdentityServices(onSuccess: (profile: UserProfile) => void) {
   if (typeof window === 'undefined') return;
+
+  // Android WebView ichida GIS chaqirilmaydi (Google 401 invalid_client xatolik bermasligi uchun)
+  if ((window as any).AndroidBridge || window.location.origin.includes('androidplatform.net')) {
+    return;
+  }
 
   const handleCredentialResponse = async (response: any) => {
     if (!response?.credential) return;
@@ -274,49 +280,28 @@ export function initGoogleIdentityServices(onSuccess: (profile: UserProfile) => 
     onSuccess(profile);
   };
 
-  const setupGIS = () => {
-    const google = (window as any).google;
-    if (google?.accounts?.id) {
-      try {
-        google.accounts.id.initialize({
-          client_id: GOOGLE_CLIENT_ID,
-          callback: handleCredentialResponse,
-          auto_select: true,
-          cancel_on_tap_outside: true,
-        });
-        google.accounts.id.prompt((notification: any) => {
-          if (notification.isNotDisplayed()) {
-            logger.logWarn('NETWORK', `GIS One-Tap sababi: ${notification.getNotDisplayedReason()}`);
-          }
-        });
-      } catch (e) {
-        logger.logWarn('NETWORK', 'GIS initsializatsiya ogohlantirish', e);
-      }
-    }
-  };
-
   const google = (window as any).google;
   if (google?.accounts?.id) {
-    setupGIS();
-  } else {
-    const interval = setInterval(() => {
-      const g = (window as any).google;
-      if (g?.accounts?.id) {
-        clearInterval(interval);
-        setupGIS();
-      }
-    }, 250);
-    setTimeout(() => clearInterval(interval), 6000);
+    try {
+      google.accounts.id.initialize({
+        client_id: GOOGLE_CLIENT_ID,
+        callback: handleCredentialResponse,
+        auto_select: false,
+        cancel_on_tap_outside: true,
+      });
+    } catch (e) {
+      logger.logWarn('NETWORK', 'GIS initsializatsiya ogohlantirish', e);
+    }
   }
 }
 
 /**
- * Qurilmadagi Google hisoblarini avtomatik chiqarish (Android Nativ yoki Web One-Tap)
+ * Qurilmadagi Google hisoblarini xavfsiz va xatosiz chiqarish (Android Nativ)
  */
 export function triggerAutoGooglePick(onSuccess: (profile: UserProfile) => void): boolean {
   if (typeof window === 'undefined') return false;
 
-  // 1. Android Nativ APK ilova muhitida (AndroidBridge)
+  // 1. Android Nativ APK ilova muhitida (AndroidBridge orqali 100% xatosiz va tezkor)
   if ((window as any).AndroidBridge?.pickGoogleAccount) {
     (window as any).__onNativeGoogleAccountPicked = (email: string) => {
       if (!email) return;
@@ -335,32 +320,20 @@ export function triggerAutoGooglePick(onSuccess: (profile: UserProfile) => void)
     }
   }
 
-  // 2. Google Identity Services One-Tap (Brauzer / Web)
-  const google = (window as any).google;
-  if (google?.accounts?.id) {
-    try {
-      initGoogleIdentityServices(onSuccess);
-      google.accounts.id.prompt((notification: any) => {
-        if (notification.isNotDisplayed()) {
-          logger.logWarn('NETWORK', `GIS One-Tap sababi: ${notification.getNotDisplayedReason()}`);
-        }
-      });
-      return true;
-    } catch (err) {
-      logger.logWarn('NETWORK', 'GIS prompt xatosi', err);
-    }
-  }
-
   return false;
 }
 
 /**
- * Google rasmiy tugmasini HTML element ichiga joylash
+ * Google rasmiy tugmasini HTML element ichiga joylash (xavfsiz rejim)
  */
 export function renderGoogleSignInButton(container: HTMLElement, onSuccess: (profile: UserProfile) => void) {
-  const tryRender = () => {
-    const google = (window as any).google;
-    if (google?.accounts?.id && container) {
+  // Android WebView yoki ro'yxatdan o'tmagan domenlarda GIS tugmasi 401 bermasligi uchun bekor qilinadi
+  if (typeof window === 'undefined') return;
+  if ((window as any).AndroidBridge || window.location.origin.includes('androidplatform.net')) return;
+
+  const google = (window as any).google;
+  if (google?.accounts?.id && container) {
+    try {
       initGoogleIdentityServices(onSuccess);
       container.innerHTML = '';
       google.accounts.id.renderButton(container, {
@@ -372,18 +345,9 @@ export function renderGoogleSignInButton(container: HTMLElement, onSuccess: (pro
         logo_alignment: 'left',
         width: 280,
       });
-      return true;
+    } catch (e) {
+      logger.logWarn('NETWORK', 'GIS renderButton error', e);
     }
-    return false;
-  };
-
-  if (!tryRender()) {
-    const interval = setInterval(() => {
-      if (tryRender()) {
-        clearInterval(interval);
-      }
-    }, 250);
-    setTimeout(() => clearInterval(interval), 5000);
   }
 }
 

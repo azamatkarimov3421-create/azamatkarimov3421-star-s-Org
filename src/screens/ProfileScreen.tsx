@@ -24,7 +24,7 @@ import {
   LogOutIcon,
 } from '../components/Icons';
 import GoogleAuthModal from '../components/GoogleAuthModal';
-import { signOutGoogle, triggerAutoGooglePick } from '../services/authService';
+import { signOutGoogle, triggerAutoGooglePick, signInWithGoogleDirect } from '../services/authService';
 import { useTranslation } from '../i18n/translations';
 
 interface ProfileScreenProps {
@@ -67,8 +67,18 @@ export default function ProfileScreen({
   const [showAuthModal, setShowAuthModal] = useState(false);
   const [recentGames, setRecentGames] = useState<RecentGame[]>([]);
 
+  // Qo'lda kiritish maydonlari
+  const [manualName, setManualName] = useState('');
+  const [manualEmail, setManualEmail] = useState('');
+  const [manualError, setManualError] = useState<string | null>(null);
+  const [saveSuccessMsg, setSaveSuccessMsg] = useState<string | null>(null);
+
   useEffect(() => {
-    setProfile(getUserProfile());
+    const p = getUserProfile();
+    setProfile(p);
+    setNameInput(p.name);
+    setManualName(p.name && p.name !== 'Mehmon Oʻyinchi' ? p.name : '');
+    setManualEmail(p.email || '');
     setRecentGames(getRecentGames());
   }, []);
 
@@ -90,11 +100,58 @@ export default function ProfileScreen({
       const updated = getUserProfile();
       setProfile(updated);
       setNameInput(updated.name);
+      setManualName('');
+      setManualEmail('');
     }
+  };
+
+  const handleGoogleAutoPick = () => {
+    setManualError(null);
+    const ok = triggerAutoGooglePick((updated) => {
+      setProfile(updated);
+      setNameInput(updated.name);
+      setManualName(updated.name);
+      setManualEmail(updated.email || '');
+      setSaveSuccessMsg("Google hisobingiz muvaffaqiyatli ulandi!");
+      setTimeout(() => setSaveSuccessMsg(null), 3500);
+    });
+    if (!ok) {
+      setManualError('Quyidagi maydonlarga ism va Gmail pochtangizni yozib saqlang.');
+    }
+  };
+
+  const handleManualSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    const cleanName = manualName.trim();
+    const cleanEmail = manualEmail.trim();
+
+    if (!cleanName) {
+      setManualError('Iltimos, ismingiz yoki taxallusingizni kiriting.');
+      return;
+    }
+    if (!cleanEmail || !cleanEmail.includes('@')) {
+      setManualError('Iltimos, toʻgʻri Google Gmail pochtangizni kiriting (masalan: nom@gmail.com)');
+      return;
+    }
+
+    setManualError(null);
+    const updated = signInWithGoogleDirect(cleanName, cleanEmail);
+    setProfile(updated);
+    setNameInput(updated.name);
+    setSaveSuccessMsg("Google profilingiz muvaffaqiyatli saqlandi va faollashtirildi!");
+    setTimeout(() => setSaveSuccessMsg(null), 3500);
   };
 
   return (
     <div className="min-h-screen w-full bg-[#262421] text-[#f1f1f1] flex flex-col font-sans select-none pb-24 max-w-md mx-auto sm:max-w-2xl lg:max-w-4xl">
+      {/* Muvaffaqiyat xabari (Toast) */}
+      {saveSuccessMsg && (
+        <div className="fixed top-4 left-1/2 -translate-x-1/2 z-50 px-4 py-2.5 rounded-2xl bg-emerald-600 text-white font-bold text-xs shadow-2xl flex items-center gap-2 animate-fadeIn border border-emerald-400">
+          <span>✓</span>
+          <span>{saveSuccessMsg}</span>
+        </div>
+      )}
+
       {/* Header */}
       <header className="sticky top-0 z-30 bg-[#21201d]/95 backdrop-blur-md border-b border-[#383531] px-4 py-3 flex items-center justify-between pt-[max(0.7rem,env(safe-area-inset-top))]">
         <button
@@ -119,62 +176,89 @@ export default function ProfileScreen({
       </header>
 
       <main className="flex-1 px-4 py-4 space-y-4">
-        {/* AGAR GOOGLE ULANGAN BO'LMASA — PROFIL OCHISH BANNERI */}
+        {/* AGAR GOOGLE ULANGAN BO'LMASA — PROFIL OCHISH VA QO'LDA KIRITISH BANNERI */}
         {!profile.isGoogleLinked ? (
-          <div className="p-6 rounded-3xl bg-gradient-to-b from-[#2a2723] to-[#21201d] border border-[#81b64c]/40 shadow-2xl flex flex-col items-center text-center gap-4">
-            <div className="w-16 h-16 rounded-2xl bg-[#233027] border-2 border-[#81b64c] flex items-center justify-center text-white font-black text-2xl shadow-inner">
-              <GoogleIcon size={32} />
+          <div className="p-5 sm:p-6 rounded-3xl bg-gradient-to-b from-[#2a2723] to-[#21201d] border border-[#81b64c]/40 shadow-2xl flex flex-col items-center text-center gap-3.5">
+            <div className="w-14 h-14 rounded-2xl bg-[#233027] border-2 border-[#81b64c] flex items-center justify-center text-white font-black text-2xl shadow-inner">
+              <GoogleIcon size={30} />
             </div>
 
             <div>
-              <h3 className="text-xl font-black text-white">
+              <h3 className="text-lg sm:text-xl font-black text-white">
                 Google Hisobini Ulash
               </h3>
-              <p className="text-xs text-[#c3c2be] mt-1.5 max-w-sm leading-relaxed">
+              <p className="text-xs text-[#c3c2be] mt-1 max-w-sm leading-relaxed">
                 Reyting, yutuqlar va onlayn gʻalabalaringizni oʻz nomingiz bilan saqlash uchun profilingizni faollashtiring.
               </p>
             </div>
 
-            <div className="w-full max-w-xs space-y-2 text-left bg-[#181715] p-3.5 rounded-2xl border border-[#33302b] text-xs text-[#9b9893]">
-              <div className="flex items-center gap-2">
-                <span className="text-emerald-400 font-bold">✓</span>
-                <span>Reyting va oʻyinlar tarixi saqlanadi</span>
-              </div>
-              <div className="flex items-center gap-2">
-                <span className="text-emerald-400 font-bold">✓</span>
-                <span>Onlayn oʻyinda ismingiz va profilingiz koʻrinadi</span>
-              </div>
-              <div className="flex items-center gap-2">
-                <span className="text-emerald-400 font-bold">✓</span>
-                <span>Ilova ichida 1 soniyada xavfsiz ulanadi</span>
-              </div>
-            </div>
-
-            <div className="w-full max-w-xs space-y-2.5">
-              {/* Tezkor avtomatik Google hisob tanlash */}
+            {/* Tezkor avtomatik Google hisob tanlash */}
+            <div className="w-full max-w-sm space-y-3 pt-1">
               <button
-                onClick={() => {
-                  const ok = triggerAutoGooglePick((updated) => {
-                    setProfile(updated);
-                    setNameInput(updated.name);
-                  });
-                  if (!ok) {
-                    setShowAuthModal(true);
-                  }
-                }}
-                className="w-full py-3.5 px-4 rounded-2xl bg-white hover:bg-zinc-100 active:scale-95 text-slate-900 font-black text-sm flex items-center justify-center gap-2.5 shadow-xl transition-all cursor-pointer border border-zinc-200"
+                type="button"
+                onClick={handleGoogleAutoPick}
+                className="w-full py-3.5 px-4 rounded-2xl bg-white hover:bg-zinc-100 active:scale-95 text-slate-900 font-black text-sm flex items-center justify-center gap-3 shadow-xl transition-all cursor-pointer border border-zinc-200"
               >
-                <GoogleIcon size={20} />
-                <span>Google (Gmail) Bilan Kirish</span>
+                <GoogleIcon size={22} />
+                <span>Google (Gmail) Bilan Tezkor Kirish</span>
               </button>
 
-              {/* Qo'lda profil ochish */}
-              <button
-                onClick={() => setShowAuthModal(true)}
-                className="w-full py-2.5 px-4 rounded-xl bg-[#2c2a26] hover:bg-[#383531] border border-[#44413c] active:scale-95 text-[#c3c2be] hover:text-white font-bold text-xs flex items-center justify-center gap-2 transition-all cursor-pointer"
-              >
-                <span>✎ Ism va pochtani kiritish</span>
-              </button>
+              {/* Ajratuvchi */}
+              <div className="flex items-center gap-2 text-[10px] text-[#716e68] font-bold uppercase tracking-wider my-1">
+                <div className="flex-1 h-px bg-[#383531]" />
+                <span>yoki qoʻlda kiritish</span>
+                <div className="flex-1 h-px bg-[#383531]" />
+              </div>
+
+              {/* Qo'lda kiritish formasi */}
+              <form onSubmit={handleManualSubmit} className="space-y-2.5 text-left bg-[#181715] p-4 rounded-2xl border border-[#383531]">
+                {manualError && (
+                  <div className="p-2.5 rounded-xl bg-amber-500/15 border border-amber-500/40 text-amber-300 text-xs font-semibold flex items-center gap-2">
+                    <span>⚠️</span>
+                    <span>{manualError}</span>
+                  </div>
+                )}
+
+                <div>
+                  <label className="block text-[11px] text-[#9b9893] mb-1 font-semibold uppercase tracking-wider">
+                    Ismingiz yoki Taxallusingiz:
+                  </label>
+                  <input
+                    type="text"
+                    value={manualName}
+                    onChange={(e) => {
+                      setManualName(e.target.value);
+                      if (manualError) setManualError(null);
+                    }}
+                    placeholder="Masalan: Azamat Karimov"
+                    className="w-full bg-[#21201d] border border-[#383531] focus:border-[#81b64c] rounded-xl px-3.5 py-2.5 text-sm text-white font-bold focus:outline-none transition-colors"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-[11px] text-[#9b9893] mb-1 font-semibold uppercase tracking-wider">
+                    Google Gmail pochtangiz:
+                  </label>
+                  <input
+                    type="email"
+                    value={manualEmail}
+                    onChange={(e) => {
+                      setManualEmail(e.target.value);
+                      if (manualError) setManualError(null);
+                    }}
+                    placeholder="karimovazamat3421@gmail.com"
+                    className="w-full bg-[#21201d] border border-[#383531] focus:border-[#81b64c] rounded-xl px-3.5 py-2.5 text-sm text-white font-medium focus:outline-none font-mono transition-colors"
+                  />
+                </div>
+
+                <button
+                  type="submit"
+                  className="w-full py-3 px-4 rounded-2xl bg-[#81b64c] hover:bg-[#92c35a] active:scale-95 text-white font-black text-sm flex items-center justify-center gap-2 shadow-[0_4px_0_#537a2e] active:translate-y-1 active:shadow-none transition-all cursor-pointer mt-2"
+                >
+                  <span>✓</span>
+                  <span>Hisobni Saqlash va Faollashtirish</span>
+                </button>
+              </form>
             </div>
           </div>
         ) : (
