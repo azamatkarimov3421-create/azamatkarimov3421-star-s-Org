@@ -140,11 +140,14 @@ export async function signInWithGoogle(): Promise<GoogleAuthResult> {
   }
 
   try {
-    logger.logInfo('NETWORK', "Google OAuth orqali kirish boshlandi...");
+    logger.logInfo('NETWORK', `Google OAuth orqali kirish boshlandi (Client ID: ${GOOGLE_CLIENT_ID})...`);
     
-    // Redirect URL joriy domenga mos bo'ladi (Vercel yoki Localhost)
-    const origin = typeof window !== 'undefined' ? window.location.origin : 'https://azamatkarimov3421-star-s-org.vercel.app';
-    const redirectTo = origin.includes('localhost') ? origin : 'https://azamatkarimov3421-star-s-org.vercel.app';
+    // Redirect URL: Android app va web (nurchess100.uz) uchun
+    const isAndroid = typeof window !== 'undefined' && Boolean((window as any).AndroidBridge || window.location.origin.includes('androidplatform.net'));
+    const origin = typeof window !== 'undefined' ? window.location.origin : 'https://nurchess100.uz';
+    const redirectTo = isAndroid
+      ? 'https://nurchess100.uz/'
+      : (origin.includes('localhost') ? origin : 'https://nurchess100.uz/');
 
     const { data, error } = await supabase.auth.signInWithOAuth({
       provider: 'google',
@@ -160,6 +163,14 @@ export async function signInWithGoogle(): Promise<GoogleAuthResult> {
     if (error) {
       logger.logError('NETWORK', `Google bilan kirishda xatolik: ${error.message}`, error);
       return { success: false, error: error.message };
+    }
+
+    if (data?.url) {
+      if (isAndroid && (window as any).AndroidBridge?.openExternalUrl) {
+        (window as any).AndroidBridge.openExternalUrl(data.url);
+      } else if (typeof window !== 'undefined') {
+        window.location.href = data.url;
+      }
     }
 
     return { success: true };

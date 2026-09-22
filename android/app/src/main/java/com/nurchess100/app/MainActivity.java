@@ -203,6 +203,17 @@ public class MainActivity extends AppCompatActivity {
         }
 
         @JavascriptInterface
+        public void openExternalUrl(String url) {
+            try {
+                Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(url));
+                intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                startActivity(intent);
+            } catch (Exception e) {
+                Log.e("NurChess", "Failed to open external url: " + url, e);
+            }
+        }
+
+        @JavascriptInterface
         public void downloadAndInstallApk(String url) {
             try {
                 android.app.DownloadManager.Request request = new android.app.DownloadManager.Request(Uri.parse(url));
@@ -389,12 +400,20 @@ public class MainActivity extends AppCompatActivity {
                         Log.e("NurChess", "Override url error", e);
                     }
                 }
-                // accounts.google.com ochilishini to'xtatish (401 invalid_client xatolik chiqmasligi uchun)
-                if (url.contains("accounts.google.com")) {
-                    return true;
+                // accounts.google.com yoki OAuth sahifalarini tashqi brauzerda ochish (Google 401 yoki WebView bloklanishini oldini olish)
+                if (url.contains("accounts.google.com") || url.contains("supabase.co/auth/v1/authorize")) {
+                    try {
+                        Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(url));
+                        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                        startActivity(intent);
+                        return true;
+                    } catch (Exception e) {
+                        Log.e("NurChess", "Failed to open auth url in browser", e);
+                        return true;
+                    }
                 }
-                // App ichki resurslari va Supabase kanallari uchun
-                if (url.startsWith("https://appassets.androidplatform.net") || url.contains("supabase.co")) {
+                // App ichki resurslari va Supabase API kanallari uchun
+                if (url.startsWith("https://appassets.androidplatform.net") || (url.contains("supabase.co") && !url.contains("/auth/v1/authorize"))) {
                     return false;
                 }
                 // Boshqa HECH QANDAY holatda tashqi brauzerga chiqmaslik (100% app ichida qolish)

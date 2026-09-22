@@ -24,7 +24,7 @@ import {
   LogOutIcon,
 } from '../components/Icons';
 import GoogleAuthModal from '../components/GoogleAuthModal';
-import { signOutGoogle, triggerAutoGooglePick, signInWithGoogleDirect } from '../services/authService';
+import { signOutGoogle, triggerAutoGooglePick, signInWithGoogleDirect, signInWithGoogle } from '../services/authService';
 import { useTranslation } from '../i18n/translations';
 
 interface ProfileScreenProps {
@@ -105,18 +105,34 @@ export default function ProfileScreen({
     }
   };
 
-  const handleGoogleAutoPick = () => {
+  const handleGoogleSignIn = async () => {
     setManualError(null);
-    const ok = triggerAutoGooglePick((updated) => {
-      setProfile(updated);
-      setNameInput(updated.name);
-      setManualName(updated.name);
-      setManualEmail(updated.email || '');
-      setSaveSuccessMsg("Google hisobingiz muvaffaqiyatli ulandi!");
-      setTimeout(() => setSaveSuccessMsg(null), 3500);
-    });
-    if (!ok) {
-      setManualError('Quyidagi maydonlarga ism va Gmail pochtangizni yozib saqlang.');
+    const isAndroid = typeof window !== 'undefined' && Boolean((window as any).AndroidBridge);
+
+    // 1. Android APK ichida: nativ tizim akkaunt tanlash
+    if (isAndroid) {
+      const ok = triggerAutoGooglePick((updated) => {
+        setProfile(updated);
+        setNameInput(updated.name);
+        setManualName(updated.name);
+        setManualEmail(updated.email || '');
+        setSaveSuccessMsg("Google hisobingiz muvaffaqiyatli ulandi!");
+        setTimeout(() => setSaveSuccessMsg(null), 3500);
+      });
+      if (ok) return;
+    }
+
+    // 2. Rasmiy Google OAuth API (Google Client ID orqali)
+    try {
+      setSaveSuccessMsg("Google tizimiga ulanmoqda...");
+      const res = await signInWithGoogle();
+      if (!res.success) {
+        setManualError(res.error || 'Google orqali kirishda xatolik yuz berdi. Pochtani quyida yozib saqlang.');
+        setSaveSuccessMsg(null);
+      }
+    } catch (err: any) {
+      setManualError(err?.message || 'Google tizimiga ulanib boʻlmadi.');
+      setSaveSuccessMsg(null);
     }
   };
 
@@ -196,7 +212,7 @@ export default function ProfileScreen({
             <div className="w-full max-w-sm space-y-3 pt-1">
               <button
                 type="button"
-                onClick={handleGoogleAutoPick}
+                onClick={handleGoogleSignIn}
                 className="w-full py-3.5 px-4 rounded-2xl bg-white hover:bg-zinc-100 active:scale-95 text-slate-900 font-black text-sm flex items-center justify-center gap-3 shadow-xl transition-all cursor-pointer border border-zinc-200"
               >
                 <GoogleIcon size={22} />

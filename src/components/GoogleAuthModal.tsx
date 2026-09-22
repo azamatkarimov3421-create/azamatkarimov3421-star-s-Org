@@ -6,6 +6,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { GoogleIcon, LogOutIcon } from './Icons';
 import {
+  signInWithGoogle,
   signInWithGoogleDirect,
   signOutGoogle,
   triggerAutoGooglePick,
@@ -40,14 +41,24 @@ export default function GoogleAuthModal({ isOpen, onClose, onSuccess }: GoogleAu
 
   const isCurrentlyLinked = Boolean(profile.isGoogleLinked && profile.email);
 
-  const handleAutoPickClick = () => {
+  const handleAutoPickClick = async () => {
     setErrorMsg(null);
-    const triggered = triggerAutoGooglePick((updatedProfile) => {
-      onSuccess(updatedProfile);
-      onClose();
-    });
-    if (!triggered) {
-      setErrorMsg('Google hisoblar roʻyxati ochilmadi. Quyidagi maydonga pochtangizni yozib saqlang.');
+    const isAndroid = typeof window !== 'undefined' && Boolean((window as any).AndroidBridge);
+    if (isAndroid) {
+      const triggered = triggerAutoGooglePick((updatedProfile) => {
+        onSuccess(updatedProfile);
+        onClose();
+      });
+      if (triggered) return;
+    }
+
+    try {
+      const res = await signInWithGoogle();
+      if (!res.success) {
+        setErrorMsg(res.error || 'Google orqali kirishda xatolik. Pochtani quyida yozib saqlang.');
+      }
+    } catch (err: any) {
+      setErrorMsg(err?.message || 'Google tizimiga ulanib boʻlmadi.');
     }
   };
 
