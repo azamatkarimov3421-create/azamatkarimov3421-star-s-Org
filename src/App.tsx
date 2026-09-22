@@ -7,6 +7,7 @@ import React, { useState, useEffect } from 'react';
 import { GameProvider, useGame } from './store/gameStore';
 import { onlineManager } from './services/onlineService';
 import { initAuth } from './services/authService';
+import { recordGameFinished, saveRecentGame } from './store/userProfileStore';
 
 // 8 ta Asosiy Ekranlar
 import SplashScreen from './screens/SplashScreen';
@@ -76,9 +77,9 @@ function AppContent() {
     return unsub;
   }, []);
 
-  // 2. Onlayn xabarlarni tinglash (Raqib harakatlari, taslim bo'lish, durang)
+  // 2. Onlayn xabarlarni tinglash (Raqib harakatlari, taslim bo'lish, durang, o'yindan chiqib ketish)
   useEffect(() => {
-    const unsub = onlineManager.addMessageListener((msg) => {
+    const unsubMsg = onlineManager.addMessageListener((msg) => {
       if (msg.type === 'MOVE') {
         dispatch({ type: 'APPLY_REMOTE_MOVE', move: msg.move });
       } else if (msg.type === 'RESIGN') {
@@ -89,13 +90,41 @@ function AppContent() {
         dispatch({ type: 'REMOTE_DRAW_ACCEPT' });
       } else if (msg.type === 'DECLINE_DRAW') {
         dispatch({ type: 'REMOTE_DRAW_DECLINE' });
+      } else if (msg.type === 'LEAVE') {
+        dispatch({ type: 'REMOTE_PLAYER_LEFT' });
       }
     });
-    return unsub;
+
+    const unsubStatus = onlineManager.addStatusListener((status) => {
+      if (status === 'disconnected') {
+        dispatch({ type: 'REMOTE_PLAYER_LEFT' });
+      }
+    });
+
+    return () => {
+      unsubMsg();
+      unsubStatus();
+    };
   }, [dispatch]);
 
   const handleBackFromGame = () => {
-    if (gameMode === 'online' || roomCode) {
+    if (gameMode === 'online' && roomCode) {
+      if (state.game.status === 'playing' || state.game.status === 'check') {
+        const oppRating = onlineManager.opponentRating || 1200;
+        recordGameFinished('loss', true, oppRating);
+        saveRecentGame({
+          result: 'loss',
+          opponent: `${onlineManager.opponentName || 'Raqib'} (${oppRating})`,
+          gameMode: 'online',
+          myColor: state.onlinePlayerColor || 'white',
+          totalMoves: Math.ceil((state.game.moveHistory?.length || 0) / 2),
+          reason: 'Oʻyindan chiqildi',
+        });
+      }
+      onlineManager.disconnect();
+      dispatch({ type: 'SET_ONLINE_ROOM', roomCode: null, myColor: null });
+      dispatch({ type: 'SET_GAME_MODE', mode: 'vsAI' });
+    } else if (gameMode === 'online' || roomCode) {
       onlineManager.disconnect();
       dispatch({ type: 'SET_ONLINE_ROOM', roomCode: null, myColor: null });
       dispatch({ type: 'SET_GAME_MODE', mode: 'vsAI' });

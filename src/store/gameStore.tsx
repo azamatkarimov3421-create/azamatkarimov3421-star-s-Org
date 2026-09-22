@@ -63,6 +63,7 @@ type Action =
   | { type: 'APPLY_MOVE'; move: Move }
   | { type: 'APPLY_REMOTE_MOVE'; move: Move }
   | { type: 'REMOTE_RESIGN' }
+  | { type: 'REMOTE_PLAYER_LEFT' }
   | { type: 'REMOTE_DRAW_ACCEPT' }
   | { type: 'REMOTE_DRAW_DECLINE' }
   | { type: 'PROMOTE'; pieceType: PieceType }
@@ -364,6 +365,21 @@ function gameReducer(state: AppState, action: Action): AppState {
       speakUzbek("Raqib taslim boʻldi! Siz gʻalaba qozondingiz.");
       return {
         ...state,
+        game: { ...state.game, status: winnerStatus },
+      };
+    }
+
+    case 'REMOTE_PLAYER_LEFT': {
+      if (state.gameMode !== 'online' || !state.roomCode) return state;
+      if (state.game.status !== 'playing' && state.game.status !== 'check') return state;
+
+      const winnerStatus = state.onlinePlayerColor === 'white' ? ('black_left' as const) : ('white_left' as const);
+      playGameOverSound();
+      speakUzbek("Raqib oʻyindan chiqib ketdi! Sizga gʻalaba yozildi.");
+      return {
+        ...state,
+        drawOfferState: 'none',
+        drawOfferNotice: null,
         game: { ...state.game, status: winnerStatus },
       };
     }

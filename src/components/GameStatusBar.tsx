@@ -18,6 +18,8 @@ const STATUS_MESSAGES: Record<GameStatus, string> = {
   black_resigned: '🏳️ Qora taslim boʻldi!',
   white_timeout: '⏱️ Oq vaqti tugadi!',
   black_timeout: '⏱️ Qora vaqti tugadi!',
+  white_left: '🏆 Qora gʻalaba! Oq oʻyindan chiqib ketdi.',
+  black_left: '🏆 Oq gʻalaba! Qora oʻyindan chiqib ketdi.',
 };
 
 export default function GameStatusBar() {

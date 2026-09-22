@@ -30,9 +30,9 @@ export default function GameOverModal() {
       let winnerName = 'Durang';
       if (status === 'checkmate') {
         winnerName = game.currentTurn === 'white' ? 'Qora' : 'Oq';
-      } else if (status === 'white_resigned') {
+      } else if (status === 'white_resigned' || status === 'white_left' || status === 'white_timeout') {
         winnerName = 'Qora';
-      } else if (status === 'black_resigned') {
+      } else if (status === 'black_resigned' || status === 'black_left' || status === 'black_timeout') {
         winnerName = 'Oq';
       }
 
@@ -89,7 +89,7 @@ export default function GameOverModal() {
           gameMode,
           myColor: isPlayerWhite ? 'white' : 'black',
           totalMoves: Math.ceil(moveHistory.length / 2),
-          reason: status === 'checkmate' ? 'Mot' : status.includes('resigned') ? 'Taslim' : 'Durang',
+          reason: status === 'checkmate' ? 'Mot' : status.includes('left') ? 'Raqib chiqib ketdi' : status.includes('resigned') ? 'Taslim' : status.includes('timeout') ? 'Vaqt' : 'Durang',
         });
         setRecentGames(updated);
       }
@@ -176,6 +176,22 @@ export default function GameOverModal() {
       title = "Oq G'alaba Qozondi!";
       subtitle = "Qora donalar vaqti tugadi.";
       icon = '⏱️';
+      break;
+    }
+    case 'white_left': {
+      const isPlayerWinner = onlinePlayerColor === 'black';
+      title = isPlayerWinner ? "Siz G'alaba Qozondingiz! 🏆" : "Qora G'alaba Qozondi!";
+      subtitle = "Oq donalar oʻyindan chiqib ketdi. Gʻalaba sizga yozildi!";
+      icon = '🏆';
+      badgeColor = 'bg-emerald-500/20 text-emerald-300 border-emerald-500/40';
+      break;
+    }
+    case 'black_left': {
+      const isPlayerWinner = onlinePlayerColor === 'white';
+      title = isPlayerWinner ? "Siz G'alaba Qozondingiz! 🏆" : "Oq G'alaba Qozondi!";
+      subtitle = "Qora donalar oʻyindan chiqib ketdi. Gʻalaba sizga yozildi!";
+      icon = '🏆';
+      badgeColor = 'bg-emerald-500/20 text-emerald-300 border-emerald-500/40';
       break;
     }
   }

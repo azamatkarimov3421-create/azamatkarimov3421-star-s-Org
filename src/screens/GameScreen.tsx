@@ -770,11 +770,6 @@ export default function GameScreen({ onBack, onOpenSettings }: GameScreenProps) 
               <button
                 onClick={() => {
                   setShowMenuModal(false);
-                  if (gameMode === 'online' || roomCode) {
-                    onlineManager.disconnect();
-                    dispatch({ type: 'SET_ONLINE_ROOM', roomCode: null, myColor: null });
-                    dispatch({ type: 'SET_GAME_MODE', mode: 'vsAI' });
-                  }
                   onBack();
                 }}
                 className="w-full mt-1 py-2.5 px-3.5 rounded-xl bg-red-900/30 hover:bg-red-900/50 border border-red-700/50 text-red-300 font-bold text-xs flex items-center gap-2.5 cursor-pointer transition-all active:scale-95"

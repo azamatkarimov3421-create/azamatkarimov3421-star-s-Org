@@ -269,6 +269,7 @@ class OnlineManager {
         ch.on('presence', { event: 'leave' }, () => {
           if (this.status === 'connected') {
             this.notifyStatus('disconnected', `${this.opponentName} aloqadan uzildi`);
+            this.notifyMessage({ type: 'LEAVE' });
           }
         });
 
@@ -351,6 +352,7 @@ class OnlineManager {
         ch.on('presence', { event: 'leave' }, () => {
           if (this.status === 'connected') {
             this.notifyStatus('disconnected', `${this.opponentName} aloqadan uzildi`);
+            this.notifyMessage({ type: 'LEAVE' });
           }
         });
 

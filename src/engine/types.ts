@@ -79,7 +79,9 @@ export type GameStatus =
   | 'white_resigned'
   | 'black_resigned'
   | 'white_timeout'
-  | 'black_timeout';
+  | 'black_timeout'
+  | 'white_left'
+  | 'black_left';
 
 // Don qiymatlari
 export const PIECE_VALUES: Record<PieceType, number> = {
