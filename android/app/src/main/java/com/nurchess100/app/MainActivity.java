@@ -2,7 +2,9 @@ package com.nurchess100.app;
 
 import android.annotation.SuppressLint;
 import android.content.Intent;
+import android.content.pm.ActivityInfo;
 import android.content.pm.PackageInfo;
+import android.content.res.Configuration;
 import android.net.Uri;
 import android.os.Bundle;
 import android.util.Log;
@@ -60,6 +62,31 @@ public class MainActivity extends AppCompatActivity {
             } catch (Exception e) {
                 return "1.0.0";
             }
+        }
+
+        @JavascriptInterface
+        public void setOrientation(String orientation) {
+            runOnUiThread(() -> {
+                if ("landscape".equalsIgnoreCase(orientation)) {
+                    setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_SENSOR_LANDSCAPE);
+                } else if ("portrait".equalsIgnoreCase(orientation)) {
+                    setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_SENSOR_PORTRAIT);
+                } else {
+                    setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_USER);
+                }
+            });
+        }
+
+        @JavascriptInterface
+        public void toggleOrientation() {
+            runOnUiThread(() -> {
+                int current = getResources().getConfiguration().orientation;
+                if (current == Configuration.ORIENTATION_LANDSCAPE) {
+                    setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_SENSOR_PORTRAIT);
+                } else {
+                    setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_SENSOR_LANDSCAPE);
+                }
+            });
         }
 
         /**

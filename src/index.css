@@ -6,32 +6,40 @@
 
 /* ── NUR CHESS 100 — KOMPYUTER VA MOBIL MOSLASHUVCHAN O'LCHAMLARI ── */
 :root {
-  /* Mobil ekranlar (< 768px): doska vertikal va gorizontal to'liq sig'adi */
-  --board-size: min(calc(100vw - 16px), calc(100dvh - 40px), 520px);
-  --board-size-3d: min(calc(100vw - 16px), calc(100dvh - 50px), 530px);
+  /* Standart (Portrait - telefon vertikal turganda): doska + tepa/pastki kartochkalar to'liq sig'adi */
+  --board-size: min(calc(100vw - 12px), calc(100dvh - 170px), 520px);
+  --board-size-3d: min(calc(100vw - 12px), calc(100dvh - 180px), 520px);
+}
+
+/* Gorizontal va Yonboshcha (Landscape: telefon 90 gradusga burilganda yoki planshet/kompyuterda) */
+@media (orientation: landscape) {
+  :root {
+    --board-size: min(calc(100dvh - 20px), calc(100vw - 320px), 720px);
+    --board-size-3d: min(calc(100dvh - 28px), calc(100vw - 320px), 700px);
+  }
 }
 
 /* Planshet va Noutbuklar (>= 768px): doska va yon panel yonma-yon sig'adi */
-@media (min-width: 768px) {
+@media (min-width: 768px) and (orientation: landscape) {
   :root {
-    --board-size: min(calc(100dvh - 36px), calc(100vw - 360px), 720px);
-    --board-size-3d: min(calc(100dvh - 46px), calc(100vw - 360px), 700px);
+    --board-size: min(calc(100dvh - 32px), calc(100vw - 360px), 760px);
+    --board-size-3d: min(calc(100dvh - 42px), calc(100vw - 360px), 740px);
   }
 }
 
 /* Standart va Katta Monitorlar (>= 1100px) */
-@media (min-width: 1100px) {
+@media (min-width: 1100px) and (orientation: landscape) {
   :root {
-    --board-size: min(calc(100dvh - 36px), calc(100vw - 420px), 820px);
-    --board-size-3d: min(calc(100dvh - 46px), calc(100vw - 420px), 800px);
+    --board-size: min(calc(100dvh - 36px), calc(100vw - 420px), 840px);
+    --board-size-3d: min(calc(100dvh - 46px), calc(100vw - 420px), 820px);
   }
 }
 
 /* 2K va Keng Monitorlar (>= 1440px) */
-@media (min-width: 1440px) {
+@media (min-width: 1440px) and (orientation: landscape) {
   :root {
-    --board-size: min(calc(100dvh - 36px), calc(100vw - 460px), 900px);
-    --board-size-3d: min(calc(100dvh - 46px), calc(100vw - 460px), 880px);
+    --board-size: min(calc(100dvh - 36px), calc(100vw - 460px), 920px);
+    --board-size-3d: min(calc(100dvh - 46px), calc(100vw - 460px), 900px);
   }
 }
 

@@ -127,6 +127,27 @@ export default function GameScreen({ onBack, onOpenSettings }: GameScreenProps) 
     logger.logInfo('SYSTEM', "Foydalanuvchi tomonidan doska holati muvaffaqiyatli tiklandi va qotishdan chiqarildi.");
   }, [dispatch]);
 
+  // Ekranni 90° burish / Yonboshcha qilish (Landscape Toggle)
+  const handleToggleOrientation = React.useCallback(() => {
+    try {
+      if ((window as any).Android?.toggleOrientation) {
+        (window as any).Android.toggleOrientation();
+        return;
+      }
+    } catch {}
+
+    try {
+      if (screen.orientation && (screen.orientation as any).lock) {
+        const isPortrait = window.innerHeight > window.innerWidth;
+        if (isPortrait) {
+          (screen.orientation as any).lock('landscape').catch(() => {});
+        } else {
+          (screen.orientation as any).lock('portrait').catch(() => {});
+        }
+      }
+    } catch {}
+  }, []);
+
   // AI Bot yurishini avtomatik hisoblash va amalga oshirish (vsAI rejimida)
   React.useEffect(() => {
     if (gameMode !== 'vsAI') return;
@@ -368,10 +389,19 @@ export default function GameScreen({ onBack, onOpenSettings }: GameScreenProps) 
         >
           <RotateCwIcon size={20} />
         </button>
+
+        {/* Ekranni 90° burish / Yonboshcha qilish (Landscape Toggle) */}
+        <button
+          onClick={handleToggleOrientation}
+          className="w-10 h-10 sm:w-11 sm:h-11 rounded-xl bg-black/45 hover:bg-black/70 active:scale-95 backdrop-blur-md border border-white/15 text-amber-300 shadow-[0_8px_16px_rgba(0,0,0,0.6)] flex items-center justify-center transition-all cursor-pointer"
+          title="90° Burish / Yonboshcha rejim"
+        >
+          <span className="text-xs font-black tracking-tighter">90°</span>
+        </button>
       </div>
 
-      {/* ── 2. O'NG TOMONDAGI SUZUVCHI TUGMALAR (Faqat mobil < 768px da ko'rinadi) ── */}
-      <div className="absolute top-3 sm:top-5 right-3 sm:right-5 z-40 flex md:hidden flex-col gap-3 items-end">
+      {/* ── 2. O'NG TOMONDAGI SUZUVCHI TUGMALAR (Faqat mobil tikka turganida ko'rinadi) ── */}
+      <div className="absolute top-3 sm:top-5 right-3 sm:right-5 z-40 flex md:hidden landscape:hidden flex-col gap-3 items-end">
         {/* Harakatni bekor qilish (↶ Undo) */}
         <button
           onClick={() => dispatch({ type: 'UNDO' })}
@@ -430,17 +460,39 @@ export default function GameScreen({ onBack, onOpenSettings }: GameScreenProps) 
         </div>
       )}
 
-      {/* ── 4. ASOSIY MAYDON: 10x10 SHAXMAT DOSQASI VA DOIMIY YON PANEL (>= 768px MD+) ── */}
-      <main className="relative z-10 w-full h-full flex flex-col md:flex-row items-center justify-center gap-3 lg:gap-5 p-1 sm:p-2 overflow-hidden">
+      {/* ── 4. ASOSIY MAYDON: 10x10 SHAXMAT DOSQASI VA MOSLASHUVCHAN HUD ── */}
+      <main className="relative z-10 w-full h-full flex flex-col md:flex-row landscape:flex-row items-center justify-center gap-1.5 sm:gap-3 lg:gap-5 p-1 sm:p-2 overflow-hidden">
+        
+        {/* MOBIL PORTRAIT: DOSKA USTIDAGI RAQIB KARTASI (Vaqt va profil doim ko'rinadi) */}
+        <div className="w-full max-w-[min(calc(100vw-12px),520px)] px-1 md:hidden landscape:hidden z-20 shrink-0">
+          <PlayerCard
+            playerColor={topColor}
+            position="top"
+            customName={opponentName}
+            customRating={opponentRating}
+          />
+        </div>
+
+        {/* 10x10 Shaxmat Dosqasi */}
         <Board />
 
-        {/* ── DOIMIY O'NG YON PANEL (Desktop / Planshet >= 768px: Doska yonida turadi) ── */}
-        <aside className="hidden md:flex flex-col w-[310px] lg:w-[350px] max-h-[min(96dvh,760px)] bg-[#181512]/95 backdrop-blur-xl border border-[#3e342a] rounded-3xl p-4 shadow-2xl justify-between gap-3 text-white shrink-0 z-20">
+        {/* MOBIL PORTRAIT: DOSKA OSTIDAGI O'YINCHI KARTASI (Vaqt va profil doim ko'rinadi) */}
+        <div className="w-full max-w-[min(calc(100vw-12px),520px)] px-1 md:hidden landscape:hidden z-20 shrink-0">
+          <PlayerCard
+            playerColor={bottomColor}
+            position="bottom"
+            customName={bottomName}
+            customRating={bottomRating}
+          />
+        </div>
+
+        {/* ── DOIMIY O'NG YON PANEL (Landscape / Yonboshcha yoki Planshet/Desktop: Doska yonida turadi) ── */}
+        <aside className="hidden md:flex landscape:flex flex-col w-[290px] sm:w-[320px] lg:w-[350px] max-h-[min(98dvh,760px)] bg-[#181512]/95 backdrop-blur-xl border border-[#3e342a] rounded-3xl p-3 sm:p-4 shadow-2xl justify-between gap-2.5 text-white shrink-0 z-20 overflow-y-auto">
           {/* Sarlavha & O'yin Rejimi */}
-          <div className="flex items-center justify-between pb-2 border-b border-[#3e342a]/80">
+          <div className="flex items-center justify-between pb-1.5 border-b border-[#3e342a]/80">
             <div className="flex items-center gap-2">
               <span className="w-2.5 h-2.5 rounded-full bg-[#81b64c] animate-pulse" />
-              <h3 className="font-black text-white text-sm tracking-wide truncate max-w-[180px]">{modeTitle}</h3>
+              <h3 className="font-black text-white text-xs sm:text-sm tracking-wide truncate max-w-[180px]">{modeTitle}</h3>
             </div>
             {state.timeControl > 0 && (
               <span className="text-[10px] font-mono px-2 py-0.5 rounded-md bg-amber-500/20 text-amber-300 font-bold border border-amber-500/30">
@@ -450,11 +502,16 @@ export default function GameScreen({ onBack, onOpenSettings }: GameScreenProps) 
           </div>
 
           {/* Tepada joylashgan o'yinchi kartochkasi (Raqib / Bot) */}
-          <PlayerCard playerColor={topColor} position="top" />
+          <PlayerCard
+            playerColor={topColor}
+            position="top"
+            customName={opponentName}
+            customRating={opponentRating}
+          />
 
           {/* Baholash (EvalBar) va Navbat Holati */}
-          <div className="bg-[#12100e]/90 p-2.5 rounded-2xl border border-[#2e261f]">
-            <div className="text-[11px] font-bold text-zinc-400 mb-1.5 flex items-center justify-between">
+          <div className="bg-[#12100e]/90 p-2 rounded-2xl border border-[#2e261f]">
+            <div className="text-[10px] sm:text-[11px] font-bold text-zinc-400 mb-1 flex items-center justify-between">
               <span>{t('eval_label') || 'Holat baholanishi'}:</span>
               <span className="text-white font-mono text-[10px]">{moveHistory.length} ta yurish</span>
             </div>
@@ -462,10 +519,15 @@ export default function GameScreen({ onBack, onOpenSettings }: GameScreenProps) 
           </div>
 
           {/* Pastda joylashgan o'yinchi kartochkasi (Foydalanuvchi) */}
-          <PlayerCard playerColor={bottomColor} position="bottom" />
+          <PlayerCard
+            playerColor={bottomColor}
+            position="bottom"
+            customName={bottomName}
+            customRating={bottomRating}
+          />
 
           {/* Tezkor Boshqaruv Tugmalari (Yon paneldagi qulay vektor tugmalar) */}
-          <div className="grid grid-cols-5 gap-1.5 pt-1 border-t border-[#3e342a]/80">
+          <div className="grid grid-cols-6 gap-1 pt-1 border-t border-[#3e342a]/80">
             {/* Harakatni bekor qilish */}
             <button
               onClick={() => dispatch({ type: 'UNDO' })}
@@ -473,7 +535,7 @@ export default function GameScreen({ onBack, onOpenSettings }: GameScreenProps) 
               className="py-2 rounded-xl bg-[#2a241e] hover:bg-[#383129] disabled:opacity-30 disabled:pointer-events-none active:scale-95 text-white flex items-center justify-center transition-all cursor-pointer border border-white/5"
               title={t('btn_undo')}
             >
-              <RotateCcwIcon size={18} />
+              <RotateCcwIcon size={16} />
             </button>
 
             {/* Maslahat */}
@@ -483,7 +545,7 @@ export default function GameScreen({ onBack, onOpenSettings }: GameScreenProps) 
               className="py-2 rounded-xl bg-[#2a241e] hover:bg-[#383129] disabled:opacity-30 disabled:pointer-events-none active:scale-95 text-amber-300 flex items-center justify-center transition-all cursor-pointer border border-white/5"
               title={t('btn_hint')}
             >
-              <LightbulbIcon size={18} />
+              <LightbulbIcon size={16} />
             </button>
 
             {/* Doskani aylantirish */}
@@ -492,7 +554,16 @@ export default function GameScreen({ onBack, onOpenSettings }: GameScreenProps) 
               className="py-2 rounded-xl bg-[#2a241e] hover:bg-[#383129] active:scale-95 text-white flex items-center justify-center transition-all cursor-pointer border border-white/5"
               title={t('btn_flip')}
             >
-              <RotateCwIcon size={18} />
+              <RotateCwIcon size={16} />
+            </button>
+
+            {/* 90° Burish */}
+            <button
+              onClick={handleToggleOrientation}
+              className="py-2 rounded-xl bg-[#2a241e] hover:bg-[#383129] active:scale-95 text-amber-400 flex items-center justify-center transition-all cursor-pointer border border-white/5 text-[11px] font-black"
+              title="90° Burish / Tikka rejim"
+            >
+              90°
             </button>
 
             {/* Harakatlar tarixi */}
@@ -501,7 +572,7 @@ export default function GameScreen({ onBack, onOpenSettings }: GameScreenProps) 
               className="py-2 rounded-xl bg-[#2a241e] hover:bg-[#383129] active:scale-95 text-sky-400 flex items-center justify-center transition-all cursor-pointer border border-white/5"
               title={t('history_title')}
             >
-              <ScrollTextIcon size={18} />
+              <ScrollTextIcon size={16} />
             </button>
 
             {/* Menyu */}
@@ -510,7 +581,7 @@ export default function GameScreen({ onBack, onOpenSettings }: GameScreenProps) 
               className="py-2 rounded-xl bg-[#2a241e] hover:bg-[#383129] active:scale-95 text-white flex items-center justify-center transition-all cursor-pointer border border-white/5"
               title="Menyu"
             >
-              <MenuIcon size={18} />
+              <MenuIcon size={16} />
             </button>
           </div>
         </aside>
