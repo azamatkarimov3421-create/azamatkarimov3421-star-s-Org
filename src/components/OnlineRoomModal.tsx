@@ -35,6 +35,13 @@ export default function OnlineRoomModal({
   const [copiedCode, setCopiedCode] = useState(false);
   const [searchDuration, setSearchDuration] = useState<number>(0);
 
+  const TIME_OPTIONS = [
+    { label: '10 daq + 5s', sub: '★ Turnir Rapid', seconds: 600, increment: 5 },
+    { label: '5 daq + 3s', sub: 'Turnir Blits', seconds: 300, increment: 3 },
+    { label: '3 daq + 2s', sub: 'Tezkor Oʻyin', seconds: 180, increment: 2 },
+  ];
+  const [selectedTimeIdx, setSelectedTimeIdx] = useState<number>(0);
+
   const hasTransitionedRef = useRef(false);
   const onCloseRef = useRef(onClose);
   const onStartGameRef = useRef(onStartGame);
@@ -105,6 +112,12 @@ export default function OnlineRoomModal({
   const handleStartMatchmaking = async () => {
     try {
       hasTransitionedRef.current = false;
+      const sel = TIME_OPTIONS[selectedTimeIdx];
+      dispatch({
+        type: 'SET_TIME_CONTROL',
+        seconds: sel.seconds,
+        increment: sel.increment,
+      });
       const profile = getUserProfile();
       await onlineManager.startMatchmaking(profile.name, profile.rating);
     } catch (err: any) {
@@ -122,6 +135,12 @@ export default function OnlineRoomModal({
   const handleCreateRoom = async () => {
     try {
       hasTransitionedRef.current = false;
+      const sel = TIME_OPTIONS[selectedTimeIdx];
+      dispatch({
+        type: 'SET_TIME_CONTROL',
+        seconds: sel.seconds,
+        increment: sel.increment,
+      });
       const code = await onlineManager.createRoom();
       dispatch({
         type: 'SET_ONLINE_ROOM',
@@ -409,6 +428,34 @@ export default function OnlineRoomModal({
                   </div>
                 </div>
 
+                {/* Turnir Vaqti Tanlovi (Fischer Increment bilan) */}
+                <div className="flex flex-col gap-1.5 text-left bg-slate-900/90 p-2.5 rounded-xl border border-slate-800">
+                  <div className="text-[11px] font-bold text-slate-300 flex items-center justify-between">
+                    <span className="flex items-center gap-1">
+                      <span>⏱️</span>
+                      <span>Turnir Reglamenti:</span>
+                    </span>
+                    <span className="text-amber-400 font-mono text-[10px]">Tez yursangiz vaqt yutasiz!</span>
+                  </div>
+                  <div className="grid grid-cols-3 gap-1.5">
+                    {TIME_OPTIONS.map((opt, idx) => (
+                      <button
+                        key={opt.label}
+                        type="button"
+                        onClick={() => setSelectedTimeIdx(idx)}
+                        className={`py-1.5 px-2 rounded-xl text-center border transition-all cursor-pointer ${
+                          selectedTimeIdx === idx
+                            ? 'bg-amber-500/20 border-amber-400 text-amber-300 shadow-[0_0_10px_rgba(245,158,11,0.2)]'
+                            : 'bg-slate-950/80 border-slate-800 text-slate-400 hover:text-slate-200'
+                        }`}
+                      >
+                        <div className="font-mono font-black text-xs">{opt.label}</div>
+                        <div className="text-[9px] opacity-80 leading-tight">{opt.sub}</div>
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
                 <button
                   onClick={handleStartMatchmaking}
                   className="w-full py-3.5 bg-gradient-to-r from-amber-500 via-yellow-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-slate-950 font-black text-sm rounded-2xl shadow-xl transition-all active:scale-95 cursor-pointer flex items-center justify-center gap-2"
@@ -423,16 +470,38 @@ export default function OnlineRoomModal({
           /* ── TAB 2: DO'STLAR BILAN (XONA OCHISH / KOD BILAN KIRISH) ── */
           <div className="space-y-4 pt-1">
             {/* 1. Yangi Xona Ochish */}
-            <div className="p-4 bg-slate-950/70 rounded-2xl border border-slate-800/80">
-              <h4 className="font-bold text-sm text-slate-200 mb-1 flex items-center gap-2">
-                <span>{t('create_room_title')}</span>
-                <span className="text-[10px] bg-amber-500/20 text-amber-300 px-2 py-0.5 rounded-full border border-amber-500/30">
-                  {t('badge_white_pieces')}
-                </span>
-              </h4>
-              <p className="text-slate-400 text-xs mb-3">
-                {t('create_room_desc')}
-              </p>
+            <div className="p-4 bg-slate-950/70 rounded-2xl border border-slate-800/80 space-y-3">
+              <div>
+                <h4 className="font-bold text-sm text-slate-200 mb-1 flex items-center gap-2">
+                  <span>{t('create_room_title')}</span>
+                  <span className="text-[10px] bg-amber-500/20 text-amber-300 px-2 py-0.5 rounded-full border border-amber-500/30">
+                    {t('badge_white_pieces')}
+                  </span>
+                </h4>
+                <p className="text-slate-400 text-xs">
+                  {t('create_room_desc')}
+                </p>
+              </div>
+
+              {/* Do'stlar uchun ham turnir vaqti tanlovi */}
+              <div className="grid grid-cols-3 gap-1.5">
+                {TIME_OPTIONS.map((opt, idx) => (
+                  <button
+                    key={opt.label}
+                    type="button"
+                    onClick={() => setSelectedTimeIdx(idx)}
+                    className={`py-1 px-1.5 rounded-xl text-center border transition-all cursor-pointer ${
+                      selectedTimeIdx === idx
+                        ? 'bg-amber-500/20 border-amber-400 text-amber-300 shadow-[0_0_10px_rgba(245,158,11,0.2)]'
+                        : 'bg-slate-900 border-slate-800 text-slate-400 hover:text-slate-200'
+                    }`}
+                  >
+                    <div className="font-mono font-bold text-[11px]">{opt.label}</div>
+                    <div className="text-[8px] opacity-80 leading-tight">{opt.sub}</div>
+                  </button>
+                ))}
+              </div>
+
               <button
                 onClick={handleCreateRoom}
                 disabled={onlineStatus === 'creating'}

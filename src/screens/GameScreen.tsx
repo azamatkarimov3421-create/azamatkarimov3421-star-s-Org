@@ -101,6 +101,21 @@ export default function GameScreen({ onBack, onOpenSettings }: GameScreenProps) 
     ? false
     : true;
 
+  // Rasmiy Turnir Shaxmat Soati (10 daqiqa + 5s qadam qo'shish bilan)
+  React.useEffect(() => {
+    if (gameMode === 'online' && state.timeControl === 0) {
+      dispatch({ type: 'SET_TIME_CONTROL', seconds: 600, increment: 5 });
+    }
+  }, [gameMode, state.timeControl, dispatch]);
+
+  React.useEffect(() => {
+    if (state.timeControl <= 0 || isGameOver) return;
+    const timer = setInterval(() => {
+      dispatch({ type: 'TICK_TIMER' });
+    }, 1000);
+    return () => clearInterval(timer);
+  }, [state.timeControl, isGameOver, dispatch]);
+
   const aiThinkingRef = React.useRef(false);
 
   // Favqulodda muzlashdan chiqarish (Emergency Unfreeze Handler)
@@ -355,8 +370,8 @@ export default function GameScreen({ onBack, onOpenSettings }: GameScreenProps) 
         </button>
       </div>
 
-      {/* ── 2. O'NG TOMONDAGI SUZUVCHI TUGMALAR (Floating Right Controls — 1 ga 1 Screenshot) ── */}
-      <div className="absolute top-3 sm:top-5 right-3 sm:right-5 z-40 flex flex-col gap-3 items-end">
+      {/* ── 2. O'NG TOMONDAGI SUZUVCHI TUGMALAR (Faqat mobil < 768px da ko'rinadi) ── */}
+      <div className="absolute top-3 sm:top-5 right-3 sm:right-5 z-40 flex md:hidden flex-col gap-3 items-end">
         {/* Harakatni bekor qilish (↶ Undo) */}
         <button
           onClick={() => dispatch({ type: 'UNDO' })}
@@ -415,9 +430,90 @@ export default function GameScreen({ onBack, onOpenSettings }: GameScreenProps) 
         </div>
       )}
 
-      {/* ── 4. MARKAZIY MAYDON: 10x10 SHAXMAT DOSQASI (Screenshotdagi 1 ga 1) ── */}
-      <main className="relative z-10 w-full h-full flex items-center justify-center p-1 sm:p-2">
+      {/* ── 4. ASOSIY MAYDON: 10x10 SHAXMAT DOSQASI VA DOIMIY YON PANEL (>= 768px MD+) ── */}
+      <main className="relative z-10 w-full h-full flex flex-col md:flex-row items-center justify-center gap-3 lg:gap-5 p-1 sm:p-2 overflow-hidden">
         <Board />
+
+        {/* ── DOIMIY O'NG YON PANEL (Desktop / Planshet >= 768px: Doska yonida turadi) ── */}
+        <aside className="hidden md:flex flex-col w-[310px] lg:w-[350px] max-h-[min(96dvh,760px)] bg-[#181512]/95 backdrop-blur-xl border border-[#3e342a] rounded-3xl p-4 shadow-2xl justify-between gap-3 text-white shrink-0 z-20">
+          {/* Sarlavha & O'yin Rejimi */}
+          <div className="flex items-center justify-between pb-2 border-b border-[#3e342a]/80">
+            <div className="flex items-center gap-2">
+              <span className="w-2.5 h-2.5 rounded-full bg-[#81b64c] animate-pulse" />
+              <h3 className="font-black text-white text-sm tracking-wide truncate max-w-[180px]">{modeTitle}</h3>
+            </div>
+            {state.timeControl > 0 && (
+              <span className="text-[10px] font-mono px-2 py-0.5 rounded-md bg-amber-500/20 text-amber-300 font-bold border border-amber-500/30">
+                ⏱️ {Math.floor(state.timeControl / 60)}m {state.timeIncrement > 0 ? `+${state.timeIncrement}s` : ''}
+              </span>
+            )}
+          </div>
+
+          {/* Tepada joylashgan o'yinchi kartochkasi (Raqib / Bot) */}
+          <PlayerCard playerColor={topColor} position="top" />
+
+          {/* Baholash (EvalBar) va Navbat Holati */}
+          <div className="bg-[#12100e]/90 p-2.5 rounded-2xl border border-[#2e261f]">
+            <div className="text-[11px] font-bold text-zinc-400 mb-1.5 flex items-center justify-between">
+              <span>{t('eval_label') || 'Holat baholanishi'}:</span>
+              <span className="text-white font-mono text-[10px]">{moveHistory.length} ta yurish</span>
+            </div>
+            <EvalBar orientation="horizontal" />
+          </div>
+
+          {/* Pastda joylashgan o'yinchi kartochkasi (Foydalanuvchi) */}
+          <PlayerCard playerColor={bottomColor} position="bottom" />
+
+          {/* Tezkor Boshqaruv Tugmalari (Yon paneldagi qulay vektor tugmalar) */}
+          <div className="grid grid-cols-5 gap-1.5 pt-1 border-t border-[#3e342a]/80">
+            {/* Harakatni bekor qilish */}
+            <button
+              onClick={() => dispatch({ type: 'UNDO' })}
+              disabled={history.length === 0 || isGameOver || gameMode === 'online'}
+              className="py-2 rounded-xl bg-[#2a241e] hover:bg-[#383129] disabled:opacity-30 disabled:pointer-events-none active:scale-95 text-white flex items-center justify-center transition-all cursor-pointer border border-white/5"
+              title={t('btn_undo')}
+            >
+              <RotateCcwIcon size={18} />
+            </button>
+
+            {/* Maslahat */}
+            <button
+              onClick={handleGetHint}
+              disabled={isGameOver || hintLoading}
+              className="py-2 rounded-xl bg-[#2a241e] hover:bg-[#383129] disabled:opacity-30 disabled:pointer-events-none active:scale-95 text-amber-300 flex items-center justify-center transition-all cursor-pointer border border-white/5"
+              title={t('btn_hint')}
+            >
+              <LightbulbIcon size={18} />
+            </button>
+
+            {/* Doskani aylantirish */}
+            <button
+              onClick={() => dispatch({ type: 'TOGGLE_FLIP' })}
+              className="py-2 rounded-xl bg-[#2a241e] hover:bg-[#383129] active:scale-95 text-white flex items-center justify-center transition-all cursor-pointer border border-white/5"
+              title={t('btn_flip')}
+            >
+              <RotateCwIcon size={18} />
+            </button>
+
+            {/* Harakatlar tarixi */}
+            <button
+              onClick={() => setShowHistoryModal(true)}
+              className="py-2 rounded-xl bg-[#2a241e] hover:bg-[#383129] active:scale-95 text-sky-400 flex items-center justify-center transition-all cursor-pointer border border-white/5"
+              title={t('history_title')}
+            >
+              <ScrollTextIcon size={18} />
+            </button>
+
+            {/* Menyu */}
+            <button
+              onClick={() => setShowMenuModal(true)}
+              className="py-2 rounded-xl bg-[#2a241e] hover:bg-[#383129] active:scale-95 text-white flex items-center justify-center transition-all cursor-pointer border border-white/5"
+              title="Menyu"
+            >
+              <MenuIcon size={18} />
+            </button>
+          </div>
+        </aside>
       </main>
 
       {/* Bot vs Bot Rejimidagi Suzuvchi Boshqaruv Paneli */}

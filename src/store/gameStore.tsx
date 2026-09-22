@@ -464,6 +464,10 @@ function gameReducer(state: AppState, action: Action): AppState {
         onlinePlayerColor: action.myColor,
         gameMode: action.roomCode ? 'online' : 'pvp',
         isFlipped: action.myColor === 'black',
+        timeControl: action.roomCode ? 600 : state.timeControl,
+        timeIncrement: action.roomCode ? 5 : state.timeIncrement,
+        whiteTime: action.roomCode ? 600 : state.timeControl,
+        blackTime: action.roomCode ? 600 : state.timeControl,
       };
 
     case 'NEW_GAME':

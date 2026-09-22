@@ -11,27 +11,27 @@
   --board-size-3d: min(calc(100vw - 16px), calc(100dvh - 50px), 530px);
 }
 
-/* Planshet va Noutbuklar (>= 768px) */
+/* Planshet va Noutbuklar (>= 768px): doska va yon panel yonma-yon sig'adi */
 @media (min-width: 768px) {
   :root {
-    --board-size: min(calc(100dvh - 50px), calc(100vw - 130px), 780px);
-    --board-size-3d: min(calc(100dvh - 60px), calc(100vw - 130px), 760px);
+    --board-size: min(calc(100dvh - 36px), calc(100vw - 360px), 720px);
+    --board-size-3d: min(calc(100dvh - 46px), calc(100vw - 360px), 700px);
   }
 }
 
 /* Standart va Katta Monitorlar (>= 1100px) */
 @media (min-width: 1100px) {
   :root {
-    --board-size: min(calc(100dvh - 50px), calc(100vw - 150px), 880px);
-    --board-size-3d: min(calc(100dvh - 60px), calc(100vw - 150px), 860px);
+    --board-size: min(calc(100dvh - 36px), calc(100vw - 420px), 820px);
+    --board-size-3d: min(calc(100dvh - 46px), calc(100vw - 420px), 800px);
   }
 }
 
 /* 2K va Keng Monitorlar (>= 1440px) */
 @media (min-width: 1440px) {
   :root {
-    --board-size: min(calc(100dvh - 50px), calc(100vw - 160px), 960px);
-    --board-size-3d: min(calc(100dvh - 60px), calc(100vw - 160px), 940px);
+    --board-size: min(calc(100dvh - 36px), calc(100vw - 460px), 900px);
+    --board-size-3d: min(calc(100dvh - 46px), calc(100vw - 460px), 880px);
   }
 }
 

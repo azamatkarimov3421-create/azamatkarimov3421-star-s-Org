@@ -19,24 +19,13 @@ interface ChessClockProps {
 }
 
 export function ChessClock({ color }: ChessClockProps) {
-  const { state, dispatch } = useGame();
+  const { state } = useGame();
   const { game, timeControl, whiteTime, blackTime, timeIncrement } = state;
   const { currentTurn, status } = game;
 
   const isMyTurn = currentTurn === color && (status === 'playing' || status === 'check');
   const time = color === 'white' ? whiteTime : blackTime;
   const isLowTime = timeControl > 0 && time <= 30;
-
-  // Har soniyada vaqtni kamaytirish
-  useEffect(() => {
-    if (timeControl === 0 || !isMyTurn) return;
-
-    const interval = setInterval(() => {
-      dispatch({ type: 'TICK_TIMER' });
-    }, 1000);
-
-    return () => clearInterval(interval);
-  }, [timeControl, isMyTurn, dispatch]);
 
   if (timeControl === 0) return null;
 
