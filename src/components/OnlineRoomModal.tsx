@@ -145,6 +145,11 @@ export default function OnlineRoomModal({
     setSearchDuration(0);
   };
 
+  const handleSelectTime = (idx: number) => {
+    setSelectedTimeIdx(idx);
+    onlineManager.updateLobbyTimeControl(TIME_OPTIONS[idx].seconds);
+  };
+
   // 2. Yangi xona yaratish (Oq donalar - Do'st uchun)
   const handleCreateRoom = async () => {
     try {
@@ -255,10 +260,12 @@ export default function OnlineRoomModal({
               <p className="text-slate-400 text-xs">{t('online_modal_subtitle')}</p>
             </div>
           </div>
-          <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-emerald-950/60 border border-emerald-500/30 text-emerald-400 text-xs font-bold shrink-0">
-            <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
-            <span>{presenceCounts.total} onlayn</span>
-          </div>
+          {presenceCounts.total > 0 && (
+            <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-emerald-950/60 border border-emerald-500/30 text-emerald-400 text-xs font-bold shrink-0 animate-fadeIn">
+              <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
+              <span>{presenceCounts.total} onlayn</span>
+            </div>
+          )}
         </div>
 
         {/* 2 Ta Asosiy Rejim Tablari (Faqat xona faol bo'lmaganda) */}
@@ -404,10 +411,12 @@ export default function OnlineRoomModal({
                   <div className="text-2xl font-black text-white font-mono mt-1">
                     {formatTime(searchDuration)}
                   </div>
-                  <div className="mt-2 flex items-center justify-center gap-1.5 text-xs font-bold text-emerald-400 bg-emerald-950/70 px-3 py-1 rounded-full border border-emerald-500/30">
-                    <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
-                    <span>Ushbu vaqt toifasida {presenceCounts.byTime[TIME_OPTIONS[selectedTimeIdx].seconds] || 15} ta oʻyinchi onlayn</span>
-                  </div>
+                  {presenceCounts.byTime[TIME_OPTIONS[selectedTimeIdx].seconds] > 0 && (
+                    <div className="mt-2 flex items-center justify-center gap-1.5 text-xs font-bold text-emerald-400 bg-emerald-950/70 px-3 py-1 rounded-full border border-emerald-500/30 animate-fadeIn">
+                      <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
+                      <span>Ushbu vaqt toifasida {presenceCounts.byTime[TIME_OPTIONS[selectedTimeIdx].seconds]} ta raqib onlayn</span>
+                    </div>
+                  )}
                   <p className="text-[11px] text-slate-400 mt-2 max-w-xs">
                     {t('searching_desc')}
                   </p>
@@ -463,12 +472,12 @@ export default function OnlineRoomModal({
                   </div>
                   <div className="grid grid-cols-3 gap-1.5">
                     {TIME_OPTIONS.map((opt, idx) => {
-                      const count = presenceCounts.byTime[opt.seconds] || 10;
+                      const count = presenceCounts.byTime[opt.seconds] ?? 0;
                       return (
                         <button
                           key={opt.label}
                           type="button"
-                          onClick={() => setSelectedTimeIdx(idx)}
+                          onClick={() => handleSelectTime(idx)}
                           className={`py-2 px-1.5 rounded-xl text-center border transition-all cursor-pointer flex flex-col items-center justify-between ${
                             selectedTimeIdx === idx
                               ? 'bg-amber-500/20 border-amber-400 text-amber-300 shadow-[0_0_12px_rgba(245,158,11,0.25)]'
@@ -477,10 +486,12 @@ export default function OnlineRoomModal({
                         >
                           <div className="font-mono font-black text-xs">{opt.label}</div>
                           <div className="text-[9px] opacity-80 leading-tight mt-0.5">{opt.sub}</div>
-                          <div className="mt-1.5 flex items-center gap-1 text-[10px] font-extrabold text-emerald-400 bg-emerald-950/70 px-1.5 py-0.5 rounded-full border border-emerald-500/30">
-                            <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
-                            <span>{count} onlayn</span>
-                          </div>
+                          {count > 0 && (
+                            <div className="mt-1.5 flex items-center gap-1 text-[10px] font-extrabold text-emerald-400 bg-emerald-950/70 px-1.5 py-0.5 rounded-full border border-emerald-500/30 animate-fadeIn">
+                              <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+                              <span>{count} onlayn</span>
+                            </div>
+                          )}
                         </button>
                       );
                     })}
@@ -517,12 +528,12 @@ export default function OnlineRoomModal({
               {/* Do'stlar uchun ham turnir vaqti tanlovi */}
               <div className="grid grid-cols-3 gap-1.5">
                 {TIME_OPTIONS.map((opt, idx) => {
-                  const count = presenceCounts.byTime[opt.seconds] || 10;
+                  const count = presenceCounts.byTime[opt.seconds] ?? 0;
                   return (
                     <button
                       key={opt.label}
                       type="button"
-                      onClick={() => setSelectedTimeIdx(idx)}
+                      onClick={() => handleSelectTime(idx)}
                       className={`py-1.5 px-1.5 rounded-xl text-center border transition-all cursor-pointer flex flex-col items-center justify-between ${
                         selectedTimeIdx === idx
                           ? 'bg-amber-500/20 border-amber-400 text-amber-300 shadow-[0_0_10px_rgba(245,158,11,0.2)]'
@@ -531,10 +542,12 @@ export default function OnlineRoomModal({
                     >
                       <div className="font-mono font-bold text-[11px]">{opt.label}</div>
                       <div className="text-[8px] opacity-80 leading-tight mt-0.5">{opt.sub}</div>
-                      <div className="mt-1 flex items-center gap-1 text-[9px] font-bold text-emerald-400 bg-emerald-950/50 px-1.5 py-0.5 rounded-full border border-emerald-500/20">
-                        <span className="w-1.5 h-1.5 rounded-full bg-emerald-400" />
-                        <span>{count} onlayn</span>
-                      </div>
+                      {count > 0 && (
+                        <div className="mt-1 flex items-center gap-1 text-[9px] font-bold text-emerald-400 bg-emerald-950/50 px-1.5 py-0.5 rounded-full border border-emerald-500/20 animate-fadeIn">
+                          <span className="w-1.5 h-1.5 rounded-full bg-emerald-400" />
+                          <span>{count} onlayn</span>
+                        </div>
+                      )}
                     </button>
                   );
                 })}

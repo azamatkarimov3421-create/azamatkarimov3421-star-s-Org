@@ -44,6 +44,7 @@ class OnlineManager {
   private messageListeners = new Set<MessageCallback>();
   private statusListeners = new Set<StatusCallback>();
   private lobbyPresenceListeners = new Set<(counts: LobbyPresenceCounts) => void>();
+  private myLobbyKey: string = '';
 
   public status: OnlineStatus = 'idle';
   public roomCode: string | null = null;
@@ -89,16 +90,19 @@ class OnlineManager {
   }
 
   /**
-   * Jonli onlayn o'yinchilar sonini tinglash (har bir vaqt reglamenti bo'yicha)
+   * Jonli haqiqiy onlayn o'yinchilar sonini tinglash (faqat haqiqiy o'yinchilar)
    */
   public subscribeLobbyPresence(cb: (counts: LobbyPresenceCounts) => void): () => void {
     this.lobbyPresenceListeners.add(cb);
-    cb(this.getEstimatedPresenceCounts());
+
+    if (!this.myLobbyKey) {
+      this.myLobbyKey = `vis_${Date.now()}_${Math.random().toString(36).substring(2, 8)}`;
+    }
 
     if (!this.lobbyChannel && supabase) {
       try {
         const lCh = supabase.channel('nur_lobby_online_v1', {
-          config: { presence: { key: `vis_${Date.now()}_${Math.random().toString(36).substring(2, 6)}` } },
+          config: { presence: { key: this.myLobbyKey } },
         });
         this.lobbyChannel = lCh;
 
@@ -110,16 +114,20 @@ class OnlineManager {
           if (status === 'SUBSCRIBED') {
             try {
               await lCh.track({
+                key: this.myLobbyKey,
                 timeSeconds: this.selectedTimeSeconds,
                 active_at: Date.now(),
               });
             } catch {}
+            this.broadcastPresenceCounts();
           }
         });
       } catch (e) {
         console.warn('Lobby presence subscription error:', e);
       }
     }
+
+    cb(this.getRealPresenceCounts());
 
     return () => {
       this.lobbyPresenceListeners.delete(cb);
@@ -134,7 +142,23 @@ class OnlineManager {
     };
   }
 
-  public getEstimatedPresenceCounts(): LobbyPresenceCounts {
+  public updateLobbyTimeControl(timeSeconds: number) {
+    this.selectedTimeSeconds = timeSeconds;
+    if (this.lobbyChannel && this.myLobbyKey) {
+      try {
+        this.lobbyChannel.track({
+          key: this.myLobbyKey,
+          timeSeconds,
+          active_at: Date.now(),
+        });
+      } catch {}
+    }
+  }
+
+  /**
+   * Faqat haqiqiy boshqa raqiblarni hisoblash (soxta raqamlar yo'q)
+   */
+  public getRealPresenceCounts(): LobbyPresenceCounts {
     let real600 = 0;
     let real300 = 0;
     let real180 = 0;
@@ -144,29 +168,33 @@ class OnlineManager {
         const state = this.lobbyChannel.presenceState();
         const presences = Object.values(state).flat() as any[];
         presences.forEach((p) => {
-          if (p?.timeSeconds === 180) real180++;
-          else if (p?.timeSeconds === 300) real300++;
+          if (!p) return;
+          // O'zimizni raqib sifatida hisoblamaymiz
+          if (p.key && p.key === this.myLobbyKey) return;
+          if (p.timeSeconds === 180) real180++;
+          else if (p.timeSeconds === 300) real300++;
+          else if (p.timeSeconds === 600) real600++;
           else real600++;
         });
       } catch {}
     }
 
-    const count600 = 24 + real600;
-    const count300 = 16 + real300;
-    const count180 = 9 + real180;
-
     return {
-      total: count600 + count300 + count180,
+      total: real600 + real300 + real180,
       byTime: {
-        600: count600,
-        300: count300,
-        180: count180,
+        600: real600,
+        300: real300,
+        180: real180,
       },
     };
   }
 
+  public getEstimatedPresenceCounts(): LobbyPresenceCounts {
+    return this.getRealPresenceCounts();
+  }
+
   private broadcastPresenceCounts() {
-    const counts = this.getEstimatedPresenceCounts();
+    const counts = this.getRealPresenceCounts();
     this.lobbyPresenceListeners.forEach((cb) => {
       try { cb(counts); } catch {}
     });
