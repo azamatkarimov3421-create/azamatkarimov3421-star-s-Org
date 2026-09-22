@@ -202,10 +202,45 @@ export function unlinkGoogleAccount(): UserProfile {
   return reset;
 }
 
+export type ProfileListener = (profile: UserProfile) => void;
+const profileListeners = new Set<ProfileListener>();
+
+export function subscribeUserProfile(callback: ProfileListener): () => void {
+  profileListeners.add(callback);
+  return () => {
+    profileListeners.delete(callback);
+  };
+}
+
+function notifyProfileListeners(profile: UserProfile): void {
+  profileListeners.forEach((cb) => {
+    try {
+      cb(profile);
+    } catch (e) {
+      console.error('Profile listener error:', e);
+    }
+  });
+  if (typeof window !== 'undefined') {
+    try {
+      window.dispatchEvent(new CustomEvent('nurchess_profile_changed', { detail: profile }));
+    } catch {}
+  }
+}
+
+// Storage hodisasini tinglash (boshqa oyna yoki fon jarayonlaridan kelganda)
+if (typeof window !== 'undefined') {
+  window.addEventListener('storage', (e) => {
+    if (e.key === PROFILE_KEY) {
+      notifyProfileListeners(getUserProfile());
+    }
+  });
+}
+
 export function saveUserProfile(profile: UserProfile): void {
   try {
     localStorage.setItem(PROFILE_KEY, JSON.stringify(profile));
   } catch {}
+  notifyProfileListeners(profile);
 }
 
 export function getAchievements(): Achievement[] {

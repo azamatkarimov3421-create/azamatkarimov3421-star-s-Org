@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import NurLogo from '../components/NurLogo';
 import { useGame } from '../store/gameStore';
 import {
@@ -14,7 +14,7 @@ import {
   GoogleIcon,
 } from '../components/Icons';
 import { useTranslation } from '../i18n/translations';
-import { getUserProfile } from '../store/userProfileStore';
+import { getUserProfile, subscribeUserProfile, UserProfile } from '../store/userProfileStore';
 
 interface HomeScreenProps {
   onStartVsAI: () => void;
@@ -37,7 +37,13 @@ export default function HomeScreen({
 }: HomeScreenProps) {
   const { state, dispatch } = useGame();
   const { t } = useTranslation();
-  const profile = getUserProfile();
+  const [profile, setProfile] = useState<UserProfile>(getUserProfile());
+
+  useEffect(() => {
+    setProfile(getUserProfile());
+    const unsub = subscribeUserProfile((p) => setProfile(p));
+    return unsub;
+  }, []);
 
   const gameModes = [
     {

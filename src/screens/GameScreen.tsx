@@ -59,6 +59,8 @@ export default function GameScreen({ onBack, onOpenSettings }: GameScreenProps) 
     isFlipped,
     is3D,
     history,
+    drawOfferState,
+    drawOfferNotice,
   } = state;
   const { status, currentTurn, moveHistory } = game;
 
@@ -71,6 +73,15 @@ export default function GameScreen({ onBack, onOpenSettings }: GameScreenProps) 
   const [errorCount, setErrorCount] = useState(0);
   const [lastWarning, setLastWarning] = useState<string | null>(null);
   const userProfile = getUserProfile();
+
+  React.useEffect(() => {
+    if (drawOfferNotice) {
+      const timer = setTimeout(() => {
+        dispatch({ type: 'CLEAR_DRAW_NOTICE' });
+      }, 4000);
+      return () => clearTimeout(timer);
+    }
+  }, [drawOfferNotice, dispatch]);
 
   // Loggerga obuna bo'lish (Xatolik yoki ogohlantirishlarni kuzatish)
   React.useEffect(() => {
@@ -457,6 +468,28 @@ export default function GameScreen({ onBack, onOpenSettings }: GameScreenProps) 
       </header>
 
       {/* ── 3. YUQORI HOLAT XABARNOMALARI (Floating Status Indicators) ── */}
+      {drawOfferNotice && (
+        <div className="fixed top-12 left-1/2 -translate-x-1/2 z-50 max-w-sm w-[92%] px-4 py-2.5 rounded-2xl bg-[#1e1b18]/95 border border-sky-500/60 text-white font-bold text-xs shadow-2xl flex items-center justify-between gap-3 animate-fadeIn backdrop-blur-md">
+          <div className="flex items-center gap-2">
+            <span className="text-base">🤝</span>
+            <span>{drawOfferNotice}</span>
+          </div>
+          <button
+            onClick={() => dispatch({ type: 'CLEAR_DRAW_NOTICE' })}
+            className="w-6 h-6 rounded-lg bg-white/10 hover:bg-white/20 text-slate-300 flex items-center justify-center text-xs cursor-pointer"
+          >
+            ✕
+          </button>
+        </div>
+      )}
+
+      {drawOfferState === 'sent' && (
+        <div className="fixed top-12 left-1/2 -translate-x-1/2 z-40 px-4 py-2 rounded-full bg-black/80 backdrop-blur-md border border-amber-500/60 text-amber-300 text-xs font-bold flex items-center gap-2 shadow-2xl animate-pulse pointer-events-none">
+          <span className="w-2 h-2 rounded-full bg-amber-400 animate-ping" />
+          <span>Durang taklifi yuborildi. Raqib javobi kutilmoqda...</span>
+        </div>
+      )}
+
       {aiThinking && (
         <div className="fixed top-12 left-1/2 -translate-x-1/2 z-30 px-3.5 py-1.5 rounded-full bg-black/70 backdrop-blur-md border border-amber-500/40 text-amber-300 text-xs font-bold flex items-center gap-2 shadow-2xl animate-pulse pointer-events-none">
           <span className="w-2 h-2 rounded-full bg-amber-400 animate-ping" />
@@ -937,6 +970,75 @@ export default function GameScreen({ onBack, onOpenSettings }: GameScreenProps) 
             >
               {t('close_btn')}
             </button>
+          </div>
+        </div>
+      )}
+
+      {/* ── 6. DURANG TAKLIFI MODALI (Onlayn: Raqib durang taklif qilganda) ── */}
+      {drawOfferState === 'received' && (
+        <div className="fixed inset-0 bg-black/85 backdrop-blur-md z-50 flex items-center justify-center p-4 animate-fadeIn">
+          <div className="relative w-full max-w-sm bg-[#1e1b18] border border-[#3e342a] rounded-3xl p-5 shadow-2xl flex flex-col gap-4 text-center text-white">
+            <div className="w-14 h-14 rounded-2xl bg-sky-500/20 border border-sky-500/40 text-3xl flex items-center justify-center mx-auto shadow-inner">
+              🤝
+            </div>
+            <div>
+              <h3 className="font-black text-lg text-white">Durang taklifi!</h3>
+              <p className="text-slate-300 text-xs mt-1 leading-relaxed">
+                Raqib sizga durang natijaga rozi boʻlishni taklif qildi. Rozi boʻlasizmi?
+              </p>
+            </div>
+            <div className="grid grid-cols-2 gap-2.5 pt-2">
+              <button
+                onClick={() => dispatch({ type: 'ACCEPT_DRAW' })}
+                className="py-3 px-4 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-black text-xs shadow-lg shadow-emerald-900/40 transition-all active:scale-95 cursor-pointer flex items-center justify-center gap-1.5"
+              >
+                <span>✓</span>
+                <span>Rozi boʻlish</span>
+              </button>
+              <button
+                onClick={() => dispatch({ type: 'DECLINE_DRAW' })}
+                className="py-3 px-4 rounded-xl bg-slate-800 hover:bg-red-950/60 border border-slate-700 hover:border-red-700/60 text-slate-200 hover:text-red-300 font-black text-xs transition-all active:scale-95 cursor-pointer flex items-center justify-center gap-1.5"
+              >
+                <span>✕</span>
+                <span>Rad etish</span>
+              </button>
+            </div>
+            <p className="text-[10px] text-slate-400">
+              Rad etilsa yoki oʻyinchi navbatida dona sursa, oʻyin majburiy davom etadi.
+            </p>
+          </div>
+        </div>
+      )}
+
+      {/* ── 7. MAHALLIY (PVP) DURANG SOʻROVI MODALI ── */}
+      {drawOfferState === 'local_prompt' && (
+        <div className="fixed inset-0 bg-black/85 backdrop-blur-md z-50 flex items-center justify-center p-4 animate-fadeIn">
+          <div className="relative w-full max-w-sm bg-[#1e1b18] border border-[#3e342a] rounded-3xl p-5 shadow-2xl flex flex-col gap-4 text-center text-white">
+            <div className="w-14 h-14 rounded-2xl bg-amber-500/20 border border-amber-500/40 text-3xl flex items-center justify-center mx-auto shadow-inner">
+              🤝
+            </div>
+            <div>
+              <h3 className="font-black text-lg text-white">Durang taklifi</h3>
+              <p className="text-slate-300 text-xs mt-1 leading-relaxed">
+                Durang taklif qilindi. Ikkinchi oʻyinchi durang natijaga rozi boʻladimi?
+              </p>
+            </div>
+            <div className="grid grid-cols-2 gap-2.5 pt-2">
+              <button
+                onClick={() => dispatch({ type: 'ACCEPT_DRAW' })}
+                className="py-3 px-4 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-black text-xs shadow-lg shadow-emerald-900/40 transition-all active:scale-95 cursor-pointer flex items-center justify-center gap-1.5"
+              >
+                <span>✓</span>
+                <span>Ha, durang</span>
+              </button>
+              <button
+                onClick={() => dispatch({ type: 'DECLINE_DRAW' })}
+                className="py-3 px-4 rounded-xl bg-slate-800 hover:bg-red-950/60 border border-slate-700 hover:border-red-700/60 text-slate-200 hover:text-red-300 font-black text-xs transition-all active:scale-95 cursor-pointer flex items-center justify-center gap-1.5"
+              >
+                <span>✕</span>
+                <span>Yoʻq, davom etsin</span>
+              </button>
+            </div>
           </div>
         </div>
       )}

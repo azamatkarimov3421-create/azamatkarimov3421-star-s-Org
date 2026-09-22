@@ -7,6 +7,7 @@ import React, { useState, useEffect } from 'react';
 import {
   getUserProfile,
   saveUserProfile,
+  subscribeUserProfile,
   UserProfile,
   isGoogleUser,
   getRecentGames,
@@ -74,12 +75,17 @@ export default function ProfileScreen({
   const [saveSuccessMsg, setSaveSuccessMsg] = useState<string | null>(null);
 
   useEffect(() => {
-    const p = getUserProfile();
-    setProfile(p);
-    setNameInput(p.name);
-    setManualName(p.name && p.name !== 'Mehmon Oʻyinchi' ? p.name : '');
-    setManualEmail(p.email || '');
-    setRecentGames(getRecentGames());
+    const handleProfileSync = (p: UserProfile) => {
+      setProfile(p);
+      setNameInput(p.name);
+      setManualName(p.name && p.name !== 'Mehmon Oʻyinchi' ? p.name : '');
+      setManualEmail(p.email || '');
+      setRecentGames(getRecentGames());
+    };
+
+    handleProfileSync(getUserProfile());
+    const unsub = subscribeUserProfile(handleProfileSync);
+    return unsub;
   }, []);
 
   const winRate = profile.gamesPlayed > 0

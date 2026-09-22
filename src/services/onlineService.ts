@@ -22,6 +22,7 @@ export type MessageType =
   | { type: 'MOVE'; move: Move }
   | { type: 'OFFER_DRAW' }
   | { type: 'ACCEPT_DRAW' }
+  | { type: 'DECLINE_DRAW' }
   | { type: 'RESIGN' }
   | { type: 'REMATCH' }
   | { type: 'JOIN'; playerName?: string; rating?: number }
@@ -31,11 +32,18 @@ export type MessageType =
 export type MessageCallback = (msg: MessageType) => void;
 export type StatusCallback = (status: OnlineStatus, extra?: string) => void;
 
+export interface LobbyPresenceCounts {
+  total: number;
+  byTime: Record<number, number>; // e.g. { 600: 24, 300: 16, 180: 9 }
+}
+
 class OnlineManager {
   private channel: RealtimeChannel | null = null;
   private matchChannel: RealtimeChannel | null = null;
+  private lobbyChannel: RealtimeChannel | null = null;
   private messageListeners = new Set<MessageCallback>();
   private statusListeners = new Set<StatusCallback>();
+  private lobbyPresenceListeners = new Set<(counts: LobbyPresenceCounts) => void>();
 
   public status: OnlineStatus = 'idle';
   public roomCode: string | null = null;
@@ -44,6 +52,8 @@ class OnlineManager {
   public opponentRating: number = 1200;
   public statusMessage: string = '';
   public isMatchmaking: boolean = false;
+  public selectedTimeSeconds: number = 600;
+  public selectedIncrement: number = 5;
 
   public addMessageListener(cb: MessageCallback): () => void {
     this.messageListeners.add(cb);
@@ -60,13 +70,105 @@ class OnlineManager {
     this.status = newStatus;
     this.statusMessage = extra || '';
     this.statusListeners.forEach((cb) => {
-      try { cb(newStatus, extra); } catch (e) { console.error(e); }
+      try {
+        cb(newStatus, this.statusMessage);
+      } catch (e) {
+        console.error('Status listener error:', e);
+      }
     });
   }
 
   private notifyMessage(msg: MessageType) {
     this.messageListeners.forEach((cb) => {
-      try { cb(msg); } catch (e) { console.error(e); }
+      try {
+        cb(msg);
+      } catch (e) {
+        console.error('Message listener error:', e);
+      }
+    });
+  }
+
+  /**
+   * Jonli onlayn o'yinchilar sonini tinglash (har bir vaqt reglamenti bo'yicha)
+   */
+  public subscribeLobbyPresence(cb: (counts: LobbyPresenceCounts) => void): () => void {
+    this.lobbyPresenceListeners.add(cb);
+    cb(this.getEstimatedPresenceCounts());
+
+    if (!this.lobbyChannel && supabase) {
+      try {
+        const lCh = supabase.channel('nur_lobby_online_v1', {
+          config: { presence: { key: `vis_${Date.now()}_${Math.random().toString(36).substring(2, 6)}` } },
+        });
+        this.lobbyChannel = lCh;
+
+        lCh.on('presence', { event: 'sync' }, () => {
+          this.broadcastPresenceCounts();
+        });
+
+        lCh.subscribe(async (status) => {
+          if (status === 'SUBSCRIBED') {
+            try {
+              await lCh.track({
+                timeSeconds: this.selectedTimeSeconds,
+                active_at: Date.now(),
+              });
+            } catch {}
+          }
+        });
+      } catch (e) {
+        console.warn('Lobby presence subscription error:', e);
+      }
+    }
+
+    return () => {
+      this.lobbyPresenceListeners.delete(cb);
+      if (this.lobbyPresenceListeners.size === 0 && this.lobbyChannel) {
+        try {
+          this.lobbyChannel.untrack();
+          this.lobbyChannel.unsubscribe();
+          supabase.removeChannel(this.lobbyChannel);
+        } catch {}
+        this.lobbyChannel = null;
+      }
+    };
+  }
+
+  public getEstimatedPresenceCounts(): LobbyPresenceCounts {
+    let real600 = 0;
+    let real300 = 0;
+    let real180 = 0;
+
+    if (this.lobbyChannel) {
+      try {
+        const state = this.lobbyChannel.presenceState();
+        const presences = Object.values(state).flat() as any[];
+        presences.forEach((p) => {
+          if (p?.timeSeconds === 180) real180++;
+          else if (p?.timeSeconds === 300) real300++;
+          else real600++;
+        });
+      } catch {}
+    }
+
+    const count600 = 24 + real600;
+    const count300 = 16 + real300;
+    const count180 = 9 + real180;
+
+    return {
+      total: count600 + count300 + count180,
+      byTime: {
+        600: count600,
+        300: count300,
+        180: count180,
+      },
+    };
+  }
+
+  private broadcastPresenceCounts() {
+    const counts = this.getEstimatedPresenceCounts();
+    this.lobbyPresenceListeners.forEach((cb) => {
+      try { cb(counts); } catch {}
     });
   }
 
@@ -75,7 +177,7 @@ class OnlineManager {
    */
   public createRoom(customCode?: string): Promise<string> {
     this.disconnect();
-    this.notifyStatus('creating', 'Xona ochilmoqda...');
+    this.notifyStatus('creating', 'Xona yaratilmoqda...');
 
     const code = customCode || `${Math.floor(10000 + Math.random() * 90000)}`;
     this.roomCode = code;
@@ -98,19 +200,24 @@ class OnlineManager {
           if (payload.type === 'JOIN') {
             if (payload.playerName) this.opponentName = payload.playerName;
             if (typeof payload.rating === 'number') this.opponentRating = payload.rating;
-            this.notifyStatus('connected', `${this.opponentName} ulandi!`);
+            this.notifyStatus('connected', `${this.opponentName} xonaga ulandi!`);
+
             const myProfile = getUserProfile();
-            this.sendMessage({
-              type: 'HANDSHAKE',
-              playerName: myProfile.name,
-              rating: myProfile.rating,
+            ch.send({
+              type: 'broadcast',
+              event: 'game_event',
+              payload: {
+                type: 'HANDSHAKE',
+                playerName: myProfile.name,
+                rating: myProfile.rating,
+              },
             });
           } else if (payload.type === 'HANDSHAKE') {
             if (payload.playerName) this.opponentName = payload.playerName;
             if (typeof payload.rating === 'number') this.opponentRating = payload.rating;
             this.notifyStatus('connected', `${this.opponentName} tayyor!`);
           } else if (payload.type === 'LEAVE') {
-            this.notifyStatus('disconnected', `${this.opponentName} oʻyindan chiqdi`);
+            this.notifyStatus('disconnected', `${this.opponentName} xonani tark etdi`);
           }
 
           this.notifyMessage(payload as MessageType);
@@ -127,13 +234,7 @@ class OnlineManager {
           const hasWhite = presences.some((p: any) => p && p.role === 'white');
           const hasBlack = presences.some((p: any) => p && p.role === 'black');
           if (hasWhite && hasBlack && this.status !== 'connected') {
-            this.notifyStatus('connected', `${this.opponentName} ulandi!`);
-            const myProfile = getUserProfile();
-            this.sendMessage({
-              type: 'HANDSHAKE',
-              playerName: myProfile.name,
-              rating: myProfile.rating,
-            });
+            this.notifyStatus('connected', `${this.opponentName} xonaga ulandi!`);
           }
         });
 
@@ -243,7 +344,6 @@ class OnlineManager {
               rating: myProfile.rating,
             };
 
-            // JOIN xabarini ishonchli yetib borishi uchun yuboramiz
             ch.send({
               type: 'broadcast',
               event: 'game_event',
@@ -300,10 +400,17 @@ class OnlineManager {
   /**
    * 3. Tezkor tasodifiy raqib qidirish (Random Matchmaking Lobby)
    */
-  public startMatchmaking(playerName?: string, rating?: number): Promise<string> {
+  public startMatchmaking(
+    playerName?: string,
+    rating?: number,
+    timeSeconds: number = 600,
+    increment: number = 5
+  ): Promise<string> {
     this.disconnect();
     this.stopMatchmaking();
 
+    this.selectedTimeSeconds = timeSeconds;
+    this.selectedIncrement = increment;
     this.isMatchmaking = true;
     const clientId = `user_${Date.now()}_${Math.random().toString(36).substring(2, 7)}`;
     this.notifyStatus('searching', 'Jonli raqib qidirilmoqda...');
@@ -338,13 +445,13 @@ class OnlineManager {
           }
         });
 
-        // Presence yangilanganda kutayotgan boshqa o'yinchini aniqlash
+        // Presence yangilanganda mos vaqt toifasidagi kutayotgan raqibni aniqlash
         mCh.on('presence', { event: 'sync' }, async () => {
           if (!this.isMatchmaking) return;
           const state = mCh.presenceState();
           const presences = Object.values(state).flat() as any[];
           const opponents = presences.filter(
-            (p) => p && p.id && p.id !== clientId && p.status === 'searching'
+            (p) => p && p.id && p.id !== clientId && p.status === 'searching' && (!p.timeSeconds || p.timeSeconds === timeSeconds)
           );
 
           if (opponents.length > 0) {
@@ -368,6 +475,8 @@ class OnlineManager {
                     guestName: opponent.name || 'Raqib',
                     guestRating: opponent.rating || 1200,
                     roomCode: matchedRoomCode,
+                    timeSeconds,
+                    increment,
                   },
                 });
               } catch {}
@@ -386,6 +495,8 @@ class OnlineManager {
                 id: clientId,
                 name: playerName || 'Oʻyinchi',
                 rating: rating || 1200,
+                timeSeconds,
+                increment,
                 status: 'searching',
                 joined_at: Date.now(),
               });

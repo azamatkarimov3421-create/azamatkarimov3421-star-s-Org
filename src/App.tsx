@@ -83,8 +83,12 @@ function AppContent() {
         dispatch({ type: 'APPLY_REMOTE_MOVE', move: msg.move });
       } else if (msg.type === 'RESIGN') {
         dispatch({ type: 'REMOTE_RESIGN' });
+      } else if (msg.type === 'OFFER_DRAW') {
+        dispatch({ type: 'RECEIVE_DRAW_OFFER' });
       } else if (msg.type === 'ACCEPT_DRAW') {
         dispatch({ type: 'REMOTE_DRAW_ACCEPT' });
+      } else if (msg.type === 'DECLINE_DRAW') {
+        dispatch({ type: 'REMOTE_DRAW_DECLINE' });
       }
     });
     return unsub;

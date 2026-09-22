@@ -52,6 +52,8 @@ export interface AppState {
   roomCode: string | null;
   onlinePlayerColor: 'white' | 'black' | null;
   is3D: boolean;                  // Kitobdagidek 3D fazoviy ko'rinish
+  drawOfferState: 'none' | 'sent' | 'received' | 'local_prompt';
+  drawOfferNotice: string | null;
 }
 
 // ── Harakatlar ────────────────────────────────────────
@@ -62,6 +64,7 @@ type Action =
   | { type: 'APPLY_REMOTE_MOVE'; move: Move }
   | { type: 'REMOTE_RESIGN' }
   | { type: 'REMOTE_DRAW_ACCEPT' }
+  | { type: 'REMOTE_DRAW_DECLINE' }
   | { type: 'PROMOTE'; pieceType: PieceType }
   | { type: 'NEW_GAME' }
   | { type: 'UNDO' }
@@ -76,6 +79,10 @@ type Action =
   | { type: 'SET_AI_VS_AI_SPEED'; speed: number }
   | { type: 'SET_AI_THINKING'; thinking: boolean }
   | { type: 'OFFER_DRAW' }
+  | { type: 'RECEIVE_DRAW_OFFER' }
+  | { type: 'ACCEPT_DRAW' }
+  | { type: 'DECLINE_DRAW' }
+  | { type: 'CLEAR_DRAW_NOTICE' }
   | { type: 'RESIGN' }
   | { type: 'DESELECT' }
   | { type: 'SET_THEME'; theme: BoardTheme }
@@ -131,6 +138,8 @@ function createInitialAppState(): AppState {
         return false;
       }
     })(),
+    drawOfferState: 'none',
+    drawOfferNotice: null,
   };
 }
 
@@ -292,6 +301,7 @@ function gameReducer(state: AppState, action: Action): AppState {
         hintMove: null,
         history: [...state.history, state.game],
         aiThinking: false,
+        drawOfferState: 'none',
       };
     }
 
@@ -344,6 +354,7 @@ function gameReducer(state: AppState, action: Action): AppState {
         legalMoves: [],
         hintMove: null,
         history: [...state.history, state.game],
+        drawOfferState: 'none',
       };
     }
 
@@ -362,7 +373,18 @@ function gameReducer(state: AppState, action: Action): AppState {
       speakUzbek("Raqib durang taklifini qabul qildi!");
       return {
         ...state,
+        drawOfferState: 'none',
+        drawOfferNotice: null,
         game: { ...state.game, status: 'draw_mutual' as const },
+      };
+    }
+
+    case 'REMOTE_DRAW_DECLINE': {
+      speakUzbek("Raqib durang taklifini rad etdi!");
+      return {
+        ...state,
+        drawOfferState: 'none',
+        drawOfferNotice: "Raqib durang taklifini rad etdi! Oʻyin davom etadi.",
       };
     }
 
@@ -596,11 +618,102 @@ function gameReducer(state: AppState, action: Action): AppState {
       return { ...state, aiThinking: action.thinking };
 
     case 'OFFER_DRAW': {
+      if (state.game.status !== 'playing' && state.game.status !== 'check') return state;
+
+      if (state.gameMode === 'online') {
+        onlineManager.sendMessage({ type: 'OFFER_DRAW' });
+        return {
+          ...state,
+          drawOfferState: 'sent',
+          drawOfferNotice: 'Durang taklifi yuborildi. Raqib qarori kutilmoqda...',
+        };
+      }
+
+      if (state.gameMode === 'vsAI') {
+        let whiteMaterial = 0;
+        let blackMaterial = 0;
+        const weights: Record<string, number> = { Pawn: 1, Knight: 3, Bishop: 3.2, Camel: 3.5, Rook: 5, Nur: 7, Queen: 9, King: 1000 };
+        for (let r = 0; r < 10; r++) {
+          for (let f = 0; f < 10; f++) {
+            const p = state.game.board[r][f];
+            if (p) {
+              const val = weights[p.type] || 1;
+              if (p.color === 'white') whiteMaterial += val;
+              else blackMaterial += val;
+            }
+          }
+        }
+        const aiIsWhite = state.aiColor === 'white';
+        const aiMat = aiIsWhite ? whiteMaterial : blackMaterial;
+        const playerMat = aiIsWhite ? blackMaterial : whiteMaterial;
+
+        // Agar bot o'yinchidan ancha ustun bo'lsa (3+ ochko oldinda), rad etadi
+        if (aiMat - playerMat >= 3) {
+          speakUzbek("Bot durang taklifini rad etdi! Oʻyin davom etadi.");
+          return {
+            ...state,
+            drawOfferState: 'none',
+            drawOfferNotice: "Bot durang taklifini rad etdi! Oʻyin davom etadi.",
+          };
+        } else {
+          playGameOverSound();
+          speakUzbek("Bot durang taklifiga rozi boʻldi!");
+          return {
+            ...state,
+            drawOfferState: 'none',
+            drawOfferNotice: null,
+            game: { ...state.game, status: 'draw_mutual' as const },
+          };
+        }
+      }
+
+      // Mahalliy 2 kishilik o'yin (pvp)
+      return {
+        ...state,
+        drawOfferState: 'local_prompt',
+      };
+    }
+
+    case 'RECEIVE_DRAW_OFFER': {
+      if (state.game.status !== 'playing' && state.game.status !== 'check') return state;
+      speakUzbek("Raqib durang taklif qildi!");
+      return {
+        ...state,
+        drawOfferState: 'received',
+      };
+    }
+
+    case 'ACCEPT_DRAW': {
       if (state.gameMode === 'online') {
         onlineManager.sendMessage({ type: 'ACCEPT_DRAW' });
       }
-      const newGame = { ...state.game, status: 'draw_mutual' as const };
-      return { ...state, game: newGame };
+      playGameOverSound();
+      speakUzbek("Durang boʻldi!");
+      return {
+        ...state,
+        drawOfferState: 'none',
+        drawOfferNotice: null,
+        game: { ...state.game, status: 'draw_mutual' as const },
+      };
+    }
+
+    case 'DECLINE_DRAW': {
+      if (state.gameMode === 'online') {
+        onlineManager.sendMessage({ type: 'DECLINE_DRAW' });
+      }
+      speakUzbek("Durang taklifi rad etildi. Oʻyin davom etadi!");
+      return {
+        ...state,
+        drawOfferState: 'none',
+        drawOfferNotice: "Durang taklifi rad etildi. Oʻyin davom etadi!",
+      };
+    }
+
+    case 'CLEAR_DRAW_NOTICE': {
+      return {
+        ...state,
+        drawOfferNotice: null,
+      };
     }
 
     case 'RESIGN': {

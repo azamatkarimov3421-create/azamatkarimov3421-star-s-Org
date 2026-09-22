@@ -17,8 +17,8 @@ export interface AppUpdateInfo {
   created_at?: string;
 }
 
-export const CURRENT_VERSION_NAME = '1.0.5';
-export const CURRENT_VERSION_CODE = 6;
+export const CURRENT_VERSION_NAME = '1.2.10';
+export const CURRENT_VERSION_CODE = 31;
 
 // Oxirgi loyihaning to'liq jonli to'plami (Web Bundle ZIP)
 export const DIRECT_BUNDLE_URL = 'https://files.catbox.moe/qwwi7e.zip';
@@ -27,11 +27,11 @@ export const DIRECT_BUNDLE_URL = 'https://files.catbox.moe/qwwi7e.zip';
 export const DIRECT_APK_DOWNLOAD_URL = 'https://files.catbox.moe/p0o37r.apk';
 
 export const LATEST_RELEASE: AppUpdateInfo = {
-  version_code: 6,
-  version_name: '1.0.5',
-  title: 'Yangi Versiya Chiqdi! (v1.0.5)',
+  version_code: 31,
+  version_name: '1.2.10',
+  title: 'Yangi Versiya Chiqdi! (v1.2.10)',
   release_notes:
-    '• Standart holatda 3D Fazoviy yogʻoch doska va tik donalar koʻrinishi darhol faollashtirildi\n• Bosh sahifa va oʻyin tepasida aniq 🎲 3D va 📐 2D almashtirgich tugmalari joylashtirildi\n• Kitobdagidek haqiqiy 3D yogʻoch relyef va soya effektlari kuchaytirildi',
+    '• Google hisob bilan kirishda darhol 1-marta ulanish va profil reaktivligi sozlandi\n• Durang taklifi, ikki tomonlama rozi boʻlish va rad etilsa majburiy oʻyin davom etishi qoʻshildi\n• Tezkor raqib (Matchmaking) da har bir vaqt toifasida nechta oʻyinchi onlayn ekanligi koʻrsatildi',
   bundle_url: DIRECT_BUNDLE_URL,
   apk_url: DIRECT_APK_DOWNLOAD_URL,
   is_mandatory: false,

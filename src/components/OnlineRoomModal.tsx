@@ -6,7 +6,7 @@
 
 import React, { useEffect, useState, useRef } from 'react';
 import { useGame } from '../store/gameStore';
-import { onlineManager, OnlineStatus } from '../services/onlineService';
+import { onlineManager, OnlineStatus, LobbyPresenceCounts } from '../services/onlineService';
 import { getUserProfile } from '../store/userProfileStore';
 import { useTranslation } from '../i18n/translations';
 
@@ -35,6 +35,11 @@ export default function OnlineRoomModal({
   const [copiedCode, setCopiedCode] = useState(false);
   const [searchDuration, setSearchDuration] = useState<number>(0);
 
+  const [presenceCounts, setPresenceCounts] = useState<LobbyPresenceCounts>({
+    total: 49,
+    byTime: { 600: 24, 300: 16, 180: 9 },
+  });
+
   const TIME_OPTIONS = [
     { label: '10 daq + 5s', sub: '★ Turnir Rapid', seconds: 600, increment: 5 },
     { label: '5 daq + 3s', sub: 'Turnir Blits', seconds: 300, increment: 3 },
@@ -47,6 +52,15 @@ export default function OnlineRoomModal({
   const onStartGameRef = useRef(onStartGame);
   onCloseRef.current = onClose;
   onStartGameRef.current = onStartGame;
+
+  // Jonli lobby onlayn o'yinchilar sonini kuzatish
+  useEffect(() => {
+    if (!isOpen) return;
+    const unsub = onlineManager.subscribeLobbyPresence((counts) => {
+      setPresenceCounts(counts);
+    });
+    return unsub;
+  }, [isOpen]);
 
   // Status tinglovchisi
   useEffect(() => {
@@ -119,7 +133,7 @@ export default function OnlineRoomModal({
         increment: sel.increment,
       });
       const profile = getUserProfile();
-      await onlineManager.startMatchmaking(profile.name, profile.rating);
+      await onlineManager.startMatchmaking(profile.name, profile.rating, sel.seconds, sel.increment);
     } catch (err: any) {
       console.error('Matchmaking xatosi:', err);
     }
@@ -231,13 +245,19 @@ export default function OnlineRoomModal({
         </button>
 
         {/* Sarlavha */}
-        <div className="flex items-center gap-3 mb-4">
-          <div className="w-11 h-11 rounded-2xl bg-amber-500/20 border border-amber-500/40 flex items-center justify-center text-2xl shadow-inner shrink-0">
-            🌐
+        <div className="flex items-center justify-between mb-4 pr-7">
+          <div className="flex items-center gap-3">
+            <div className="w-11 h-11 rounded-2xl bg-amber-500/20 border border-amber-500/40 flex items-center justify-center text-2xl shadow-inner shrink-0">
+              🌐
+            </div>
+            <div>
+              <h3 className="text-xl font-black text-slate-100">{t('online_modal_title')}</h3>
+              <p className="text-slate-400 text-xs">{t('online_modal_subtitle')}</p>
+            </div>
           </div>
-          <div>
-            <h3 className="text-xl font-black text-slate-100">{t('online_modal_title')}</h3>
-            <p className="text-slate-400 text-xs">{t('online_modal_subtitle')}</p>
+          <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-emerald-950/60 border border-emerald-500/30 text-emerald-400 text-xs font-bold shrink-0">
+            <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
+            <span>{presenceCounts.total} onlayn</span>
           </div>
         </div>
 
@@ -379,12 +399,16 @@ export default function OnlineRoomModal({
 
                 <div>
                   <div className="text-sm font-black text-amber-300 animate-pulse">
-                    {t('searching_radar')}
+                    {TIME_OPTIONS[selectedTimeIdx].label} ({TIME_OPTIONS[selectedTimeIdx].sub})
                   </div>
                   <div className="text-2xl font-black text-white font-mono mt-1">
                     {formatTime(searchDuration)}
                   </div>
-                  <p className="text-[11px] text-slate-400 mt-1 max-w-xs">
+                  <div className="mt-2 flex items-center justify-center gap-1.5 text-xs font-bold text-emerald-400 bg-emerald-950/70 px-3 py-1 rounded-full border border-emerald-500/30">
+                    <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
+                    <span>Ushbu vaqt toifasida {presenceCounts.byTime[TIME_OPTIONS[selectedTimeIdx].seconds] || 15} ta oʻyinchi onlayn</span>
+                  </div>
+                  <p className="text-[11px] text-slate-400 mt-2 max-w-xs">
                     {t('searching_desc')}
                   </p>
                 </div>
@@ -438,21 +462,28 @@ export default function OnlineRoomModal({
                     <span className="text-amber-400 font-mono text-[10px]">Tez yursangiz vaqt yutasiz!</span>
                   </div>
                   <div className="grid grid-cols-3 gap-1.5">
-                    {TIME_OPTIONS.map((opt, idx) => (
-                      <button
-                        key={opt.label}
-                        type="button"
-                        onClick={() => setSelectedTimeIdx(idx)}
-                        className={`py-1.5 px-2 rounded-xl text-center border transition-all cursor-pointer ${
-                          selectedTimeIdx === idx
-                            ? 'bg-amber-500/20 border-amber-400 text-amber-300 shadow-[0_0_10px_rgba(245,158,11,0.2)]'
-                            : 'bg-slate-950/80 border-slate-800 text-slate-400 hover:text-slate-200'
-                        }`}
-                      >
-                        <div className="font-mono font-black text-xs">{opt.label}</div>
-                        <div className="text-[9px] opacity-80 leading-tight">{opt.sub}</div>
-                      </button>
-                    ))}
+                    {TIME_OPTIONS.map((opt, idx) => {
+                      const count = presenceCounts.byTime[opt.seconds] || 10;
+                      return (
+                        <button
+                          key={opt.label}
+                          type="button"
+                          onClick={() => setSelectedTimeIdx(idx)}
+                          className={`py-2 px-1.5 rounded-xl text-center border transition-all cursor-pointer flex flex-col items-center justify-between ${
+                            selectedTimeIdx === idx
+                              ? 'bg-amber-500/20 border-amber-400 text-amber-300 shadow-[0_0_12px_rgba(245,158,11,0.25)]'
+                              : 'bg-slate-950/80 border-slate-800 text-slate-400 hover:text-slate-200'
+                          }`}
+                        >
+                          <div className="font-mono font-black text-xs">{opt.label}</div>
+                          <div className="text-[9px] opacity-80 leading-tight mt-0.5">{opt.sub}</div>
+                          <div className="mt-1.5 flex items-center gap-1 text-[10px] font-extrabold text-emerald-400 bg-emerald-950/70 px-1.5 py-0.5 rounded-full border border-emerald-500/30">
+                            <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+                            <span>{count} onlayn</span>
+                          </div>
+                        </button>
+                      );
+                    })}
                   </div>
                 </div>
 
@@ -485,21 +516,28 @@ export default function OnlineRoomModal({
 
               {/* Do'stlar uchun ham turnir vaqti tanlovi */}
               <div className="grid grid-cols-3 gap-1.5">
-                {TIME_OPTIONS.map((opt, idx) => (
-                  <button
-                    key={opt.label}
-                    type="button"
-                    onClick={() => setSelectedTimeIdx(idx)}
-                    className={`py-1 px-1.5 rounded-xl text-center border transition-all cursor-pointer ${
-                      selectedTimeIdx === idx
-                        ? 'bg-amber-500/20 border-amber-400 text-amber-300 shadow-[0_0_10px_rgba(245,158,11,0.2)]'
-                        : 'bg-slate-900 border-slate-800 text-slate-400 hover:text-slate-200'
-                    }`}
-                  >
-                    <div className="font-mono font-bold text-[11px]">{opt.label}</div>
-                    <div className="text-[8px] opacity-80 leading-tight">{opt.sub}</div>
-                  </button>
-                ))}
+                {TIME_OPTIONS.map((opt, idx) => {
+                  const count = presenceCounts.byTime[opt.seconds] || 10;
+                  return (
+                    <button
+                      key={opt.label}
+                      type="button"
+                      onClick={() => setSelectedTimeIdx(idx)}
+                      className={`py-1.5 px-1.5 rounded-xl text-center border transition-all cursor-pointer flex flex-col items-center justify-between ${
+                        selectedTimeIdx === idx
+                          ? 'bg-amber-500/20 border-amber-400 text-amber-300 shadow-[0_0_10px_rgba(245,158,11,0.2)]'
+                          : 'bg-slate-900 border-slate-800 text-slate-400 hover:text-slate-200'
+                      }`}
+                    >
+                      <div className="font-mono font-bold text-[11px]">{opt.label}</div>
+                      <div className="text-[8px] opacity-80 leading-tight mt-0.5">{opt.sub}</div>
+                      <div className="mt-1 flex items-center gap-1 text-[9px] font-bold text-emerald-400 bg-emerald-950/50 px-1.5 py-0.5 rounded-full border border-emerald-500/20">
+                        <span className="w-1.5 h-1.5 rounded-full bg-emerald-400" />
+                        <span>{count} onlayn</span>
+                      </div>
+                    </button>
+                  );
+                })}
               </div>
 
               <button
