@@ -267,6 +267,8 @@ export const TRANSLATIONS = {
     vsai_first_move_black: 'Siz Qoralarda (Bot boshlaydi)',
     vsai_white_desc: 'Birinchi yurasiz',
     vsai_black_desc: 'Bot birinchi yuradi',
+    vsai_color_random: 'Tasodifiy',
+    vsai_random_desc: '50/50 tanlov',
 
     // Leaderboard
     lb_title: 'Oʻyinlar Statistikasi va Baza',
@@ -532,6 +534,8 @@ export const TRANSLATIONS = {
     vsai_first_move_black: 'Сиз Қораларда (Бот бошлайди)',
     vsai_white_desc: 'Биринчи юрасиз',
     vsai_black_desc: 'Бот биринчи юради',
+    vsai_color_random: 'Тасодифий',
+    vsai_random_desc: '50/50 танлов',
 
     // Leaderboard
     lb_title: 'Ўйинлар Статистикаси ва База',
@@ -799,6 +803,8 @@ export const TRANSLATIONS = {
     vsai_first_move_black: 'Вы играете Чёрными (Бот начинает)',
     vsai_white_desc: 'Вы делаете первый ход',
     vsai_black_desc: 'Бот делает первый ход',
+    vsai_color_random: 'Случайный',
+    vsai_random_desc: 'Выбор 50/50',
 
     // Таблица лидеров
     lb_title: 'Статистика игр и База данных',
@@ -1066,6 +1072,8 @@ export const TRANSLATIONS = {
     vsai_first_move_black: 'You are Black (Bot moves first)',
     vsai_white_desc: 'You move first',
     vsai_black_desc: 'Bot moves first',
+    vsai_color_random: 'Random',
+    vsai_random_desc: '50/50 chance',
 
     // Leaderboard
     lb_title: 'Game Records & Database',
@@ -1333,6 +1341,8 @@ export const TRANSLATIONS = {
     vsai_first_move_black: 'Siz Qaralarda (Bot baslaydı)',
     vsai_white_desc: 'Birinshi júresiz',
     vsai_black_desc: 'Bot birinshi júredi',
+    vsai_color_random: 'Kezdeysoq',
+    vsai_random_desc: '50/50 tańlaw',
 
     // Leaderboard
     lb_title: 'Oyınlar Statistikası hám Baza',

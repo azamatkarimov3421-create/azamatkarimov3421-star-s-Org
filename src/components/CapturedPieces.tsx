@@ -73,7 +73,9 @@ export function PlayerCard({ playerColor, position }: PlayerCardProps) {
             }`}
           >
             {isAI ? (
-              <span className="text-base sm:text-xl">🤖</span>
+              <span className="text-base sm:text-xl">
+                {['', '🤖', '⚡', '👑', '💎'][gameMode === 'aiVsAi' ? botDepth : aiDepth] || '🤖'}
+              </span>
             ) : isWhite ? (
               <span>♔</span>
             ) : (
@@ -92,9 +94,9 @@ export function PlayerCard({ playerColor, position }: PlayerCardProps) {
         {/* Ism va unvon */}
         <div className="min-w-0">
           <div className="flex items-center gap-1.5">
-            <span className="font-bold text-xs sm:text-sm text-slate-100 truncate max-w-[90px] sm:max-w-none">
+            <span className="font-bold text-xs sm:text-sm text-slate-100 truncate max-w-[110px] sm:max-w-none">
               {isAI
-                ? `AI (${aiLabels[gameMode === 'aiVsAi' ? botDepth : aiDepth] || 'D-' + (gameMode === 'aiVsAi' ? botDepth : aiDepth)})`
+                ? (['', 'Bot Sardor', 'Bot Temur', 'Bot Alp Er Toʻnga', 'Bot Al-Xorazmiy'][gameMode === 'aiVsAi' ? botDepth : aiDepth] || 'AI Bot')
                 : isWhite
                 ? "Oqlar"
                 : "Qoralar"}

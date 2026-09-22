@@ -121,32 +121,32 @@ export default function ProfileScreen({
       <main className="flex-1 px-4 py-4 space-y-4">
         {/* AGAR GOOGLE ULANGAN BO'LMASA — PROFIL OCHISH BANNERI */}
         {!profile.isGoogleLinked ? (
-          <div className="p-6 rounded-3xl bg-gradient-to-b from-[#2a2723] to-[#21201d] border-2 border-[#81b64c]/40 shadow-2xl flex flex-col items-center text-center gap-4">
-            <div className="w-16 h-16 rounded-2xl bg-[#7a6652] border-2 border-[#81b64c] flex items-center justify-center text-white font-black text-2xl shadow-inner">
-              {profile.name && profile.name !== 'Mehmon Oʻyinchi' ? profile.name.trim().charAt(0).toUpperCase() : '👤'}
+          <div className="p-6 rounded-3xl bg-gradient-to-b from-[#2a2723] to-[#21201d] border border-[#81b64c]/40 shadow-2xl flex flex-col items-center text-center gap-4">
+            <div className="w-16 h-16 rounded-2xl bg-[#233027] border-2 border-[#81b64c] flex items-center justify-center text-white font-black text-2xl shadow-inner">
+              <GoogleIcon size={32} />
             </div>
 
             <div>
               <h3 className="text-xl font-black text-white">
-                Shaxsiy Profilingizni Oching
+                Google Hisobini Ulash
               </h3>
               <p className="text-xs text-[#c3c2be] mt-1.5 max-w-sm leading-relaxed">
-                Natijalaringiz, yutuqlaringiz va reytingingizni saqlab borish uchun ilova ichida profilingizni faollashtiring.
+                Reyting, yutuqlar va onlayn gʻalabalaringizni oʻz nomingiz bilan saqlash uchun profilingizni faollashtiring.
               </p>
             </div>
 
             <div className="w-full max-w-xs space-y-2 text-left bg-[#181715] p-3.5 rounded-2xl border border-[#33302b] text-xs text-[#9b9893]">
               <div className="flex items-center gap-2">
                 <span className="text-emerald-400 font-bold">✓</span>
-                <span>Reyting va natijalar xavfsiz saqlanadi</span>
+                <span>Reyting va oʻyinlar tarixi saqlanadi</span>
               </div>
               <div className="flex items-center gap-2">
                 <span className="text-emerald-400 font-bold">✓</span>
-                <span>Onlayn oʻyinlarda ismingiz va suratingiz chiqadi</span>
+                <span>Onlayn oʻyinda ismingiz va profilingiz koʻrinadi</span>
               </div>
               <div className="flex items-center gap-2">
                 <span className="text-emerald-400 font-bold">✓</span>
-                <span>Peshqadamlar roʻyxatida ishtirok</span>
+                <span>Ilova ichida 1 soniyada xavfsiz ulanadi</span>
               </div>
             </div>
 
@@ -154,8 +154,8 @@ export default function ProfileScreen({
               onClick={() => setShowAuthModal(true)}
               className="w-full max-w-xs py-3.5 px-5 rounded-2xl bg-[#81b64c] hover:bg-[#92c35a] active:scale-95 text-white font-black text-sm flex items-center justify-center gap-2.5 shadow-[0_4px_0_#537a2e] active:translate-y-1 active:shadow-none transition-all cursor-pointer"
             >
-              <span>👤</span>
-              <span>Profil Yaratish / Faollashtirish</span>
+              <GoogleIcon size={18} />
+              <span>Google Hisobini Ulash</span>
             </button>
           </div>
         ) : (
@@ -444,44 +444,14 @@ export default function ProfileScreen({
             <ChevronRightIcon size={16} className="text-[#686560]" />
           </button>
 
-          {/* Agar Google ulangan bo'lsa: Almashtirish va Chiqish */}
-          {profile.isGoogleLinked ? (
-            <div className="space-y-2.5 mt-4">
-              <button
-                onClick={() => setShowAuthModal(true)}
-                className="w-full p-3.5 rounded-2xl bg-[#21201d] hover:bg-[#282622] border border-[#383531] flex items-center justify-between text-left transition-all active:scale-[0.99] shadow-sm cursor-pointer group"
-              >
-                <div className="flex items-center gap-3">
-                  <div className="w-9 h-9 rounded-xl bg-[#2a2824] border border-[#3d3a34] flex items-center justify-center text-[#81b64c]">
-                    🔄
-                  </div>
-                  <div>
-                    <div className="font-bold text-sm text-white group-hover:text-[#81b64c] transition-colors">
-                      {t('google_switch_account')}
-                    </div>
-                    <div className="text-[11px] text-[#9b9893]">
-                      Boshqa Google pochta yoki yangi ism bilan ulanish
-                    </div>
-                  </div>
-                </div>
-                <ChevronRightIcon size={16} className="text-[#686560]" />
-              </button>
-
-              <button
-                onClick={handleSignOut}
-                className="w-full p-3.5 rounded-2xl bg-red-500/10 hover:bg-red-500/20 border border-red-500/30 flex items-center justify-center gap-2.5 text-red-300 hover:text-red-200 text-xs font-bold transition-all active:scale-[0.99] shadow-sm cursor-pointer"
-              >
-                <LogOutIcon size={16} />
-                <span>{t('guest_mode_switch')}</span>
-              </button>
-            </div>
-          ) : (
+          {/* Faqat Google ulangan bo'lsa: pastda toza Chiqish tugmasi */}
+          {profile.isGoogleLinked && (
             <button
-              onClick={() => setShowAuthModal(true)}
-              className="w-full mt-4 p-3.5 rounded-2xl bg-[#81b64c]/15 hover:bg-[#81b64c]/25 border border-[#81b64c]/40 flex items-center justify-center gap-2.5 text-[#a4d471] text-xs font-bold transition-all active:scale-[0.99] shadow-sm cursor-pointer"
+              onClick={handleSignOut}
+              className="w-full mt-4 p-3.5 rounded-2xl bg-red-500/10 hover:bg-red-500/20 border border-red-500/30 flex items-center justify-center gap-2.5 text-red-300 hover:text-red-200 text-xs font-bold transition-all active:scale-[0.99] shadow-sm cursor-pointer"
             >
-              <GoogleIcon size={16} />
-              <span>{t('google_signin')}</span>
+              <LogOutIcon size={16} />
+              <span>{t('guest_mode_switch')}</span>
             </button>
           )}
         </div>

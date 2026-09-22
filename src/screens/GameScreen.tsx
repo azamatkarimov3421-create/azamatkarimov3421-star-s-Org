@@ -242,7 +242,13 @@ export default function GameScreen({ onBack, onOpenSettings }: GameScreenProps) 
     dispatch({ type: 'SET_AI_VS_AI_SPEED', speed: nextSpeed });
   };
 
-  const AI_LEVEL_NAMES = ['', t('ai_level_1'), t('ai_level_2'), t('ai_level_3'), t('ai_level_4')];
+  const AI_LEVEL_NAMES = [
+    '',
+    'Bot Sardor (1000)',
+    'Bot Temur (1400)',
+    'Bot Alp Er Toʻnga (1800)',
+    'Bot Al-Xorazmiy (2200)',
+  ];
   const AI_LEVEL_RATINGS = [0, 1000, 1400, 1800, 2200];
 
   // Sarlavha matni (qisqa va aniq, matn sinib ketmasligi uchun)
@@ -1037,10 +1043,10 @@ export default function GameScreen({ onBack, onOpenSettings }: GameScreenProps) 
 
             <div className="space-y-2">
               {[
-                { depth: 1, name: AI_LEVEL_NAMES[1], rating: '1000 ' + t('rating_label'), desc: 'D-1', badge: 'D-1' },
-                { depth: 2, name: AI_LEVEL_NAMES[2], rating: '1400 ' + t('rating_label'), desc: 'D-2', badge: 'D-2' },
-                { depth: 3, name: AI_LEVEL_NAMES[3], rating: '1800 ' + t('rating_label'), desc: 'D-3', badge: 'D-3' },
-                { depth: 4, name: AI_LEVEL_NAMES[4], rating: '2200 ' + t('rating_label'), desc: 'D-4', badge: 'D-4' },
+                { depth: 1, avatar: '🤖', name: 'Bot Sardor', title: t('ai_lvl_amateur'), rating: 1000, desc: t('ai_lvl_amateur_desc'), badge: 'D-1' },
+                { depth: 2, avatar: '⚡', name: 'Bot Temur', title: t('ai_lvl_experienced'), rating: 1400, desc: t('ai_lvl_experienced_desc'), badge: 'D-2' },
+                { depth: 3, avatar: '👑', name: 'Bot Alp Er Toʻnga', title: t('ai_lvl_master'), rating: 1800, desc: t('ai_lvl_master_desc'), badge: 'D-3' },
+                { depth: 4, avatar: '💎', name: 'Bot Al-Xorazmiy', title: t('ai_lvl_grandmaster'), rating: 2200, desc: t('ai_lvl_grandmaster_desc'), badge: 'D-4' },
               ].map((lvl) => {
                 const isSelected = aiDepth === lvl.depth;
                 return (
@@ -1051,28 +1057,28 @@ export default function GameScreen({ onBack, onOpenSettings }: GameScreenProps) 
                       setShowVsAiLevelModal(false);
                       logger.logInfo('UI', `Bot darajasi: ${lvl.name} (D-${lvl.depth})`);
                     }}
-                    className={`w-full p-3 rounded-xl border text-left flex items-center justify-between transition-all cursor-pointer ${
+                    className={`w-full p-2.5 rounded-2xl border text-left flex items-center gap-3 transition-all cursor-pointer ${
                       isSelected
                         ? 'bg-[#81b64c]/20 border-[#81b64c] shadow-[0_0_12px_rgba(129,182,76,0.2)]'
                         : 'bg-[#181715] border-[#383531] hover:border-[#45423c] hover:bg-[#262421]'
                     }`}
                   >
-                    <div>
-                      <div className="flex items-center gap-2">
-                        <span className={`font-bold text-sm ${isSelected ? 'text-[#81b64c]' : 'text-white'}`}>
+                    <span className="text-2xl w-10 h-10 rounded-xl bg-[#232f25] border border-[#384f3c] flex items-center justify-center shrink-0">
+                      {lvl.avatar}
+                    </span>
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center justify-between gap-1">
+                        <span className={`font-bold text-sm truncate ${isSelected ? 'text-[#81b64c]' : 'text-white'}`}>
                           {lvl.name}
                         </span>
-                        <span className="text-[10px] font-mono px-1.5 py-0.2 rounded bg-[#383531] text-[#c3c2be] font-bold">
-                          {lvl.badge}
+                        <span className="text-[10px] font-mono text-amber-400 font-bold shrink-0">
+                          ⭐ {lvl.rating}
                         </span>
                       </div>
-                      <p className="text-[11px] text-[#9b9893] mt-0.5">{lvl.desc}</p>
+                      <p className="text-[11px] text-[#9b9893] mt-0.5 line-clamp-1">{lvl.desc}</p>
                     </div>
-                    <div className="text-right shrink-0">
-                      <span className="text-xs font-mono font-bold text-amber-400 block">{lvl.rating}</span>
-                      {isSelected && (
-                        <span className="text-[10px] text-[#81b64c] font-bold">✓</span>
-                      )}
+                    <div className={`w-4 h-4 rounded-full border-2 shrink-0 flex items-center justify-center ${isSelected ? 'border-[#81b64c] bg-[#81b64c]' : 'border-[#4b5563]'}`}>
+                      {isSelected && <span className="w-1.5 h-1.5 rounded-full bg-black" />}
                     </div>
                   </button>
                 );
