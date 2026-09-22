@@ -15,8 +15,8 @@ interface ModelViewerModalProps {
 
 export default function ModelViewerModal({ isOpen, onClose }: ModelViewerModalProps) {
   const containerRef = useRef<HTMLDivElement>(null);
-  const [selectedPiece, setSelectedPiece] = useState<'Knight' | 'Rook'>('Knight');
-  const [colorMode, setColorMode] = useState<'white' | 'black'>('black');
+  const [selectedPiece, setSelectedPiece] = useState<'Knight' | 'Rook' | 'Queen'>('Queen');
+  const [colorMode, setColorMode] = useState<'white' | 'black'>('white');
   const [autoRotate, setAutoRotate] = useState(true);
   const [isLoading, setIsLoading] = useState(true);
 
@@ -91,7 +91,12 @@ export default function ModelViewerModal({ isOpen, onClose }: ModelViewerModalPr
     scene.add(rimLight);
 
     // 5. Load GLB Model
-    const modelPath = selectedPiece === 'Knight' ? '/models/knight.glb' : '/models/rook.glb';
+    const modelPath =
+      selectedPiece === 'Queen'
+        ? '/models/queen.glb'
+        : selectedPiece === 'Knight'
+        ? '/models/knight.glb'
+        : '/models/rook.glb';
     const loader = new GLTFLoader();
     loader.load(
       modelPath,
@@ -257,7 +262,26 @@ export default function ModelViewerModal({ isOpen, onClose }: ModelViewerModalPr
 
   if (!isOpen) return null;
 
-  const isKnight = selectedPiece === 'Knight';
+  const pieceMeta = {
+    Queen: {
+      name: 'Farzin (Queen)',
+      icon: '👑',
+      size: '2.4 MB',
+      desc: 'Tripo 3D relyefli, tojdor va zargarona Farzin modeli',
+    },
+    Knight: {
+      name: 'Ot (Knight)',
+      icon: '🐎',
+      size: '2.3 MB',
+      desc: 'Tripo 3D relyefli va PBR teksturali jangovar Ot modeli',
+    },
+    Rook: {
+      name: 'Rux (Rook)',
+      icon: '🏰',
+      size: '2.4 MB',
+      desc: 'Tripo 3D relyefli mustahkam qasr / qalʼa minorasi',
+    },
+  }[selectedPiece];
 
   return (
     <div className="fixed inset-0 bg-black/90 backdrop-blur-lg flex items-center justify-center z-[9999] p-3 sm:p-4 animate-fadeIn">
@@ -274,29 +298,40 @@ export default function ModelViewerModal({ isOpen, onClose }: ModelViewerModalPr
         <div className="flex flex-wrap items-center justify-between gap-3 mb-3 shrink-0 pr-12">
           <div className="flex items-center gap-3">
             <div className="w-11 h-11 rounded-2xl bg-amber-500/20 border border-amber-500/40 flex items-center justify-center text-2xl shadow-inner shrink-0">
-              {isKnight ? '🐎' : '🏰'}
+              {pieceMeta.icon}
             </div>
             <div>
               <div className="flex items-center gap-2">
                 <h3 className="text-lg font-black text-white">
-                  {isKnight ? '3D Ot (Knight)' : '3D Rux (Rook)'}
+                  3D {pieceMeta.name}
                 </h3>
                 <span className="text-[10px] font-extrabold uppercase px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-400 border border-emerald-500/30">
-                  GLB • {isKnight ? '2.3 MB' : '2.4 MB'}
+                  GLB • {pieceMeta.size}
                 </span>
               </div>
               <p className="text-slate-400 text-xs">
-                Tripo 3D relyefli va PBR teksturali model
+                {pieceMeta.desc}
               </p>
             </div>
           </div>
 
-          {/* Dona Tanlash (Ot / Rux) Tablari */}
+          {/* Dona Tanlash (Farzin / Ot / Rux) Tablari */}
           <div className="flex items-center bg-slate-800/90 p-1 rounded-2xl border border-slate-700 shadow-inner">
+            <button
+              onClick={() => setSelectedPiece('Queen')}
+              className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer ${
+                selectedPiece === 'Queen'
+                  ? 'bg-gradient-to-r from-amber-500 to-amber-600 text-slate-950 font-black shadow-md'
+                  : 'text-slate-300 hover:text-white'
+              }`}
+            >
+              <span>👑</span>
+              <span>Farzin</span>
+            </button>
             <button
               onClick={() => setSelectedPiece('Knight')}
               className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer ${
-                isKnight
+                selectedPiece === 'Knight'
                   ? 'bg-gradient-to-r from-amber-500 to-amber-600 text-slate-950 font-black shadow-md'
                   : 'text-slate-300 hover:text-white'
               }`}
@@ -307,7 +342,7 @@ export default function ModelViewerModal({ isOpen, onClose }: ModelViewerModalPr
             <button
               onClick={() => setSelectedPiece('Rook')}
               className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer ${
-                !isKnight
+                selectedPiece === 'Rook'
                   ? 'bg-gradient-to-r from-amber-500 to-amber-600 text-slate-950 font-black shadow-md'
                   : 'text-slate-300 hover:text-white'
               }`}
