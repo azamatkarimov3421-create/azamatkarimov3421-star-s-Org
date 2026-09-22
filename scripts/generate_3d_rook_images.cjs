@@ -163,29 +163,29 @@ const server = http.createServer((req, res) => {
         box.getSize(size);
 
         const maxDim = Math.max(size.x, size.y, size.z);
-        const scale = 1.48 / maxDim; // Clean padding so battlements never clip
+        const scale = 1.66 / maxDim; // Katta, ulug'vor va tepasi kesilmaydigan ideal o'lcham
         model.scale.set(scale, scale, scale);
 
         model.position.x = -center.x * scale;
-        model.position.y = -box.min.y * scale - 0.70;
+        model.position.y = -box.min.y * scale - 0.82;
         model.position.z = -center.z * scale;
 
         model.rotation.y = (facingDeg * Math.PI) / 180;
         scene.add(model);
 
-        // Ground shadow plane
+        // Ground shadow plane (aniq taglik ostida)
         const floorGeo = new THREE.PlaneGeometry(4, 4);
-        const floorMat = new THREE.ShadowMaterial({ opacity: isWhite ? 0.40 : 0.50 });
+        const floorMat = new THREE.ShadowMaterial({ opacity: isWhite ? 0.38 : 0.48 });
         const floor = new THREE.Mesh(floorGeo, floorMat);
         floor.rotation.x = -Math.PI / 2;
-        floor.position.y = -0.70;
+        floor.position.y = -0.82;
         floor.receiveShadow = true;
         scene.add(floor);
 
-        // Camera: 28° elevation matching Tripo AI perspective view (showing top and depth)
-        const camera = new THREE.PerspectiveCamera(34, width / height, 0.1, 100);
-        camera.position.set(0, 1.40, 2.35);
-        camera.lookAt(0, 0.10, 0);
+        // Camera: ~38° teparoqdan qarash (top va taglik ellipsi yaqqol ko'rinsin)
+        const camera = new THREE.PerspectiveCamera(36, width / height, 0.1, 100);
+        camera.position.set(0, 1.75, 2.15);
+        camera.lookAt(0, 0.05, 0);
 
         renderer.render(scene, camera);
         return canvas.toDataURL('image/png');

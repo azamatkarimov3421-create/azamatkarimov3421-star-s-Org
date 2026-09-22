@@ -163,11 +163,11 @@ const server = http.createServer((req, res) => {
         box.getSize(size);
 
         const maxDim = Math.max(size.x, size.y, size.z);
-        const scale = 1.46 / maxDim; // Gives ~10% padding so ears never clip
+        const scale = 1.66 / maxDim;
         model.scale.set(scale, scale, scale);
 
         model.position.x = -center.x * scale;
-        model.position.y = -box.min.y * scale - 0.70;
+        model.position.y = -box.min.y * scale - 0.82;
         model.position.z = -center.z * scale;
 
         model.rotation.y = (facingDeg * Math.PI) / 180;
@@ -175,17 +175,17 @@ const server = http.createServer((req, res) => {
 
         // Ground shadow plane
         const floorGeo = new THREE.PlaneGeometry(4, 4);
-        const floorMat = new THREE.ShadowMaterial({ opacity: isWhite ? 0.35 : 0.45 });
+        const floorMat = new THREE.ShadowMaterial({ opacity: isWhite ? 0.38 : 0.48 });
         const floor = new THREE.Mesh(floorGeo, floorMat);
         floor.rotation.x = -Math.PI / 2;
-        floor.position.y = -0.70;
+        floor.position.y = -0.82;
         floor.receiveShadow = true;
         scene.add(floor);
 
-        // Camera: 30° elevation matching Tripo AI perspective view
-        const camera = new THREE.PerspectiveCamera(34, width / height, 0.1, 100);
-        camera.position.set(0, 1.45, 2.35);
-        camera.lookAt(0, 0.10, 0);
+        // Camera: ~38° elevation matching top-down perspective
+        const camera = new THREE.PerspectiveCamera(36, width / height, 0.1, 100);
+        camera.position.set(0, 1.75, 2.15);
+        camera.lookAt(0, 0.05, 0);
 
         renderer.render(scene, camera);
         return canvas.toDataURL('image/png');

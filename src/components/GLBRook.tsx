@@ -15,21 +15,23 @@ interface GLBRookProps {
 
 export default function GLBRook({
   color,
-  size = '100%',
+  size,
   className = '',
   isSelected = false,
 }: GLBRookProps) {
   const imgSrc = color === 'white' ? '/pieces/3d_rook_white.png' : '/pieces/3d_rook_black.png';
 
-  const containerStyle: React.CSSProperties = {
-    width: typeof size === 'number' ? `${size}px` : size,
-    height: typeof size === 'number' ? `${size}px` : size,
-  };
+  const containerStyle: React.CSSProperties | undefined = size !== undefined
+    ? {
+        width: typeof size === 'number' ? `${size}px` : size,
+        height: typeof size === 'number' ? `${size}px` : size,
+      }
+    : undefined;
 
   return (
     <div
       style={containerStyle}
-      className={`relative flex items-end justify-center pointer-events-none select-none ${className}`}
+      className={`relative w-full h-full flex items-end justify-center pointer-events-none select-none ${className}`}
       title={`3D Rux (Rook) — ${color === 'white' ? 'Oq' : 'Qora'}`}
     >
       <img
@@ -37,8 +39,8 @@ export default function GLBRook({
         alt={`3D ${color} Rook`}
         className={`w-full h-full object-contain object-bottom pointer-events-none select-none transition-transform duration-150 ${
           isSelected
-            ? 'scale-110 -translate-y-2 drop-shadow-[0_12px_16px_rgba(245,158,11,0.75)]'
-            : 'drop-shadow-[0_3px_5px_rgba(0,0,0,0.45)]'
+            ? 'scale-110 -translate-y-2.5 drop-shadow-[0_14px_18px_rgba(245,158,11,0.85)]'
+            : 'drop-shadow-[0_2px_4px_rgba(0,0,0,0.35)]'
         }`}
         draggable={false}
       />

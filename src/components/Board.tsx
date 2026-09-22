@@ -436,11 +436,11 @@ export default function Board() {
         style={
           is3D
             ? {
-                transform: 'rotateX(24deg) translateY(-4px)',
+                transform: 'rotateX(28deg) translateY(-6px)',
                 transformOrigin: '50% 50% 0',
                 transformStyle: 'preserve-3d',
                 boxShadow:
-                  '0 26px 48px -4px rgba(0,0,0,0.95), 0 4px 0 0 #4c2810, 0 8px 0 0 #361b09, 0 14px 0 0 #221004, inset 0 1px 2px rgba(255,255,255,0.45)',
+                  '0 28px 56px -4px rgba(0,0,0,0.95), 0 4px 0 0 #4c2810, 0 8px 0 0 #361b09, 0 16px 0 0 #221004, inset 0 1px 2px rgba(255,255,255,0.45)',
               }
             : undefined
         }
@@ -554,7 +554,7 @@ export default function Board() {
                 const pieceStyle: React.CSSProperties = is3D
                   ? {
                       ...slideStyle,
-                      transform: 'translateZ(8px) rotateX(-24deg) translateY(0px)',
+                      transform: 'translateZ(12px) rotateX(-28deg) translateY(4px)',
                       transformOrigin: 'bottom center',
                       filter: isSelected ? 'drop-shadow(0 4px 6px rgba(0,0,0,0.85))' : undefined,
                       transition: isCurrentlyAnimating ? undefined : 'transform 0.15s ease-out',
@@ -565,7 +565,7 @@ export default function Board() {
                   <div
                     key={key}
                     className={`relative w-full h-full aspect-square flex items-center justify-center touch-none select-none ${squareBgClass}`}
-                    style={is3D ? { transformStyle: 'preserve-3d', zIndex: (10 - rankIdx) * 2 } : undefined}
+                    style={is3D ? { transformStyle: 'preserve-3d', zIndex: (10 - rankIdx) * 5 } : undefined}
                   >
                     {/* 100% to'liq qamrovli interaktiv tugma: Chertish va Sudrab tashlash (Drag & Drop) */}
                     <button
@@ -714,7 +714,7 @@ export default function Board() {
                           color={piece.color}
                           is3D={is3D}
                           isSelected={isSelected}
-                          className={`${is3D ? 'w-[90%] h-[114%]' : 'w-[92%] h-[92%]'} pointer-events-none select-none`}
+                          className={`${is3D ? 'w-[100%] h-[132%]' : 'w-[92%] h-[92%]'} pointer-events-none select-none`}
                         />
                       </div>
                     )}
