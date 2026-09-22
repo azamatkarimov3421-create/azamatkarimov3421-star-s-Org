@@ -42,15 +42,35 @@ export function setSoundTheme(theme: SoundTheme): void {
   } catch {}
 }
 
+function unlockAudio() {
+  try {
+    if (audioCtx && audioCtx.state === 'suspended') {
+      audioCtx.resume().catch(() => {});
+    }
+  } catch {}
+}
+
+if (typeof window !== 'undefined') {
+  window.addEventListener('click', unlockAudio, { once: true, passive: true });
+  window.addEventListener('touchstart', unlockAudio, { once: true, passive: true });
+  window.addEventListener('keydown', unlockAudio, { once: true, passive: true });
+}
+
 function getAudioContext(): AudioContext {
-  if (!audioCtx) {
-    const AudioCtx = window.AudioContext || (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext;
-    audioCtx = new AudioCtx();
+  if (!audioCtx && typeof window !== 'undefined') {
+    try {
+      const AudioCtx = window.AudioContext || (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext;
+      if (AudioCtx) {
+        audioCtx = new AudioCtx();
+      }
+    } catch {}
   }
-  if (audioCtx.state === 'suspended') {
-    audioCtx.resume().catch(() => {});
+  if (audioCtx && audioCtx.state === 'suspended') {
+    try {
+      audioCtx.resume().catch(() => {});
+    } catch {}
   }
-  return audioCtx;
+  return audioCtx!;
 }
 
 /**

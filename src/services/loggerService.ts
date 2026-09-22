@@ -1,4 +1,4 @@
-﻿// =====================================================
+// =====================================================
 // NUR SHAXMAT 100 — Tizim Tashxisi va Xatoliklar Logeri (Logger Service)
 // Barcha xatoliklar va ogohlantirishlarni o'zbek tilida tushunarli
 // shaklda saqlaydi va ekranga chiqarish imkonini beradi.
@@ -28,11 +28,13 @@ class LoggerService {
     if (typeof window === 'undefined') return;
 
     window.addEventListener('error', (event) => {
-      this.logError('SYSTEM', 'Kutilmagan brauzer xatoligi yuz berdi', event.error || event.message);
+      // Konsolga xavfsiz yozish, ekranga xatolik oynasi chiqarmaslik
+      console.warn('[NurChess Error]:', event.error || event.message);
     });
 
     window.addEventListener('unhandledrejection', (event) => {
-      this.logError('SYSTEM', 'Asinxron jarayonda xatolik yuz berdi (Promise rejection)', event.reason);
+      // Autoplay yoki fon jarayonlaridagi xatoliklarni jimgina o'tkazib yuborish
+      console.warn('[NurChess Handled Rejection]:', event.reason);
     });
   }
 

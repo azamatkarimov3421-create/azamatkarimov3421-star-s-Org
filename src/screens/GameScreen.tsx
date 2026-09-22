@@ -14,7 +14,6 @@ import { getUserProfile } from '../store/userProfileStore';
 import { getBestMove, getBestMoveAsync } from '../ai/minimax';
 import { onlineManager } from '../services/onlineService';
 import { logger } from '../services/loggerService';
-import ErrorModal from '../components/ErrorModal';
 import {
   ArrowLeftIcon,
   RotateCwIcon,
@@ -68,10 +67,7 @@ export default function GameScreen({ onBack, onOpenSettings }: GameScreenProps) 
   const [showMenuModal, setShowMenuModal] = useState(false);
   const [showPiecesModal, setShowPiecesModal] = useState(false);
   const [showHistoryModal, setShowHistoryModal] = useState(false);
-  const [showErrorModal, setShowErrorModal] = useState(false);
   const [showVsAiLevelModal, setShowVsAiLevelModal] = useState(false);
-  const [errorCount, setErrorCount] = useState(0);
-  const [lastWarning, setLastWarning] = useState<string | null>(null);
   const userProfile = getUserProfile();
 
   React.useEffect(() => {
@@ -82,26 +78,6 @@ export default function GameScreen({ onBack, onOpenSettings }: GameScreenProps) 
       return () => clearTimeout(timer);
     }
   }, [drawOfferNotice, dispatch]);
-
-  // Loggerga obuna bo'lish (Xatolik yoki ogohlantirishlarni kuzatish)
-  React.useEffect(() => {
-    const updateLogs = () => {
-      const allLogs = logger.getLogs();
-      const errs = allLogs.filter(l => l.level === 'error').length;
-      setErrorCount(errs);
-    };
-    updateLogs();
-
-    const unsubscribe = logger.subscribe((entry, logs) => {
-      const errs = logs.filter(l => l.level === 'error').length;
-      setErrorCount(errs);
-      if (entry.level === 'error' || entry.level === 'warn') {
-        setLastWarning(entry.message);
-        setTimeout(() => setLastWarning(null), 5000);
-      }
-    });
-    return unsubscribe;
-  }, []);
 
   const isGameOver = status !== 'playing' && status !== 'check';
   const isMyTurn = (gameMode === 'online' && onlinePlayerColor)
@@ -504,19 +480,6 @@ export default function GameScreen({ onBack, onOpenSettings }: GameScreenProps) 
         </div>
       )}
 
-      {lastWarning && (
-        <div
-          onClick={() => setShowErrorModal(true)}
-          className="fixed top-14 left-1/2 -translate-x-1/2 z-40 max-w-md w-[90%] px-3.5 py-2 rounded-2xl bg-amber-500 text-slate-950 font-bold text-xs shadow-2xl flex items-center justify-between gap-2 cursor-pointer animate-fadeIn border border-amber-300"
-        >
-          <div className="flex items-center gap-2 truncate">
-            <span>⚠️</span>
-            <span className="truncate">{lastWarning}</span>
-          </div>
-          <span className="shrink-0 underline text-[11px] font-black">Log</span>
-        </div>
-      )}
-
       {/* ── 4. ASOSIY MAYDON: 10x10 SHAXMAT DOSQASI VA MOSLASHUVCHAN HUD ── */}
       <main className="relative z-10 w-full h-full flex flex-col md:flex-row landscape:flex-row items-center justify-center gap-1 sm:gap-2 lg:gap-5 p-1 sm:p-2 overflow-hidden">
         
@@ -803,20 +766,6 @@ export default function GameScreen({ onBack, onOpenSettings }: GameScreenProps) 
                 </button>
               )}
 
-              {/* Xatoliklar / log */}
-              {errorCount > 0 && (
-                <button
-                  onClick={() => {
-                    setShowMenuModal(false);
-                    setShowErrorModal(true);
-                  }}
-                  className="w-full py-2 px-3.5 rounded-xl bg-red-500/20 hover:bg-red-500/30 border border-red-500/40 text-red-300 font-bold text-xs flex items-center gap-2 cursor-pointer"
-                >
-                  <span>⚠️</span>
-                  <span>Tizim loglari ({errorCount})</span>
-                </button>
-              )}
-
               {/* Bosh sahifaga chiqish */}
               <button
                 onClick={() => {
@@ -895,13 +844,6 @@ export default function GameScreen({ onBack, onOpenSettings }: GameScreenProps) 
           </div>
         </div>
       )}
-
-      {/* Tizim Loglari va Nosozliklarni ko'rish va Tiklash Modali */}
-      <ErrorModal
-        isOpen={showErrorModal}
-        onClose={() => setShowErrorModal(false)}
-        onResetGame={handleEmergencyReset}
-      />
 
       {/* Bot darajasini o'zgartirish modali (vsAI rejimida) */}
       {showVsAiLevelModal && (
