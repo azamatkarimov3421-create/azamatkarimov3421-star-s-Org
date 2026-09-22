@@ -370,8 +370,8 @@ export default function GameScreen({ onBack, onOpenSettings }: GameScreenProps) 
       {/* Tabiiy yog'och stol ustidagi mayin yorug'lik vinetkasi (Soft ambient vignette) */}
       <div className="absolute inset-0 bg-gradient-to-t from-black/45 via-transparent to-black/30 pointer-events-none z-0" />
 
-      {/* ── 1. CHAP TOMONDAGI SUZUVCHI TUGMALAR (Floating Left Controls — 1 ga 1 Screenshot) ── */}
-      <div className="absolute top-3 sm:top-5 left-3 sm:left-5 z-40 flex flex-col gap-3">
+      {/* ── 1. PLANSHT VA DESKTOP UCHUN SUZUVCHI TUGMALAR (Faqat md+ va landscape da) ── */}
+      <div className="hidden md:flex landscape:flex absolute top-3 sm:top-5 left-3 sm:left-5 z-40 flex-col gap-3">
         {/* Menyuni ochish (☰ Hamburger) */}
         <button
           onClick={() => setShowMenuModal(true)}
@@ -400,48 +400,72 @@ export default function GameScreen({ onBack, onOpenSettings }: GameScreenProps) 
         </button>
       </div>
 
-      {/* ── 2. O'NG TOMONDAGI SUZUVCHI TUGMALAR (Faqat mobil tikka turganida ko'rinadi) ── */}
-      <div className="absolute top-3 sm:top-5 right-3 sm:right-5 z-40 flex md:hidden landscape:hidden flex-col gap-3 items-end">
-        {/* Harakatni bekor qilish (↶ Undo) */}
-        <button
-          onClick={() => dispatch({ type: 'UNDO' })}
-          disabled={history.length === 0 || isGameOver || gameMode === 'online'}
-          className="w-10 h-10 sm:w-11 sm:h-11 rounded-xl bg-black/45 hover:bg-black/70 disabled:opacity-30 disabled:pointer-events-none active:scale-95 backdrop-blur-md border border-white/15 text-white shadow-[0_8px_16px_rgba(0,0,0,0.6)] flex items-center justify-center transition-all cursor-pointer"
-          title={t('btn_undo')}
-        >
-          <RotateCcwIcon size={20} />
-        </button>
+      {/* ── 2. MOBIL TIKKA REJIM: YUQORI BOSHQARUV PANELI (Ustma-ust tushmaydigan gorizontal panel) ── */}
+      <header className="relative z-30 w-full max-w-[min(calc(100vw-12px),500px)] flex md:hidden landscape:hidden items-center justify-between px-2 pt-1.5 pb-1 shrink-0">
+        {/* Chap amallar: Menyu, 90° Burish, Doskani aylantirish */}
+        <div className="flex items-center gap-1.5">
+          <button
+            onClick={() => setShowMenuModal(true)}
+            className="w-8 h-8 rounded-xl bg-black/60 hover:bg-black/80 active:scale-95 border border-white/15 text-white flex items-center justify-center transition-all cursor-pointer shadow-md"
+            title="Menyu"
+          >
+            <MenuIcon size={16} />
+          </button>
 
-        {/* Yutib olingan donalar va o'yin holati (♟ Piece / Status) */}
-        <button
-          onClick={() => setShowPiecesModal(true)}
-          className="w-10 h-10 sm:w-11 sm:h-11 rounded-xl bg-black/45 hover:bg-black/70 active:scale-95 backdrop-blur-md border border-white/15 text-white shadow-[0_8px_16px_rgba(0,0,0,0.6)] flex items-center justify-center transition-all cursor-pointer"
-          title="Donalar & Holat"
-        >
-          <ChessPawnIcon size={22} />
-        </button>
+          <button
+            onClick={handleToggleOrientation}
+            className="w-8 h-8 rounded-xl bg-black/60 hover:bg-black/80 active:scale-95 border border-white/15 text-amber-300 flex items-center justify-center transition-all cursor-pointer shadow-md font-black text-xs"
+            title="90° Burish / Yonboshcha"
+          >
+            90°
+          </button>
 
-        {/* Maslahat (💡 Lightbulb) */}
-        <button
-          onClick={handleGetHint}
-          disabled={isGameOver || hintLoading}
-          className="w-10 h-10 sm:w-11 sm:h-11 rounded-xl bg-black/45 hover:bg-black/70 disabled:opacity-30 disabled:pointer-events-none active:scale-95 backdrop-blur-md border border-white/15 text-amber-300 shadow-[0_8px_16px_rgba(0,0,0,0.6)] flex items-center justify-center transition-all cursor-pointer"
-          title={t('btn_hint')}
-        >
-          <LightbulbIcon size={22} />
-        </button>
-      </div>
+          <button
+            onClick={() => dispatch({ type: 'TOGGLE_FLIP' })}
+            className="w-8 h-8 rounded-xl bg-black/60 hover:bg-black/80 active:scale-95 border border-white/15 text-white flex items-center justify-center transition-all cursor-pointer shadow-md"
+            title={t('btn_flip')}
+          >
+            <RotateCwIcon size={15} />
+          </button>
+        </div>
+
+        {/* Markaz: Rejim sarlavhasi */}
+        <div className="px-2 py-0.5 rounded-full bg-black/50 border border-white/10 text-white font-extrabold text-[10px] truncate max-w-[130px]">
+          {modeTitle}
+        </div>
+
+        {/* O'ng amallar: Bekor qilish, Maslahat */}
+        <div className="flex items-center gap-1.5">
+          <button
+            onClick={() => dispatch({ type: 'UNDO' })}
+            disabled={history.length === 0 || isGameOver || gameMode === 'online'}
+            className="w-8 h-8 rounded-xl bg-black/60 hover:bg-black/80 disabled:opacity-30 disabled:pointer-events-none active:scale-95 border border-white/15 text-white flex items-center justify-center transition-all cursor-pointer shadow-md"
+            title={t('btn_undo')}
+          >
+            <RotateCcwIcon size={15} />
+          </button>
+
+          <button
+            onClick={handleGetHint}
+            disabled={isGameOver || hintLoading}
+            className="w-8 h-8 rounded-xl bg-black/60 hover:bg-black/80 disabled:opacity-30 disabled:pointer-events-none active:scale-95 border border-white/15 text-amber-300 flex items-center justify-center transition-all cursor-pointer shadow-md"
+            title={t('btn_hint')}
+          >
+            <LightbulbIcon size={16} />
+          </button>
+        </div>
+      </header>
 
       {/* ── 3. YUQORI HOLAT XABARNOMALARI (Floating Status Indicators) ── */}
       {aiThinking && (
-        <div className="fixed top-3 sm:top-5 left-1/2 -translate-x-1/2 z-30 px-3.5 py-1.5 rounded-full bg-black/70 backdrop-blur-md border border-amber-500/40 text-amber-300 text-xs font-bold flex items-center gap-2 shadow-2xl animate-pulse pointer-events-none">
+        <div className="fixed top-12 left-1/2 -translate-x-1/2 z-30 px-3.5 py-1.5 rounded-full bg-black/70 backdrop-blur-md border border-amber-500/40 text-amber-300 text-xs font-bold flex items-center gap-2 shadow-2xl animate-pulse pointer-events-none">
           <span className="w-2 h-2 rounded-full bg-amber-400 animate-ping" />
           <span>{t('bot_thinking')}</span>
         </div>
       )}
 
       {game.isInCheck && !isGameOver && (
-        <div className="fixed top-3 sm:top-5 left-1/2 -translate-x-1/2 z-30 px-4 py-1.5 rounded-full bg-red-950/80 backdrop-blur-md border border-red-500/60 text-red-200 text-xs font-black flex items-center gap-2 shadow-2xl animate-bounce pointer-events-none">
+        <div className="fixed top-12 left-1/2 -translate-x-1/2 z-30 px-4 py-1.5 rounded-full bg-red-950/80 backdrop-blur-md border border-red-500/60 text-red-200 text-xs font-black flex items-center gap-2 shadow-2xl animate-bounce pointer-events-none">
           <span>🔥</span>
           <span>{t('check_alert')}</span>
         </div>
@@ -461,10 +485,10 @@ export default function GameScreen({ onBack, onOpenSettings }: GameScreenProps) 
       )}
 
       {/* ── 4. ASOSIY MAYDON: 10x10 SHAXMAT DOSQASI VA MOSLASHUVCHAN HUD ── */}
-      <main className="relative z-10 w-full h-full flex flex-col md:flex-row landscape:flex-row items-center justify-center gap-1.5 sm:gap-3 lg:gap-5 p-1 sm:p-2 overflow-hidden">
+      <main className="relative z-10 w-full h-full flex flex-col md:flex-row landscape:flex-row items-center justify-center gap-1 sm:gap-2 lg:gap-5 p-1 sm:p-2 overflow-hidden">
         
         {/* MOBIL PORTRAIT: DOSKA USTIDAGI RAQIB KARTASI (Vaqt va profil doim ko'rinadi) */}
-        <div className="w-full max-w-[min(calc(100vw-12px),520px)] px-1 md:hidden landscape:hidden z-20 shrink-0">
+        <div className="w-full max-w-[min(calc(100vw-12px),500px)] px-1 md:hidden landscape:hidden z-20 shrink-0">
           <PlayerCard
             playerColor={topColor}
             position="top"
@@ -473,11 +497,20 @@ export default function GameScreen({ onBack, onOpenSettings }: GameScreenProps) 
           />
         </div>
 
+        {/* MOBIL PORTRAIT: POZITSIYA BAHOLANISHI (EvalBar - "manabu ham doskada kurisin") */}
+        <div className="w-full max-w-[min(calc(100vw-12px),500px)] px-2.5 py-1 md:hidden landscape:hidden z-20 shrink-0 flex items-center justify-between text-[10px] text-zinc-300 font-bold bg-[#141210]/85 backdrop-blur-md rounded-xl border border-white/10 shadow-sm">
+          <span className="text-zinc-400 font-medium">Holat baholanishi:</span>
+          <div className="flex-1 mx-2.5">
+            <EvalBar orientation="horizontal" />
+          </div>
+          <span className="text-amber-300 font-mono font-bold shrink-0">{moveHistory.length} ta yurish</span>
+        </div>
+
         {/* 10x10 Shaxmat Dosqasi */}
         <Board />
 
         {/* MOBIL PORTRAIT: DOSKA OSTIDAGI O'YINCHI KARTASI (Vaqt va profil doim ko'rinadi) */}
-        <div className="w-full max-w-[min(calc(100vw-12px),520px)] px-1 md:hidden landscape:hidden z-20 shrink-0">
+        <div className="w-full max-w-[min(calc(100vw-12px),500px)] px-1 md:hidden landscape:hidden z-20 shrink-0">
           <PlayerCard
             playerColor={bottomColor}
             position="bottom"

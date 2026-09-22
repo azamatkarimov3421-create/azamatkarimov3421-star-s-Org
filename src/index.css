@@ -6,9 +6,9 @@
 
 /* ── NUR CHESS 100 — KOMPYUTER VA MOBIL MOSLASHUVCHAN O'LCHAMLARI ── */
 :root {
-  /* Standart (Portrait - telefon vertikal turganda): doska + tepa/pastki kartochkalar to'liq sig'adi */
-  --board-size: min(calc(100vw - 12px), calc(100dvh - 170px), 520px);
-  --board-size-3d: min(calc(100vw - 12px), calc(100dvh - 180px), 520px);
+  /* Standart (Portrait - telefon vertikal turganda): header + opponent card + eval bar + board + player card to'liq sig'adi */
+  --board-size: min(calc(100vw - 12px), calc(100dvh - 185px), 500px);
+  --board-size-3d: min(calc(100vw - 12px), calc(100dvh - 195px), 500px);
 }
 
 /* Gorizontal va Yonboshcha (Landscape: telefon 90 gradusga burilganda yoki planshet/kompyuterda) */
