@@ -436,11 +436,11 @@ export default function Board() {
         style={
           is3D
             ? {
-                transform: 'rotateX(22deg) translateY(-4px)',
+                transform: 'rotateX(24deg) translateY(-4px)',
                 transformOrigin: '50% 50% 0',
                 transformStyle: 'preserve-3d',
                 boxShadow:
-                  '0 22px 38px -4px rgba(0,0,0,0.92), 0 4px 0 0 #4c2810, 0 8px 0 0 #361b09, 0 12px 0 0 #221004, inset 0 1px 2px rgba(255,255,255,0.45)',
+                  '0 26px 48px -4px rgba(0,0,0,0.95), 0 4px 0 0 #4c2810, 0 8px 0 0 #361b09, 0 14px 0 0 #221004, inset 0 1px 2px rgba(255,255,255,0.45)',
               }
             : undefined
         }
@@ -554,7 +554,7 @@ export default function Board() {
                 const pieceStyle: React.CSSProperties = is3D
                   ? {
                       ...slideStyle,
-                      transform: 'translateZ(6px) rotateX(-22deg) translateY(0px)',
+                      transform: 'translateZ(8px) rotateX(-24deg) translateY(0px)',
                       transformOrigin: 'bottom center',
                       filter: isSelected ? 'drop-shadow(0 4px 6px rgba(0,0,0,0.85))' : undefined,
                       transition: isCurrentlyAnimating ? undefined : 'transform 0.15s ease-out',
@@ -565,7 +565,7 @@ export default function Board() {
                   <div
                     key={key}
                     className={`relative w-full h-full aspect-square flex items-center justify-center touch-none select-none ${squareBgClass}`}
-                    style={is3D && (piece || isLegalTarget) ? { transformStyle: 'preserve-3d' } : undefined}
+                    style={is3D ? { transformStyle: 'preserve-3d', zIndex: (10 - rankIdx) * 2 } : undefined}
                   >
                     {/* 100% to'liq qamrovli interaktiv tugma: Chertish va Sudrab tashlash (Drag & Drop) */}
                     <button
@@ -691,7 +691,9 @@ export default function Board() {
                       <div
                         key={piece.id}
                         style={pieceStyle}
-                        className={`relative z-10 w-full h-full flex items-center justify-center select-none pointer-events-none transition-opacity duration-150 ${
+                        className={`relative z-10 w-full h-full flex ${
+                          is3D ? 'items-end justify-center pb-0 sm:pb-0.5' : 'items-center justify-center'
+                        } select-none pointer-events-none transition-opacity duration-150 ${
                           activeDrag && squaresEqual(sq, activeDrag.from)
                             ? 'opacity-30 scale-95'
                             : ''
@@ -712,7 +714,7 @@ export default function Board() {
                           color={piece.color}
                           is3D={is3D}
                           isSelected={isSelected}
-                          className={`${is3D ? 'w-[84%] h-[84%]' : 'w-[92%] h-[92%]'} pointer-events-none select-none`}
+                          className={`${is3D ? 'w-[90%] h-[114%]' : 'w-[92%] h-[92%]'} pointer-events-none select-none`}
                         />
                       </div>
                     )}

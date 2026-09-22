@@ -97,9 +97,14 @@ const server = http.createServer((req, res) => {
         const amb = new THREE.AmbientLight(0xffffff, isWhite ? 0.75 : 0.95);
         scene.add(amb);
 
-        // Key Light (top front right)
+        // Key Light (top front right, casting soft natural ground shadow)
         const key = new THREE.DirectionalLight(0xfff8ee, isWhite ? 2.2 : 2.6);
-        key.position.set(3.0, 4.2, 3.2);
+        key.position.set(1.2, 4.8, 2.6);
+        key.castShadow = true;
+        key.shadow.mapSize.width = 1024;
+        key.shadow.mapSize.height = 1024;
+        key.shadow.radius = 3.5;
+        key.shadow.bias = -0.0005;
         scene.add(key);
 
         // Fill Light (left cool)
@@ -123,6 +128,8 @@ const server = http.createServer((req, res) => {
         // Apply materials
         model.traverse((child) => {
           if (child.isMesh) {
+            child.castShadow = true;
+            child.receiveShadow = true;
             const orig = Array.isArray(child.material) ? child.material[0] : child.material;
             const origNormal = orig?.normalMap || null;
             const origMap = orig?.map || null;
@@ -166,9 +173,19 @@ const server = http.createServer((req, res) => {
         model.rotation.y = (facingDeg * Math.PI) / 180;
         scene.add(model);
 
-        const camera = new THREE.PerspectiveCamera(36, width / height, 0.1, 100);
-        camera.position.set(0, 0.38, 2.65);
-        camera.lookAt(0, 0, 0);
+        // Ground shadow plane
+        const floorGeo = new THREE.PlaneGeometry(4, 4);
+        const floorMat = new THREE.ShadowMaterial({ opacity: isWhite ? 0.35 : 0.45 });
+        const floor = new THREE.Mesh(floorGeo, floorMat);
+        floor.rotation.x = -Math.PI / 2;
+        floor.position.y = -0.70;
+        floor.receiveShadow = true;
+        scene.add(floor);
+
+        // Camera: 30° elevation matching Tripo AI perspective view
+        const camera = new THREE.PerspectiveCamera(34, width / height, 0.1, 100);
+        camera.position.set(0, 1.45, 2.35);
+        camera.lookAt(0, 0.10, 0);
 
         renderer.render(scene, camera);
         return canvas.toDataURL('image/png');
