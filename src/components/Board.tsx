@@ -7,6 +7,7 @@ import { BoardTheme, useGame } from '../store/gameStore';
 import { FILES, Move, Piece, Square, squaresEqual } from '../engine/types';
 import PieceIcon from './PieceIcon';
 import NurLogo from './NurLogo';
+import { useTranslation } from '../i18n/translations';
 
 // Mavzular rang palitrasi
 const THEME_STYLES: Record<BoardTheme, {
@@ -70,6 +71,7 @@ export default function Board() {
     gameMode,
     onlinePlayerColor,
     aiColor,
+    aiDepth,
     aiThinking,
   } = state;
   const boardRef = useRef<HTMLDivElement>(null);
@@ -369,6 +371,46 @@ export default function Board() {
     [isFlipped]
   );
 
+  const { t, lang } = useTranslation();
+
+  // 3D dosqa old qirrasi (Front Rim) uchun bot / raqib nomi va unvoni (Screenshotdagi 1 ga 1)
+  const frontRimTitle = useMemo(() => {
+    if (gameMode === 'vsAI') {
+      if (lang === 'ru') {
+        if (aiDepth === 4) return 'ГРОССМЕЙСТЕР (БОТ АЛЬ-ХОРЕЗМИ)';
+        if (aiDepth === 3) return 'МАСТЕР (БОТ АЛЬП ЭР ТОНГА)';
+        if (aiDepth === 2) return 'КАНДИДАТ В МАСТЕРА'; // Screenshotdagi 1 ga 1 yozuv!
+        return 'ЛЮБИТЕЛЬ (БОТ САРДОР)';
+      }
+      if (aiDepth === 4) return 'GROSSMEYSTER (BOT AL-XORAZMIY)';
+      if (aiDepth === 3) return 'USTA (BOT ALP ER TOʻNGA)';
+      if (aiDepth === 2) return 'KANDIDAT V MASTERA (BOT TEMUR)';
+      return 'HAVASKOR (BOT SARDOR)';
+    }
+    if (gameMode === 'aiVsAi') {
+      return 'BOT VS BOT';
+    }
+    if (gameMode === 'online') {
+      return lang === 'ru' ? 'ОНЛАЙН СОПЕРНИК' : 'ONLAYN RAQIB';
+    }
+    return 'NUR CHESS 100';
+  }, [gameMode, aiDepth, lang]);
+
+  // 3D dosqa old qirrasi uchun joriy yurish navbati va raqami (Screenshotdagi 1 ga 1)
+  const frontRimMoveText = useMemo(() => {
+    const moveNum = Math.floor(game.moveHistory.length / 2) + 1;
+    if (game.status !== 'playing' && game.status !== 'check') {
+      return lang === 'ru' ? 'Игра окончена' : "O'yin tugadi";
+    }
+    if (lang === 'ru') {
+      return `${moveNum}. ${game.currentTurn === 'white' ? 'Ход белых' : 'Ход черных'}`;
+    }
+    if (lang === 'en') {
+      return `${moveNum}. ${game.currentTurn === 'white' ? "White's move" : "Black's move"}`;
+    }
+    return `${moveNum}. ${game.currentTurn === 'white' ? 'Oqlarning yurishi' : 'Qoralarning yurishi'}`;
+  }, [game.moveHistory.length, game.status, game.currentTurn, lang]);
+
   return (
     <div
       className={`relative select-none flex flex-col items-center w-full mx-auto touch-manipulation transition-all duration-300 ${
@@ -384,21 +426,21 @@ export default function Board() {
       }
       onContextMenu={(e) => e.preventDefault()}
     >
-      {/* Tashqi Zargarona Ramka (3D rejimida kitobdagidek qalin yog'och taxta) */}
+      {/* Tashqi Zargarona Ramka (3D rejimida screenshotdagi 1 ga 1 tabiiy yog'och doska) */}
       <div
         className={`w-full transition-all duration-300 select-none touch-manipulation ${
           is3D
-            ? 'p-1.5 sm:p-2.5 rounded-2xl sm:rounded-3xl border-4 sm:border-[5px] border-[#381f14] bg-gradient-to-b from-[#2e1810] via-[#1c0f0a] to-[#120906]'
+            ? 'p-1 sm:p-2 rounded-lg sm:rounded-xl border-2 sm:border-[3px] border-[#5e3718] bg-gradient-to-b from-[#e3c299] via-[#d6b083] to-[#c59c6b] shadow-[0_24px_50px_rgba(0,0,0,0.85),0_10px_20px_rgba(0,0,0,0.7)]'
             : `p-1 sm:p-2 rounded-xl sm:rounded-2xl border-2 sm:border-[3px] ${themeStyle.frameBorder} ${themeStyle.frameBg} shadow-xl`
         }`}
         style={
           is3D
             ? {
-                transform: 'rotateX(26deg) translateY(-8px)',
-                transformOrigin: '50% 48% 0',
+                transform: 'rotateX(22deg) translateY(-4px)',
+                transformOrigin: '50% 50% 0',
                 transformStyle: 'preserve-3d',
                 boxShadow:
-                  '0 18px 26px -4px rgba(0,0,0,0.85), 0 5px 0 0 #3d1e10, 0 9px 0 0 #2a1309, 0 13px 0 0 #190a04, inset 0 2px 4px rgba(255,255,255,0.22)',
+                  '0 22px 38px -4px rgba(0,0,0,0.92), 0 4px 0 0 #4c2810, 0 8px 0 0 #361b09, 0 12px 0 0 #221004, inset 0 1px 2px rgba(255,255,255,0.45)',
               }
             : undefined
         }
@@ -411,7 +453,7 @@ export default function Board() {
               <div
                 key={file}
                 className={`flex items-center justify-center text-[9px] sm:text-xs md:text-sm font-black tracking-wider ${
-                  is3D ? 'text-[#f6dc88] font-black drop-shadow-[0_1px_2px_rgba(0,0,0,0.95)]' : themeStyle.coordText
+                  is3D ? 'text-[#382011] font-black drop-shadow-[0_1px_1px_rgba(255,255,255,0.3)]' : themeStyle.coordText
                 }`}
               >
                 {file}
@@ -432,7 +474,7 @@ export default function Board() {
               <div
                 key={rankIdx}
                 className={`h-full flex items-center justify-center text-[9px] sm:text-xs md:text-sm font-black ${
-                  is3D ? 'text-[#f6dc88] font-black drop-shadow-[0_1px_2px_rgba(0,0,0,0.95)]' : themeStyle.coordText
+                  is3D ? 'text-[#382011] font-black drop-shadow-[0_1px_1px_rgba(255,255,255,0.3)]' : themeStyle.coordText
                 }`}
               >
                 {rankIdx + 1}
@@ -499,8 +541,8 @@ export default function Board() {
                 // Kvadrat foni (3D rejimida kitobdagidek tabiiy yog'och tuslari)
                 let squareBgClass = is3D
                   ? isLight
-                    ? 'bg-gradient-to-br from-[#f8ebc2] via-[#eedca4] to-[#dec17b] text-slate-900 shadow-[inset_0_1px_2px_rgba(255,255,255,0.6)]'
-                    : 'bg-gradient-to-br from-[#c46937] via-[#b35728] to-[#97431b] text-slate-900 shadow-[inset_0_1px_2px_rgba(0,0,0,0.35)]'
+                    ? 'bg-gradient-to-br from-[#f2ddbe] via-[#ebd0ab] to-[#dec098] text-slate-900 shadow-[inset_0_1px_1px_rgba(255,255,255,0.4)]'
+                    : 'bg-gradient-to-br from-[#7d4624] via-[#6a391a] to-[#552c12] text-slate-900 shadow-[inset_0_1px_2px_rgba(0,0,0,0.4)]'
                   : isLight
                   ? themeStyle.lightSquare
                   : themeStyle.darkSquare;
@@ -508,11 +550,11 @@ export default function Board() {
                 // 1-100 Raqamli notatsiya belgisi (A1=1, B1=2 ... H1=10, A2=11 ... H10=100)
                 const numericLabel = rankIdx * 10 + fileIdx + 1;
 
-                // 3D dona stilizatsiyasi (kitobdagidek tik turgan, asosi bilan; donani bosganda tepaga sakramaydi)
+                // 3D dona stilizatsiyasi (kitobdagidek tik turgan, asosi bilan)
                 const pieceStyle: React.CSSProperties = is3D
                   ? {
                       ...slideStyle,
-                      transform: 'translateZ(6px) rotateX(-26deg) translateY(0px)',
+                      transform: 'translateZ(6px) rotateX(-22deg) translateY(0px)',
                       transformOrigin: 'bottom center',
                       filter: isSelected ? 'drop-shadow(0 4px 6px rgba(0,0,0,0.85))' : undefined,
                       transition: isCurrentlyAnimating ? undefined : 'transform 0.15s ease-out',
@@ -546,8 +588,25 @@ export default function Board() {
                       }}
                     />
 
-                    {/* So'nggi Harakat Izlari */}
-                    {(isLastMoveFrom || isLastMoveTo) && (
+                    {/* So'nggi Harakat Izlari: 1 ga 1 Screenshot nusxasi */}
+                    {/* 1. Dona ko'chgan avvalgi kvadrat: Yashil Nishon Krest (+) */}
+                    {isLastMoveFrom && (
+                      <div className="absolute inset-0 flex items-center justify-center pointer-events-none z-[8]">
+                        <svg viewBox="0 0 40 40" className="w-[62%] h-[62%] drop-shadow-[0_1px_2px_rgba(0,0,0,0.6)]">
+                          <line x1="20" y1="3" x2="20" y2="13" stroke="#22c55e" strokeWidth="3.2" strokeLinecap="round" />
+                          <line x1="20" y1="27" x2="20" y2="37" stroke="#22c55e" strokeWidth="3.2" strokeLinecap="round" />
+                          <line x1="3" y1="20" x2="13" y2="20" stroke="#22c55e" strokeWidth="3.2" strokeLinecap="round" />
+                          <line x1="27" y1="20" x2="37" y2="20" stroke="#22c55e" strokeWidth="3.2" strokeLinecap="round" />
+                        </svg>
+                      </div>
+                    )}
+
+                    {/* 2. Dona qo'ngan yangi kvadrat: Yashil Hoshiya Kvadrat ([ ]) */}
+                    {isLastMoveTo && (
+                      <div className="absolute inset-0 pointer-events-none z-[8] border-2 sm:border-[3px] border-[#22c55e] rounded-[1px] shadow-[0_0_10px_rgba(34,197,94,0.5)]" />
+                    )}
+
+                    {!is3D && (isLastMoveFrom || isLastMoveTo) && (
                       <div className={`absolute inset-0 pointer-events-none ${themeStyle.lastMove} z-[1]`} />
                     )}
 
@@ -669,7 +728,7 @@ export default function Board() {
               <div
                 key={rankIdx}
                 className={`h-full flex items-center justify-center text-[9px] sm:text-xs md:text-sm font-black ${
-                  is3D ? 'text-[#f6dc88] font-black drop-shadow-[0_1px_2px_rgba(0,0,0,0.95)]' : themeStyle.coordText
+                  is3D ? 'text-[#382011] font-black drop-shadow-[0_1px_1px_rgba(255,255,255,0.3)]' : themeStyle.coordText
                 }`}
               >
                 {rankIdx + 1}
@@ -686,7 +745,7 @@ export default function Board() {
               <div
                 key={file}
                 className={`flex items-center justify-center text-[9px] sm:text-xs md:text-sm font-black tracking-wider ${
-                  is3D ? 'text-[#f6dc88] font-black drop-shadow-[0_1px_2px_rgba(0,0,0,0.95)]' : themeStyle.coordText
+                  is3D ? 'text-[#382011] font-black drop-shadow-[0_1px_1px_rgba(255,255,255,0.3)]' : themeStyle.coordText
                 }`}
               >
                 {file}
@@ -695,6 +754,18 @@ export default function Board() {
           </div>
           <div />
         </div>
+
+        {/* ── 3D Qalinlik Old Qirrasi (Front Rim — Screenshotdagi 1 ga 1 matnli qirra) ── */}
+        {is3D && (
+          <div className="w-full mt-0.5 sm:mt-1 h-6 sm:h-7 md:h-8 px-2 sm:px-3 rounded-b-md bg-gradient-to-b from-[#3a2012] via-[#28150a] to-[#160904] border-t border-[#774421] border-b-2 border-black/90 flex items-center justify-between shadow-[0_10px_20px_rgba(0,0,0,0.95)] select-none">
+            <span className="text-[9px] sm:text-[11px] md:text-xs font-black tracking-widest text-[#f5ead7] uppercase drop-shadow-[0_1px_2px_rgba(0,0,0,0.95)] truncate max-w-[50%]">
+              {frontRimTitle}
+            </span>
+            <span className="text-[9px] sm:text-[11px] md:text-xs font-medium tracking-wide text-[#f5ead7] italic drop-shadow-[0_1px_2px_rgba(0,0,0,0.95)] truncate max-w-[48%] text-right">
+              {frontRimMoveText}
+            </span>
+          </div>
+        )}
       </div>
 
       {/* ── DRAGGED PIECE FLOATING GHOST (2D va 3D apparat tezlashuvli GPU ghost) ── */}

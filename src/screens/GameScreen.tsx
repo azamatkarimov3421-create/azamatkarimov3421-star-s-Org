@@ -30,7 +30,10 @@ import {
   PlayIcon,
   PauseIcon,
   StepForwardIcon,
+  MenuIcon,
+  ChessPawnIcon,
 } from '../components/Icons';
+import { PlayerCard } from '../components/CapturedPieces';
 import { useTranslation } from '../i18n/translations';
 
 interface GameScreenProps {
@@ -60,6 +63,8 @@ export default function GameScreen({ onBack, onOpenSettings }: GameScreenProps) 
   const { status, currentTurn, moveHistory } = game;
 
   const [hintLoading, setHintLoading] = useState(false);
+  const [showMenuModal, setShowMenuModal] = useState(false);
+  const [showPiecesModal, setShowPiecesModal] = useState(false);
   const [showHistoryModal, setShowHistoryModal] = useState(false);
   const [showErrorModal, setShowErrorModal] = useState(false);
   const [showVsAiLevelModal, setShowVsAiLevelModal] = useState(false);
@@ -325,141 +330,82 @@ export default function GameScreen({ onBack, onOpenSettings }: GameScreenProps) 
   const isBottomTurn = currentTurn === bottomColor && !isGameOver;
 
   return (
-    <div className="h-[100dvh] max-h-[100dvh] w-full bg-[#121614] md:bg-[url('/desktop-bg.jpg')] bg-cover bg-center text-[#f1f1f1] flex flex-col justify-between font-sans select-none pb-1 sm:pb-1.5 fixed inset-0 overflow-hidden touch-none overscroll-none">
-      {/* Desktop fondagi qorong'i atmosfera qatlami */}
-      <div className="hidden md:block absolute inset-0 bg-gradient-to-b from-[#0b100d]/88 via-[#0d1310]/78 to-[#0b100d]/92 pointer-events-none z-0" />
+    <div className="h-[100dvh] max-h-[100dvh] w-full bg-[#120d09] bg-[url('/wood_table_bg.jpg')] bg-cover bg-center text-[#f1f1f1] flex flex-col justify-center items-center font-sans select-none fixed inset-0 overflow-hidden touch-none overscroll-none">
+      {/* Tabiiy yog'och stol ustidagi mayin yorug'lik vinetkasi (Soft ambient vignette) */}
+      <div className="absolute inset-0 bg-gradient-to-t from-black/45 via-transparent to-black/30 pointer-events-none z-0" />
 
-      {/* ── 1. YUQORI HEADER (RESPONSIVE CHESS HEADER) ─────────────────── */}
-      <header className="relative z-30 shrink-0 bg-[#141b17]/95 backdrop-blur-md border-b border-[#27372d] px-3 sm:px-5 py-1.5 pt-[max(0.4rem,env(safe-area-inset-top))]">
-        <div className="w-full max-w-[1550px] mx-auto flex items-center justify-between">
-          <button
-            onClick={() => {
-              if (gameMode === 'online' || roomCode) {
-                onlineManager.disconnect();
-                dispatch({ type: 'SET_ONLINE_ROOM', roomCode: null, myColor: null });
-                dispatch({ type: 'SET_GAME_MODE', mode: 'vsAI' });
-              }
-              onBack();
-            }}
-            className="w-9 h-9 rounded-xl bg-[#383531] hover:bg-[#45423c] text-[#c3c2be] hover:text-white flex items-center justify-center transition-all active:scale-95 shadow-[0_2px_0_#21201d]"
-            title="Chiqish"
-          >
-            <ArrowLeftIcon size={18} />
-          </button>
+      {/* ── 1. CHAP TOMONDAGI SUZUVCHI TUGMALAR (Floating Left Controls — 1 ga 1 Screenshot) ── */}
+      <div className="absolute top-3 sm:top-5 left-3 sm:left-5 z-40 flex flex-col gap-3">
+        {/* Menyuni ochish (☰ Hamburger) */}
+        <button
+          onClick={() => setShowMenuModal(true)}
+          className="w-10 h-10 sm:w-11 sm:h-11 rounded-xl bg-black/45 hover:bg-black/70 active:scale-95 backdrop-blur-md border border-white/15 text-white shadow-[0_8px_16px_rgba(0,0,0,0.6)] flex items-center justify-center transition-all cursor-pointer"
+          title="Menyu"
+        >
+          <MenuIcon size={22} />
+        </button>
 
-          <div className="text-center min-w-0 flex-1 px-2">
-            <h2 className="text-sm sm:text-base font-extrabold text-white tracking-tight truncate">
-              {modeTitle}
-            </h2>
-            <div className="text-[11px] font-semibold flex items-center justify-center gap-1.5 mt-0.5 h-4 truncate">
-              {game.isInCheck && !isGameOver ? (
-                <span className="text-red-400 flex items-center gap-1 font-black animate-pulse">
-                  <span>🔥</span>
-                  <span>{t('check_alert')}</span>
-                </span>
-              ) : gameMode === 'online' && !isGameOver ? (
-                isMyTurn ? (
-                  <span className="text-[#81b64c] flex items-center gap-1 font-bold">
-                    <span className="w-2 h-2 rounded-full bg-[#81b64c] animate-ping" />
-                    {t('your_turn')} ({onlinePlayerColor === 'white' ? t('white_color') : t('black_color')})
-                  </span>
-                ) : (
-                  <span className="text-amber-400 flex items-center gap-1 font-semibold">
-                    <span className="w-2 h-2 rounded-full bg-amber-400 animate-pulse" />
-                    {t('wait_opponent')} ({onlinePlayerColor === 'white' ? t('black_color') : t('white_color')})
-                  </span>
-                )
-              ) : isMyTurn && !isGameOver ? (
-                <span className="text-[#81b64c] flex items-center gap-1 font-bold">
-                  <span className="w-1.5 h-1.5 rounded-full bg-[#81b64c] animate-ping" />
-                  {t('your_turn')}
-                </span>
-              ) : !isGameOver ? (
-                <span className="text-amber-400 font-bold flex items-center gap-1">
-                  <span className="w-1.5 h-1.5 rounded-full bg-amber-400 animate-pulse" />
-                  {gameMode === 'vsAI' && aiThinking ? t('bot_thinking') : t('opponent_turn')}
-                </span>
-              ) : (
-                <span className="text-[#9b9893] font-bold">{t('game_finished')}</span>
-              )}
-            </div>
-          </div>
+        {/* Doskani aylantirish (↻ Rotate / Flip) */}
+        <button
+          onClick={() => dispatch({ type: 'TOGGLE_FLIP' })}
+          className="w-10 h-10 sm:w-11 sm:h-11 rounded-xl bg-black/45 hover:bg-black/70 active:scale-95 backdrop-blur-md border border-white/15 text-white shadow-[0_8px_16px_rgba(0,0,0,0.6)] flex items-center justify-center transition-all cursor-pointer"
+          title={t('btn_flip')}
+        >
+          <RotateCwIcon size={20} />
+        </button>
+      </div>
 
-          <div className="flex items-center gap-1 sm:gap-1.5 shrink-0">
-            <button
-              onClick={() => setShowHistoryModal(true)}
-              className="relative w-8 h-8 sm:w-9 sm:h-9 rounded-xl bg-[#383531] hover:bg-[#45423c] text-[#c3c2be] hover:text-white flex items-center justify-center transition-all active:scale-95 shadow-[0_2px_0_#21201d]"
-              title={t('history_title')}
-            >
-              <ScrollTextIcon size={16} />
-              {moveHistory.length > 0 && (
-                <span className="absolute -top-1 -right-1 bg-[#81b64c] text-white text-[9px] font-black w-4 h-4 rounded-full flex items-center justify-center shadow-sm">
-                  {moveHistory.length}
-                </span>
-              )}
-            </button>
-            <button
-              onClick={() => dispatch({ type: 'TOGGLE_FLIP' })}
-              className="w-8 h-8 sm:w-9 sm:h-9 rounded-xl bg-[#383531] hover:bg-[#45423c] text-[#c3c2be] hover:text-white flex items-center justify-center transition-all active:scale-95 shadow-[0_2px_0_#21201d]"
-              title={t('btn_flip')}
-            >
-              <RotateCwIcon size={16} />
-            </button>
-            <div className="flex items-center bg-[#181715] p-0.5 rounded-xl border border-[#383531] shadow-inner">
-              <button
-                onClick={() => dispatch({ type: 'SET_3D', enabled: false })}
-                className={`px-2 py-1 rounded-lg text-xs font-black transition-all ${
-                  !is3D
-                    ? 'bg-white text-[#21201d] shadow-sm'
-                    : 'text-[#8e8b84] hover:text-[#c3c2be]'
-                }`}
-                title="2D"
-              >
-                2D
-              </button>
-              <button
-                onClick={() => dispatch({ type: 'SET_3D', enabled: true })}
-                className={`px-2 py-1 rounded-lg text-xs font-black transition-all flex items-center gap-1 ${
-                  is3D
-                    ? 'bg-gradient-to-r from-amber-500 to-amber-600 text-slate-950 shadow-[0_0_8px_rgba(245,158,11,0.6)] ring-1 ring-amber-300'
-                    : 'text-[#8e8b84] hover:text-[#c3c2be]'
-                }`}
-                title="3D"
-              >
-                <span>🎲</span>
-                <span>3D</span>
-              </button>
-            </div>
+      {/* ── 2. O'NG TOMONDAGI SUZUVCHI TUGMALAR (Floating Right Controls — 1 ga 1 Screenshot) ── */}
+      <div className="absolute top-3 sm:top-5 right-3 sm:right-5 z-40 flex flex-col gap-3 items-end">
+        {/* Harakatni bekor qilish (↶ Undo) */}
+        <button
+          onClick={() => dispatch({ type: 'UNDO' })}
+          disabled={history.length === 0 || isGameOver || gameMode === 'online'}
+          className="w-10 h-10 sm:w-11 sm:h-11 rounded-xl bg-black/45 hover:bg-black/70 disabled:opacity-30 disabled:pointer-events-none active:scale-95 backdrop-blur-md border border-white/15 text-white shadow-[0_8px_16px_rgba(0,0,0,0.6)] flex items-center justify-center transition-all cursor-pointer"
+          title={t('btn_undo')}
+        >
+          <RotateCcwIcon size={20} />
+        </button>
 
-            {errorCount > 0 && (
-              <button
-                onClick={() => setShowErrorModal(true)}
-                className="h-8 sm:h-9 px-2 rounded-xl border text-xs font-bold flex items-center gap-1 transition-all active:scale-95 shadow-[0_2px_0_#21201d] bg-red-500/25 hover:bg-red-500/35 text-red-300 border-red-500/60 animate-pulse"
-                title="Log"
-              >
-                <span>⚠️</span>
-                <span>{errorCount}</span>
-              </button>
-            )}
+        {/* Yutib olingan donalar va o'yin holati (♟ Piece / Status) */}
+        <button
+          onClick={() => setShowPiecesModal(true)}
+          className="w-10 h-10 sm:w-11 sm:h-11 rounded-xl bg-black/45 hover:bg-black/70 active:scale-95 backdrop-blur-md border border-white/15 text-white shadow-[0_8px_16px_rgba(0,0,0,0.6)] flex items-center justify-center transition-all cursor-pointer"
+          title="Donalar & Holat"
+        >
+          <ChessPawnIcon size={22} />
+        </button>
 
-            {onOpenSettings && (
-              <button
-                onClick={onOpenSettings}
-                className="w-8 h-8 sm:w-9 sm:h-9 rounded-xl bg-[#383531] hover:bg-[#45423c] text-[#c3c2be] hover:text-white flex items-center justify-center transition-all active:scale-95 shadow-[0_2px_0_#21201d]"
-                title={t('nav_settings')}
-              >
-                <SettingsIcon size={16} />
-              </button>
-            )}
-          </div>
+        {/* Maslahat (💡 Lightbulb) */}
+        <button
+          onClick={handleGetHint}
+          disabled={isGameOver || hintLoading}
+          className="w-10 h-10 sm:w-11 sm:h-11 rounded-xl bg-black/45 hover:bg-black/70 disabled:opacity-30 disabled:pointer-events-none active:scale-95 backdrop-blur-md border border-white/15 text-amber-300 shadow-[0_8px_16px_rgba(0,0,0,0.6)] flex items-center justify-center transition-all cursor-pointer"
+          title={t('btn_hint')}
+        >
+          <LightbulbIcon size={22} />
+        </button>
+      </div>
+
+      {/* ── 3. YUQORI HOLAT XABARNOMALARI (Floating Status Indicators) ── */}
+      {aiThinking && (
+        <div className="fixed top-3 sm:top-5 left-1/2 -translate-x-1/2 z-30 px-3.5 py-1.5 rounded-full bg-black/70 backdrop-blur-md border border-amber-500/40 text-amber-300 text-xs font-bold flex items-center gap-2 shadow-2xl animate-pulse pointer-events-none">
+          <span className="w-2 h-2 rounded-full bg-amber-400 animate-ping" />
+          <span>{t('bot_thinking')}</span>
         </div>
-      </header>
+      )}
 
-      {/* Agar ogohlantirish yoki xato yuz bersa — yuqorida paydo bo'luvchi xabarnoma */}
+      {game.isInCheck && !isGameOver && (
+        <div className="fixed top-3 sm:top-5 left-1/2 -translate-x-1/2 z-30 px-4 py-1.5 rounded-full bg-red-950/80 backdrop-blur-md border border-red-500/60 text-red-200 text-xs font-black flex items-center gap-2 shadow-2xl animate-bounce pointer-events-none">
+          <span>🔥</span>
+          <span>{t('check_alert')}</span>
+        </div>
+      )}
+
       {lastWarning && (
         <div
           onClick={() => setShowErrorModal(true)}
-          className="absolute top-14 left-1/2 -translate-x-1/2 z-40 max-w-md w-[90%] px-3.5 py-2 rounded-2xl bg-amber-500 text-slate-950 font-bold text-xs shadow-2xl flex items-center justify-between gap-2 cursor-pointer animate-fadeIn border border-amber-300"
+          className="fixed top-14 left-1/2 -translate-x-1/2 z-40 max-w-md w-[90%] px-3.5 py-2 rounded-2xl bg-amber-500 text-slate-950 font-bold text-xs shadow-2xl flex items-center justify-between gap-2 cursor-pointer animate-fadeIn border border-amber-300"
         >
           <div className="flex items-center gap-2 truncate">
             <span>⚠️</span>
@@ -469,530 +415,230 @@ export default function GameScreen({ onBack, onOpenSettings }: GameScreenProps) 
         </div>
       )}
 
-      {/* ── 2. ASOSIY MAYDON (RESPONSIVE: MOBILDA TIK, KOMPYUTERDA YONMA-YON) ────── */}
-      <main className="relative z-10 flex-1 w-full max-w-[1550px] mx-auto flex flex-col md:flex-row items-center justify-center gap-2.5 md:gap-4 lg:gap-6 px-2 sm:px-4 lg:px-6 py-0.5 md:py-1 overflow-hidden min-h-0 touch-manipulation">
-        {/* CHAP / MARKAZIY QISM: Doska va (faqat mobilda) O'yinchilar HUD */}
-        <div className="flex-1 flex flex-col items-center justify-center min-h-0 w-full overflow-hidden my-auto">
-          {/* Yuqoridagi O'yinchi Kartasi (Opponent HUD — FAQAT MOBILDA ko'rinadi) */}
-          <div
-            className={`md:hidden flex items-center justify-between px-3 py-1.5 rounded-xl border transition-all duration-200 shrink-0 mb-1 ${
-              is3D ? 'chess-board-box-3d' : 'chess-board-box'
-            } ${
-              isTopTurn
-                ? 'bg-[#21201d] border-[#81b64c]/70 shadow-[0_0_12px_rgba(129,182,76,0.15)] ring-1 ring-[#81b64c]/50'
-                : 'bg-[#21201d]/90 border-[#383531]'
+      {/* ── 4. MARKAZIY MAYDON: 10x10 SHAXMAT DOSQASI (Screenshotdagi 1 ga 1) ── */}
+      <main className="relative z-10 w-full h-full flex items-center justify-center p-1 sm:p-2">
+        <Board />
+      </main>
+
+      {/* Bot vs Bot Rejimidagi Suzuvchi Boshqaruv Paneli */}
+      {gameMode === 'aiVsAi' && (
+        <div className="fixed bottom-3 left-1/2 -translate-x-1/2 z-30 flex items-center gap-2 bg-black/65 backdrop-blur-md border border-white/15 p-1.5 rounded-2xl shadow-2xl">
+          <button
+            onClick={() => dispatch({ type: 'TOGGLE_AI_VS_AI_PAUSE' })}
+            className={`px-3 py-1.5 rounded-xl font-bold text-xs flex items-center gap-1.5 transition-all cursor-pointer shadow-md ${
+              aiVsAiPaused ? 'bg-emerald-600 text-white' : 'bg-amber-600 text-white'
             }`}
           >
-            <div className="flex items-center gap-2.5 min-w-0">
-              <div className="w-8 h-8 rounded-lg bg-[#2c2a26] border border-[#3d3a34] flex items-center justify-center text-[#c3c2be] shrink-0">
-                {topColor === 'black' || gameMode === 'aiVsAi' ? (
-                  <BotIcon size={18} className="text-[#81b64c]" />
-                ) : (
-                  <UserIcon size={18} className="text-[#c3c2be]" />
-                )}
-              </div>
-              <div className="min-w-0">
-                <div className="flex items-center gap-1.5">
-                  <span className="font-bold text-xs sm:text-sm text-white truncate max-w-[130px]">
-                    {opponentName}
-                  </span>
-                  <span className="text-[10px] font-bold text-[#81b64c] bg-[#81b64c]/15 px-1.5 py-0.5 rounded shrink-0">
-                    {topColor === 'white' ? t('white_color') : t('black_color')}
-                  </span>
-                  {gameMode === 'vsAI' && (
-                    <button
-                      onClick={() => setShowVsAiLevelModal(true)}
-                      className="text-[10px] font-bold text-amber-300 bg-amber-500/20 hover:bg-amber-500/30 border border-amber-500/40 px-1.5 py-0.5 rounded-md flex items-center gap-1 transition-all cursor-pointer active:scale-95 shrink-0"
-                      title={t('ai_level_change_title')}
-                    >
-                      <span>🎯 {AI_LEVEL_NAMES[aiDepth]}</span>
-                      <span className="text-[8px] text-amber-400">✎</span>
-                    </button>
-                  )}
-                </div>
-                <div className="flex items-center gap-2 text-[10px] text-[#9b9893] font-mono leading-none mt-1">
-                  <span>{opponentRating} {gameMode === 'aiVsAi' ? '' : t('rating_label')}</span>
-                  {(gameMode === 'vsAI' || gameMode === 'aiVsAi') && isTopTurn && aiThinking && (
-                    <span className="text-amber-400 font-bold flex items-center gap-1 animate-pulse">
-                      <span className="w-1.5 h-1.5 rounded-full bg-amber-400 animate-ping" />
-                      {t('bot_thinking')}
-                    </span>
-                  )}
-                  {gameMode === 'aiVsAi' && isTopTurn && aiVsAiPaused && !isGameOver && (
-                    <span className="text-zinc-400 bg-zinc-800 px-1 rounded">
-                      {t('paused_status')}
-                    </span>
-                  )}
-                </div>
-              </div>
-            </div>
-
-            <div className="flex items-center gap-2 shrink-0">
-              <div
-                className={`flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-mono font-bold transition-all ${
-                  isTopTurn
-                    ? 'bg-[#81b64c] text-white shadow-sm'
-                    : 'bg-[#1a1917] text-[#9b9893] border border-[#383531]'
-                }`}
-              >
-                <ClockIcon size={12} />
-                <ChessClock color={topColor} />
-              </div>
-            </div>
-          </div>
-
-          {/* 10x10 Dosqa va Baholash Indikatori */}
-          <div className={`w-full flex flex-col items-center justify-center max-h-full touch-manipulation shrink-0 ${
-            is3D ? 'chess-board-box-3d' : 'chess-board-box'
-          }`}>
-            {/* Mobil ekranda doska ustidagi gorizontal EvalBar */}
-            <div className="w-full md:hidden mb-1">
-              <EvalBar orientation="horizontal" />
-            </div>
-
-            {/* Dosqa va (kompyuterda) chapdagi vertikal EvalBar */}
-            <div className="w-full flex items-center justify-center gap-2">
-              {/* Kompyuterda: doskaning chap yonida vertikal EvalBar */}
-              <div className={`hidden md:flex ${is3D ? 'self-center h-[90%] my-auto py-1' : 'self-stretch items-stretch py-0.5'}`}>
-                <EvalBar orientation="vertical" />
-              </div>
-
-              {/* Asosiy 10x10 Dosqa */}
-              <div className="flex-1 min-w-0 flex items-center justify-center">
-                <Board />
-              </div>
-            </div>
-          </div>
-
-          {/* Pastdagi O'yinchi Kartasi (Sizning HUD — FAQAT MOBILDA ko'rinadi) */}
-          <div
-            className={`md:hidden flex items-center justify-between px-3 py-1.5 rounded-xl border transition-all duration-200 shrink-0 mt-1 ${
-              is3D ? 'chess-board-box-3d' : 'chess-board-box'
-            } ${
-              isBottomTurn
-                ? 'bg-[#21201d] border-white/60 shadow-[0_0_12px_rgba(255,255,255,0.1)] ring-1 ring-white/40'
-                : 'bg-[#21201d]/90 border-[#383531]'
-            }`}
+            {aiVsAiPaused ? <PlayIcon size={14} /> : <PauseIcon size={14} />}
+            <span>{aiVsAiPaused ? t('btn_play') : t('btn_pause')}</span>
+          </button>
+          <button
+            onClick={handleStepAiVsAi}
+            disabled={isGameOver || aiThinking}
+            className="px-2.5 py-1.5 rounded-xl bg-white/10 hover:bg-white/20 text-sky-400 font-bold text-xs flex items-center gap-1 cursor-pointer"
           >
-            <div className="flex items-center gap-2.5 min-w-0">
-              <div className="w-8 h-8 rounded-lg bg-[#2c2a26] border border-[#3d3a34] flex items-center justify-center text-[#81b64c] overflow-hidden shrink-0">
-                {gameMode === 'aiVsAi' ? (
-                  <BotIcon size={18} className="text-[#81b64c]" />
-                ) : userProfile.avatarUrl ? (
-                  <img
-                    src={userProfile.avatarUrl}
-                    alt=""
-                    className="w-full h-full object-cover rounded-lg"
-                    referrerPolicy="no-referrer"
-                  />
-                ) : (
-                  <UserIcon size={18} />
-                )}
+            <StepForwardIcon size={14} />
+            <span>{t('btn_step')}</span>
+          </button>
+          <button
+            onClick={handleCycleSpeed}
+            className="px-2.5 py-1.5 rounded-xl bg-white/10 hover:bg-white/20 text-amber-300 font-bold text-xs flex items-center gap-1 cursor-pointer"
+          >
+            <span>⚡ {aiVsAiSpeed >= 1000 ? `${aiVsAiSpeed / 1000}s` : `${aiVsAiSpeed}ms`}</span>
+          </button>
+        </div>
+      )}
+
+      {/* ── 5. ASOSIY O'YIN MENYUSI MODALI (☰ Hamburger bosilganda ochiladi) ── */}
+      {showMenuModal && (
+        <div className="fixed inset-0 bg-black/80 backdrop-blur-md z-50 flex items-center justify-center p-4 animate-fadeIn">
+          <div className="relative w-full max-w-sm bg-[#1e1b18]/95 border border-[#3e342a] rounded-3xl p-5 shadow-2xl flex flex-col gap-4 text-white">
+            <div className="flex items-center justify-between pb-3 border-b border-[#3e342a]">
+              <div className="flex items-center gap-2">
+                <span className="w-2.5 h-2.5 rounded-full bg-[#81b64c] animate-pulse" />
+                <h3 className="font-black text-white text-base tracking-wide">{modeTitle}</h3>
               </div>
-              <div className="min-w-0">
-                <div className="flex items-center gap-1.5">
-                  <span className="font-bold text-xs sm:text-sm text-white truncate max-w-[150px]">
-                    {bottomName}
-                  </span>
-                  <span className="text-[10px] font-bold text-[#81b64c] bg-[#81b64c]/15 px-1.5 py-0.5 rounded shrink-0">
-                    {bottomColor === 'white' ? t('white_color') : t('black_color')}
-                  </span>
-                </div>
-                <div className="text-[10px] text-[#81b64c] font-mono font-semibold leading-none mt-1">
-                  {bottomRating} {gameMode === 'aiVsAi' ? '' : t('rating_label')}
-                </div>
-              </div>
+              <button
+                onClick={() => setShowMenuModal(false)}
+                className="w-8 h-8 rounded-xl bg-[#2a241e] hover:bg-[#383129] text-[#c3c2be] hover:text-white font-bold flex items-center justify-center text-sm cursor-pointer"
+              >
+                ✕
+              </button>
             </div>
 
-            <div className="flex items-center gap-2 shrink-0">
-              <div
-                className={`flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-mono font-bold transition-all ${
-                  isBottomTurn
-                    ? 'bg-white text-[#21201d] font-black shadow-md'
-                    : 'bg-[#1a1917] text-[#9b9893] border border-[#383531]'
-                }`}
-              >
-                <ClockIcon size={12} />
-                <ChessClock color={bottomColor} />
+            {/* O'yin ma'lumotlari */}
+            <div className="bg-[#141210] p-3 rounded-2xl border border-[#2e261f] flex items-center justify-between">
+              <div className="flex items-center gap-2.5">
+                <div className="w-9 h-9 rounded-xl bg-[#2a241e] border border-[#3e342a] flex items-center justify-center text-[#81b64c]">
+                  {gameMode === 'vsAI' || gameMode === 'aiVsAi' ? <BotIcon size={20} /> : <UserIcon size={20} />}
+                </div>
+                <div>
+                  <div className="text-xs font-black text-white">{opponentName}</div>
+                  <div className="text-[10px] text-[#9b9893] font-mono">{opponentRating} {t('rating_label')}</div>
+                </div>
               </div>
+              {gameMode === 'vsAI' && (
+                <button
+                  onClick={() => {
+                    setShowMenuModal(false);
+                    setShowVsAiLevelModal(true);
+                  }}
+                  className="px-2.5 py-1 rounded-lg bg-amber-500/20 hover:bg-amber-500/30 border border-amber-500/40 text-amber-300 text-[11px] font-black cursor-pointer"
+                >
+                  🎯 {AI_LEVEL_NAMES[aiDepth]}
+                </button>
+              )}
+            </div>
+
+            {/* Asosiy amallar ro'yxati */}
+            <div className="flex flex-col gap-2">
+              {/* 2D / 3D almashish */}
+              <button
+                onClick={() => dispatch({ type: 'SET_3D', enabled: !is3D })}
+                className="w-full py-2.5 px-3.5 rounded-xl bg-[#2a241e] hover:bg-[#383129] border border-[#3e342a] text-white font-bold text-xs flex items-center justify-between cursor-pointer transition-all active:scale-95"
+              >
+                <div className="flex items-center gap-2.5">
+                  <span>🎲</span>
+                  <span>{is3D ? '2D Rejimga oʻtish' : '3D Rejimga oʻtish'}</span>
+                </div>
+                <span className="text-[10px] px-2 py-0.5 rounded-md bg-[#81b64c]/20 text-[#81b64c] font-black">
+                  {is3D ? '3D' : '2D'}
+                </span>
+              </button>
+
+              {/* Qayta yangi o'yin */}
+              <button
+                onClick={() => {
+                  setShowMenuModal(false);
+                  dispatch({ type: 'NEW_GAME' });
+                }}
+                className="w-full py-2.5 px-3.5 rounded-xl bg-[#2a241e] hover:bg-[#383129] border border-[#3e342a] text-white font-bold text-xs flex items-center gap-2.5 cursor-pointer transition-all active:scale-95"
+              >
+                <RotateCwIcon size={16} className="text-amber-400" />
+                <span>{t('btn_restart')}</span>
+              </button>
+
+              {/* Harakatlar tarixi */}
+              <button
+                onClick={() => {
+                  setShowMenuModal(false);
+                  setShowHistoryModal(true);
+                }}
+                className="w-full py-2.5 px-3.5 rounded-xl bg-[#2a241e] hover:bg-[#383129] border border-[#3e342a] text-white font-bold text-xs flex items-center gap-2.5 cursor-pointer transition-all active:scale-95"
+              >
+                <ScrollTextIcon size={16} className="text-sky-400" />
+                <span>{t('history_title')}</span>
+              </button>
+
+              {/* Durang taklif qilish */}
+              <button
+                onClick={() => {
+                  setShowMenuModal(false);
+                  dispatch({ type: 'OFFER_DRAW' });
+                }}
+                disabled={isGameOver}
+                className="w-full py-2.5 px-3.5 rounded-xl bg-[#2a241e] hover:bg-[#383129] disabled:opacity-30 border border-[#3e342a] text-white font-bold text-xs flex items-center gap-2.5 cursor-pointer transition-all active:scale-95"
+              >
+                <HandshakeIcon size={16} className="text-blue-400" />
+                <span>{t('btn_draw')}</span>
+              </button>
+
+              {/* Taslim bo'lish */}
+              <button
+                onClick={() => {
+                  setShowMenuModal(false);
+                  dispatch({ type: 'RESIGN' });
+                }}
+                disabled={isGameOver}
+                className="w-full py-2.5 px-3.5 rounded-xl bg-[#2a241e] hover:bg-[#383129] disabled:opacity-30 border border-[#3e342a] text-[#e74c3c] font-bold text-xs flex items-center gap-2.5 cursor-pointer transition-all active:scale-95"
+              >
+                <FlagIcon size={16} />
+                <span>{t('btn_resign')}</span>
+              </button>
+
+              {/* Sozlamalar */}
+              {onOpenSettings && (
+                <button
+                  onClick={() => {
+                    setShowMenuModal(false);
+                    onOpenSettings();
+                  }}
+                  className="w-full py-2.5 px-3.5 rounded-xl bg-[#2a241e] hover:bg-[#383129] border border-[#3e342a] text-white font-bold text-xs flex items-center gap-2.5 cursor-pointer transition-all active:scale-95"
+                >
+                  <SettingsIcon size={16} className="text-zinc-400" />
+                  <span>{t('nav_settings')}</span>
+                </button>
+              )}
+
+              {/* Xatoliklar / log */}
+              {errorCount > 0 && (
+                <button
+                  onClick={() => {
+                    setShowMenuModal(false);
+                    setShowErrorModal(true);
+                  }}
+                  className="w-full py-2 px-3.5 rounded-xl bg-red-500/20 hover:bg-red-500/30 border border-red-500/40 text-red-300 font-bold text-xs flex items-center gap-2 cursor-pointer"
+                >
+                  <span>⚠️</span>
+                  <span>Tizim loglari ({errorCount})</span>
+                </button>
+              )}
+
+              {/* Bosh sahifaga chiqish */}
+              <button
+                onClick={() => {
+                  setShowMenuModal(false);
+                  if (gameMode === 'online' || roomCode) {
+                    onlineManager.disconnect();
+                    dispatch({ type: 'SET_ONLINE_ROOM', roomCode: null, myColor: null });
+                    dispatch({ type: 'SET_GAME_MODE', mode: 'vsAI' });
+                  }
+                  onBack();
+                }}
+                className="w-full mt-1 py-2.5 px-3.5 rounded-xl bg-red-900/30 hover:bg-red-900/50 border border-red-700/50 text-red-300 font-bold text-xs flex items-center gap-2.5 cursor-pointer transition-all active:scale-95"
+              >
+                <ArrowLeftIcon size={16} />
+                <span>Bosh sahifaga chiqish</span>
+              </button>
             </div>
           </div>
         </div>
+      )}
 
-        {/* O'NG QISM: Desktop Sidebar (Planshet va Kompyuter ekranlarida ko'rinadi) */}
-        <aside className="hidden md:flex flex-col w-[300px] lg:w-[340px] xl:w-[370px] h-full max-h-[calc(100dvh-60px)] bg-[#21201d] rounded-2xl lg:rounded-3xl border border-[#383531] p-3 shadow-2xl shrink-0 justify-between overflow-hidden my-auto gap-2">
-          {/* 1. Sidebar Yuqori: Rejim Sarlavhasi & Raqib O'yinchi Kartasi */}
-          <div className="shrink-0 space-y-2 pb-2 border-b border-[#383531]/80">
-            <div className="flex items-center justify-between px-1">
-              <div className="flex items-center gap-2 min-w-0">
-                <span className="w-2.5 h-2.5 rounded-full bg-[#81b64c] animate-pulse shrink-0" />
-                <span className="font-extrabold text-xs sm:text-sm text-white tracking-wide truncate max-w-[170px] lg:max-w-[210px]">
-                  {modeTitle}
-                </span>
+      {/* ── 6. DONALAR VA O'YINCHI HOLATI MODALI (♟ bosilganda ochiladi) ── */}
+      {showPiecesModal && (
+        <div className="fixed inset-0 bg-black/80 backdrop-blur-md z-50 flex items-center justify-center p-4 animate-fadeIn">
+          <div className="relative w-full max-w-sm bg-[#1e1b18]/95 border border-[#3e342a] rounded-3xl p-5 shadow-2xl flex flex-col gap-4 text-white">
+            <div className="flex items-center justify-between pb-3 border-b border-[#3e342a]">
+              <div className="flex items-center gap-2">
+                <ChessPawnIcon size={20} className="text-[#81b64c]" />
+                <h3 className="font-black text-white text-base">Yutib Olingan Donalar</h3>
               </div>
-              <span className="text-[10px] font-mono uppercase px-2 py-0.5 rounded bg-amber-500/20 text-amber-300 border border-amber-500/30 font-black shrink-0">
-                10×10 NUR CHESS
-              </span>
-            </div>
-
-            {/* Raqib O'yinchi Kartasi (Opponent HUD) */}
-            <div
-              className={`p-2.5 rounded-xl border transition-all duration-200 flex items-center justify-between ${
-                isTopTurn
-                  ? 'bg-[#282723] border-[#81b64c]/70 shadow-[0_0_12px_rgba(129,182,76,0.15)] ring-1 ring-[#81b64c]/50'
-                  : 'bg-[#181715] border-[#383531]'
-              }`}
-            >
-              <div className="flex items-center gap-2 min-w-0">
-                <div className="w-8 h-8 rounded-lg bg-[#2c2a26] border border-[#3d3a34] flex items-center justify-center text-[#c3c2be] shrink-0">
-                  {topColor === 'black' || gameMode === 'aiVsAi' ? (
-                    <BotIcon size={18} className="text-[#81b64c]" />
-                  ) : (
-                    <UserIcon size={18} className="text-[#c3c2be]" />
-                  )}
-                </div>
-                <div className="min-w-0">
-                  <div className="flex items-center gap-1.5 flex-wrap">
-                    <span className="font-bold text-xs sm:text-sm text-white truncate max-w-[110px] lg:max-w-[140px]">
-                      {opponentName}
-                    </span>
-                    <span className="text-[10px] font-bold text-[#81b64c] bg-[#81b64c]/15 px-1.5 py-0.2 rounded">
-                      {topColor === 'white' ? t('white_color') : t('black_color')}
-                    </span>
-                    {gameMode === 'vsAI' && (
-                      <button
-                        onClick={() => setShowVsAiLevelModal(true)}
-                        className="text-[10px] font-bold text-amber-300 bg-amber-500/20 hover:bg-amber-500/30 border border-amber-500/40 px-1.5 py-0.2 rounded-md flex items-center gap-1 transition-all cursor-pointer active:scale-95"
-                        title={t('ai_level_change_title')}
-                      >
-                        <span>🎯 {AI_LEVEL_NAMES[aiDepth]}</span>
-                      </button>
-                    )}
-                    {(gameMode === 'vsAI' || gameMode === 'aiVsAi') && isTopTurn && aiThinking && (
-                      <span className="text-[10px] font-bold text-amber-400 bg-amber-400/15 px-1.5 py-0.2 rounded flex items-center gap-1 animate-pulse">
-                        <span className="w-1.5 h-1.5 rounded-full bg-amber-400 animate-ping" />
-                        {t('bot_thinking')}
-                      </span>
-                    )}
-                  </div>
-                  <div className="text-[10px] text-[#9b9893] font-mono leading-none mt-0.5">
-                    {opponentRating} {gameMode === 'aiVsAi' ? '' : t('rating_label')}
-                  </div>
-                </div>
-              </div>
-
-              <div className="flex items-center gap-2 shrink-0">
-                <div
-                  className={`flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-mono font-bold transition-all ${
-                    isTopTurn
-                      ? 'bg-[#81b64c] text-white shadow-md ring-1 ring-[#9ad35f]'
-                      : 'bg-[#11100f] text-[#9b9893] border border-[#383531]'
-                  }`}
-                >
-                  <ClockIcon size={13} />
-                  <ChessClock color={topColor} />
-                </div>
-              </div>
-            </div>
-          </div>
-
-          {/* 2. Sidebar O'rta: Harakatlar Tarixi (MoveHistory) */}
-          <div className="flex-1 min-h-0 flex flex-col overflow-hidden py-1">
-            <div className="flex-1 min-h-0 bg-[#181715] rounded-xl border border-[#383531]/80 overflow-hidden">
-              <MoveHistory className="h-full w-full border-none shadow-none bg-transparent" />
-            </div>
-          </div>
-
-          {/* 3. Sidebar Pastki: Foydalanuvchi Kartasi & Boshqaruv Tugmalari */}
-          <div className="shrink-0 space-y-2 pt-1 border-t border-[#383531]/80">
-            {/* Foydalanuvchi Kartasi (User HUD) */}
-            <div
-              className={`p-2.5 rounded-xl border transition-all duration-200 flex items-center justify-between ${
-                isBottomTurn
-                  ? 'bg-[#282723] border-white/60 shadow-[0_0_12px_rgba(255,255,255,0.1)] ring-1 ring-white/40'
-                  : 'bg-[#181715] border-[#383531]'
-              }`}
-            >
-              <div className="flex items-center gap-2 min-w-0">
-                <div className="w-8 h-8 rounded-lg bg-[#2c2a26] border border-[#3d3a34] flex items-center justify-center text-[#81b64c] shrink-0 overflow-hidden">
-                  {gameMode === 'aiVsAi' ? (
-                    <BotIcon size={18} className="text-[#81b64c]" />
-                  ) : userProfile.avatarUrl ? (
-                    <img
-                      src={userProfile.avatarUrl}
-                      alt=""
-                      className="w-full h-full object-cover rounded-lg"
-                      referrerPolicy="no-referrer"
-                    />
-                  ) : (
-                    <UserIcon size={18} />
-                  )}
-                </div>
-                <div className="min-w-0">
-                  <div className="flex items-center gap-1.5 flex-wrap">
-                    <span className="font-bold text-xs sm:text-sm text-white truncate max-w-[110px] lg:max-w-[140px]">
-                      {bottomName}
-                    </span>
-                    <span className="text-[10px] font-bold text-[#81b64c] bg-[#81b64c]/15 px-1.5 py-0.2 rounded">
-                      {bottomColor === 'white' ? t('white_color') : t('black_color')}
-                    </span>
-                    {gameMode === 'aiVsAi' && isBottomTurn && aiThinking && (
-                      <span className="text-[10px] font-bold text-amber-400 bg-amber-400/15 px-1.5 py-0.2 rounded flex items-center gap-1 animate-pulse">
-                        <span className="w-1.5 h-1.5 rounded-full bg-amber-400 animate-ping" />
-                        {t('bot_thinking')}
-                      </span>
-                    )}
-                  </div>
-                  <div className="text-[10px] text-[#81b64c] font-mono font-semibold leading-none mt-0.5">
-                    {bottomRating} {gameMode === 'aiVsAi' ? '' : t('rating_label')}
-                  </div>
-                </div>
-              </div>
-
-              <div className="flex items-center gap-2 shrink-0">
-                <div
-                  className={`flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-mono font-bold transition-all ${
-                    isBottomTurn
-                      ? 'bg-white text-[#21201d] font-black shadow-md'
-                      : 'bg-[#11100f] text-[#9b9893] border border-[#383531]'
-                  }`}
-                >
-                  <ClockIcon size={13} />
-                  <ChessClock color={bottomColor} />
-                </div>
-              </div>
-            </div>
-
-            {/* Boshqaruv Tugmalari */}
-            {gameMode === 'aiVsAi' ? (
-              <div className="space-y-2">
-                <div className="grid grid-cols-2 gap-2">
-                  {/* Play / Pause */}
-                  <button
-                    onClick={() => dispatch({ type: 'TOGGLE_AI_VS_AI_PAUSE' })}
-                    disabled={isGameOver}
-                    className={`py-2.5 px-3 rounded-xl border font-black text-xs flex items-center justify-center gap-2 transition-all cursor-pointer shadow-md active:scale-95 ${
-                      aiVsAiPaused
-                        ? 'bg-emerald-600 hover:bg-emerald-500 text-slate-950 border-emerald-400'
-                        : 'bg-amber-600/80 hover:bg-amber-500 text-white border-amber-500'
-                    }`}
-                  >
-                    {aiVsAiPaused ? <PlayIcon size={16} /> : <PauseIcon size={16} />}
-                    <span>{aiVsAiPaused ? t('btn_play') : t('btn_pause')}</span>
-                  </button>
-
-                  {/* Bitta qadam (Step) */}
-                  <button
-                    onClick={handleStepAiVsAi}
-                    disabled={isGameOver || aiThinking}
-                    className="py-2.5 px-3 rounded-xl bg-[#2b2926] hover:bg-[#383531] disabled:opacity-30 border border-[#3d3a34] text-sky-400 hover:text-sky-300 font-bold text-xs flex items-center justify-center gap-2 transition-all shadow-[0_2px_0_#1a1917] active:translate-y-0.5 cursor-pointer"
-                    title={t('btn_step')}
-                  >
-                    <StepForwardIcon size={16} />
-                    <span>{t('btn_step')}</span>
-                  </button>
-                </div>
-
-                <div className="grid grid-cols-3 gap-2">
-                  {/* Tezlik */}
-                  <button
-                    onClick={handleCycleSpeed}
-                    className="py-2 px-1 rounded-xl bg-[#2b2926] hover:bg-[#383531] border border-[#3d3a34] text-amber-300 hover:text-amber-200 font-bold text-xs flex items-center justify-center gap-1 transition-all cursor-pointer"
-                    title="Speed"
-                  >
-                    <span>⚡</span>
-                    <span className="text-[11px]">{aiVsAiSpeed >= 1000 ? `${aiVsAiSpeed / 1000}s` : `${aiVsAiSpeed}ms`}</span>
-                  </button>
-
-                  {/* Qayta jang */}
-                  <button
-                    onClick={() => dispatch({ type: 'NEW_GAME' })}
-                    className="py-2 px-1 rounded-xl bg-[#2b2926] hover:bg-[#383531] border border-[#3d3a34] text-[#c3c2be] hover:text-white font-bold text-xs flex items-center justify-center gap-1 transition-all cursor-pointer"
-                    title={t('btn_restart')}
-                  >
-                    <RotateCwIcon size={14} />
-                    <span className="text-[11px]">{t('btn_restart')}</span>
-                  </button>
-
-                  {/* To'xtatish */}
-                  <button
-                    onClick={() => dispatch({ type: 'RESIGN' })}
-                    disabled={isGameOver}
-                    className="py-2 px-1 rounded-xl bg-[#2b2926] hover:bg-[#383531] disabled:opacity-30 border border-[#3d3a34] text-[#e74c3c] hover:text-[#ec7063] font-bold text-xs flex items-center justify-center gap-1 transition-all cursor-pointer"
-                    title={t('btn_resign')}
-                  >
-                    <FlagIcon size={14} />
-                    <span className="text-[11px]">{t('btn_resign')}</span>
-                  </button>
-                </div>
-              </div>
-            ) : (
-              // Standart tugmalar (PVP va vsAI uchun)
-              <>
-                <div className="grid grid-cols-2 gap-2">
-                  <button
-                    onClick={() => dispatch({ type: 'UNDO' })}
-                    disabled={history.length === 0 || isGameOver || gameMode === 'online'}
-                    className="py-2.5 px-3 rounded-xl bg-[#2b2926] hover:bg-[#383531] disabled:opacity-30 border border-[#3d3a34] text-[#c3c2be] hover:text-white font-bold text-xs flex items-center justify-center gap-2 transition-all shadow-[0_2px_0_#1a1917] active:translate-y-0.5 cursor-pointer"
-                  >
-                    <RotateCcwIcon size={16} />
-                    <span>{t('btn_undo')}</span>
-                  </button>
-
-                  <button
-                    onClick={handleGetHint}
-                    disabled={isGameOver || hintLoading}
-                    className="py-2.5 px-3 rounded-xl bg-[#2b2926] hover:bg-[#383531] disabled:opacity-30 border border-[#3d3a34] text-[#81b64c] hover:text-[#99cc59] font-bold text-xs flex items-center justify-center gap-2 transition-all shadow-[0_2px_0_#1a1917] active:translate-y-0.5 cursor-pointer"
-                  >
-                    <LightbulbIcon size={16} />
-                    <span>{hintLoading ? '...' : t('btn_hint')}</span>
-                  </button>
-                </div>
-
-                <div className="grid grid-cols-3 gap-2">
-                  <button
-                    onClick={() => dispatch({ type: 'TOGGLE_FLIP' })}
-                    className="py-2 px-1.5 rounded-xl bg-[#2b2926] hover:bg-[#383531] border border-[#3d3a34] text-[#c3c2be] hover:text-white font-bold text-xs flex items-center justify-center gap-1.5 transition-all shadow-[0_2px_0_#1a1917] active:translate-y-0.5 cursor-pointer"
-                    title={t('btn_flip')}
-                  >
-                    <RotateCwIcon size={14} />
-                    <span className="text-[11px]">{t('btn_flip')}</span>
-                  </button>
-
-                  <button
-                    onClick={() => dispatch({ type: 'OFFER_DRAW' })}
-                    disabled={isGameOver}
-                    className="py-2 px-1.5 rounded-xl bg-[#2b2926] hover:bg-[#383531] disabled:opacity-30 border border-[#3d3a34] text-[#5dade2] hover:text-[#7fb3d5] font-bold text-xs flex items-center justify-center gap-1.5 transition-all shadow-[0_2px_0_#1a1917] active:translate-y-0.5 cursor-pointer"
-                    title={t('btn_draw')}
-                  >
-                    <HandshakeIcon size={14} />
-                    <span className="text-[11px]">{t('btn_draw')}</span>
-                  </button>
-
-                  <button
-                    onClick={() => dispatch({ type: 'RESIGN' })}
-                    disabled={isGameOver}
-                    className="py-2 px-1.5 rounded-xl bg-[#2b2926] hover:bg-[#383531] disabled:opacity-30 border border-[#3d3a34] text-[#e74c3c] hover:text-[#ec7063] font-bold text-xs flex items-center justify-center gap-1.5 transition-all shadow-[0_2px_0_#1a1917] active:translate-y-0.5 cursor-pointer"
-                    title={t('btn_resign')}
-                  >
-                    <FlagIcon size={14} />
-                    <span className="text-[11px]">{t('btn_resign')}</span>
-                  </button>
-                </div>
-              </>
-            )}
-
-            {/* Agar Bot o'ylanib qolsa — to'g'ridan-to'g'ri to'xtatish va tiklash tugmasi */}
-            {aiThinking && (
               <button
-                onClick={handleEmergencyReset}
-                className="w-full py-1.5 px-3 rounded-xl bg-amber-500/20 hover:bg-amber-500/30 border border-amber-500/40 text-amber-300 font-bold text-xs flex items-center justify-center gap-2 transition-all active:scale-95 animate-pulse cursor-pointer"
+                onClick={() => setShowPiecesModal(false)}
+                className="w-8 h-8 rounded-xl bg-[#2a241e] hover:bg-[#383129] text-[#c3c2be] hover:text-white font-bold flex items-center justify-center text-sm cursor-pointer"
               >
-                <span>⚡ {t('bot_unfreeze_btn')}</span>
+                ✕
               </button>
-            )}
+            </div>
+
+            {/* Tepada joylashgan o'yinchi donalari */}
+            <PlayerCard playerColor={topColor} position="top" />
+
+            {/* Pastda joylashgan o'yinchi donalari */}
+            <PlayerCard playerColor={bottomColor} position="bottom" />
+
+            {/* Baholash (EvalBar) */}
+            <div className="pt-2">
+              <div className="text-[11px] font-bold text-zinc-400 mb-1.5 flex items-center justify-between">
+                <span>Holat baholanishi:</span>
+                <span className="text-white font-mono">{moveHistory.length} ta yurish</span>
+              </div>
+              <EvalBar orientation="horizontal" />
+            </div>
           </div>
-        </aside>
-      </main>
-
-      {/* ── 3. CHESS.COM USLUBIDAGI TAKTIL PASTKI TUGMALAR (FAQAT MOBILDA) ─────────── */}
-      <footer className="px-3 pt-0.5 shrink-0 md:hidden max-w-md mx-auto w-full">
-        {gameMode === 'aiVsAi' ? (
-          <div className="grid grid-cols-4 gap-2">
-            {/* Play / Pause */}
-            <button
-              onClick={() => dispatch({ type: 'TOGGLE_AI_VS_AI_PAUSE' })}
-              disabled={isGameOver}
-              className={`py-2 px-2 rounded-xl border font-bold text-xs flex flex-col items-center justify-center gap-1 transition-all shadow-[0_2px_0_#1a1917] active:translate-y-0.5 ${
-                aiVsAiPaused
-                  ? 'bg-emerald-600 text-slate-950 border-emerald-400'
-                  : 'bg-amber-600/80 text-white border-amber-500'
-              }`}
-            >
-              {aiVsAiPaused ? <PlayIcon size={18} /> : <PauseIcon size={18} />}
-              <span className="text-[10px]">{aiVsAiPaused ? t('btn_play') : t('btn_pause')}</span>
-            </button>
-
-            {/* Step */}
-            <button
-              onClick={handleStepAiVsAi}
-              disabled={isGameOver || aiThinking}
-              className="py-2 px-2 rounded-xl bg-[#2b2926] hover:bg-[#383531] disabled:opacity-30 border border-[#3d3a34] text-sky-400 font-bold text-xs flex flex-col items-center justify-center gap-1 transition-all shadow-[0_2px_0_#1a1917] active:translate-y-0.5"
-            >
-              <StepForwardIcon size={18} />
-              <span className="text-[10px]">{t('btn_step')}</span>
-            </button>
-
-            {/* Tezlik */}
-            <button
-              onClick={handleCycleSpeed}
-              className="py-2 px-2 rounded-xl bg-[#2b2926] hover:bg-[#383531] border border-[#3d3a34] text-amber-300 font-bold text-xs flex flex-col items-center justify-center gap-1 transition-all shadow-[0_2px_0_#1a1917] active:translate-y-0.5"
-            >
-              <span className="text-base leading-none">⚡</span>
-              <span className="text-[10px]">{aiVsAiSpeed >= 1000 ? `${aiVsAiSpeed / 1000}s` : `${aiVsAiSpeed}ms`}</span>
-            </button>
-
-            {/* Qayta jang */}
-            <button
-              onClick={() => dispatch({ type: 'NEW_GAME' })}
-              className="py-2 px-2 rounded-xl bg-[#2b2926] hover:bg-[#383531] border border-[#3d3a34] text-[#c3c2be] hover:text-white font-bold text-xs flex flex-col items-center justify-center gap-1 transition-all shadow-[0_2px_0_#1a1917] active:translate-y-0.5"
-            >
-              <RotateCwIcon size={18} />
-              <span className="text-[10px]">{t('btn_restart')}</span>
-            </button>
-          </div>
-        ) : (
-          <div className="grid grid-cols-4 gap-2">
-            {/* Bekor qilish */}
-            <button
-              onClick={() => dispatch({ type: 'UNDO' })}
-              disabled={history.length === 0 || isGameOver || gameMode === 'online'}
-              className="py-2 px-2 rounded-xl bg-[#2b2926] hover:bg-[#383531] disabled:opacity-30 border border-[#3d3a34] text-[#c3c2be] hover:text-white font-bold text-xs flex flex-col items-center justify-center gap-1 transition-all shadow-[0_2px_0_#1a1917] active:translate-y-0.5 active:shadow-[0_0_0_#1a1917]"
-              title={t('btn_undo')}
-            >
-              <RotateCcwIcon size={18} />
-              <span className="text-[10px]">{t('btn_undo')}</span>
-            </button>
-
-            {/* Maslahat */}
-            <button
-              onClick={handleGetHint}
-              disabled={isGameOver || hintLoading}
-              className="py-2.5 px-2 rounded-xl bg-[#2b2926] hover:bg-[#383531] disabled:opacity-30 border border-[#3d3a34] text-[#81b64c] hover:text-[#99cc59] font-bold text-xs flex flex-col items-center justify-center gap-1 transition-all shadow-[0_2px_0_#1a1917] active:translate-y-0.5 active:shadow-[0_0_0_#1a1917]"
-              title={t('btn_hint')}
-            >
-              <LightbulbIcon size={18} />
-              <span className="text-[10px]">{hintLoading ? '...' : t('btn_hint')}</span>
-            </button>
-
-            {/* Durang taklif */}
-            <button
-              onClick={() => {
-                dispatch({ type: 'OFFER_DRAW' });
-              }}
-              disabled={isGameOver}
-              className="py-2.5 px-2 rounded-xl bg-[#2b2926] hover:bg-[#383531] disabled:opacity-30 border border-[#3d3a34] text-[#5dade2] hover:text-[#7fb3d5] font-bold text-xs flex flex-col items-center justify-center gap-1 transition-all shadow-[0_2px_0_#1a1917] active:translate-y-0.5 active:shadow-[0_0_0_#1a1917]"
-              title={t('btn_draw')}
-            >
-              <HandshakeIcon size={18} />
-              <span className="text-[10px]">{t('btn_draw')}</span>
-            </button>
-
-            {/* Taslim */}
-            <button
-              onClick={() => {
-                dispatch({ type: 'RESIGN' });
-              }}
-              disabled={isGameOver}
-              className="py-2.5 px-2 rounded-xl bg-[#2b2926] hover:bg-[#383531] disabled:opacity-30 border border-[#3d3a34] text-[#e74c3c] hover:text-[#ec7063] font-bold text-xs flex flex-col items-center justify-center gap-1 transition-all shadow-[0_2px_0_#1a1917] active:translate-y-0.5 active:shadow-[0_0_0_#1a1917]"
-              title={t('btn_resign')}
-            >
-              <FlagIcon size={18} />
-              <span className="text-[10px]">{t('btn_resign')}</span>
-            </button>
-          </div>
-        )}
-      </footer>
+        </div>
+      )}
 
       {/* Harakatlar tarixi modali */}
       {showHistoryModal && (
