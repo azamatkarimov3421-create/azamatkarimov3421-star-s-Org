@@ -710,7 +710,6 @@ export default function RulesScreen({ onBack }: RulesScreenProps) {
                     color: '#81b64c',
                     curve: true,
                     curveHeight: 7,
-                    label: 'Shoh C1 ga',
                   },
                   {
                     from: { file: 0, rank: 0 },
@@ -718,7 +717,6 @@ export default function RulesScreen({ onBack }: RulesScreenProps) {
                     color: '#f5b041',
                     curve: true,
                     curveHeight: 14,
-                    label: 'Rux N1 ga',
                   },
                 ]}
                 caption="10-Rasm: Qisqa Rokirovka (0-0)"
@@ -756,7 +754,6 @@ export default function RulesScreen({ onBack }: RulesScreenProps) {
                     color: '#81b64c',
                     curve: true,
                     curveHeight: 7,
-                    label: 'Shoh M1 ga',
                   },
                   {
                     from: { file: 9, rank: 0 },
@@ -764,7 +761,6 @@ export default function RulesScreen({ onBack }: RulesScreenProps) {
                     color: '#f5b041',
                     curve: true,
                     curveHeight: 14,
-                    label: 'Rux D1 ga',
                   },
                 ]}
                 caption="11-Rasm: Oʻrta Rokirovka (-0-0-)"
@@ -802,7 +798,6 @@ export default function RulesScreen({ onBack }: RulesScreenProps) {
                     color: '#81b64c',
                     curve: true,
                     curveHeight: 14,
-                    label: 'Shoh G1 ga',
                   },
                   {
                     from: { file: 9, rank: 0 },
@@ -810,7 +805,6 @@ export default function RulesScreen({ onBack }: RulesScreenProps) {
                     color: '#f5b041',
                     curve: true,
                     curveHeight: 7,
-                    label: 'Rux F1 ga',
                   },
                 ]}
                 caption="12-Rasm: Uzun Rokirovka (0-0-0)"

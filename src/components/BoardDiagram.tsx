@@ -30,6 +30,7 @@ export interface DiagramArrow {
   curve?: boolean;
   curveHeight?: number;
   label?: string;
+  noArrow?: boolean;
 }
 
 interface BoardDiagramProps {
@@ -225,43 +226,47 @@ export default function BoardDiagram({
                 <defs>
                   <marker
                     id="arrowhead-green"
-                    markerWidth="22"
-                    markerHeight="22"
-                    refX="18"
-                    refY="11"
+                    markerUnits="userSpaceOnUse"
+                    markerWidth="20"
+                    markerHeight="20"
+                    refX="16"
+                    refY="10"
                     orient="auto"
                   >
-                    <polygon points="0 3, 20 11, 0 19" fill="#81b64c" />
+                    <polygon points="0 4, 16 10, 0 16" fill="#81b64c" />
                   </marker>
                   <marker
                     id="arrowhead-amber"
-                    markerWidth="22"
-                    markerHeight="22"
-                    refX="18"
-                    refY="11"
+                    markerUnits="userSpaceOnUse"
+                    markerWidth="20"
+                    markerHeight="20"
+                    refX="16"
+                    refY="10"
                     orient="auto"
                   >
-                    <polygon points="0 3, 20 11, 0 19" fill="#f5b041" />
+                    <polygon points="0 4, 16 10, 0 16" fill="#f5b041" />
                   </marker>
                   <marker
                     id="arrowhead-cyan"
-                    markerWidth="22"
-                    markerHeight="22"
-                    refX="18"
-                    refY="11"
+                    markerUnits="userSpaceOnUse"
+                    markerWidth="20"
+                    markerHeight="20"
+                    refX="16"
+                    refY="10"
                     orient="auto"
                   >
-                    <polygon points="0 3, 20 11, 0 19" fill="#06b6d4" />
+                    <polygon points="0 4, 16 10, 0 16" fill="#06b6d4" />
                   </marker>
                   <marker
                     id="arrowhead-red"
-                    markerWidth="22"
-                    markerHeight="22"
-                    refX="18"
-                    refY="11"
+                    markerUnits="userSpaceOnUse"
+                    markerWidth="20"
+                    markerHeight="20"
+                    refX="16"
+                    refY="10"
                     orient="auto"
                   >
-                    <polygon points="0 3, 20 11, 0 19" fill="#ef4444" />
+                    <polygon points="0 4, 16 10, 0 16" fill="#ef4444" />
                   </marker>
                 </defs>
 
@@ -272,14 +277,15 @@ export default function BoardDiagram({
                   const y2 = (rows - 1 - (arr.to.rank - startRowIndex) + 0.5) * 100;
 
                   const color = arr.color || '#81b64c';
-                  const markerId =
-                    color.includes('f5b041') || color.includes('amber')
-                      ? 'url(#arrowhead-amber)'
-                      : color.includes('cyan') || color.includes('06b6d4')
-                      ? 'url(#arrowhead-cyan)'
-                      : color.includes('red') || color.includes('ef4444')
-                      ? 'url(#arrowhead-red)'
-                      : 'url(#arrowhead-green)';
+                  const markerId = arr.noArrow
+                    ? undefined
+                    : color.includes('f5b041') || color.includes('amber')
+                    ? 'url(#arrowhead-amber)'
+                    : color.includes('cyan') || color.includes('06b6d4')
+                    ? 'url(#arrowhead-cyan)'
+                    : color.includes('red') || color.includes('ef4444')
+                    ? 'url(#arrowhead-red)'
+                    : 'url(#arrowhead-green)';
 
                   if (arr.curve) {
                     // Egri sakrash chizig'i (Jump arc)
@@ -296,23 +302,23 @@ export default function BoardDiagram({
                           d={pathData}
                           fill="none"
                           stroke={color}
-                          strokeWidth="14"
-                          strokeDasharray="18,10"
+                          strokeWidth="8"
+                          strokeDasharray="14,8"
                           markerEnd={markerId}
                           strokeLinecap="round"
                         />
                         {arr.label && (
                           <text
                             x={midX}
-                            y={midY - 14}
+                            y={midY - 12}
                             textAnchor="middle"
                             fill={color}
-                            fontSize="26"
+                            fontSize="24"
                             fontWeight="bold"
                             style={{
                               paintOrder: 'stroke fill',
                               stroke: '#0f172a',
-                              strokeWidth: 6,
+                              strokeWidth: 5,
                               strokeLinecap: 'round',
                               strokeLinejoin: 'round',
                             }}
@@ -332,22 +338,22 @@ export default function BoardDiagram({
                         x2={x2}
                         y2={y2}
                         stroke={color}
-                        strokeWidth="14"
+                        strokeWidth="8"
                         markerEnd={markerId}
                         strokeLinecap="round"
                       />
                       {arr.label && (
                         <text
                           x={(x1 + x2) / 2}
-                          y={(y1 + y2) / 2 - 16}
+                          y={(y1 + y2) / 2 - 14}
                           textAnchor="middle"
                           fill={color}
-                          fontSize="26"
+                          fontSize="24"
                           fontWeight="bold"
                           style={{
                             paintOrder: 'stroke fill',
                             stroke: '#0f172a',
-                            strokeWidth: 6,
+                            strokeWidth: 5,
                             strokeLinecap: 'round',
                             strokeLinejoin: 'round',
                           }}
