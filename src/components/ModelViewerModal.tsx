@@ -294,7 +294,7 @@ export default function ModelViewerModal({ isOpen, onClose }: ModelViewerModalPr
     Pawn: {
       name: 'Piyoda (Pawn)',
       icon: '♟️',
-      size: '3.9 MB',
+      size: '6.7 MB',
       desc: 'Tripo 3D relyefli, silliq sayqallangan Piyoda modeli',
     },
   }[selectedPiece];
