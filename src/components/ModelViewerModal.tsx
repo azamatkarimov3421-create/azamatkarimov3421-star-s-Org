@@ -15,7 +15,7 @@ interface ModelViewerModalProps {
 
 export default function ModelViewerModal({ isOpen, onClose }: ModelViewerModalProps) {
   const containerRef = useRef<HTMLDivElement>(null);
-  const [selectedPiece, setSelectedPiece] = useState<'Knight' | 'Rook' | 'Queen'>('Queen');
+  const [selectedPiece, setSelectedPiece] = useState<'Knight' | 'Rook' | 'Queen' | 'Pawn'>('Pawn');
   const [colorMode, setColorMode] = useState<'white' | 'black'>('white');
   const [autoRotate, setAutoRotate] = useState(true);
   const [isLoading, setIsLoading] = useState(true);
@@ -96,7 +96,9 @@ export default function ModelViewerModal({ isOpen, onClose }: ModelViewerModalPr
         ? '/models/queen.glb'
         : selectedPiece === 'Knight'
         ? '/models/knight.glb'
-        : '/models/rook.glb';
+        : selectedPiece === 'Rook'
+        ? '/models/rook.glb'
+        : '/models/pawn.glb';
     const loader = new GLTFLoader();
     loader.load(
       modelPath,
@@ -263,6 +265,12 @@ export default function ModelViewerModal({ isOpen, onClose }: ModelViewerModalPr
   if (!isOpen) return null;
 
   const pieceMeta = {
+    Pawn: {
+      name: 'Piyoda (Pawn)',
+      icon: '♟️',
+      size: '3.9 MB',
+      desc: 'Tripo 3D relyefli, silliq sayqallangan Piyoda modeli',
+    },
     Queen: {
       name: 'Farzin (Queen)',
       icon: '👑',
@@ -315,8 +323,19 @@ export default function ModelViewerModal({ isOpen, onClose }: ModelViewerModalPr
             </div>
           </div>
 
-          {/* Dona Tanlash (Farzin / Ot / Rux) Tablari */}
+          {/* Dona Tanlash (Piyoda / Farzin / Ot / Rux) Tablari */}
           <div className="flex items-center bg-slate-800/90 p-1 rounded-2xl border border-slate-700 shadow-inner">
+            <button
+              onClick={() => setSelectedPiece('Pawn')}
+              className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer ${
+                selectedPiece === 'Pawn'
+                  ? 'bg-gradient-to-r from-amber-500 to-amber-600 text-slate-950 font-black shadow-md'
+                  : 'text-slate-300 hover:text-white'
+              }`}
+            >
+              <span>♟️</span>
+              <span>Piyoda</span>
+            </button>
             <button
               onClick={() => setSelectedPiece('Queen')}
               className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer ${

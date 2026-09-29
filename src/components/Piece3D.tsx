@@ -9,6 +9,7 @@ import { Color, PieceType } from '../engine/types';
 import GLBKnight from './GLBKnight';
 import GLBRook from './GLBRook';
 import GLBQueen from './GLBQueen';
+import GLBPawn from './GLBPawn';
 
 interface Piece3DProps {
   type: PieceType;
@@ -53,6 +54,18 @@ function Piece3DComponent({
   if (type === 'Rook') {
     return (
       <GLBRook
+        color={color}
+        size={size}
+        className={className}
+        isSelected={isSelected}
+      />
+    );
+  }
+
+  // Haqiqiy 3D GLB Piyoda (Pawn) modeli
+  if (type === 'Pawn') {
+    return (
+      <GLBPawn
         color={color}
         size={size}
         className={className}
