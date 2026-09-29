@@ -10,6 +10,7 @@ import GLBKnight from './GLBKnight';
 import GLBRook from './GLBRook';
 import GLBQueen from './GLBQueen';
 import GLBPawn from './GLBPawn';
+import GLBKing from './GLBKing';
 
 interface Piece3DProps {
   type: PieceType;
@@ -26,6 +27,17 @@ function Piece3DComponent({
   className = '',
   isSelected = false,
 }: Piece3DProps) {
+  // Haqiqiy 3D GLB Shoh (King) modeli
+  if (type === 'King') {
+    return (
+      <GLBKing
+        color={color}
+        size={size}
+        className={className}
+        isSelected={isSelected}
+      />
+    );
+  }
   // Haqiqiy 3D GLB Farzin (Queen) modeli
   if (type === 'Queen') {
     return (

@@ -15,7 +15,7 @@ interface ModelViewerModalProps {
 
 export default function ModelViewerModal({ isOpen, onClose }: ModelViewerModalProps) {
   const containerRef = useRef<HTMLDivElement>(null);
-  const [selectedPiece, setSelectedPiece] = useState<'Knight' | 'Rook' | 'Queen' | 'Pawn'>('Pawn');
+  const [selectedPiece, setSelectedPiece] = useState<'King' | 'Queen' | 'Knight' | 'Rook' | 'Pawn'>('King');
   const [colorMode, setColorMode] = useState<'white' | 'black'>('white');
   const [autoRotate, setAutoRotate] = useState(true);
   const [isLoading, setIsLoading] = useState(true);
@@ -92,7 +92,9 @@ export default function ModelViewerModal({ isOpen, onClose }: ModelViewerModalPr
 
     // 5. Load GLB Model
     const modelPath =
-      selectedPiece === 'Queen'
+      selectedPiece === 'King'
+        ? '/models/king.glb'
+        : selectedPiece === 'Queen'
         ? '/models/queen.glb'
         : selectedPiece === 'Knight'
         ? '/models/knight.glb'
@@ -265,11 +267,11 @@ export default function ModelViewerModal({ isOpen, onClose }: ModelViewerModalPr
   if (!isOpen) return null;
 
   const pieceMeta = {
-    Pawn: {
-      name: 'Piyoda (Pawn)',
-      icon: '♟️',
-      size: '3.9 MB',
-      desc: 'Tripo 3D relyefli, silliq sayqallangan Piyoda modeli',
+    King: {
+      name: 'Shoh (King)',
+      icon: '♚',
+      size: '4.2 MB',
+      desc: 'Tripo 3D relyefli, tojdor va oliyjanob Shoh modeli',
     },
     Queen: {
       name: 'Farzin (Queen)',
@@ -288,6 +290,12 @@ export default function ModelViewerModal({ isOpen, onClose }: ModelViewerModalPr
       icon: '🏰',
       size: '2.4 MB',
       desc: 'Tripo 3D relyefli mustahkam qasr / qalʼa minorasi',
+    },
+    Pawn: {
+      name: 'Piyoda (Pawn)',
+      icon: '♟️',
+      size: '3.9 MB',
+      desc: 'Tripo 3D relyefli, silliq sayqallangan Piyoda modeli',
     },
   }[selectedPiece];
 
@@ -323,22 +331,22 @@ export default function ModelViewerModal({ isOpen, onClose }: ModelViewerModalPr
             </div>
           </div>
 
-          {/* Dona Tanlash (Piyoda / Farzin / Ot / Rux) Tablari */}
-          <div className="flex items-center bg-slate-800/90 p-1 rounded-2xl border border-slate-700 shadow-inner">
+          {/* Dona Tanlash (Shoh / Farzin / Ot / Rux / Piyoda) Tablari */}
+          <div className="flex items-center bg-slate-800/90 p-1 rounded-2xl border border-slate-700 shadow-inner overflow-x-auto max-w-full">
             <button
-              onClick={() => setSelectedPiece('Pawn')}
-              className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer ${
-                selectedPiece === 'Pawn'
+              onClick={() => setSelectedPiece('King')}
+              className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer whitespace-nowrap ${
+                selectedPiece === 'King'
                   ? 'bg-gradient-to-r from-amber-500 to-amber-600 text-slate-950 font-black shadow-md'
                   : 'text-slate-300 hover:text-white'
               }`}
             >
-              <span>♟️</span>
-              <span>Piyoda</span>
+              <span>♚</span>
+              <span>Shoh</span>
             </button>
             <button
               onClick={() => setSelectedPiece('Queen')}
-              className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer ${
+              className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer whitespace-nowrap ${
                 selectedPiece === 'Queen'
                   ? 'bg-gradient-to-r from-amber-500 to-amber-600 text-slate-950 font-black shadow-md'
                   : 'text-slate-300 hover:text-white'
@@ -349,7 +357,7 @@ export default function ModelViewerModal({ isOpen, onClose }: ModelViewerModalPr
             </button>
             <button
               onClick={() => setSelectedPiece('Knight')}
-              className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer ${
+              className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer whitespace-nowrap ${
                 selectedPiece === 'Knight'
                   ? 'bg-gradient-to-r from-amber-500 to-amber-600 text-slate-950 font-black shadow-md'
                   : 'text-slate-300 hover:text-white'
@@ -360,7 +368,7 @@ export default function ModelViewerModal({ isOpen, onClose }: ModelViewerModalPr
             </button>
             <button
               onClick={() => setSelectedPiece('Rook')}
-              className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer ${
+              className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer whitespace-nowrap ${
                 selectedPiece === 'Rook'
                   ? 'bg-gradient-to-r from-amber-500 to-amber-600 text-slate-950 font-black shadow-md'
                   : 'text-slate-300 hover:text-white'
@@ -368,6 +376,17 @@ export default function ModelViewerModal({ isOpen, onClose }: ModelViewerModalPr
             >
               <span>🏰</span>
               <span>Rux</span>
+            </button>
+            <button
+              onClick={() => setSelectedPiece('Pawn')}
+              className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer whitespace-nowrap ${
+                selectedPiece === 'Pawn'
+                  ? 'bg-gradient-to-r from-amber-500 to-amber-600 text-slate-950 font-black shadow-md'
+                  : 'text-slate-300 hover:text-white'
+              }`}
+            >
+              <span>♟️</span>
+              <span>Piyoda</span>
             </button>
           </div>
         </div>
