@@ -441,9 +441,22 @@ export default function Board3D({
     });
     resizeObserver.observe(container);
 
+    // WebGL Context Lost / Restored boshqaruvi (Telifon ekrani o'chib-yoqilganda qotmasligi uchun)
+    const handleContextLost = (e: Event) => {
+      e.preventDefault();
+      if (animFrameRef.current) cancelAnimationFrame(animFrameRef.current);
+    };
+    const handleContextRestored = () => {
+      renderLoop();
+    };
+    canvas.addEventListener('webglcontextlost', handleContextLost, false);
+    canvas.addEventListener('webglcontextrestored', handleContextRestored, false);
+
     return () => {
       destroyed = true;
       resizeObserver.disconnect();
+      canvas.removeEventListener('webglcontextlost', handleContextLost);
+      canvas.removeEventListener('webglcontextrestored', handleContextRestored);
       if (animFrameRef.current) cancelAnimationFrame(animFrameRef.current);
       renderer.dispose();
     };

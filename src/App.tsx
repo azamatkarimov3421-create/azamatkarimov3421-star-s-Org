@@ -40,7 +40,23 @@ function AppContent() {
   const { state, dispatch } = useGame();
   const { gameMode, roomCode } = state;
 
-  const [currentScreen, setCurrentScreen] = useState<ScreenType>('splash');
+  const [currentScreen, setCurrentScreen] = useState<ScreenType>(() => {
+    try {
+      const raw = localStorage.getItem('nur_chess_active_match_v1');
+      if (raw) {
+        const data = JSON.parse(raw);
+        if (
+          data &&
+          data.game &&
+          (data.game.status === 'playing' || data.game.status === 'check') &&
+          (data.game.moveHistory?.length || 0) > 0
+        ) {
+          return 'game';
+        }
+      }
+    } catch {}
+    return 'splash';
+  });
   const [previousScreen, setPreviousScreen] = useState<ScreenType>('home');
   const [showLeaderboard, setShowLeaderboard] = useState(false);
   const [showOnlineModal, setShowOnlineModal] = useState(false);
@@ -236,6 +252,7 @@ function AppContent() {
           onOpenRules={() => navigateTo('rules')}
           onOpenStats={() => navigateTo('profile')}
           onOpenSettings={() => navigateTo('settings')}
+          onContinueGame={() => navigateTo('game')}
         />
       )}
 

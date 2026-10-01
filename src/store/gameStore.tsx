@@ -2,7 +2,7 @@
 // NUR SHAXMAT 100 — O'yin holati boshqaruvi (Context + Reducer)
 // =====================================================
 
-import React, { createContext, useContext, useReducer, useCallback } from 'react';
+import React, { createContext, useContext, useReducer, useCallback, useEffect } from 'react';
 import { GameState, GameStatus, Move, PieceType, Square, squaresEqual } from '../engine/types';
 import { createInitialGameState } from '../engine/board';
 import { getLegalMoves } from '../engine/moveGenerator';
@@ -97,9 +97,92 @@ type Action =
   | { type: 'SET_3D'; enabled: boolean }
   | { type: 'SET_LANGUAGE'; language: AppLanguage };
 
-// ── Boshlang'ich holat ────────────────────────────────
+// ── Faol O'yinni Saqlash va Qayta Tiklash (Match Persistence) ────────
 
-function createInitialAppState(): AppState {
+export const ACTIVE_MATCH_KEY = 'nur_chess_active_match_v1';
+
+export interface SavedMatchSession {
+  game: GameState;
+  history?: GameState[];
+  gameMode: GameMode;
+  aiColor: 'black' | 'white';
+  aiDepth: number;
+  aiWhiteDepth: number;
+  aiBlackDepth: number;
+  aiVsAiSpeed: number;
+  boardTheme: BoardTheme;
+  isFlipped: boolean;
+  timeControl: number;
+  timeIncrement: number;
+  whiteTime: number;
+  blackTime: number;
+  roomCode: string | null;
+  onlinePlayerColor: 'white' | 'black' | null;
+  savedAt: number;
+}
+
+export function loadSavedActiveMatch(): SavedMatchSession | null {
+  try {
+    const raw = localStorage.getItem(ACTIVE_MATCH_KEY);
+    if (!raw) return null;
+    const data: SavedMatchSession = JSON.parse(raw);
+    if (
+      data &&
+      data.game &&
+      (data.game.status === 'playing' || data.game.status === 'check') &&
+      Array.isArray(data.game.board) &&
+      (data.game.moveHistory?.length || 0) > 0
+    ) {
+      // 14 kundan eski bo'lmagan o'yinlarni tiklaymiz
+      if (data.savedAt && Date.now() - data.savedAt > 14 * 24 * 3600 * 1000) {
+        localStorage.removeItem(ACTIVE_MATCH_KEY);
+        return null;
+      }
+      return data;
+    }
+  } catch {}
+  return null;
+}
+
+export function saveActiveMatch(state: AppState): void {
+  try {
+    if (
+      (state.game.status === 'playing' || state.game.status === 'check') &&
+      (state.game.moveHistory?.length || 0) > 0
+    ) {
+      const session: SavedMatchSession = {
+        game: state.game,
+        history: state.history || [],
+        gameMode: state.gameMode,
+        aiColor: state.aiColor,
+        aiDepth: state.aiDepth,
+        aiWhiteDepth: state.aiWhiteDepth,
+        aiBlackDepth: state.aiBlackDepth,
+        aiVsAiSpeed: state.aiVsAiSpeed,
+        boardTheme: state.boardTheme,
+        isFlipped: state.isFlipped,
+        timeControl: state.timeControl,
+        timeIncrement: state.timeIncrement,
+        whiteTime: state.whiteTime,
+        blackTime: state.blackTime,
+        roomCode: state.roomCode,
+        onlinePlayerColor: state.onlinePlayerColor,
+        savedAt: Date.now(),
+      };
+      localStorage.setItem(ACTIVE_MATCH_KEY, JSON.stringify(session));
+    }
+  } catch {}
+}
+
+export function clearActiveMatch(): void {
+  try {
+    localStorage.removeItem(ACTIVE_MATCH_KEY);
+  } catch {}
+}
+
+// ── Yangi / Toza Boshlang'ich holat ───────────────────
+
+export function createFreshAppState(): AppState {
   return {
     game: createInitialGameState(),
     selectedSquare: null,
@@ -142,6 +225,33 @@ function createInitialAppState(): AppState {
     drawOfferState: 'none',
     drawOfferNotice: null,
   };
+}
+
+export function createInitialAppState(): AppState {
+  const saved = loadSavedActiveMatch();
+  const fresh = createFreshAppState();
+  if (saved) {
+    return {
+      ...fresh,
+      game: saved.game,
+      history: saved.history || [],
+      gameMode: saved.gameMode || 'vsAI',
+      aiColor: saved.aiColor || 'black',
+      aiDepth: saved.aiDepth ?? 2,
+      aiWhiteDepth: saved.aiWhiteDepth ?? 2,
+      aiBlackDepth: saved.aiBlackDepth ?? 2,
+      aiVsAiSpeed: saved.aiVsAiSpeed ?? 2000,
+      boardTheme: saved.boardTheme || 'wood',
+      isFlipped: saved.isFlipped ?? false,
+      timeControl: saved.timeControl ?? 0,
+      timeIncrement: saved.timeIncrement ?? 0,
+      whiteTime: saved.whiteTime ?? 0,
+      blackTime: saved.blackTime ?? 0,
+      roomCode: saved.roomCode || null,
+      onlinePlayerColor: saved.onlinePlayerColor || null,
+    };
+  }
+  return fresh;
 }
 
 // ── Reducer ───────────────────────────────────────────
@@ -492,8 +602,9 @@ function gameReducer(state: AppState, action: Action): AppState {
       return { ...state, hintMove: action.move };
 
     case 'SET_ONLINE_ROOM':
+      clearActiveMatch();
       return {
-        ...createInitialAppState(),
+        ...createFreshAppState(),
         boardTheme: state.boardTheme,
         soundEnabled: state.soundEnabled,
         useNumericNotation: state.useNumericNotation,
@@ -509,8 +620,9 @@ function gameReducer(state: AppState, action: Action): AppState {
       };
 
     case 'NEW_GAME':
+      clearActiveMatch();
       return {
-        ...createInitialAppState(),
+        ...createFreshAppState(),
         boardTheme: state.boardTheme,
         isFlipped: state.isFlipped,
         soundEnabled: state.soundEnabled,
@@ -582,8 +694,9 @@ function gameReducer(state: AppState, action: Action): AppState {
     }
 
     case 'SET_GAME_MODE':
+      clearActiveMatch();
       return {
-        ...createInitialAppState(),
+        ...createFreshAppState(),
         gameMode: action.mode,
         aiColor: state.aiColor,
         aiDepth: state.aiDepth,
@@ -770,6 +883,47 @@ const GameContext = createContext<GameContextType | null>(null);
 
 export function GameProvider({ children }: { children: React.ReactNode }) {
   const [state, dispatch] = useReducer(gameReducer, undefined, createInitialAppState);
+
+  // O'yin davomida har bir yurish va holatni avtomatik xotiraga saqlash
+  useEffect(() => {
+    if (
+      (state.game.status === 'playing' || state.game.status === 'check') &&
+      (state.game.moveHistory?.length || 0) > 0
+    ) {
+      saveActiveMatch(state);
+    } else if (state.game.status !== 'playing' && state.game.status !== 'check') {
+      clearActiveMatch();
+    }
+  }, [state]);
+
+  // Telifon ekrani o'chganda (lock screen), boshqa ilovaga o'tganda yoki tab yopilganda zudlik bilan saqlash
+  useEffect(() => {
+    const handleSave = () => {
+      if (
+        (state.game.status === 'playing' || state.game.status === 'check') &&
+        (state.game.moveHistory?.length || 0) > 0
+      ) {
+        saveActiveMatch(state);
+      }
+    };
+
+    const onVisibilityChange = () => {
+      if (document.visibilityState === 'hidden') {
+        handleSave();
+      }
+    };
+
+    document.addEventListener('visibilitychange', onVisibilityChange);
+    window.addEventListener('beforeunload', handleSave);
+    window.addEventListener('pagehide', handleSave);
+
+    return () => {
+      document.removeEventListener('visibilitychange', onVisibilityChange);
+      window.removeEventListener('beforeunload', handleSave);
+      window.removeEventListener('pagehide', handleSave);
+    };
+  }, [state]);
+
   return (
     <GameContext.Provider value={{ state, dispatch }}>
       {children}

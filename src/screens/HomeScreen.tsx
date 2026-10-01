@@ -24,6 +24,7 @@ interface HomeScreenProps {
   onOpenRules: () => void;
   onOpenStats: () => void;
   onOpenSettings: () => void;
+  onContinueGame?: () => void;
 }
 
 export default function HomeScreen({
@@ -34,10 +35,15 @@ export default function HomeScreen({
   onOpenRules,
   onOpenStats,
   onOpenSettings,
+  onContinueGame,
 }: HomeScreenProps) {
   const { state, dispatch } = useGame();
   const { t } = useTranslation();
   const [profile, setProfile] = useState<UserProfile>(getUserProfile());
+
+  const hasActiveMatch =
+    (state.game.status === 'playing' || state.game.status === 'check') &&
+    (state.game.moveHistory?.length || 0) > 0;
 
   useEffect(() => {
     setProfile(getUserProfile());
@@ -229,6 +235,44 @@ export default function HomeScreen({
         <main className="w-full max-w-6xl mx-auto px-4 sm:px-6 py-6 md:py-8 grid grid-cols-1 md:grid-cols-12 gap-6 items-start flex-1">
           {/* Chap ustun: Boshlash va 3D/2D tanlov (md:col-span-5) */}
           <div className="w-full md:col-span-5 p-5 sm:p-6 rounded-3xl bg-[#141b17]/95 backdrop-blur-md border border-[#27372d] shadow-2xl flex flex-col gap-4">
+            {/* Faol O'yinni Davom Ettirish Kartasi (Resume Game Banner) */}
+            {hasActiveMatch && (
+              <div className="w-full p-4 rounded-2xl bg-gradient-to-r from-emerald-950/90 via-[#163320] to-emerald-950/90 border-2 border-emerald-500/70 shadow-[0_0_25px_rgba(16,185,129,0.35)] flex items-center justify-between gap-3 animate-pulse">
+                <div className="flex items-center gap-3 min-w-0">
+                  <div className="w-11 h-11 rounded-xl bg-emerald-500/20 border border-emerald-400/40 flex items-center justify-center text-emerald-400 text-2xl shrink-0">
+                    ⚔️
+                  </div>
+                  <div className="min-w-0">
+                    <div className="flex items-center gap-2">
+                      <span className="text-[11px] font-black text-emerald-400 uppercase tracking-wider">
+                        Jarayondagi Oʻyin
+                      </span>
+                      <span className="w-2 h-2 rounded-full bg-emerald-400 animate-ping" />
+                    </div>
+                    <p className="text-xs sm:text-sm font-bold text-white truncate">
+                      {state.gameMode === 'vsAI'
+                        ? "Bot bilan oʻyin"
+                        : state.gameMode === 'aiVsAi'
+                        ? "Bot vs Bot"
+                        : state.gameMode === 'online'
+                        ? "Onlayn oʻyin"
+                        : "2 kishilik oʻyin"}
+                      {' • '}
+                      <span className="text-amber-300">{Math.ceil((state.game.moveHistory?.length || 0) / 2)}-yurish</span>
+                    </p>
+                  </div>
+                </div>
+
+                <button
+                  onClick={onContinueGame}
+                  className="px-3.5 py-2.5 rounded-xl bg-emerald-500 hover:bg-emerald-400 active:scale-95 text-slate-950 font-black text-xs sm:text-sm flex items-center gap-1.5 shadow-lg cursor-pointer shrink-0 transition-all"
+                >
+                  <span>Davom ettirish</span>
+                  <ChevronRightIcon size={16} />
+                </button>
+              </div>
+            )}
+
             <div className="flex items-center gap-3.5">
               <div className="w-13 h-13 rounded-2xl bg-[#1e3827] border border-[#285535] flex items-center justify-center text-[#4ade80] shadow-inner shrink-0">
                 <SwordsIcon size={26} />

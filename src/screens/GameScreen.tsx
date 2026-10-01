@@ -14,7 +14,6 @@ import { getUserProfile } from '../store/userProfileStore';
 import { getBestMove, getBestMoveAsync } from '../ai/minimax';
 import { onlineManager } from '../services/onlineService';
 import { logger } from '../services/loggerService';
-import ModelViewerModal from '../components/ModelViewerModal';
 import {
   ArrowLeftIcon,
   RotateCwIcon,
@@ -70,7 +69,6 @@ export default function GameScreen({ onBack, onOpenSettings }: GameScreenProps) 
   const [showPiecesModal, setShowPiecesModal] = useState(false);
   const [showHistoryModal, setShowHistoryModal] = useState(false);
   const [showVsAiLevelModal, setShowVsAiLevelModal] = useState(false);
-  const [showModelViewerModal, setShowModelViewerModal] = useState(false);
   const userProfile = getUserProfile();
 
   React.useEffect(() => {
@@ -137,6 +135,20 @@ export default function GameScreen({ onBack, onOpenSettings }: GameScreenProps) 
       }
     } catch {}
   }, []);
+
+  // Telifon ekrani yoqilganda / o'yinga qaytganda bot holatini uyg'otish va tekshirish
+  React.useEffect(() => {
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === 'visible') {
+        if (aiThinkingRef.current) {
+          aiThinkingRef.current = false;
+          dispatch({ type: 'SET_AI_THINKING', thinking: false });
+        }
+      }
+    };
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+    return () => document.removeEventListener('visibilitychange', handleVisibilityChange);
+  }, [dispatch]);
 
   // AI Bot yurishini avtomatik hisoblash va amalga oshirish (vsAI rejimida)
   React.useEffect(() => {
@@ -391,15 +403,6 @@ export default function GameScreen({ onBack, onOpenSettings }: GameScreenProps) 
           title={t('btn_undo')}
         >
           <UndoIcon size={24} />
-        </button>
-
-        {/* 3D Donalar Modeli / Inspector (♟ Pawn Icon) */}
-        <button
-          onClick={() => setShowModelViewerModal(true)}
-          className="w-11 h-11 sm:w-13 sm:h-13 md:w-14 md:h-14 rounded-2xl bg-black/65 hover:bg-black/85 active:scale-95 border border-white/20 text-white shadow-[0_12px_28px_rgba(0,0,0,0.75)] flex items-center justify-center transition-all cursor-pointer backdrop-blur-md"
-          title="3D Donalar modeli"
-        >
-          <ChessPawnIcon size={26} />
         </button>
 
         {/* Maslahat olish (💡 Lightbulb Hint) */}
@@ -857,12 +860,6 @@ export default function GameScreen({ onBack, onOpenSettings }: GameScreenProps) 
           </div>
         </div>
       )}
-
-      {/* ── 8. 3D DONALAR INSPEKTORI (GLB Model Viewer) ── */}
-      <ModelViewerModal
-        isOpen={showModelViewerModal}
-        onClose={() => setShowModelViewerModal(false)}
-      />
 
     </div>
   );
