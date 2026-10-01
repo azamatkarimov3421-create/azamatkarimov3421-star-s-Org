@@ -281,11 +281,34 @@ export default function Board3D({
     renderer.shadowMap.type = THREE.PCFSoftShadowMap;
     rendererRef.current = renderer;
 
-    // Kamera: Yon tomonlar (1-10 raqamlar) to'liq ko'rinishi uchun keng burchak va balandlik
+    // Kamera: Responsive ko'rish masofasi va kengligi
     const camera = new THREE.PerspectiveCamera(36, width / height, 0.1, 100);
-    camera.position.set(0, 14.8, 11.2);
-    camera.lookAt(0, -0.2, 0.2);
     cameraRef.current = camera;
+
+    const updateCameraForAspect = (w: number, h: number) => {
+      if (!cameraRef.current) return;
+      const aspect = w / h;
+      cameraRef.current.aspect = aspect;
+
+      // Responsive masofa va balandlik: telefonning tor vertikal ekranida (aspect < 0.94)
+      // doskaning 10 ta ustuni va 1-10 raqamlari har doim to'liq ekranga sig'adi!
+      const baseDist = 18.6;
+      const lookAtY = -0.2;
+      const lookAtZ = 0.2;
+
+      // Mobil vertikal ekranlarda (aspect < 0.94) masofani proporsional oshiramiz
+      const scaleFactor = Math.max(1.0, 0.94 / aspect);
+      const camDist = baseDist * scaleFactor;
+
+      const camY = lookAtY + 0.806 * camDist;
+      const camZ = lookAtZ + 0.591 * camDist;
+
+      cameraRef.current.position.set(0, camY, camZ);
+      cameraRef.current.lookAt(0, lookAtY, lookAtZ);
+      cameraRef.current.updateProjectionMatrix();
+    };
+
+    updateCameraForAspect(width, height);
 
     // ── YORUG'LIK ──
     const amb = new THREE.AmbientLight(0xfff5ea, 0.95);
@@ -411,8 +434,7 @@ export default function Board3D({
         const w = entry.contentRect.width;
         const h = entry.contentRect.height;
         if (w > 0 && h > 0 && cameraRef.current && rendererRef.current) {
-          cameraRef.current.aspect = w / h;
-          cameraRef.current.updateProjectionMatrix();
+          updateCameraForAspect(w, h);
           rendererRef.current.setSize(w, h);
         }
       }

@@ -16,7 +16,7 @@ const server = http.createServer((req, res) => {
 <html>
 <head>
   <meta charset="utf-8">
-  <title>Wide 3D Chess Board Test</title>
+  <title>Mobile Responsive 3D Chess Board Test</title>
   <script type="importmap">
     {
       "imports": {
@@ -37,15 +37,16 @@ const server = http.createServer((req, res) => {
     import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 
     const canvas = document.getElementById('c');
-    const width = 1600;
-    const height = 900;
+    // Mobile phone portrait viewport (e.g. 420 x 910)
+    const width = 420;
+    const height = 910;
     canvas.width = width;
     canvas.height = height;
 
     const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: true, preserveDrawingBuffer: true });
     renderer.setSize(width, height);
     renderer.setPixelRatio(1);
-    renderer.setClearColor(0x000000, 0); // Transparent background!
+    renderer.setClearColor(0x000000, 0); // Transparent background
     renderer.toneMapping = THREE.ACESFilmicToneMapping;
     renderer.toneMappingExposure = 1.10;
     renderer.shadowMap.enabled = true;
@@ -53,7 +54,7 @@ const server = http.createServer((req, res) => {
 
     const scene = new THREE.Scene();
 
-    // ── Seamless Soft Shadow Receiver Plane (Transparent ShadowMaterial) ──
+    // ── Seamless Soft Shadow Receiver Plane (ShadowMaterial) ──
     const shadowGeo = new THREE.PlaneGeometry(60, 60);
     const shadowMat = new THREE.ShadowMaterial({ opacity: 0.58 });
     const shadowPlane = new THREE.Mesh(shadowGeo, shadowMat);
@@ -175,7 +176,7 @@ const server = http.createServer((req, res) => {
       }
     }
 
-    // ── Front Rim Plinth (Attached to front of board, tilted for readability) ──
+    // ── Front Rim Plinth ──
     const rimCanvas = document.createElement('canvas');
     rimCanvas.width = 1024;
     rimCanvas.height = 64;
@@ -200,7 +201,7 @@ const server = http.createServer((req, res) => {
     const rimMat = new THREE.MeshStandardMaterial({ map: rimTex, roughness: 0.45 });
     const rimMesh = new THREE.Mesh(rimGeo, rimMat);
     rimMesh.position.set(0, -BOARD_THICKNESS / 2 - 0.02, TOTAL_WIDTH / 2 + 0.05);
-    rimMesh.rotation.x = -0.22; // Slightly tilted upward toward camera
+    rimMesh.rotation.x = -0.22;
     scene.add(rimMesh);
 
     // ── Lighting ──
@@ -213,8 +214,8 @@ const server = http.createServer((req, res) => {
     key.shadow.mapSize.width = 2048;
     key.shadow.mapSize.height = 2048;
     key.shadow.camera.near = 0.5;
-    key.shadow.camera.far = 35;
-    const d = 9.0;
+    key.shadow.camera.far = 45;
+    const d = 11.0;
     key.shadow.camera.left = -d;
     key.shadow.camera.right = d;
     key.shadow.camera.top = d;
@@ -235,10 +236,24 @@ const server = http.createServer((req, res) => {
     rimLight.position.set(0, 11, -14);
     scene.add(rimLight);
 
-    // Camera framed so board occupies ~85% vertical and leaves generous margins on left & right
-    const camera = new THREE.PerspectiveCamera(36, width / height, 0.1, 100);
-    camera.position.set(0, 14.8, 11.2);
-    camera.lookAt(0, -0.2, 0.2);
+    // ── RESPONSIVE CAMERA ADAPTATION FOR PHONE PORTRAIT & DESKTOP ──
+    const aspect = width / height;
+    const camera = new THREE.PerspectiveCamera(36, aspect, 0.1, 100);
+
+    // Responsive masofa hisoblash: telefon tor ekranida doska hech qachon qirqilmaydi!
+    // Kenglik har doim kamida 12.4 birlik bo'ladi (doska kengligi 11.04 + chetki raqamlar va hoshiyalar)
+    const baseDist = 18.6;
+    const lookAtY = -0.2;
+    const lookAtZ = 0.2;
+
+    const scaleFactor = Math.max(1.0, 0.94 / aspect);
+    const camDist = baseDist * scaleFactor;
+    // Boshlang'ich vektor yo'nalishi: norm (0, 0.806, 0.591)
+    const camY = lookAtY + 0.806 * camDist;
+    const camZ = lookAtZ + 0.591 * camDist;
+
+    camera.position.set(0, camY, camZ);
+    camera.lookAt(0, lookAtY, lookAtZ);
 
     // Load pieces
     const loader = new GLTFLoader();
@@ -373,7 +388,7 @@ const server = http.createServer((req, res) => {
 });
 
 server.listen(PORT, () => {
-  console.log('Wide 3D test server running on http://localhost:' + PORT);
+  console.log('Mobile test server running on http://localhost:' + PORT);
   const edgePath = 'C:\\Program Files (x86)\\Microsoft\\Edge\\Application\\msedge.exe';
   const cmd = `"${edgePath}" --headless --disable-gpu=false --use-gl=angle --remote-debugging-port=0 http://localhost:${PORT}/test`;
   exec(cmd, (err) => {
