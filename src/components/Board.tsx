@@ -688,6 +688,14 @@ export default function Board() {
                       </div>
                     )}
 
+                    {/* 3D Dona Poydevori Qora Soyasi (katak yuzasiga tushgan realistik oval soya) */}
+                    {is3D && piece && !(activeDrag && squaresEqual(sq, activeDrag.from)) && (
+                      <div
+                        className="absolute bottom-0 left-1/2 -translate-x-1/2 w-[74%] h-[24%] rounded-[50%] bg-black/65 blur-[2.5px] pointer-events-none z-[9]"
+                        style={{ transform: 'translateY(12%)' }}
+                      />
+                    )}
+
                     {/* Shaxmat Donasi */}
                     {piece && (
                       <div
@@ -716,7 +724,11 @@ export default function Board() {
                           color={piece.color}
                           is3D={is3D}
                           isSelected={isSelected}
-                          className={`${is3D ? 'w-[110%] h-[155%]' : 'w-[92%] h-[92%]'} pointer-events-none select-none`}
+                          className={`${
+                            is3D
+                              ? 'w-[115%] h-[165%] drop-shadow-[0_10px_14px_rgba(0,0,0,0.8)]'
+                              : 'w-[92%] h-[92%]'
+                          } pointer-events-none select-none`}
                         />
                       </div>
                     )}
