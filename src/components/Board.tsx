@@ -296,7 +296,7 @@ export default function Board() {
         const x = e.clientX;
         const y = e.clientY;
         dragGhostRef.current.style.transform = is3DRef.current
-          ? `translate3d(${x}px, ${y}px, 0) translate(-50%, -62%) scale(1.18) rotateX(-20deg)`
+          ? `translate3d(${x}px, ${y}px, 0) translate(-50%, -62%) scale(1.18) rotateX(-13deg)`
           : `translate3d(${x}px, ${y}px, 0) translate(-50%, -50%) scale(1.12)`;
       }
     };
@@ -556,7 +556,7 @@ export default function Board() {
                 const pieceStyle: React.CSSProperties = is3D
                   ? {
                       ...slideStyle,
-                      transform: 'translateZ(10px) translateY(2px)',
+                      transform: 'rotateX(-13deg) translateZ(8px) translateY(2px)',
                       transformOrigin: 'bottom center',
                       filter: isSelected ? 'drop-shadow(0 6px 12px rgba(234,179,8,0.9))' : undefined,
                       transition: isCurrentlyAnimating ? undefined : 'transform 0.15s ease-out',
@@ -716,7 +716,7 @@ export default function Board() {
                           color={piece.color}
                           is3D={is3D}
                           isSelected={isSelected}
-                          className={`${is3D ? 'w-[108%] h-[142%]' : 'w-[92%] h-[92%]'} pointer-events-none select-none`}
+                          className={`${is3D ? 'w-[110%] h-[155%]' : 'w-[92%] h-[92%]'} pointer-events-none select-none`}
                         />
                       </div>
                     )}
@@ -782,7 +782,7 @@ export default function Board() {
             width: activeDrag.squareSize * 0.94,
             height: activeDrag.squareSize * 0.94,
             transform: is3D
-              ? `translate3d(${pointerStartRef.current?.startX ?? 0}px, ${pointerStartRef.current?.startY ?? 0}px, 0) translate(-50%, -62%) scale(1.18) rotateX(-20deg)`
+              ? `translate3d(${pointerStartRef.current?.startX ?? 0}px, ${pointerStartRef.current?.startY ?? 0}px, 0) translate(-50%, -62%) scale(1.18) rotateX(-13deg)`
               : `translate3d(${pointerStartRef.current?.startX ?? 0}px, ${pointerStartRef.current?.startY ?? 0}px, 0) translate(-50%, -50%) scale(1.12)`,
             filter: is3D
               ? 'drop-shadow(0 20px 18px rgba(0,0,0,0.8)) drop-shadow(0 0 20px rgba(234,179,8,0.85))'

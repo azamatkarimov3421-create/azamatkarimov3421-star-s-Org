@@ -113,10 +113,12 @@
 
   @keyframes piece-glide-3d {
     0% {
-      transform: translate3d(var(--slide-x, 0), var(--slide-y, 0), 0) translateZ(6px) rotateX(-26deg);
+      transform: translate3d(var(--slide-x, 0), var(--slide-y, 0), 0) translateZ(8px) translateY(2px) rotateX(-13deg);
+      transform-origin: bottom center;
     }
     100% {
-      transform: translate3d(0, 0, 0) translateZ(6px) rotateX(-26deg);
+      transform: translate3d(0, 0, 0) translateZ(8px) translateY(2px) rotateX(-13deg);
+      transform-origin: bottom center;
     }
   }
 

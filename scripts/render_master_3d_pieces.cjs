@@ -6,14 +6,16 @@ const { exec } = require('child_process');
 const PORT = 8799;
 const ROOT = path.resolve(__dirname, '..');
 
+// 90° Upright Staunton tournament proportions:
+// King is tallest, Pawn is ~70% of King, all pieces anchored at yOffset -0.52
 const PIECES = [
-  { name: 'pawn', file: 'pawn.glb', scaleFactor: 1.42, yOffset: -0.70, camY: 1.32, camZ: 2.38, rotY: 15 },
-  { name: 'rook', file: 'rook.glb', scaleFactor: 1.42, yOffset: -0.70, camY: 1.35, camZ: 2.38, rotY: 15 },
-  { name: 'knight', file: 'knight.glb', scaleFactor: 1.42, yOffset: -0.70, camY: 1.35, camZ: 2.38, rotY: 28 },
-  { name: 'bishop', file: 'bishop.glb', scaleFactor: 1.42, yOffset: -0.70, camY: 1.38, camZ: 2.42, rotY: 15 },
-  { name: 'queen', file: 'queen.glb', scaleFactor: 1.40, yOffset: -0.70, camY: 1.42, camZ: 2.48, rotY: 15 },
-  { name: 'king', file: 'king.glb', scaleFactor: 1.38, yOffset: -0.70, camY: 1.46, camZ: 2.54, rotY: 15 },
-  { name: 'nur', file: 'nur.glb', scaleFactor: 1.40, yOffset: -0.70, camY: 1.42, camZ: 2.48, rotY: 15 },
+  { name: 'pawn',   file: 'pawn.glb',   scaleFactor: 1.05, yOffset: -0.52, camY: 0.50, camZ: 2.55, lookY: 0.20, rotY: -90 },
+  { name: 'rook',   file: 'rook.glb',   scaleFactor: 1.20, yOffset: -0.52, camY: 0.50, camZ: 2.55, lookY: 0.20, rotY: 195 },
+  { name: 'knight', file: 'knight.glb', scaleFactor: 1.26, yOffset: -0.52, camY: 0.50, camZ: 2.55, lookY: 0.20, rotY: 28 },
+  { name: 'bishop', file: 'bishop.glb', scaleFactor: 1.34, yOffset: -0.52, camY: 0.50, camZ: 2.55, lookY: 0.20, rotY: 195 },
+  { name: 'queen',  file: 'queen.glb',  scaleFactor: 1.40, yOffset: -0.52, camY: 0.50, camZ: 2.55, lookY: 0.20, rotY: 195 },
+  { name: 'king',   file: 'king.glb',   scaleFactor: 1.46, yOffset: -0.52, camY: 0.50, camZ: 2.55, lookY: 0.20, rotY: 195 },
+  { name: 'nur',    file: 'nur.glb',    scaleFactor: 1.40, yOffset: -0.52, camY: 0.50, camZ: 2.55, lookY: 0.20, rotY: 195 },
 ];
 
 const server = http.createServer((req, res) => {
@@ -61,7 +63,7 @@ const server = http.createServer((req, res) => {
 <html>
 <head>
   <meta charset="utf-8">
-  <title>Master 3D Piece Renderer</title>
+  <title>Master 3D Piece Renderer (90° Upright)</title>
   <script type="importmap">
     {
       "imports": {
@@ -143,7 +145,6 @@ const server = http.createServer((req, res) => {
           child.receiveShadow = true;
           const orig = Array.isArray(child.material) ? child.material[0] : child.material;
           const origNormal = orig?.normalMap || null;
-          const origMap = orig?.map || null;
 
           if (isWhite) {
             // Warm ivory / polished cream
@@ -193,10 +194,10 @@ const server = http.createServer((req, res) => {
       floor.receiveShadow = true;
       scene.add(floor);
 
-      // Camera: Elevation ~25° so pieces stand tall and prominent
+      // Camera: Elevation ~6.7° so pieces stand 90° upright, majestic and tall
       const camera = new THREE.PerspectiveCamera(34, width / height, 0.1, 100);
       camera.position.set(0, cfg.camY, cfg.camZ);
-      camera.lookAt(0, 0.15, 0);
+      camera.lookAt(0, cfg.lookY, 0);
 
       renderer.render(scene, camera);
       return canvas.toDataURL('image/png');
