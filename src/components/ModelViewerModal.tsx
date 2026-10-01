@@ -15,7 +15,7 @@ interface ModelViewerModalProps {
 
 export default function ModelViewerModal({ isOpen, onClose }: ModelViewerModalProps) {
   const containerRef = useRef<HTMLDivElement>(null);
-  const [selectedPiece, setSelectedPiece] = useState<'King' | 'Queen' | 'Knight' | 'Rook' | 'Pawn'>('King');
+  const [selectedPiece, setSelectedPiece] = useState<'King' | 'Queen' | 'Knight' | 'Rook' | 'Pawn' | 'Nur'>('Nur');
   const [colorMode, setColorMode] = useState<'white' | 'black'>('white');
   const [autoRotate, setAutoRotate] = useState(true);
   const [isLoading, setIsLoading] = useState(true);
@@ -100,6 +100,8 @@ export default function ModelViewerModal({ isOpen, onClose }: ModelViewerModalPr
         ? '/models/knight.glb'
         : selectedPiece === 'Rook'
         ? '/models/rook.glb'
+        : selectedPiece === 'Nur'
+        ? '/models/nur.glb'
         : '/models/pawn.glb';
     const loader = new GLTFLoader();
     loader.load(
@@ -267,6 +269,12 @@ export default function ModelViewerModal({ isOpen, onClose }: ModelViewerModalPr
   if (!isOpen) return null;
 
   const pieceMeta = {
+    Nur: {
+      name: 'Nur (Rasmiy Dona)',
+      icon: '✨',
+      size: '4.2 MB',
+      desc: 'O‘zbek Shaxmati 10x10 ning asosiy sharqona mahobatli Nur donasi',
+    },
     King: {
       name: 'Shoh (King)',
       icon: '♚',
@@ -331,8 +339,19 @@ export default function ModelViewerModal({ isOpen, onClose }: ModelViewerModalPr
             </div>
           </div>
 
-          {/* Dona Tanlash (Shoh / Farzin / Ot / Rux / Piyoda) Tablari */}
+          {/* Dona Tanlash (Nur / Shoh / Farzin / Ot / Rux / Piyoda) Tablari */}
           <div className="flex items-center bg-slate-800/90 p-1 rounded-2xl border border-slate-700 shadow-inner overflow-x-auto max-w-full">
+            <button
+              onClick={() => setSelectedPiece('Nur')}
+              className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer whitespace-nowrap ${
+                selectedPiece === 'Nur'
+                  ? 'bg-gradient-to-r from-amber-500 to-amber-600 text-slate-950 font-black shadow-md'
+                  : 'text-slate-300 hover:text-white'
+              }`}
+            >
+              <span>✨</span>
+              <span>Nur</span>
+            </button>
             <button
               onClick={() => setSelectedPiece('King')}
               className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer whitespace-nowrap ${

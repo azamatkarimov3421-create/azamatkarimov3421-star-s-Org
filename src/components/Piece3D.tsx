@@ -11,6 +11,7 @@ import GLBRook from './GLBRook';
 import GLBQueen from './GLBQueen';
 import GLBPawn from './GLBPawn';
 import GLBKing from './GLBKing';
+import GLBNur from './GLBNur';
 
 interface Piece3DProps {
   type: PieceType;
@@ -78,6 +79,18 @@ function Piece3DComponent({
   if (type === 'Pawn') {
     return (
       <GLBPawn
+        color={color}
+        size={size}
+        className={className}
+        isSelected={isSelected}
+      />
+    );
+  }
+
+  // Haqiqiy 3D GLB Nur (Rasmiy O'zbek Shaxmat donasi) modeli
+  if (type === 'Nur') {
+    return (
+      <GLBNur
         color={color}
         size={size}
         className={className}
