@@ -12,6 +12,7 @@ import GLBQueen from './GLBQueen';
 import GLBPawn from './GLBPawn';
 import GLBKing from './GLBKing';
 import GLBNur from './GLBNur';
+import GLBBishop from './GLBBishop';
 
 interface Piece3DProps {
   type: PieceType;
@@ -67,6 +68,18 @@ function Piece3DComponent({
   if (type === 'Rook') {
     return (
       <GLBRook
+        color={color}
+        size={size}
+        className={className}
+        isSelected={isSelected}
+      />
+    );
+  }
+
+  // Haqiqiy 3D GLB Fil (Bishop) modeli
+  if (type === 'Bishop') {
+    return (
+      <GLBBishop
         color={color}
         size={size}
         className={className}

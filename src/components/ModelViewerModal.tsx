@@ -15,7 +15,7 @@ interface ModelViewerModalProps {
 
 export default function ModelViewerModal({ isOpen, onClose }: ModelViewerModalProps) {
   const containerRef = useRef<HTMLDivElement>(null);
-  const [selectedPiece, setSelectedPiece] = useState<'King' | 'Queen' | 'Knight' | 'Rook' | 'Pawn' | 'Nur'>('Nur');
+  const [selectedPiece, setSelectedPiece] = useState<'King' | 'Queen' | 'Knight' | 'Rook' | 'Bishop' | 'Pawn' | 'Nur'>('Bishop');
   const [colorMode, setColorMode] = useState<'white' | 'black'>('white');
   const [autoRotate, setAutoRotate] = useState(true);
   const [isLoading, setIsLoading] = useState(true);
@@ -100,6 +100,8 @@ export default function ModelViewerModal({ isOpen, onClose }: ModelViewerModalPr
         ? '/models/knight.glb'
         : selectedPiece === 'Rook'
         ? '/models/rook.glb'
+        : selectedPiece === 'Bishop'
+        ? '/models/bishop.glb'
         : selectedPiece === 'Nur'
         ? '/models/nur.glb'
         : '/models/pawn.glb';
@@ -287,6 +289,12 @@ export default function ModelViewerModal({ isOpen, onClose }: ModelViewerModalPr
       size: '2.4 MB',
       desc: 'Tripo 3D relyefli, tojdor va zargarona Farzin modeli',
     },
+    Bishop: {
+      name: 'Fil (Bishop)',
+      icon: '♗',
+      size: '4.8 MB',
+      desc: 'Tripo 3D relyefli, o‘tkir uchli va nozik qirrali Fil modeli',
+    },
     Knight: {
       name: 'Ot (Knight)',
       icon: '🐎',
@@ -339,7 +347,7 @@ export default function ModelViewerModal({ isOpen, onClose }: ModelViewerModalPr
             </div>
           </div>
 
-          {/* Dona Tanlash (Nur / Shoh / Farzin / Ot / Rux / Piyoda) Tablari */}
+          {/* Dona Tanlash (Nur / Shoh / Farzin / Fil / Ot / Rux / Piyoda) Tablari */}
           <div className="flex items-center bg-slate-800/90 p-1 rounded-2xl border border-slate-700 shadow-inner overflow-x-auto max-w-full">
             <button
               onClick={() => setSelectedPiece('Nur')}
@@ -373,6 +381,17 @@ export default function ModelViewerModal({ isOpen, onClose }: ModelViewerModalPr
             >
               <span>👑</span>
               <span>Farzin</span>
+            </button>
+            <button
+              onClick={() => setSelectedPiece('Bishop')}
+              className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer whitespace-nowrap ${
+                selectedPiece === 'Bishop'
+                  ? 'bg-gradient-to-r from-amber-500 to-amber-600 text-slate-950 font-black shadow-md'
+                  : 'text-slate-300 hover:text-white'
+              }`}
+            >
+              <span>♗</span>
+              <span>Fil</span>
             </button>
             <button
               onClick={() => setSelectedPiece('Knight')}
