@@ -8,6 +8,7 @@ import { FILES, Move, Piece, Square, squaresEqual } from '../engine/types';
 import PieceIcon from './PieceIcon';
 import NurLogo from './NurLogo';
 import { useTranslation } from '../i18n/translations';
+import Board3D from './Board3D';
 
 // Mavzular rang palitrasi
 const THEME_STYLES: Record<BoardTheme, {
@@ -410,6 +411,27 @@ export default function Board() {
     }
     return `${moveNum}. ${game.currentTurn === 'white' ? 'Oqlarning yurishi' : 'Qoralarning yurishi'}`;
   }, [game.moveHistory.length, game.status, game.currentTurn, lang]);
+
+  if (is3D) {
+    return (
+      <div className="relative select-none flex flex-col items-center w-full mx-auto touch-manipulation chess-board-box-3d pt-0 pb-1">
+        <Board3D
+          game={game}
+          selectedSquare={selectedSquare}
+          legalMoves={legalMoves}
+          hintMove={hintMove}
+          dispatch={dispatch}
+          isFlipped={isFlipped}
+          gameMode={gameMode}
+          onlinePlayerColor={onlinePlayerColor}
+          aiColor={aiColor}
+          aiThinking={aiThinking}
+          frontRimTitle={frontRimTitle}
+          frontRimMoveText={frontRimMoveText}
+        />
+      </div>
+    );
+  }
 
   return (
     <div
