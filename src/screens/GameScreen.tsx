@@ -451,8 +451,8 @@ export default function GameScreen({ onBack, onOpenSettings }: GameScreenProps) 
       )}
 
       {/* ── 4. ASOSIY MAYDON: 10x10 SHAXMAT DOSQASI (To'liq markazda, to'siqsiz, 1 ga 1) ── */}
-      <main className="relative z-10 w-full h-full flex items-center justify-center p-1 sm:p-3 overflow-hidden">
-        <div className="w-full max-w-[min(96vw,92vh)] aspect-square flex items-center justify-center">
+      <main className="relative z-10 w-full h-full flex items-center justify-center p-0 sm:p-2 overflow-hidden">
+        <div className={`w-full h-full flex items-center justify-center ${is3D ? 'max-w-6xl' : 'max-w-[min(96vw,92vh)] aspect-square'}`}>
           <Board />
         </div>
       </main>

@@ -414,7 +414,7 @@ export default function Board() {
 
   if (is3D) {
     return (
-      <div className="relative select-none flex flex-col items-center w-full mx-auto touch-manipulation chess-board-box-3d pt-0 pb-1">
+      <div className="relative select-none flex flex-col items-center justify-center w-full h-full mx-auto touch-manipulation pt-0 pb-0 bg-transparent">
         <Board3D
           game={game}
           selectedSquare={selectedSquare}

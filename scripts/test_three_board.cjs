@@ -16,7 +16,7 @@ const server = http.createServer((req, res) => {
 <html>
 <head>
   <meta charset="utf-8">
-  <title>Real 3D Chess Board Test</title>
+  <title>Wide 3D Chess Board Test</title>
   <script type="importmap">
     {
       "imports": {
@@ -26,7 +26,7 @@ const server = http.createServer((req, res) => {
     }
   </script>
   <style>
-    body { margin: 0; background: #120904; overflow: hidden; }
+    body { margin: 0; background: #120d09 url('/public/textures/wood_table_bg.jpg') center/cover; overflow: hidden; }
     canvas { width: 100vw; height: 100vh; display: block; }
   </style>
 </head>
@@ -37,14 +37,15 @@ const server = http.createServer((req, res) => {
     import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 
     const canvas = document.getElementById('c');
-    const width = 1280;
-    const height = 960;
+    const width = 1600;
+    const height = 900;
     canvas.width = width;
     canvas.height = height;
 
-    const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, preserveDrawingBuffer: true });
+    const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: true, preserveDrawingBuffer: true });
     renderer.setSize(width, height);
     renderer.setPixelRatio(1);
+    renderer.setClearColor(0x000000, 0); // Transparent background!
     renderer.toneMapping = THREE.ACESFilmicToneMapping;
     renderer.toneMappingExposure = 1.10;
     renderer.shadowMap.enabled = true;
@@ -52,25 +53,14 @@ const server = http.createServer((req, res) => {
 
     const scene = new THREE.Scene();
 
-    // ── Dark Espresso Wood Planks Table Background ──
-    const textureLoader = new THREE.TextureLoader();
-    const tableTex = textureLoader.load('/public/textures/wood_table_bg.jpg');
-    tableTex.wrapS = THREE.RepeatWrapping;
-    tableTex.wrapT = THREE.RepeatWrapping;
-    tableTex.repeat.set(1.5, 1.0);
-    const tableGeo = new THREE.PlaneGeometry(42, 34);
-    // Tinted dark espresso brown to match screenshot
-    const tableMat = new THREE.MeshStandardMaterial({
-      map: tableTex,
-      color: 0x3d2516,
-      roughness: 0.88,
-      metalness: 0.04
-    });
-    const table = new THREE.Mesh(tableGeo, tableMat);
-    table.rotation.x = -Math.PI / 2;
-    table.position.y = -0.42;
-    table.receiveShadow = true;
-    scene.add(table);
+    // ── Seamless Soft Shadow Receiver Plane (Transparent ShadowMaterial) ──
+    const shadowGeo = new THREE.PlaneGeometry(60, 60);
+    const shadowMat = new THREE.ShadowMaterial({ opacity: 0.58 });
+    const shadowPlane = new THREE.Mesh(shadowGeo, shadowMat);
+    shadowPlane.rotation.x = -Math.PI / 2;
+    shadowPlane.position.y = -0.40;
+    shadowPlane.receiveShadow = true;
+    scene.add(shadowPlane);
 
     // ── Board Dimensions (10x10) ──
     const SQ_SIZE = 1.0;
@@ -79,7 +69,9 @@ const server = http.createServer((req, res) => {
     const TOTAL_WIDTH = BOARD_WIDTH + FRAME_MARGIN * 2;
     const BOARD_THICKNESS = 0.40;
 
-    // ── Warm Golden-Honey Wood Frame with Coordinates (A-J, 1-10) ──
+    // ── Warm Golden-Honey Wood Frame with Official Nur Chess 100 Coordinates ──
+    const FILES = ['A', 'B', 'C', 'N', 'E', 'D', 'M', 'F', 'G', 'H'];
+
     function createFrameTextureWithCoords() {
       const cv = document.createElement('canvas');
       cv.width = 1024;
@@ -92,11 +84,9 @@ const server = http.createServer((req, res) => {
         img.onload = () => {
           ctx.drawImage(img, 0, 0, 1024, 1024);
 
-          // Warm honey-amber glaze over frame
           ctx.fillStyle = 'rgba(165, 115, 60, 0.25)';
           ctx.fillRect(0, 0, 1024, 1024);
 
-          // Inner dark groove border
           const marginPx = (FRAME_MARGIN / TOTAL_WIDTH) * 1024;
           const innerSize = 1024 - marginPx * 2;
 
@@ -104,25 +94,22 @@ const server = http.createServer((req, res) => {
           ctx.lineWidth = 4;
           ctx.strokeRect(marginPx, marginPx, innerSize, innerSize);
 
-          // Subtle inner shadow / bevel line
           ctx.strokeStyle = '#85552a';
           ctx.lineWidth = 2;
           ctx.strokeRect(marginPx - 2, marginPx - 2, innerSize + 4, innerSize + 4);
 
-          // File / Rank coordinates
           ctx.font = 'bold 24px system-ui, sans-serif';
           ctx.fillStyle = '#2b1608';
           ctx.textAlign = 'center';
           ctx.textBaseline = 'middle';
 
-          const files = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J'];
           const sqPx = innerSize / 10;
 
           // Bottom letters & Top letters
           for (let f = 0; f < 10; f++) {
             const x = marginPx + (f + 0.5) * sqPx;
-            ctx.fillText(files[f], x, 1024 - marginPx * 0.46);
-            ctx.fillText(files[f], x, marginPx * 0.46);
+            ctx.fillText(FILES[f], x, 1024 - marginPx * 0.46);
+            ctx.fillText(FILES[f], x, marginPx * 0.46);
           }
 
           // Left ranks & Right ranks (1 at bottom, 10 at top)
@@ -137,7 +124,8 @@ const server = http.createServer((req, res) => {
           resolve(tex);
         };
         img.onerror = () => {
-          resolve(textureLoader.load('/public/textures/wood_frame.jpg'));
+          const fallback = new THREE.TextureLoader().load('/public/textures/wood_frame.jpg');
+          resolve(fallback);
         };
       });
     }
@@ -157,6 +145,7 @@ const server = http.createServer((req, res) => {
     scene.add(frameMesh);
 
     // ── 10x10 Squares ──
+    const textureLoader = new THREE.TextureLoader();
     const lightTex = textureLoader.load('/public/textures/wood_light_square.jpg');
     const darkTex = textureLoader.load('/public/textures/wood_dark_square.jpg');
 
@@ -176,7 +165,7 @@ const server = http.createServer((req, res) => {
     const sqGeo = new THREE.BoxGeometry(SQ_SIZE, 0.035, SQ_SIZE);
     for (let r = 0; r < 10; r++) {
       for (let f = 0; f < 10; f++) {
-        const isLight = (r + f) % 2 !== 0; // matching 2D board
+        const isLight = (r + f) % 2 !== 0;
         const sq = new THREE.Mesh(sqGeo, isLight ? lightMat : darkMat);
         sq.position.x = (f - 4.5) * SQ_SIZE;
         sq.position.z = (4.5 - r) * SQ_SIZE;
@@ -186,61 +175,36 @@ const server = http.createServer((req, res) => {
       }
     }
 
-    // ── Move indicator (G2 to G3) ──
-    const greenLineMat = new THREE.LineBasicMaterial({ color: 0x22c55e, linewidth: 3 });
-    const g2x = (6 - 4.5) * SQ_SIZE;
-    const g2z = (4.5 - 1) * SQ_SIZE;
-    const crossGeo = new THREE.BufferGeometry();
-    const pts = [
-      new THREE.Vector3(g2x, 0.045, g2z - 0.35), new THREE.Vector3(g2x, 0.045, g2z - 0.12),
-      new THREE.Vector3(g2x, 0.045, g2z + 0.12), new THREE.Vector3(g2x, 0.045, g2z + 0.35),
-      new THREE.Vector3(g2x - 0.35, 0.045, g2z), new THREE.Vector3(g2x - 0.12, 0.045, g2z),
-      new THREE.Vector3(g2x + 0.12, 0.045, g2z), new THREE.Vector3(g2x + 0.35, 0.045, g2z),
-    ];
-    crossGeo.setFromPoints(pts);
-    const crossLines = new THREE.LineSegments(crossGeo, greenLineMat);
-    scene.add(crossLines);
-
-    // Green square border on G3:
-    const g3x = (6 - 4.5) * SQ_SIZE;
-    const g3z = (4.5 - 2) * SQ_SIZE;
-    const borderGeo = new THREE.BufferGeometry();
-    const bPts = [
-      new THREE.Vector3(g3x - 0.48, 0.045, g3z - 0.48),
-      new THREE.Vector3(g3x + 0.48, 0.045, g3z - 0.48),
-      new THREE.Vector3(g3x + 0.48, 0.045, g3z + 0.48),
-      new THREE.Vector3(g3x - 0.48, 0.045, g3z + 0.48),
-      new THREE.Vector3(g3x - 0.48, 0.045, g3z - 0.48),
-    ];
-    borderGeo.setFromPoints(bPts);
-    const borderLine = new THREE.Line(borderGeo, greenLineMat);
-    scene.add(borderLine);
-
-    // ── Front Rim Text Plinth ──
+    // ── Front Rim Plinth (Attached to front of board, tilted for readability) ──
     const rimCanvas = document.createElement('canvas');
     rimCanvas.width = 1024;
     rimCanvas.height = 64;
     const rimCtx = rimCanvas.getContext('2d');
     rimCtx.fillStyle = '#1c1007';
     rimCtx.fillRect(0, 0, 1024, 64);
+    rimCtx.strokeStyle = '#7a421f';
+    rimCtx.lineWidth = 4;
+    rimCtx.strokeRect(2, 2, 1020, 60);
+
     rimCtx.fillStyle = '#f5ede0';
-    rimCtx.font = 'bold 28px system-ui, sans-serif';
+    rimCtx.font = 'bold 26px system-ui, sans-serif';
     rimCtx.textAlign = 'left';
     rimCtx.textBaseline = 'middle';
-    rimCtx.fillText('КАНДИДАТ В МАСТЕРА', 45, 32);
-    rimCtx.font = 'italic 26px system-ui, sans-serif';
+    rimCtx.fillText('KANDIDAT V MASTERA (BOT TEMUR)', 35, 32);
+    rimCtx.font = 'italic 24px system-ui, sans-serif';
     rimCtx.textAlign = 'right';
-    rimCtx.fillText('1. Ход черных', 979, 32);
+    rimCtx.fillText('6. Oqlarning yurishi', 989, 32);
 
     const rimTex = new THREE.CanvasTexture(rimCanvas);
-    const rimGeo = new THREE.BoxGeometry(TOTAL_WIDTH, 0.36, 0.08);
+    const rimGeo = new THREE.BoxGeometry(TOTAL_WIDTH, 0.34, 0.10);
     const rimMat = new THREE.MeshStandardMaterial({ map: rimTex, roughness: 0.45 });
     const rimMesh = new THREE.Mesh(rimGeo, rimMat);
-    rimMesh.position.set(0, -BOARD_THICKNESS / 2, TOTAL_WIDTH / 2 + 0.04);
+    rimMesh.position.set(0, -BOARD_THICKNESS / 2 - 0.02, TOTAL_WIDTH / 2 + 0.05);
+    rimMesh.rotation.x = -0.22; // Slightly tilted upward toward camera
     scene.add(rimMesh);
 
     // ── Lighting ──
-    const amb = new THREE.AmbientLight(0xfff5ea, 0.92);
+    const amb = new THREE.AmbientLight(0xfff5ea, 0.95);
     scene.add(amb);
 
     const key = new THREE.DirectionalLight(0xfffaee, 1.55);
@@ -271,10 +235,10 @@ const server = http.createServer((req, res) => {
     rimLight.position.set(0, 11, -14);
     scene.add(rimLight);
 
-    // Camera tuned: Elevation ~51°, nicely framing pieces with plinth at bottom
-    const camera = new THREE.PerspectiveCamera(40, width / height, 0.1, 100);
-    camera.position.set(0, 12.8, 10.4);
-    camera.lookAt(0, -0.2, 0.3);
+    // Camera framed so board occupies ~85% vertical and leaves generous margins on left & right
+    const camera = new THREE.PerspectiveCamera(36, width / height, 0.1, 100);
+    camera.position.set(0, 14.8, 11.2);
+    camera.lookAt(0, -0.2, 0.2);
 
     // Load pieces
     const loader = new GLTFLoader();
@@ -290,7 +254,6 @@ const server = http.createServer((req, res) => {
       });
     }
 
-    // High fidelity PBR Materials matching screenshot
     const whiteMat = new THREE.MeshStandardMaterial({
       color: new THREE.Color(0xf6eee2),
       roughness: 0.16,
@@ -302,7 +265,6 @@ const server = http.createServer((req, res) => {
       metalness: 0.18
     });
 
-    // Proportional tournament heights relative to 1.0 unit square
     const scales = {
       pawn: 1.00,
       rook: 1.18,
@@ -349,15 +311,11 @@ const server = http.createServer((req, res) => {
       scene.add(model);
     }
 
-    const backRow = ['rook', 'knight', 'bishop', 'nur', 'queen', 'king', 'nur', 'bishop', 'knight', 'rook'];
+    const backRow = ['rook', 'knight', 'bishop', 'nur', 'king', 'queen', 'nur', 'bishop', 'knight', 'rook'];
 
     for (let f = 0; f < 10; f++) {
       spawnPiece(backRow[f], f, 0, true);
-      if (f === 6) {
-        spawnPiece('pawn', 6, 2, true);
-      } else {
-        spawnPiece('pawn', f, 1, true);
-      }
+      spawnPiece('pawn', f, 1, true);
     }
 
     for (let f = 0; f < 10; f++) {
@@ -415,7 +373,7 @@ const server = http.createServer((req, res) => {
 });
 
 server.listen(PORT, () => {
-  console.log('Real 3D test server running on http://localhost:' + PORT);
+  console.log('Wide 3D test server running on http://localhost:' + PORT);
   const edgePath = 'C:\\Program Files (x86)\\Microsoft\\Edge\\Application\\msedge.exe';
   const cmd = `"${edgePath}" --headless --disable-gpu=false --use-gl=angle --remote-debugging-port=0 http://localhost:${PORT}/test`;
   exec(cmd, (err) => {

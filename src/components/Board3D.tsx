@@ -100,6 +100,7 @@ export default function Board3D({
   const rendererRef = useRef<THREE.WebGLRenderer | null>(null);
   const squareMeshesRef = useRef<THREE.Mesh[]>([]);
   const frameMeshRef = useRef<THREE.Mesh | null>(null);
+  const rimMeshRef = useRef<THREE.Mesh | null>(null);
   const pieceMeshesMapRef = useRef<Map<string, THREE.Group>>(new Map());
   const highlightsGroupRef = useRef<THREE.Group | null>(null);
   const animFrameRef = useRef<number | null>(null);
@@ -162,14 +163,12 @@ export default function Board3D({
 
     return new Promise((resolve) => {
       const renderCoords = () => {
-        // Hoshiyaga issiq asal-eman tus berish
         ctx.fillStyle = 'rgba(165, 115, 60, 0.25)';
         ctx.fillRect(0, 0, 1024, 1024);
 
         const marginPx = (FRAME_MARGIN / TOTAL_WIDTH) * 1024;
         const innerSize = 1024 - marginPx * 2;
 
-        // Ichki quyuq chiziq chegarasi
         ctx.strokeStyle = '#221105';
         ctx.lineWidth = 4;
         ctx.strokeRect(marginPx, marginPx, innerSize, innerSize);
@@ -178,13 +177,12 @@ export default function Board3D({
         ctx.lineWidth = 2;
         ctx.strokeRect(marginPx - 2, marginPx - 2, innerSize + 4, innerSize + 4);
 
-        // Harflar va raqamlar: Nur Chess 100 rasmiy FILES qatori
         ctx.font = 'bold 24px system-ui, -apple-system, sans-serif';
         ctx.fillStyle = '#2b1608';
         ctx.textAlign = 'center';
         ctx.textBaseline = 'middle';
 
-        const rawFiles = [...FILES]; // ['A', 'B', 'C', 'N', 'E', 'D', 'M', 'F', 'G', 'H']
+        const rawFiles = [...FILES];
         const files = flipped ? [...rawFiles].reverse() : rawFiles;
         const sqPx = innerSize / 10;
 
@@ -220,7 +218,36 @@ export default function Board3D({
     });
   }, []);
 
-  // Three.js sahnasini ishga tushirish
+  // 3D Old Qirra Plintusi uchun tekstura (Screenshotdagi 1 ga 1 plinth)
+  const createRimTexture = useCallback((title: string, moveText: string) => {
+    const cv = document.createElement('canvas');
+    cv.width = 1024;
+    cv.height = 64;
+    const ctx = cv.getContext('2d')!;
+
+    ctx.fillStyle = '#1c1007';
+    ctx.fillRect(0, 0, 1024, 64);
+
+    ctx.strokeStyle = '#7a421f';
+    ctx.lineWidth = 4;
+    ctx.strokeRect(2, 2, 1020, 60);
+
+    ctx.fillStyle = '#f5ede0';
+    ctx.font = 'bold 26px system-ui, -apple-system, sans-serif';
+    ctx.textAlign = 'left';
+    ctx.textBaseline = 'middle';
+    ctx.fillText(title || 'NUR SHAXMAT 100', 35, 32);
+
+    ctx.font = 'italic 24px system-ui, -apple-system, sans-serif';
+    ctx.textAlign = 'right';
+    ctx.fillText(moveText || '', 989, 32);
+
+    const tex = new THREE.CanvasTexture(cv);
+    tex.needsUpdate = true;
+    return tex;
+  }, []);
+
+  // Three.js sahnasini ishga tushirish (Shaffof fon va yumshoq soyalar bilan)
   useEffect(() => {
     const container = containerRef.current;
     const canvas = canvasRef.current;
@@ -233,8 +260,8 @@ export default function Board3D({
       setIsLoaded(true);
     });
 
-    const width = container.clientWidth || 600;
-    const height = container.clientHeight || 600;
+    const width = container.clientWidth || 800;
+    const height = container.clientHeight || 800;
 
     const scene = new THREE.Scene();
     sceneRef.current = scene;
@@ -242,24 +269,26 @@ export default function Board3D({
     const renderer = new THREE.WebGLRenderer({
       canvas,
       antialias: true,
-      alpha: true,
+      alpha: true, // Shaffof fon — orqa fonga tabiiy qo'shiladi!
       powerPreference: 'high-performance',
     });
     renderer.setSize(width, height);
     renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+    renderer.setClearColor(0x000000, 0); // 100% shaffof fon
     renderer.toneMapping = THREE.ACESFilmicToneMapping;
     renderer.toneMappingExposure = 1.10;
     renderer.shadowMap.enabled = true;
     renderer.shadowMap.type = THREE.PCFSoftShadowMap;
     rendererRef.current = renderer;
 
-    const camera = new THREE.PerspectiveCamera(40, width / height, 0.1, 100);
-    camera.position.set(0, 12.8, 10.4);
-    camera.lookAt(0, -0.2, 0.3);
+    // Kamera: Yon tomonlar (1-10 raqamlar) to'liq ko'rinishi uchun keng burchak va balandlik
+    const camera = new THREE.PerspectiveCamera(36, width / height, 0.1, 100);
+    camera.position.set(0, 14.8, 11.2);
+    camera.lookAt(0, -0.2, 0.2);
     cameraRef.current = camera;
 
     // ── YORUG'LIK ──
-    const amb = new THREE.AmbientLight(0xfff5ea, 0.92);
+    const amb = new THREE.AmbientLight(0xfff5ea, 0.95);
     scene.add(amb);
 
     const key = new THREE.DirectionalLight(0xfffaee, 1.55);
@@ -290,24 +319,15 @@ export default function Board3D({
     rimLight.position.set(0, 11, -14);
     scene.add(rimLight);
 
-    // ── STOL FONI (To'q espresso vertikal yog'och plitalar) ──
-    const textureLoader = new THREE.TextureLoader();
-    const tableTex = textureLoader.load('/textures/wood_table_bg.jpg');
-    tableTex.wrapS = THREE.RepeatWrapping;
-    tableTex.wrapT = THREE.RepeatWrapping;
-    tableTex.repeat.set(1.5, 1.0);
-    const tableGeo = new THREE.PlaneGeometry(42, 34);
-    const tableMat = new THREE.MeshStandardMaterial({
-      map: tableTex,
-      color: 0x3d2516,
-      roughness: 0.88,
-      metalness: 0.04,
-    });
-    const table = new THREE.Mesh(tableGeo, tableMat);
-    table.rotation.x = -Math.PI / 2;
-    table.position.y = -0.42;
-    table.receiveShadow = true;
-    scene.add(table);
+    // ── SHAFQATSIZ YUMSHOQ SOYA PLANETASI (ShadowMaterial) ──
+    // Orqa fondagi yog'och stol ustiga faqat realistik 3D soya tushadi, hech qanday qora to'rtburchak yo'q!
+    const shadowGeo = new THREE.PlaneGeometry(60, 60);
+    const shadowMat = new THREE.ShadowMaterial({ opacity: 0.58 });
+    const shadowPlane = new THREE.Mesh(shadowGeo, shadowMat);
+    shadowPlane.rotation.x = -Math.PI / 2;
+    shadowPlane.position.y = -0.40;
+    shadowPlane.receiveShadow = true;
+    scene.add(shadowPlane);
 
     // ── DOSQA RAMKASI (Koordinatali asal-eman yog'ochi) ──
     createFrameTexture(isFlipped).then((frameTex) => {
@@ -328,6 +348,7 @@ export default function Board3D({
     });
 
     // ── 10x10 KVADRATLAR ──
+    const textureLoader = new THREE.TextureLoader();
     const lightTex = textureLoader.load('/textures/wood_light_square.jpg');
     const darkTex = textureLoader.load('/textures/wood_dark_square.jpg');
 
@@ -362,6 +383,16 @@ export default function Board3D({
     }
     squareMeshesRef.current = squareMeshes;
 
+    // ── 3D OLD QIRRA PLINTUSI (Doskaning old tomoniga biriktirilgan) ──
+    const initialRimTex = createRimTexture(frontRimTitle || 'NUR SHAXMAT 100', frontRimMoveText || '');
+    const rimGeo = new THREE.BoxGeometry(TOTAL_WIDTH, 0.34, 0.10);
+    const rimMat = new THREE.MeshStandardMaterial({ map: initialRimTex, roughness: 0.45 });
+    const rimMesh = new THREE.Mesh(rimGeo, rimMat);
+    rimMesh.position.set(0, -BOARD_THICKNESS / 2 - 0.02, TOTAL_WIDTH / 2 + 0.05);
+    rimMesh.rotation.x = -0.22; // Kameraga qarab sal burchak ostida qiya
+    scene.add(rimMesh);
+    rimMeshRef.current = rimMesh;
+
     // Belgilash guruhlari (Highlights)
     const highlightsGroup = new THREE.Group();
     scene.add(highlightsGroup);
@@ -394,7 +425,7 @@ export default function Board3D({
       if (animFrameRef.current) cancelAnimationFrame(animFrameRef.current);
       renderer.dispose();
     };
-  }, [createFrameTexture]);
+  }, [createFrameTexture, createRimTexture]);
 
   // isFlipped o'zgarganda ramka koordinata teksturasini yangilash
   useEffect(() => {
@@ -406,6 +437,14 @@ export default function Board3D({
       }
     });
   }, [isFlipped, createFrameTexture]);
+
+  // Old qirra plintusi matnini yangilash
+  useEffect(() => {
+    if (!rimMeshRef.current) return;
+    const newTex = createRimTexture(frontRimTitle || 'NUR SHAXMAT 100', frontRimMoveText || '');
+    (rimMeshRef.current.material as THREE.MeshStandardMaterial).map = newTex;
+    (rimMeshRef.current.material as THREE.MeshStandardMaterial).needsUpdate = true;
+  }, [frontRimTitle, frontRimMoveText, createRimTexture]);
 
   // ── DONALAR VA BELGILARNI YANGILASH (Game State o'zgarganda) ──
   useEffect(() => {
@@ -582,13 +621,11 @@ export default function Board3D({
           const { x, z } = getSquareWorldPos(m.to.file, m.to.rank, flipped);
           const hasPiece = !!board[m.to.rank]?.[m.to.file];
           if (hasPiece) {
-            // Yeyish nishoni (Qizil halqa)
             const ring = new THREE.Mesh(ringGeo, ringMat);
             ring.rotation.x = -Math.PI / 2;
             ring.position.set(x, 0.046, z);
             hlGroup.add(ring);
           } else {
-            // Harakat nuqtasi (Yashil disk)
             const dot = new THREE.Mesh(dotGeo, dotMat);
             dot.rotation.x = -Math.PI / 2;
             dot.position.set(x, 0.046, z);
@@ -645,7 +682,6 @@ export default function Board3D({
       raycaster.setFromCamera(new THREE.Vector2(mouseX, mouseY), camera);
 
       // 1. Dastlab 3D donalar ustiga bosilganligini tekshiramiz
-      // Bu foydalanuvchi donaning boshi yoki gavdasiga tekkanda qat'iy to'g'ri kvadratni topadi!
       const pieceMeshes: THREE.Object3D[] = [];
       pieceMeshesMapRef.current.forEach((group) => {
         group.traverse((ch) => {
@@ -703,33 +739,27 @@ export default function Board3D({
         legalMoves: legals,
       } = stateRef.current;
 
-      // Bot vs Bot rejimida taqiqlangan
       if (gm === 'aiVsAi') return;
       if (gm === 'vsAI' && (g.currentTurn === ac || at)) return;
       if (gm === 'online' && opc && g.currentTurn !== opc) return;
 
-      // Agar allaqachon dona tanlangan bo'lsa:
       if (sel) {
-        // 1. Agar bosilgan kvadrat qonuniy yurish maqsadi bo'lsa:
         const isLegal = legals.some((m) => squaresEqual(m.to, sq));
         if (isLegal) {
           dispatch({ type: 'SELECT_SQUARE', square: sq });
           return;
         }
 
-        // 2. Agar o'zimizning boshqa donamiz bosilsa: yangi donani tanlaymiz
         const clickedPiece = g.board[sq.rank]?.[sq.file];
         if (clickedPiece && clickedPiece.color === g.currentTurn) {
           dispatch({ type: 'SELECT_SQUARE', square: sq, forceSelect: true });
           return;
         }
 
-        // 3. Agar boshqa noqonuniy katak bosilsa: tanlovni bekor qilamiz
         dispatch({ type: 'SELECT_SQUARE', square: sq });
         return;
       }
 
-      // Hali dona tanlanmagan bo'lsa: faqat o'z navbatidagi donani tanlaymiz
       const piece = g.board[sq.rank]?.[sq.file];
       if (piece && piece.color === g.currentTurn) {
         dispatch({ type: 'SELECT_SQUARE', square: sq, forceSelect: true });
@@ -814,13 +844,11 @@ export default function Board3D({
     if (!tracker) return;
 
     if (tracker.isDragging && tracker.mesh && tracker.originalPos && tracker.fromSq) {
-      // Donani o'zining balandligiga qaytarish
       const offset = tracker.mesh.userData.centerOffset;
       tracker.mesh.position.y = -offset.y + 0.038;
 
       const toSq = getSquareFromPointer(e.clientX, e.clientY);
       if (toSq && !squaresEqual(tracker.fromSq, toSq)) {
-        // Boshqa katakka tashlandi: yurish
         const isLegal = stateRef.current.legalMoves.some((m) => squaresEqual(m.to, toSq));
         if (isLegal) {
           tracker.mesh.position.copy(tracker.originalPos);
@@ -844,33 +872,23 @@ export default function Board3D({
   return (
     <div
       ref={containerRef}
-      className="relative w-full aspect-square flex flex-col items-center justify-center select-none touch-none overflow-hidden rounded-xl shadow-[0_24px_48px_rgba(0,0,0,0.85)]"
+      className="relative w-full h-full flex flex-col items-center justify-center select-none touch-none overflow-visible bg-transparent"
     >
       <canvas
         ref={canvasRef}
         onPointerDown={handlePointerDown}
         onPointerMove={handlePointerMove}
         onPointerUp={handlePointerUp}
-        className="w-full h-full block cursor-pointer select-none touch-none"
+        className="w-full h-full block cursor-pointer select-none touch-none bg-transparent"
       />
 
       {/* Yuklanish aylanasi */}
       {!isLoaded && (
-        <div className="absolute inset-0 flex flex-col items-center justify-center bg-black/85 z-20 text-amber-200">
+        <div className="absolute inset-0 flex flex-col items-center justify-center bg-black/80 z-20 text-amber-200 backdrop-blur-sm rounded-2xl">
           <div className="w-12 h-12 border-4 border-amber-400 border-t-transparent rounded-full animate-spin mb-3" />
           <span className="text-sm font-bold tracking-wider">3D Shaxmat Donalari Yuklanmoqda...</span>
         </div>
       )}
-
-      {/* 3D Old Qirra Tavsifi (Screenshotdagi 1 ga 1 plinth) */}
-      <div className="absolute bottom-1 w-[92%] h-7 px-4 rounded-b-md bg-[#251307]/90 border-t border-[#7a421f] border-b border-black flex items-center justify-between shadow-lg pointer-events-none z-10">
-        <span className="text-[10px] sm:text-xs font-black tracking-widest text-[#f5ead7] uppercase truncate max-w-[50%]">
-          {frontRimTitle || 'NUR SHAXMAT 100'}
-        </span>
-        <span className="text-[10px] sm:text-xs font-medium tracking-wide text-[#f5ead7] italic truncate max-w-[48%] text-right">
-          {frontRimMoveText || ''}
-        </span>
-      </div>
     </div>
   );
 }
