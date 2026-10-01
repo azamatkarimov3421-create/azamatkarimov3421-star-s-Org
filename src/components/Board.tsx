@@ -419,7 +419,7 @@ export default function Board() {
       style={
         is3D
           ? {
-              perspective: '1200px',
+              perspective: '2200px',
               perspectiveOrigin: '50% 50%',
             }
           : undefined
@@ -430,13 +430,13 @@ export default function Board() {
       <div
         className={`w-full transition-all duration-300 select-none touch-manipulation ${
           is3D
-            ? 'p-1 sm:p-2 rounded-lg sm:rounded-xl border-2 sm:border-[3px] border-[#5e3718] bg-gradient-to-b from-[#e3c299] via-[#d6b083] to-[#c59c6b] shadow-[0_24px_50px_rgba(0,0,0,0.85),0_10px_20px_rgba(0,0,0,0.7)]'
+            ? 'p-1.5 sm:p-2.5 rounded-lg border-2 sm:border-[3px] border-[#42220d] bg-[url("/textures/wood_frame.jpg")] bg-cover bg-center shadow-[0_28px_56px_rgba(0,0,0,0.92),0_10px_20px_rgba(0,0,0,0.75)]'
             : `p-1 sm:p-2 rounded-xl sm:rounded-2xl border-2 sm:border-[3px] ${themeStyle.frameBorder} ${themeStyle.frameBg} shadow-xl`
         }`}
         style={
           is3D
             ? {
-                transform: 'rotateX(28deg) translateY(-6px)',
+                transform: 'rotateX(13deg) translateY(-2px)',
                 transformOrigin: '50% 50% 0',
                 transformStyle: 'preserve-3d',
                 boxShadow:
@@ -540,11 +540,11 @@ export default function Board() {
                   slideStyle = { '--slide-x': `${dx}%`, '--slide-y': `${dy}%` } as React.CSSProperties;
                 }
 
-                // Kvadrat foni (3D rejimida kitobdagidek tabiiy yog'och tuslari)
+                // Kvadrat foni (3D rejimida haqiqiy yong'oq va zarang yog'ochi teksturasi)
                 let squareBgClass = is3D
                   ? isLight
-                    ? 'bg-gradient-to-br from-[#f2ddbe] via-[#ebd0ab] to-[#dec098] text-slate-900 shadow-[inset_0_1px_1px_rgba(255,255,255,0.4)]'
-                    : 'bg-gradient-to-br from-[#7d4624] via-[#6a391a] to-[#552c12] text-slate-900 shadow-[inset_0_1px_2px_rgba(0,0,0,0.4)]'
+                    ? 'bg-[url("/textures/wood_light_square.jpg")] bg-cover bg-center text-slate-900 shadow-[inset_0_1px_1px_rgba(255,255,255,0.4)]'
+                    : 'bg-[url("/textures/wood_dark_square.jpg")] bg-cover bg-center text-slate-900 shadow-[inset_0_1px_2px_rgba(0,0,0,0.4)]'
                   : isLight
                   ? themeStyle.lightSquare
                   : themeStyle.darkSquare;
@@ -556,9 +556,9 @@ export default function Board() {
                 const pieceStyle: React.CSSProperties = is3D
                   ? {
                       ...slideStyle,
-                      transform: 'translateZ(8px) translateY(1px)',
+                      transform: 'translateZ(10px) translateY(2px)',
                       transformOrigin: 'bottom center',
-                      filter: isSelected ? 'drop-shadow(0 4px 6px rgba(0,0,0,0.85))' : undefined,
+                      filter: isSelected ? 'drop-shadow(0 6px 12px rgba(234,179,8,0.9))' : undefined,
                       transition: isCurrentlyAnimating ? undefined : 'transform 0.15s ease-out',
                     }
                   : slideStyle || {};
@@ -716,7 +716,7 @@ export default function Board() {
                           color={piece.color}
                           is3D={is3D}
                           isSelected={isSelected}
-                          className={`${is3D ? 'w-full h-[134%]' : 'w-[92%] h-[92%]'} pointer-events-none select-none`}
+                          className={`${is3D ? 'w-[108%] h-[142%]' : 'w-[92%] h-[92%]'} pointer-events-none select-none`}
                         />
                       </div>
                     )}
@@ -732,7 +732,7 @@ export default function Board() {
               <div
                 key={rankIdx}
                 className={`h-full flex items-center justify-center text-[9px] sm:text-xs md:text-sm font-black ${
-                  is3D ? 'text-[#382011] font-black drop-shadow-[0_1px_1px_rgba(255,255,255,0.3)]' : themeStyle.coordText
+                  is3D ? 'text-[#2e1608] font-black drop-shadow-[0_1px_1px_rgba(255,255,255,0.4)]' : themeStyle.coordText
                 }`}
               >
                 {rankIdx + 1}
@@ -749,7 +749,7 @@ export default function Board() {
               <div
                 key={file}
                 className={`flex items-center justify-center text-[9px] sm:text-xs md:text-sm font-black tracking-wider ${
-                  is3D ? 'text-[#382011] font-black drop-shadow-[0_1px_1px_rgba(255,255,255,0.3)]' : themeStyle.coordText
+                  is3D ? 'text-[#2e1608] font-black drop-shadow-[0_1px_1px_rgba(255,255,255,0.4)]' : themeStyle.coordText
                 }`}
               >
                 {file}
@@ -761,11 +761,12 @@ export default function Board() {
 
         {/* ── 3D Qalinlik Old Qirrasi (Front Rim — Screenshotdagi 1 ga 1 matnli qirra) ── */}
         {is3D && (
-          <div className="w-full mt-0.5 sm:mt-1 h-6 sm:h-7 md:h-8 px-2 sm:px-3 rounded-b-md bg-gradient-to-b from-[#3a2012] via-[#28150a] to-[#160904] border-t border-[#774421] border-b-2 border-black/90 flex items-center justify-between shadow-[0_10px_20px_rgba(0,0,0,0.95)] select-none">
-            <span className="text-[9px] sm:text-[11px] md:text-xs font-black tracking-widest text-[#f5ead7] uppercase drop-shadow-[0_1px_2px_rgba(0,0,0,0.95)] truncate max-w-[50%]">
+          <div className="w-full mt-0.5 sm:mt-1 h-6 sm:h-7 md:h-8 px-3 sm:px-4 rounded-b-md bg-[url('/textures/wood_dark_square.jpg')] bg-cover bg-center border-t-2 border-[#7a421f] border-b-2 border-black/95 flex items-center justify-between shadow-[0_16px_32px_rgba(0,0,0,0.95)] select-none relative overflow-hidden">
+            <div className="absolute inset-0 bg-gradient-to-b from-black/25 via-black/40 to-black/75 pointer-events-none" />
+            <span className="relative z-10 text-[9px] sm:text-[11px] md:text-xs font-black tracking-widest text-[#f5ead7] uppercase drop-shadow-[0_1px_3px_rgba(0,0,0,0.95)] truncate max-w-[50%]">
               {frontRimTitle}
             </span>
-            <span className="text-[9px] sm:text-[11px] md:text-xs font-medium tracking-wide text-[#f5ead7] italic drop-shadow-[0_1px_2px_rgba(0,0,0,0.95)] truncate max-w-[48%] text-right">
+            <span className="relative z-10 text-[9px] sm:text-[11px] md:text-xs font-medium tracking-wide text-[#f5ead7] italic drop-shadow-[0_1px_3px_rgba(0,0,0,0.95)] truncate max-w-[48%] text-right">
               {frontRimMoveText}
             </span>
           </div>

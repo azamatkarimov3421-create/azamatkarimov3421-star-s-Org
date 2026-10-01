@@ -361,55 +361,55 @@ export default function GameScreen({ onBack, onOpenSettings }: GameScreenProps) 
       <div className="absolute inset-0 bg-gradient-to-t from-black/45 via-transparent to-black/30 pointer-events-none z-0" />
 
       {/* ── 1. CHAP TOMONDAGI SUZUVCHI TUGMALAR (☰ Menyu, ⟲ Doskani burish) — Screenshotdagi 1 ga 1 ── */}
-      <div className="absolute top-3 sm:top-5 left-3 sm:left-5 z-40 flex flex-col gap-2.5 sm:gap-3.5 pointer-events-auto">
+      <div className="absolute top-6 sm:top-10 md:top-12 left-3 sm:left-6 md:left-8 z-40 flex flex-col gap-3 sm:gap-4 pointer-events-auto">
         {/* Menyuni ochish (☰ Hamburger) */}
         <button
           onClick={() => setShowMenuModal(true)}
-          className="w-10 h-10 sm:w-12 sm:h-12 rounded-xl sm:rounded-2xl bg-black/60 hover:bg-black/80 active:scale-95 border border-white/15 text-white/95 shadow-[0_10px_24px_rgba(0,0,0,0.7)] flex items-center justify-center transition-all cursor-pointer backdrop-blur-md"
+          className="w-11 h-11 sm:w-13 sm:h-13 md:w-14 md:h-14 rounded-2xl bg-black/65 hover:bg-black/85 active:scale-95 border border-white/20 text-white shadow-[0_12px_28px_rgba(0,0,0,0.75)] flex items-center justify-center transition-all cursor-pointer backdrop-blur-md"
           title="Menyu"
         >
-          <MenuIcon size={22} />
+          <MenuIcon size={26} />
         </button>
 
         {/* Doskani aylantirish (⟲ Rotate / Flip) */}
         <button
           onClick={() => dispatch({ type: 'TOGGLE_FLIP' })}
-          className="w-10 h-10 sm:w-12 sm:h-12 rounded-xl sm:rounded-2xl bg-black/60 hover:bg-black/80 active:scale-95 border border-white/15 text-white/95 shadow-[0_10px_24px_rgba(0,0,0,0.7)] flex items-center justify-center transition-all cursor-pointer backdrop-blur-md"
+          className="w-11 h-11 sm:w-13 sm:h-13 md:w-14 md:h-14 rounded-2xl bg-black/65 hover:bg-black/85 active:scale-95 border border-white/20 text-white shadow-[0_12px_28px_rgba(0,0,0,0.75)] flex items-center justify-center transition-all cursor-pointer backdrop-blur-md"
           title={t('btn_flip')}
         >
-          <RotateCcwIcon size={20} />
+          <RotateCcwIcon size={24} />
         </button>
       </div>
 
       {/* ── 2. O'NG TOMONDAGI SUZUVCHI TUGMALAR (↶ Undo, ♟ 3D Donalar, 💡 Maslahat) — Screenshotdagi 1 ga 1 ── */}
-      <div className="absolute top-3 sm:top-5 right-3 sm:right-5 z-40 flex flex-col gap-2.5 sm:gap-3.5 pointer-events-auto">
+      <div className="absolute top-6 sm:top-10 md:top-12 right-3 sm:right-6 md:right-8 z-40 flex flex-col gap-3 sm:gap-4 pointer-events-auto">
         {/* Harakatni bekor qilish (↶ Undo) */}
         <button
           onClick={() => dispatch({ type: 'UNDO' })}
           disabled={history.length === 0 || isGameOver || gameMode === 'online'}
-          className="w-10 h-10 sm:w-12 sm:h-12 rounded-xl sm:rounded-2xl bg-black/60 hover:bg-black/80 disabled:opacity-25 disabled:pointer-events-none active:scale-95 border border-white/15 text-white/95 shadow-[0_10px_24px_rgba(0,0,0,0.7)] flex items-center justify-center transition-all cursor-pointer backdrop-blur-md"
+          className="w-11 h-11 sm:w-13 sm:h-13 md:w-14 md:h-14 rounded-2xl bg-black/65 hover:bg-black/85 disabled:opacity-25 disabled:pointer-events-none active:scale-95 border border-white/20 text-white shadow-[0_12px_28px_rgba(0,0,0,0.75)] flex items-center justify-center transition-all cursor-pointer backdrop-blur-md"
           title={t('btn_undo')}
         >
-          <UndoIcon size={21} />
+          <UndoIcon size={24} />
         </button>
 
         {/* 3D Donalar Modeli / Inspector (♟ Pawn Icon) */}
         <button
           onClick={() => setShowModelViewerModal(true)}
-          className="w-10 h-10 sm:w-12 sm:h-12 rounded-xl sm:rounded-2xl bg-black/60 hover:bg-black/80 active:scale-95 border border-white/15 text-white/95 shadow-[0_10px_24px_rgba(0,0,0,0.7)] flex items-center justify-center transition-all cursor-pointer backdrop-blur-md"
+          className="w-11 h-11 sm:w-13 sm:h-13 md:w-14 md:h-14 rounded-2xl bg-black/65 hover:bg-black/85 active:scale-95 border border-white/20 text-white shadow-[0_12px_28px_rgba(0,0,0,0.75)] flex items-center justify-center transition-all cursor-pointer backdrop-blur-md"
           title="3D Donalar modeli"
         >
-          <ChessPawnIcon size={22} />
+          <ChessPawnIcon size={26} />
         </button>
 
         {/* Maslahat olish (💡 Lightbulb Hint) */}
         <button
           onClick={handleGetHint}
           disabled={isGameOver || hintLoading}
-          className="w-10 h-10 sm:w-12 sm:h-12 rounded-xl sm:rounded-2xl bg-black/60 hover:bg-black/80 disabled:opacity-25 disabled:pointer-events-none active:scale-95 border border-white/15 text-amber-300 shadow-[0_10px_24px_rgba(0,0,0,0.7)] flex items-center justify-center transition-all cursor-pointer backdrop-blur-md"
+          className="w-11 h-11 sm:w-13 sm:h-13 md:w-14 md:h-14 rounded-2xl bg-black/65 hover:bg-black/85 disabled:opacity-25 disabled:pointer-events-none active:scale-95 border border-white/20 text-amber-300 shadow-[0_12px_28px_rgba(0,0,0,0.75)] flex items-center justify-center transition-all cursor-pointer backdrop-blur-md"
           title={t('btn_hint')}
         >
-          <LightbulbIcon size={22} />
+          <LightbulbIcon size={26} />
         </button>
       </div>
 
@@ -451,8 +451,8 @@ export default function GameScreen({ onBack, onOpenSettings }: GameScreenProps) 
       )}
 
       {/* ── 4. ASOSIY MAYDON: 10x10 SHAXMAT DOSQASI (To'liq markazda, to'siqsiz, 1 ga 1) ── */}
-      <main className="relative z-10 w-full h-full flex items-center justify-center p-2 sm:p-4 overflow-hidden">
-        <div className="w-full max-w-[min(94vw,88vh)] flex items-center justify-center">
+      <main className="relative z-10 w-full h-full flex items-center justify-center p-1 sm:p-3 overflow-hidden">
+        <div className="w-full max-w-[min(96vw,92vh)] aspect-square flex items-center justify-center">
           <Board />
         </div>
       </main>
