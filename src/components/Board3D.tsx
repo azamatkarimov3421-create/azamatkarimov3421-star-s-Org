@@ -104,23 +104,20 @@ export default function Board3D({
   const highlightsGroupRef = useRef<THREE.Group | null>(null);
   const animFrameRef = useRef<number | null>(null);
 
-  // Drag & Drop holati
-  const draggingRef = useRef<{
-    piece: Piece;
-    from: Square;
-    mesh: THREE.Group;
-    originalPos: THREE.Vector3;
-    plane: THREE.Plane;
+  // Pointer & Drag kuzatuvi
+  const pointerStartRef = useRef<{
+    startX: number;
+    startY: number;
+    startTime: number;
+    fromSq: Square | null;
+    isDragging: boolean;
+    piece: Piece | null;
+    mesh: THREE.Group | null;
+    originalPos: THREE.Vector3 | null;
+    plane: THREE.Plane | null;
   } | null>(null);
 
-  const pointerDownRef = useRef<{ x: number; y: number; time: number; sq: Square | null }>({
-    x: 0,
-    y: 0,
-    time: 0,
-    sq: null,
-  });
-
-  // State ref'lari (event listenerlar uchun yangi holatni ushlab turish)
+  // State ref'lari (event listenerlar uchun eng yangi holat)
   const stateRef = useRef({
     game,
     selectedSquare,
@@ -153,7 +150,7 @@ export default function Board3D({
     return { x, z };
   }, []);
 
-  // Koordinatali yog'och hoshiya teksturasini yaratish (A-J, 1-10)
+  // Koordinatali yog'och hoshiya teksturasini yaratish (Nur Chess 100: A B C N E D M F G H, 1-10)
   const createFrameTexture = useCallback((flipped: boolean): Promise<THREE.CanvasTexture> => {
     const cv = document.createElement('canvas');
     cv.width = 1024;
@@ -181,13 +178,13 @@ export default function Board3D({
         ctx.lineWidth = 2;
         ctx.strokeRect(marginPx - 2, marginPx - 2, innerSize + 4, innerSize + 4);
 
-        // Harflar va raqamlar
-        ctx.font = 'bold 24px system-ui, sans-serif';
+        // Harflar va raqamlar: Nur Chess 100 rasmiy FILES qatori
+        ctx.font = 'bold 24px system-ui, -apple-system, sans-serif';
         ctx.fillStyle = '#2b1608';
         ctx.textAlign = 'center';
         ctx.textBaseline = 'middle';
 
-        const rawFiles = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J'];
+        const rawFiles = [...FILES]; // ['A', 'B', 'C', 'N', 'E', 'D', 'M', 'F', 'G', 'H']
         const files = flipped ? [...rawFiles].reverse() : rawFiles;
         const sqPx = innerSize / 10;
 
@@ -198,7 +195,7 @@ export default function Board3D({
           ctx.fillText(files[f], x, marginPx * 0.46);
         }
 
-        // Chap va o'ng raqamlar
+        // Chap va o'ng raqamlar (1 pastda, 10 tepada)
         for (let r = 0; r < 10; r++) {
           const num = flipped ? 10 - r : r + 1;
           const y = marginPx + (9 - r + 0.5) * sqPx;
@@ -454,6 +451,7 @@ export default function Board3D({
               ch.material = mat;
               ch.castShadow = true;
               ch.receiveShadow = true;
+              ch.userData = { pieceId: piece.id };
             }
           });
 
@@ -632,120 +630,214 @@ export default function Board3D({
     }
   }, [isLoaded, game.board, game.lastMove, game.isInCheck, game.currentTurn, selectedSquare, legalMoves, isFlipped, getSquareWorldPos]);
 
-  // ── FOYDALANUVCHI INTERAKTIV HARAKATLARI (Pointer Down / Move / Up) ──
+  // ── KVADRATNI ANIQLASH (3D Dona Mesh'lari va Kataklar bo'yicha 100% ANIQ) ──
   const getSquareFromPointer = useCallback(
-    (e: React.PointerEvent) => {
+    (clientX: number, clientY: number): Square | null => {
       const canvas = canvasRef.current;
       const camera = cameraRef.current;
       if (!canvas || !camera) return null;
 
       const rect = canvas.getBoundingClientRect();
-      const mouseX = ((e.clientX - rect.left) / rect.width) * 2 - 1;
-      const mouseY = -((e.clientY - rect.top) / rect.height) * 2 + 1;
+      const mouseX = ((clientX - rect.left) / rect.width) * 2 - 1;
+      const mouseY = -((clientY - rect.top) / rect.height) * 2 + 1;
 
       const raycaster = new THREE.Raycaster();
       raycaster.setFromCamera(new THREE.Vector2(mouseX, mouseY), camera);
 
-      const intersects = raycaster.intersectObjects(squareMeshesRef.current);
-      if (intersects.length > 0) {
-        const hit = intersects[0].object;
+      // 1. Dastlab 3D donalar ustiga bosilganligini tekshiramiz
+      // Bu foydalanuvchi donaning boshi yoki gavdasiga tekkanda qat'iy to'g'ri kvadratni topadi!
+      const pieceMeshes: THREE.Object3D[] = [];
+      pieceMeshesMapRef.current.forEach((group) => {
+        group.traverse((ch) => {
+          if ((ch as THREE.Mesh).isMesh) {
+            pieceMeshes.push(ch);
+          }
+        });
+      });
+
+      const pieceHits = raycaster.intersectObjects(pieceMeshes, false);
+      if (pieceHits.length > 0) {
+        let obj: THREE.Object3D | null = pieceHits[0].object;
+        while (obj && !obj.userData?.pieceId && obj.parent) {
+          obj = obj.parent;
+        }
+        const hitPieceId = obj?.userData?.pieceId;
+        if (hitPieceId) {
+          const currentBoard = stateRef.current.game.board;
+          for (let r = 0; r < 10; r++) {
+            for (let f = 0; f < 10; f++) {
+              if (currentBoard[r]?.[f]?.id === hitPieceId) {
+                return { file: f, rank: r };
+              }
+            }
+          }
+        }
+      }
+
+      // 2. Agar dona ustiga tushmagan bo'lsa, doska kataklarini tekshiramiz
+      const sqHits = raycaster.intersectObjects(squareMeshesRef.current);
+      if (sqHits.length > 0) {
+        const hit = sqHits[0].object;
         const file = hit.userData.file as number;
         const rank = hit.userData.rank as number;
         const actualFile = stateRef.current.isFlipped ? 9 - file : file;
         const actualRank = stateRef.current.isFlipped ? 9 - rank : rank;
         return { file: actualFile, rank: actualRank };
       }
+
       return null;
     },
     []
   );
 
+  // ── KVADRATNI BOSISH (Click-To-Move — Mutlaqo Barqaror) ──
+  const handleSquareClick = useCallback(
+    (sq: Square) => {
+      const {
+        game: g,
+        gameMode: gm,
+        aiColor: ac,
+        aiThinking: at,
+        onlinePlayerColor: opc,
+        selectedSquare: sel,
+        legalMoves: legals,
+      } = stateRef.current;
+
+      // Bot vs Bot rejimida taqiqlangan
+      if (gm === 'aiVsAi') return;
+      if (gm === 'vsAI' && (g.currentTurn === ac || at)) return;
+      if (gm === 'online' && opc && g.currentTurn !== opc) return;
+
+      // Agar allaqachon dona tanlangan bo'lsa:
+      if (sel) {
+        // 1. Agar bosilgan kvadrat qonuniy yurish maqsadi bo'lsa:
+        const isLegal = legals.some((m) => squaresEqual(m.to, sq));
+        if (isLegal) {
+          dispatch({ type: 'SELECT_SQUARE', square: sq });
+          return;
+        }
+
+        // 2. Agar o'zimizning boshqa donamiz bosilsa: yangi donani tanlaymiz
+        const clickedPiece = g.board[sq.rank]?.[sq.file];
+        if (clickedPiece && clickedPiece.color === g.currentTurn) {
+          dispatch({ type: 'SELECT_SQUARE', square: sq, forceSelect: true });
+          return;
+        }
+
+        // 3. Agar boshqa noqonuniy katak bosilsa: tanlovni bekor qilamiz
+        dispatch({ type: 'SELECT_SQUARE', square: sq });
+        return;
+      }
+
+      // Hali dona tanlanmagan bo'lsa: faqat o'z navbatidagi donani tanlaymiz
+      const piece = g.board[sq.rank]?.[sq.file];
+      if (piece && piece.color === g.currentTurn) {
+        dispatch({ type: 'SELECT_SQUARE', square: sq, forceSelect: true });
+      }
+    },
+    [dispatch]
+  );
+
+  // ── FOYDALANUVCHI INTERAKTIV HARAKATLARI (Pointer Down / Move / Up) ──
   const handlePointerDown = (e: React.PointerEvent) => {
     if (e.button !== 0 && e.pointerType === 'mouse') return;
 
-    const sq = getSquareFromPointer(e);
-    pointerDownRef.current = {
-      x: e.clientX,
-      y: e.clientY,
-      time: Date.now(),
-      sq,
-    };
-
-    if (!sq) return;
+    const sq = getSquareFromPointer(e.clientX, e.clientY);
     const { game: g, gameMode: gm, aiColor: ac, aiThinking: at, onlinePlayerColor: opc } = stateRef.current;
 
     if (gm === 'aiVsAi') return;
     if (gm === 'vsAI' && (g.currentTurn === ac || at)) return;
     if (gm === 'online' && opc && g.currentTurn !== opc) return;
 
-    const piece = g.board[sq.rank]?.[sq.file];
-    if (piece && piece.color === g.currentTurn) {
-      const mesh = pieceMeshesMapRef.current.get(piece.id);
-      if (mesh) {
-        // Drag tayyorgarligi
-        const plane = new THREE.Plane(new THREE.Vector3(0, 1, 0), -0.6);
-        draggingRef.current = {
-          piece,
-          from: sq,
-          mesh,
-          originalPos: mesh.position.clone(),
-          plane,
-        };
-        // Donani biroz yuqoriga ko'taramiz
-        mesh.position.y += 0.45;
-        dispatch({ type: 'SELECT_SQUARE', square: sq, forceSelect: true });
+    let piece: Piece | null = null;
+    let mesh: THREE.Group | null = null;
+    let plane: THREE.Plane | null = null;
+
+    if (sq) {
+      const p = g.board[sq.rank]?.[sq.file];
+      if (p && p.color === g.currentTurn) {
+        piece = p;
+        mesh = pieceMeshesMapRef.current.get(p.id) || null;
+        plane = new THREE.Plane(new THREE.Vector3(0, 1, 0), -0.5);
       }
     }
+
+    pointerStartRef.current = {
+      startX: e.clientX,
+      startY: e.clientY,
+      startTime: Date.now(),
+      fromSq: sq,
+      isDragging: false,
+      piece,
+      mesh,
+      originalPos: mesh ? mesh.position.clone() : null,
+      plane,
+    };
   };
 
   const handlePointerMove = (e: React.PointerEvent) => {
-    const dragging = draggingRef.current;
-    if (!dragging || !cameraRef.current || !canvasRef.current) return;
+    const tracker = pointerStartRef.current;
+    if (!tracker || !cameraRef.current || !canvasRef.current) return;
 
-    const rect = canvasRef.current.getBoundingClientRect();
-    const mouseX = ((e.clientX - rect.left) / rect.width) * 2 - 1;
-    const mouseY = -((e.clientY - rect.top) / rect.height) * 2 + 1;
+    const dx = e.clientX - tracker.startX;
+    const dy = e.clientY - tracker.startY;
+    const dist = Math.hypot(dx, dy);
 
-    const raycaster = new THREE.Raycaster();
-    raycaster.setFromCamera(new THREE.Vector2(mouseX, mouseY), cameraRef.current);
+    // Qasddan 14px dan ko'proq surilgandagina drag faollashadi
+    if (!tracker.isDragging && dist >= 14 && tracker.piece && tracker.mesh && tracker.fromSq) {
+      tracker.isDragging = true;
+      tracker.mesh.position.y += 0.35;
+      dispatch({ type: 'SELECT_SQUARE', square: tracker.fromSq, forceSelect: true });
+    }
 
-    const hitPoint = new THREE.Vector3();
-    if (raycaster.ray.intersectPlane(dragging.plane, hitPoint)) {
-      const offset = dragging.mesh.userData.centerOffset;
-      dragging.mesh.position.x = hitPoint.x - offset.x;
-      dragging.mesh.position.z = hitPoint.z - offset.z;
+    // Drag jarayonida donaning qo'l bilan silliq harakatlanishi
+    if (tracker.isDragging && tracker.mesh && tracker.plane) {
+      const rect = canvasRef.current.getBoundingClientRect();
+      const mouseX = ((e.clientX - rect.left) / rect.width) * 2 - 1;
+      const mouseY = -((e.clientY - rect.top) / rect.height) * 2 + 1;
+
+      const raycaster = new THREE.Raycaster();
+      raycaster.setFromCamera(new THREE.Vector2(mouseX, mouseY), cameraRef.current);
+
+      const hitPoint = new THREE.Vector3();
+      if (raycaster.ray.intersectPlane(tracker.plane, hitPoint)) {
+        const offset = tracker.mesh.userData.centerOffset;
+        tracker.mesh.position.x = hitPoint.x - offset.x;
+        tracker.mesh.position.z = hitPoint.z - offset.z;
+      }
     }
   };
 
   const handlePointerUp = (e: React.PointerEvent) => {
-    const dragging = draggingRef.current;
-    const down = pointerDownRef.current;
+    const tracker = pointerStartRef.current;
+    pointerStartRef.current = null;
+    if (!tracker) return;
 
-    const sq = getSquareFromPointer(e);
-    const dist = Math.hypot(e.clientX - down.x, e.clientY - down.y);
-    const isClick = dist < 12 && Date.now() - down.time < 350;
-
-    if (dragging) {
+    if (tracker.isDragging && tracker.mesh && tracker.originalPos && tracker.fromSq) {
       // Donani o'zining balandligiga qaytarish
-      const offset = dragging.mesh.userData.centerOffset;
-      dragging.mesh.position.y = -offset.y + 0.038;
+      const offset = tracker.mesh.userData.centerOffset;
+      tracker.mesh.position.y = -offset.y + 0.038;
 
-      if (!isClick && sq) {
-        // Drag orqali yurish
-        const isLegal = stateRef.current.legalMoves.some((m) => squaresEqual(m.to, sq));
+      const toSq = getSquareFromPointer(e.clientX, e.clientY);
+      if (toSq && !squaresEqual(tracker.fromSq, toSq)) {
+        // Boshqa katakka tashlandi: yurish
+        const isLegal = stateRef.current.legalMoves.some((m) => squaresEqual(m.to, toSq));
         if (isLegal) {
-          dispatch({ type: 'SELECT_SQUARE', square: sq });
+          tracker.mesh.position.copy(tracker.originalPos);
+          dispatch({ type: 'SELECT_SQUARE', square: toSq });
         } else {
-          dragging.mesh.position.copy(dragging.originalPos);
+          tracker.mesh.position.copy(tracker.originalPos);
         }
       } else {
-        dragging.mesh.position.copy(dragging.originalPos);
+        tracker.mesh.position.copy(tracker.originalPos);
       }
-      draggingRef.current = null;
+      return;
     }
 
-    if (isClick && sq) {
-      dispatch({ type: 'SELECT_SQUARE', square: sq });
+    // Oddiy bosish (Click / Tap)
+    const clickSq = getSquareFromPointer(e.clientX, e.clientY) || tracker.fromSq;
+    if (clickSq) {
+      handleSquareClick(clickSq);
     }
   };
 
