@@ -14,10 +14,12 @@ import { getUserProfile } from '../store/userProfileStore';
 import { getBestMove, getBestMoveAsync } from '../ai/minimax';
 import { onlineManager } from '../services/onlineService';
 import { logger } from '../services/loggerService';
+import ModelViewerModal from '../components/ModelViewerModal';
 import {
   ArrowLeftIcon,
   RotateCwIcon,
   RotateCcwIcon,
+  UndoIcon,
   ScrollTextIcon,
   SettingsIcon,
   LightbulbIcon,
@@ -68,6 +70,7 @@ export default function GameScreen({ onBack, onOpenSettings }: GameScreenProps) 
   const [showPiecesModal, setShowPiecesModal] = useState(false);
   const [showHistoryModal, setShowHistoryModal] = useState(false);
   const [showVsAiLevelModal, setShowVsAiLevelModal] = useState(false);
+  const [showModelViewerModal, setShowModelViewerModal] = useState(false);
   const userProfile = getUserProfile();
 
   React.useEffect(() => {
@@ -357,95 +360,62 @@ export default function GameScreen({ onBack, onOpenSettings }: GameScreenProps) 
       {/* Tabiiy yog'och stol ustidagi mayin yorug'lik vinetkasi (Soft ambient vignette) */}
       <div className="absolute inset-0 bg-gradient-to-t from-black/45 via-transparent to-black/30 pointer-events-none z-0" />
 
-      {/* ── 1. PLANSHT VA DESKTOP UCHUN SUZUVCHI TUGMALAR (Faqat md+ va landscape da) ── */}
-      <div className="hidden md:flex landscape:flex absolute top-3 sm:top-5 left-3 sm:left-5 z-40 flex-col gap-3">
+      {/* ── 1. CHAP TOMONDAGI SUZUVCHI TUGMALAR (☰ Menyu, ⟲ Doskani burish) — Screenshotdagi 1 ga 1 ── */}
+      <div className="absolute top-3 sm:top-5 left-3 sm:left-5 z-40 flex flex-col gap-2.5 sm:gap-3.5 pointer-events-auto">
         {/* Menyuni ochish (☰ Hamburger) */}
         <button
           onClick={() => setShowMenuModal(true)}
-          className="w-10 h-10 sm:w-11 sm:h-11 rounded-xl bg-black/45 hover:bg-black/70 active:scale-95 backdrop-blur-md border border-white/15 text-white shadow-[0_8px_16px_rgba(0,0,0,0.6)] flex items-center justify-center transition-all cursor-pointer"
+          className="w-10 h-10 sm:w-12 sm:h-12 rounded-xl sm:rounded-2xl bg-black/60 hover:bg-black/80 active:scale-95 border border-white/15 text-white/95 shadow-[0_10px_24px_rgba(0,0,0,0.7)] flex items-center justify-center transition-all cursor-pointer backdrop-blur-md"
           title="Menyu"
         >
           <MenuIcon size={22} />
         </button>
 
-        {/* Doskani aylantirish (↻ Rotate / Flip) */}
+        {/* Doskani aylantirish (⟲ Rotate / Flip) */}
         <button
           onClick={() => dispatch({ type: 'TOGGLE_FLIP' })}
-          className="w-10 h-10 sm:w-11 sm:h-11 rounded-xl bg-black/45 hover:bg-black/70 active:scale-95 backdrop-blur-md border border-white/15 text-white shadow-[0_8px_16px_rgba(0,0,0,0.6)] flex items-center justify-center transition-all cursor-pointer"
+          className="w-10 h-10 sm:w-12 sm:h-12 rounded-xl sm:rounded-2xl bg-black/60 hover:bg-black/80 active:scale-95 border border-white/15 text-white/95 shadow-[0_10px_24px_rgba(0,0,0,0.7)] flex items-center justify-center transition-all cursor-pointer backdrop-blur-md"
           title={t('btn_flip')}
         >
-          <RotateCwIcon size={20} />
-        </button>
-
-        {/* Ekranni 90° burish / Yonboshcha qilish (Landscape Toggle) */}
-        <button
-          onClick={handleToggleOrientation}
-          className="w-10 h-10 sm:w-11 sm:h-11 rounded-xl bg-black/45 hover:bg-black/70 active:scale-95 backdrop-blur-md border border-white/15 text-amber-300 shadow-[0_8px_16px_rgba(0,0,0,0.6)] flex items-center justify-center transition-all cursor-pointer"
-          title="90° Burish / Yonboshcha rejim"
-        >
-          <span className="text-xs font-black tracking-tighter">90°</span>
+          <RotateCcwIcon size={20} />
         </button>
       </div>
 
-      {/* ── 2. MOBIL TIKKA REJIM: YUQORI BOSHQARUV PANELI (Ustma-ust tushmaydigan gorizontal panel) ── */}
-      <header className="relative z-30 w-full max-w-[min(calc(100vw-12px),500px)] flex md:hidden landscape:hidden items-center justify-between px-2 pt-1.5 pb-1 shrink-0">
-        {/* Chap amallar: Menyu, 90° Burish, Doskani aylantirish */}
-        <div className="flex items-center gap-1.5">
-          <button
-            onClick={() => setShowMenuModal(true)}
-            className="w-8 h-8 rounded-xl bg-black/60 hover:bg-black/80 active:scale-95 border border-white/15 text-white flex items-center justify-center transition-all cursor-pointer shadow-md"
-            title="Menyu"
-          >
-            <MenuIcon size={16} />
-          </button>
+      {/* ── 2. O'NG TOMONDAGI SUZUVCHI TUGMALAR (↶ Undo, ♟ 3D Donalar, 💡 Maslahat) — Screenshotdagi 1 ga 1 ── */}
+      <div className="absolute top-3 sm:top-5 right-3 sm:right-5 z-40 flex flex-col gap-2.5 sm:gap-3.5 pointer-events-auto">
+        {/* Harakatni bekor qilish (↶ Undo) */}
+        <button
+          onClick={() => dispatch({ type: 'UNDO' })}
+          disabled={history.length === 0 || isGameOver || gameMode === 'online'}
+          className="w-10 h-10 sm:w-12 sm:h-12 rounded-xl sm:rounded-2xl bg-black/60 hover:bg-black/80 disabled:opacity-25 disabled:pointer-events-none active:scale-95 border border-white/15 text-white/95 shadow-[0_10px_24px_rgba(0,0,0,0.7)] flex items-center justify-center transition-all cursor-pointer backdrop-blur-md"
+          title={t('btn_undo')}
+        >
+          <UndoIcon size={21} />
+        </button>
 
-          <button
-            onClick={handleToggleOrientation}
-            className="w-8 h-8 rounded-xl bg-black/60 hover:bg-black/80 active:scale-95 border border-white/15 text-amber-300 flex items-center justify-center transition-all cursor-pointer shadow-md font-black text-xs"
-            title="90° Burish / Yonboshcha"
-          >
-            90°
-          </button>
+        {/* 3D Donalar Modeli / Inspector (♟ Pawn Icon) */}
+        <button
+          onClick={() => setShowModelViewerModal(true)}
+          className="w-10 h-10 sm:w-12 sm:h-12 rounded-xl sm:rounded-2xl bg-black/60 hover:bg-black/80 active:scale-95 border border-white/15 text-white/95 shadow-[0_10px_24px_rgba(0,0,0,0.7)] flex items-center justify-center transition-all cursor-pointer backdrop-blur-md"
+          title="3D Donalar modeli"
+        >
+          <ChessPawnIcon size={22} />
+        </button>
 
-          <button
-            onClick={() => dispatch({ type: 'TOGGLE_FLIP' })}
-            className="w-8 h-8 rounded-xl bg-black/60 hover:bg-black/80 active:scale-95 border border-white/15 text-white flex items-center justify-center transition-all cursor-pointer shadow-md"
-            title={t('btn_flip')}
-          >
-            <RotateCwIcon size={15} />
-          </button>
-        </div>
-
-        {/* Markaz: Rejim sarlavhasi */}
-        <div className="px-2 py-0.5 rounded-full bg-black/50 border border-white/10 text-white font-extrabold text-[10px] truncate max-w-[130px]">
-          {modeTitle}
-        </div>
-
-        {/* O'ng amallar: Bekor qilish, Maslahat */}
-        <div className="flex items-center gap-1.5">
-          <button
-            onClick={() => dispatch({ type: 'UNDO' })}
-            disabled={history.length === 0 || isGameOver || gameMode === 'online'}
-            className="w-8 h-8 rounded-xl bg-black/60 hover:bg-black/80 disabled:opacity-30 disabled:pointer-events-none active:scale-95 border border-white/15 text-white flex items-center justify-center transition-all cursor-pointer shadow-md"
-            title={t('btn_undo')}
-          >
-            <RotateCcwIcon size={15} />
-          </button>
-
-          <button
-            onClick={handleGetHint}
-            disabled={isGameOver || hintLoading}
-            className="w-8 h-8 rounded-xl bg-black/60 hover:bg-black/80 disabled:opacity-30 disabled:pointer-events-none active:scale-95 border border-white/15 text-amber-300 flex items-center justify-center transition-all cursor-pointer shadow-md"
-            title={t('btn_hint')}
-          >
-            <LightbulbIcon size={16} />
-          </button>
-        </div>
-      </header>
+        {/* Maslahat olish (💡 Lightbulb Hint) */}
+        <button
+          onClick={handleGetHint}
+          disabled={isGameOver || hintLoading}
+          className="w-10 h-10 sm:w-12 sm:h-12 rounded-xl sm:rounded-2xl bg-black/60 hover:bg-black/80 disabled:opacity-25 disabled:pointer-events-none active:scale-95 border border-white/15 text-amber-300 shadow-[0_10px_24px_rgba(0,0,0,0.7)] flex items-center justify-center transition-all cursor-pointer backdrop-blur-md"
+          title={t('btn_hint')}
+        >
+          <LightbulbIcon size={22} />
+        </button>
+      </div>
 
       {/* ── 3. YUQORI HOLAT XABARNOMALARI (Floating Status Indicators) ── */}
       {drawOfferNotice && (
-        <div className="fixed top-12 left-1/2 -translate-x-1/2 z-50 max-w-sm w-[92%] px-4 py-2.5 rounded-2xl bg-[#1e1b18]/95 border border-sky-500/60 text-white font-bold text-xs shadow-2xl flex items-center justify-between gap-3 animate-fadeIn backdrop-blur-md">
+        <div className="fixed top-5 left-1/2 -translate-x-1/2 z-50 max-w-sm w-[90%] px-4 py-2.5 rounded-2xl bg-[#1e1b18]/95 border border-sky-500/60 text-white font-bold text-xs shadow-2xl flex items-center justify-between gap-3 animate-fadeIn backdrop-blur-md">
           <div className="flex items-center gap-2">
             <span className="text-base">🤝</span>
             <span>{drawOfferNotice}</span>
@@ -460,160 +430,31 @@ export default function GameScreen({ onBack, onOpenSettings }: GameScreenProps) 
       )}
 
       {drawOfferState === 'sent' && (
-        <div className="fixed top-12 left-1/2 -translate-x-1/2 z-40 px-4 py-2 rounded-full bg-black/80 backdrop-blur-md border border-amber-500/60 text-amber-300 text-xs font-bold flex items-center gap-2 shadow-2xl animate-pulse pointer-events-none">
+        <div className="fixed top-5 left-1/2 -translate-x-1/2 z-40 px-4 py-2 rounded-full bg-black/80 backdrop-blur-md border border-amber-500/60 text-amber-300 text-xs font-bold flex items-center gap-2 shadow-2xl animate-pulse pointer-events-none">
           <span className="w-2 h-2 rounded-full bg-amber-400 animate-ping" />
           <span>Durang taklifi yuborildi. Raqib javobi kutilmoqda...</span>
         </div>
       )}
 
       {aiThinking && (
-        <div className="fixed top-12 left-1/2 -translate-x-1/2 z-30 px-3.5 py-1.5 rounded-full bg-black/70 backdrop-blur-md border border-amber-500/40 text-amber-300 text-xs font-bold flex items-center gap-2 shadow-2xl animate-pulse pointer-events-none">
+        <div className="fixed top-5 left-1/2 -translate-x-1/2 z-30 px-3.5 py-1.5 rounded-full bg-black/75 backdrop-blur-md border border-amber-500/40 text-amber-300 text-xs font-bold flex items-center gap-2 shadow-2xl animate-pulse pointer-events-none">
           <span className="w-2 h-2 rounded-full bg-amber-400 animate-ping" />
           <span>{t('bot_thinking')}</span>
         </div>
       )}
 
       {game.isInCheck && !isGameOver && (
-        <div className="fixed top-12 left-1/2 -translate-x-1/2 z-30 px-4 py-1.5 rounded-full bg-red-950/80 backdrop-blur-md border border-red-500/60 text-red-200 text-xs font-black flex items-center gap-2 shadow-2xl animate-bounce pointer-events-none">
+        <div className="fixed top-5 left-1/2 -translate-x-1/2 z-30 px-4 py-1.5 rounded-full bg-red-950/85 backdrop-blur-md border border-red-500/60 text-red-200 text-xs font-black flex items-center gap-2 shadow-2xl animate-bounce pointer-events-none">
           <span>🔥</span>
           <span>{t('check_alert')}</span>
         </div>
       )}
 
-      {/* ── 4. ASOSIY MAYDON: 10x10 SHAXMAT DOSQASI VA MOSLASHUVCHAN HUD ── */}
-      <main className="relative z-10 w-full h-full flex flex-col md:flex-row landscape:flex-row items-center justify-center gap-1 sm:gap-2 lg:gap-5 p-1 sm:p-2 overflow-hidden">
-        
-        {/* MOBIL PORTRAIT: DOSKA USTIDAGI RAQIB KARTASI (Vaqt va profil doim ko'rinadi) */}
-        <div className="w-full max-w-[min(calc(100vw-12px),500px)] px-1 md:hidden landscape:hidden z-20 shrink-0">
-          <PlayerCard
-            playerColor={topColor}
-            position="top"
-            customName={opponentName}
-            customRating={opponentRating}
-          />
+      {/* ── 4. ASOSIY MAYDON: 10x10 SHAXMAT DOSQASI (To'liq markazda, to'siqsiz, 1 ga 1) ── */}
+      <main className="relative z-10 w-full h-full flex items-center justify-center p-2 sm:p-4 overflow-hidden">
+        <div className="w-full max-w-[min(94vw,88vh)] flex items-center justify-center">
+          <Board />
         </div>
-
-        {/* MOBIL PORTRAIT: POZITSIYA BAHOLANISHI (EvalBar - "manabu ham doskada kurisin") */}
-        <div className="w-full max-w-[min(calc(100vw-12px),500px)] px-2.5 py-1 md:hidden landscape:hidden z-20 shrink-0 flex items-center justify-between text-[10px] text-zinc-300 font-bold bg-[#141210]/85 backdrop-blur-md rounded-xl border border-white/10 shadow-sm">
-          <span className="text-zinc-400 font-medium">Holat baholanishi:</span>
-          <div className="flex-1 mx-2.5">
-            <EvalBar orientation="horizontal" />
-          </div>
-          <span className="text-amber-300 font-mono font-bold shrink-0">{moveHistory.length} ta yurish</span>
-        </div>
-
-        {/* 10x10 Shaxmat Dosqasi */}
-        <Board />
-
-        {/* MOBIL PORTRAIT: DOSKA OSTIDAGI O'YINCHI KARTASI (Vaqt va profil doim ko'rinadi) */}
-        <div className="w-full max-w-[min(calc(100vw-12px),500px)] px-1 md:hidden landscape:hidden z-20 shrink-0">
-          <PlayerCard
-            playerColor={bottomColor}
-            position="bottom"
-            customName={bottomName}
-            customRating={bottomRating}
-          />
-        </div>
-
-        {/* ── DOIMIY O'NG YON PANEL (Landscape / Yonboshcha yoki Planshet/Desktop: Doska yonida turadi) ── */}
-        <aside className="hidden md:flex landscape:flex flex-col w-[290px] sm:w-[320px] lg:w-[350px] max-h-[min(98dvh,760px)] bg-[#181512]/95 backdrop-blur-xl border border-[#3e342a] rounded-3xl p-3 sm:p-4 shadow-2xl justify-between gap-2.5 text-white shrink-0 z-20 overflow-y-auto">
-          {/* Sarlavha & O'yin Rejimi */}
-          <div className="flex items-center justify-between pb-1.5 border-b border-[#3e342a]/80">
-            <div className="flex items-center gap-2">
-              <span className="w-2.5 h-2.5 rounded-full bg-[#81b64c] animate-pulse" />
-              <h3 className="font-black text-white text-xs sm:text-sm tracking-wide truncate max-w-[180px]">{modeTitle}</h3>
-            </div>
-            {state.timeControl > 0 && (
-              <span className="text-[10px] font-mono px-2 py-0.5 rounded-md bg-amber-500/20 text-amber-300 font-bold border border-amber-500/30">
-                ⏱️ {Math.floor(state.timeControl / 60)}m {state.timeIncrement > 0 ? `+${state.timeIncrement}s` : ''}
-              </span>
-            )}
-          </div>
-
-          {/* Tepada joylashgan o'yinchi kartochkasi (Raqib / Bot) */}
-          <PlayerCard
-            playerColor={topColor}
-            position="top"
-            customName={opponentName}
-            customRating={opponentRating}
-          />
-
-          {/* Baholash (EvalBar) va Navbat Holati */}
-          <div className="bg-[#12100e]/90 p-2 rounded-2xl border border-[#2e261f]">
-            <div className="text-[10px] sm:text-[11px] font-bold text-zinc-400 mb-1 flex items-center justify-between">
-              <span>{t('eval_label') || 'Holat baholanishi'}:</span>
-              <span className="text-white font-mono text-[10px]">{moveHistory.length} ta yurish</span>
-            </div>
-            <EvalBar orientation="horizontal" />
-          </div>
-
-          {/* Pastda joylashgan o'yinchi kartochkasi (Foydalanuvchi) */}
-          <PlayerCard
-            playerColor={bottomColor}
-            position="bottom"
-            customName={bottomName}
-            customRating={bottomRating}
-          />
-
-          {/* Tezkor Boshqaruv Tugmalari (Yon paneldagi qulay vektor tugmalar) */}
-          <div className="grid grid-cols-6 gap-1 pt-1 border-t border-[#3e342a]/80">
-            {/* Harakatni bekor qilish */}
-            <button
-              onClick={() => dispatch({ type: 'UNDO' })}
-              disabled={history.length === 0 || isGameOver || gameMode === 'online'}
-              className="py-2 rounded-xl bg-[#2a241e] hover:bg-[#383129] disabled:opacity-30 disabled:pointer-events-none active:scale-95 text-white flex items-center justify-center transition-all cursor-pointer border border-white/5"
-              title={t('btn_undo')}
-            >
-              <RotateCcwIcon size={16} />
-            </button>
-
-            {/* Maslahat */}
-            <button
-              onClick={handleGetHint}
-              disabled={isGameOver || hintLoading}
-              className="py-2 rounded-xl bg-[#2a241e] hover:bg-[#383129] disabled:opacity-30 disabled:pointer-events-none active:scale-95 text-amber-300 flex items-center justify-center transition-all cursor-pointer border border-white/5"
-              title={t('btn_hint')}
-            >
-              <LightbulbIcon size={16} />
-            </button>
-
-            {/* Doskani aylantirish */}
-            <button
-              onClick={() => dispatch({ type: 'TOGGLE_FLIP' })}
-              className="py-2 rounded-xl bg-[#2a241e] hover:bg-[#383129] active:scale-95 text-white flex items-center justify-center transition-all cursor-pointer border border-white/5"
-              title={t('btn_flip')}
-            >
-              <RotateCwIcon size={16} />
-            </button>
-
-            {/* 90° Burish */}
-            <button
-              onClick={handleToggleOrientation}
-              className="py-2 rounded-xl bg-[#2a241e] hover:bg-[#383129] active:scale-95 text-amber-400 flex items-center justify-center transition-all cursor-pointer border border-white/5 text-[11px] font-black"
-              title="90° Burish / Tikka rejim"
-            >
-              90°
-            </button>
-
-            {/* Harakatlar tarixi */}
-            <button
-              onClick={() => setShowHistoryModal(true)}
-              className="py-2 rounded-xl bg-[#2a241e] hover:bg-[#383129] active:scale-95 text-sky-400 flex items-center justify-center transition-all cursor-pointer border border-white/5"
-              title={t('history_title')}
-            >
-              <ScrollTextIcon size={16} />
-            </button>
-
-            {/* Menyu */}
-            <button
-              onClick={() => setShowMenuModal(true)}
-              className="py-2 rounded-xl bg-[#2a241e] hover:bg-[#383129] active:scale-95 text-white flex items-center justify-center transition-all cursor-pointer border border-white/5"
-              title="Menyu"
-            >
-              <MenuIcon size={16} />
-            </button>
-          </div>
-        </aside>
       </main>
 
       {/* Bot vs Bot Rejimidagi Suzuvchi Boshqaruv Paneli */}
@@ -686,8 +527,45 @@ export default function GameScreen({ onBack, onOpenSettings }: GameScreenProps) 
               )}
             </div>
 
+            {/* O'yinchilar profillari, soatlari va baholanish */}
+            <div className="flex flex-col gap-2 p-2 rounded-2xl bg-[#141210] border border-[#2e261f]">
+              <PlayerCard
+                playerColor={topColor}
+                position="top"
+                customName={opponentName}
+                customRating={opponentRating}
+              />
+              <div className="py-1">
+                <div className="text-[10px] font-bold text-zinc-400 mb-1 flex items-center justify-between">
+                  <span>{t('eval_label') || 'Holat baholanishi'}:</span>
+                  <span className="text-amber-300 font-mono text-[10px]">{moveHistory.length} ta yurish</span>
+                </div>
+                <EvalBar orientation="horizontal" />
+              </div>
+              <PlayerCard
+                playerColor={bottomColor}
+                position="bottom"
+                customName={bottomName}
+                customRating={bottomRating}
+              />
+            </div>
+
             {/* Asosiy amallar ro'yxati */}
             <div className="flex flex-col gap-2">
+              {/* Ekranni 90° burish */}
+              <button
+                onClick={() => {
+                  setShowMenuModal(false);
+                  handleToggleOrientation();
+                }}
+                className="w-full py-2.5 px-3.5 rounded-xl bg-[#2a241e] hover:bg-[#383129] border border-[#3e342a] text-white font-bold text-xs flex items-center justify-between cursor-pointer transition-all active:scale-95"
+              >
+                <div className="flex items-center gap-2.5">
+                  <span className="text-amber-400 font-black text-xs">90°</span>
+                  <span>Ekranni 90° burish (Yonboshcha / Tikka)</span>
+                </div>
+              </button>
+
               {/* 2D / 3D almashish */}
               <button
                 onClick={() => dispatch({ type: 'SET_3D', enabled: !is3D })}
@@ -979,6 +857,12 @@ export default function GameScreen({ onBack, onOpenSettings }: GameScreenProps) 
           </div>
         </div>
       )}
+
+      {/* ── 8. 3D DONALAR INSPEKTORI (GLB Model Viewer) ── */}
+      <ModelViewerModal
+        isOpen={showModelViewerModal}
+        onClose={() => setShowModelViewerModal(false)}
+      />
 
     </div>
   );

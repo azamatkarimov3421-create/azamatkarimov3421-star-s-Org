@@ -445,23 +445,25 @@ export default function Board() {
             : undefined
         }
       >
-        {/* Yuqori Ustun Harflari */}
-        <div className="grid grid-cols-[16px_1fr_16px] sm:grid-cols-[22px_1fr_22px] md:grid-cols-[26px_1fr_26px] items-center w-full mb-0.5 sm:mb-1">
-          <div />
-          <div className="grid grid-cols-10 w-full">
-            {displayedFiles.map((file) => (
-              <div
-                key={file}
-                className={`flex items-center justify-center text-[9px] sm:text-xs md:text-sm font-black tracking-wider ${
-                  is3D ? 'text-[#382011] font-black drop-shadow-[0_1px_1px_rgba(255,255,255,0.3)]' : themeStyle.coordText
-                }`}
-              >
-                {file}
-              </div>
-            ))}
+        {/* Yuqori Ustun Harflari (Faqat 2D da ko'rinadi, 3D da screenshotdagi kabi toza yog'och chet) */}
+        {!is3D ? (
+          <div className="grid grid-cols-[16px_1fr_16px] sm:grid-cols-[22px_1fr_22px] md:grid-cols-[26px_1fr_26px] items-center w-full mb-0.5 sm:mb-1">
+            <div />
+            <div className="grid grid-cols-10 w-full">
+              {displayedFiles.map((file) => (
+                <div
+                  key={file}
+                  className={`flex items-center justify-center text-[9px] sm:text-xs md:text-sm font-black tracking-wider ${themeStyle.coordText}`}
+                >
+                  {file}
+                </div>
+              ))}
+            </div>
+            <div />
           </div>
-          <div />
-        </div>
+        ) : (
+          <div className="h-1 sm:h-1.5 w-full" />
+        )}
 
         {/* O'rta qism: Chap raqamlar + 10x10 Dosqa + O'ng raqamlar */}
         <div
@@ -550,11 +552,11 @@ export default function Board() {
                 // 1-100 Raqamli notatsiya belgisi (A1=1, B1=2 ... H1=10, A2=11 ... H10=100)
                 const numericLabel = rankIdx * 10 + fileIdx + 1;
 
-                // 3D dona stilizatsiyasi (kitobdagidek tik turgan, asosi bilan)
+                // 3D dona stilizatsiyasi (pasti kvadratga mahkamlangan, asosi bilan)
                 const pieceStyle: React.CSSProperties = is3D
                   ? {
                       ...slideStyle,
-                      transform: 'translateZ(12px) rotateX(-28deg) translateY(4px)',
+                      transform: 'translateZ(8px) translateY(1px)',
                       transformOrigin: 'bottom center',
                       filter: isSelected ? 'drop-shadow(0 4px 6px rgba(0,0,0,0.85))' : undefined,
                       transition: isCurrentlyAnimating ? undefined : 'transform 0.15s ease-out',
@@ -692,7 +694,7 @@ export default function Board() {
                         key={piece.id}
                         style={pieceStyle}
                         className={`relative z-10 w-full h-full flex ${
-                          is3D ? 'items-end justify-center pb-0 sm:pb-0.5' : 'items-center justify-center'
+                          is3D ? 'items-end justify-center pb-0' : 'items-center justify-center'
                         } select-none pointer-events-none transition-opacity duration-150 ${
                           activeDrag && squaresEqual(sq, activeDrag.from)
                             ? 'opacity-30 scale-95'
@@ -714,7 +716,7 @@ export default function Board() {
                           color={piece.color}
                           is3D={is3D}
                           isSelected={isSelected}
-                          className={`${is3D ? 'w-[100%] h-[132%]' : 'w-[92%] h-[92%]'} pointer-events-none select-none`}
+                          className={`${is3D ? 'w-full h-[134%]' : 'w-[92%] h-[92%]'} pointer-events-none select-none`}
                         />
                       </div>
                     )}

@@ -1,0 +1,18 @@
+{
+  "name": "Nur Shaxmat 100",
+  "short_name": "NurShaxmat",
+  "description": "100 kvadratlik O'zbek Shaxmati — Nur donasi va 3 xil rokirovka bilan",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#070b12",
+  "theme_color": "#f59e0b",
+  "orientation": "portrait",
+  "icons": [
+    {
+      "src": "/nur-icon.svg",
+      "sizes": "192x192 512x512",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}
