@@ -172,4 +172,25 @@
   background: #6b7280;
 }
 
+/* Kunduzgi rejim (Light mode) global stillari */
+html.theme-light, body.theme-light {
+  background-color: #f5f2eb !important;
+  color: #1a1917 !important;
+}
+
+html.theme-light ::-webkit-scrollbar-track,
+body.theme-light ::-webkit-scrollbar-track {
+  background: #ece8df;
+}
+
+html.theme-light ::-webkit-scrollbar-thumb,
+body.theme-light ::-webkit-scrollbar-thumb {
+  background: #c5bfb2;
+}
+
+html.theme-light ::-webkit-scrollbar-thumb:hover,
+body.theme-light ::-webkit-scrollbar-thumb:hover {
+  background: #a9a295;
+}
+
 

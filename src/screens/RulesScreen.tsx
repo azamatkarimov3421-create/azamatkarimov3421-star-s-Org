@@ -15,6 +15,7 @@ import BoardDiagram, {
 import { PieceType, FILES } from '../engine/types';
 import { ArrowLeftIcon } from '../components/Icons';
 import { useTranslation } from '../i18n/translations';
+import { useGame } from '../store/gameStore';
 
 interface RulesScreenProps {
   onBack: () => void;
@@ -23,6 +24,7 @@ interface RulesScreenProps {
 type TabKey = 'basic' | 'pieces' | 'special' | 'openings';
 
 export default function RulesScreen({ onBack }: RulesScreenProps) {
+  const { state } = useGame();
   const { t } = useTranslation();
   const [activeTab, setActiveTab] = useState<TabKey>('basic');
   const [selectedPieceIndex, setSelectedPieceIndex] = useState<number>(0);
@@ -32,6 +34,12 @@ export default function RulesScreen({ onBack }: RulesScreenProps) {
     notation: false,
     win: false,
   });
+
+  const isLight =
+    state.appTheme === 'light' ||
+    (state.appTheme === 'system' &&
+      typeof window !== 'undefined' &&
+      !window.matchMedia('(prefers-color-scheme: dark)').matches);
 
   const toggleAccordion = (key: string) => {
     setOpenAccordions((prev) => ({ ...prev, [key]: !prev[key] }));
@@ -384,39 +392,39 @@ export default function RulesScreen({ onBack }: RulesScreenProps) {
   ];
 
   return (
-    <div className="min-h-screen w-full bg-[#262421] text-[#f1f1f1] flex flex-col font-sans select-none pb-14 max-w-md mx-auto sm:max-w-2xl lg:max-w-5xl">
+    <div className={`min-h-screen w-full ${isLight ? 'bg-[#f5f2eb] text-[#1a1917]' : 'bg-[#262421] text-[#f1f1f1]'} flex flex-col font-sans select-none pb-14 max-w-md mx-auto sm:max-w-2xl lg:max-w-5xl transition-colors duration-200`}>
       {/* ── YUQORI SIKLLIK HEADER ── */}
-      <header className="sticky top-0 z-30 bg-[#21201d]/95 backdrop-blur-md border-b border-[#383531] px-4 py-3 flex items-center gap-3 pt-[max(0.7rem,env(safe-area-inset-top))]">
+      <header className={`sticky top-0 z-30 ${isLight ? 'bg-white/95 border-b border-[#e2ddd3]' : 'bg-[#21201d]/95 border-b border-[#383531]'} backdrop-blur-md px-4 py-3 flex items-center gap-3 pt-[max(0.7rem,env(safe-area-inset-top))] transition-colors`}>
         <button
           onClick={onBack}
-          className="w-9 h-9 rounded-xl bg-[#383531] hover:bg-[#45423c] text-[#c3c2be] hover:text-white flex items-center justify-center transition-all active:scale-95 shadow-[0_2px_0_#21201d] cursor-pointer"
+          className={`w-9 h-9 rounded-xl ${isLight ? 'bg-zinc-100 hover:bg-zinc-200 text-zinc-700 hover:text-zinc-950 border border-zinc-200' : 'bg-[#383531] hover:bg-[#45423c] text-[#c3c2be] hover:text-white shadow-[0_2px_0_#21201d]'} flex items-center justify-center transition-all active:scale-95 cursor-pointer`}
           title={t('back_btn')}
         >
           <ArrowLeftIcon size={18} />
         </button>
         <div className="flex-1">
-          <h2 className="text-base font-extrabold text-white flex items-center gap-2">
+          <h2 className={`text-base font-extrabold ${isLight ? 'text-[#1a1917]' : 'text-white'} flex items-center gap-2`}>
             <span>NUR CHESS 100</span>
             <span className="text-[10px] uppercase font-mono px-1.5 py-0.5 rounded bg-[#81b64c]/20 text-[#81b64c] border border-[#81b64c]/30">
               {t('nav_rules')}
             </span>
           </h2>
-          <p className="text-[11px] text-[#9b9893]">
+          <p className={`text-[11px] ${isLight ? 'text-[#68645e]' : 'text-[#9b9893]'}`}>
             Rasmiy metodik qoʻllanma va koʻrgazmali rasmlar
           </p>
         </div>
-        <NurLogo size={34} showGlow={false} />
+        <NurLogo size={34} showGlow={!isLight} />
       </header>
 
       {/* ── 4 TA SEGMENTLI TABLAR ── */}
       <div className="px-4 pt-3.5">
-        <div className="grid grid-cols-4 bg-[#21201d] p-1 rounded-xl border border-[#383531] gap-1 text-[11px] font-bold">
+        <div className={`grid grid-cols-4 ${isLight ? 'bg-white border-[#e2ddd3] shadow-sm' : 'bg-[#21201d] border-[#383531]'} p-1 rounded-xl border gap-1 text-[11px] font-bold transition-colors`}>
           <button
             onClick={() => setActiveTab('basic')}
             className={`py-2 rounded-lg transition-all cursor-pointer ${
               activeTab === 'basic'
                 ? 'bg-[#81b64c] text-white shadow-sm font-black'
-                : 'text-[#9b9893] hover:text-white'
+                : isLight ? 'text-[#68645e] hover:text-black' : 'text-[#9b9893] hover:text-white'
             }`}
           >
             {t('rules_tab_basic')}
@@ -426,7 +434,7 @@ export default function RulesScreen({ onBack }: RulesScreenProps) {
             className={`py-2 rounded-lg transition-all cursor-pointer ${
               activeTab === 'pieces'
                 ? 'bg-[#81b64c] text-white shadow-sm font-black'
-                : 'text-[#9b9893] hover:text-white'
+                : isLight ? 'text-[#68645e] hover:text-black' : 'text-[#9b9893] hover:text-white'
             }`}
           >
             {t('rules_tab_pieces')}
@@ -436,7 +444,7 @@ export default function RulesScreen({ onBack }: RulesScreenProps) {
             className={`py-2 rounded-lg transition-all cursor-pointer ${
               activeTab === 'special'
                 ? 'bg-[#81b64c] text-white shadow-sm font-black'
-                : 'text-[#9b9893] hover:text-white'
+                : isLight ? 'text-[#68645e] hover:text-black' : 'text-[#9b9893] hover:text-white'
             }`}
           >
             {t('rules_tab_castling')}
@@ -446,7 +454,7 @@ export default function RulesScreen({ onBack }: RulesScreenProps) {
             className={`py-2 rounded-lg transition-all cursor-pointer ${
               activeTab === 'openings'
                 ? 'bg-[#81b64c] text-white shadow-sm font-black'
-                : 'text-[#9b9893] hover:text-white'
+                : isLight ? 'text-[#68645e] hover:text-black' : 'text-[#9b9893] hover:text-white'
             }`}
           >
             {t('rules_tab_openings')}
