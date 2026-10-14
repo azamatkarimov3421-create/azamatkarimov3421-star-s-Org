@@ -39,31 +39,6 @@ function getStorageKey(userEmail?: string): string {
   return `${FRIENDS_STORAGE_PREFIX}default`;
 }
 
-// Boshlang'ich tavsiya etilgan do'stlar / shaxmat ixlosmandlari (faqat ro'yxat bo'sh bo'lganda)
-const DEFAULT_INITIAL_FRIENDS: FriendItem[] = [
-  {
-    id: 'f_nodirbek',
-    name: 'Nodirbek Abdusattorov',
-    rating: 2780,
-    avatarLetter: 'N',
-    addedAt: '2026-09-01T00:00:00.000Z',
-  },
-  {
-    id: 'f_javohir',
-    name: 'Javohir Sindarov',
-    rating: 2715,
-    avatarLetter: 'J',
-    addedAt: '2026-09-05T00:00:00.000Z',
-  },
-  {
-    id: 'f_rustam',
-    name: 'Rustam Qosimjonov',
-    rating: 2690,
-    avatarLetter: 'R',
-    addedAt: '2026-09-10T00:00:00.000Z',
-  },
-];
-
 let listeners = new Set<(friends: FriendItem[]) => void>();
 
 function notifyListeners(friends: FriendItem[]) {
@@ -75,7 +50,7 @@ function notifyListeners(friends: FriendItem[]) {
 }
 
 /**
- * Foydalanuvchining do'stlari ro'yxatini olish
+ * Foydalanuvchining do'stlari ro'yxatini olish (Faqat haqiqiy qo'shilgan do'stlar)
  */
 export function getFriends(userEmail?: string): FriendItem[] {
   try {
@@ -83,12 +58,20 @@ export function getFriends(userEmail?: string): FriendItem[] {
     const data = localStorage.getItem(key);
     if (data) {
       const parsed = JSON.parse(data);
-      if (Array.isArray(parsed)) return parsed.slice(0, MAX_FRIENDS_LIMIT);
+      if (Array.isArray(parsed)) {
+        // Eski demo do'stlarni (f_nodirbek, f_javohir, f_rustam) tozalash
+        const filtered = parsed.filter(
+          (f) => f && f.id !== 'f_nodirbek' && f.id !== 'f_javohir' && f.id !== 'f_rustam'
+        );
+        if (filtered.length !== parsed.length) {
+          localStorage.setItem(key, JSON.stringify(filtered));
+        }
+        return filtered.slice(0, MAX_FRIENDS_LIMIT);
+      }
     }
   } catch {}
 
-  // Yangi foydalanuvchi uchun dastlabki 3 ta o'zbek grossmeysteri tavsiya sifatida kiritiladi
-  return DEFAULT_INITIAL_FRIENDS;
+  return [];
 }
 
 /**

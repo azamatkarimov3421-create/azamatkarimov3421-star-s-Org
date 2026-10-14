@@ -925,6 +925,15 @@ export default function OnlineRoomModal({
                           </div>
                         );
                       })}
+                      {friends.length === 0 && (
+                        <div className="py-8 px-4 text-center text-slate-400 text-xs space-y-2 bg-slate-900/40">
+                          <div className="text-3xl">👥</div>
+                          <div className="font-bold text-white text-xs">Hozircha doʻstlar qoʻshilmagan</div>
+                          <p className="text-[11px] text-slate-400 max-w-xs mx-auto">
+                            Yuqoridagi «+ Doʻst qoʻshish» tugmasi orqali doʻstlaringizni qoʻshing (maksimal 10 ta).
+                          </p>
+                        </div>
+                      )}
                     </div>
                   </div>
                 </>

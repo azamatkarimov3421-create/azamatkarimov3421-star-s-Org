@@ -65,34 +65,34 @@ const DEFAULT_ACHIEVEMENTS: Achievement[] = [
     title: 'Birinchi gʻalaba',
     description: '1 ta oʻyinda gʻalaba qozoning',
     icon: '🏆',
-    current: 1,
+    current: 0,
     target: 1,
-    unlocked: true,
+    unlocked: false,
   },
   {
     id: '10_games',
     title: '10 ta oʻyin',
     description: '10 ta oʻyin oʻynang',
     icon: '🥈',
-    current: 10,
+    current: 0,
     target: 10,
-    unlocked: true,
+    unlocked: false,
   },
   {
     id: 'master_50',
     title: 'Usta',
     description: '50 ta gʻalaba qozoning',
     icon: '👑',
-    current: 78,
+    current: 0,
     target: 50,
-    unlocked: true,
+    unlocked: false,
   },
   {
     id: 'online_player',
     title: 'Onlayn oʻyinchi',
     description: 'Onlayn 10 ta oʻyin oʻynang',
     icon: '🌐',
-    current: 6,
+    current: 0,
     target: 10,
     unlocked: false,
   },
@@ -110,7 +110,7 @@ const DEFAULT_ACHIEVEMENTS: Achievement[] = [
     title: 'Reyting 2000+',
     description: '2000 reytingga erishing',
     icon: '💎',
-    current: 1480,
+    current: 0,
     target: 2000,
     unlocked: false,
   },
@@ -244,11 +244,39 @@ export function saveUserProfile(profile: UserProfile): void {
 }
 
 export function getAchievements(): Achievement[] {
+  const profile = getUserProfile();
+  let list: Achievement[] = DEFAULT_ACHIEVEMENTS.map((a) => ({ ...a }));
   try {
     const data = localStorage.getItem(ACHIEVEMENTS_KEY);
-    if (data) return JSON.parse(data);
+    if (data) {
+      const parsed = JSON.parse(data);
+      if (Array.isArray(parsed) && parsed.length > 0) {
+        list = parsed;
+      }
+    }
   } catch {}
-  return DEFAULT_ACHIEVEMENTS;
+
+  // Har doim haqiqiy profil statistikasi bilan sinxronlashtirish
+  list.forEach((ach) => {
+    if (ach.id === 'first_win') {
+      ach.current = profile.wins;
+      ach.unlocked = profile.wins >= 1;
+    } else if (ach.id === '10_games') {
+      ach.current = profile.gamesPlayed;
+      ach.unlocked = profile.gamesPlayed >= 10;
+    } else if (ach.id === 'master_50') {
+      ach.current = profile.wins;
+      ach.unlocked = profile.wins >= 50;
+    } else if (ach.id === 'online_player') {
+      ach.current = profile.onlineGames;
+      ach.unlocked = profile.onlineGames >= 10;
+    } else if (ach.id === 'rating_2000') {
+      ach.current = profile.rating;
+      ach.unlocked = profile.rating >= 2000;
+    }
+  });
+
+  return list;
 }
 
 export function saveAchievements(list: Achievement[]): void {
@@ -348,28 +376,19 @@ export function recordGameFinished(
 
 const RECENT_GAMES_KEY = 'nurchess_recent_games_v1';
 
-const DEFAULT_RECENT_GAMES: RecentGame[] = [
-  {
-    id: 'game_init_1',
-    date: '2026-09-20T21:22:00.000Z',
-    result: 'draw',
-    opponent: 'Onlayn (#35139)',
-    gameMode: 'online',
-    myColor: 'black',
-    totalMoves: 8,
-    reason: 'Durang',
-  },
-];
-
 export function getRecentGames(): RecentGame[] {
   try {
     const data = localStorage.getItem(RECENT_GAMES_KEY);
     if (data) {
       const list = JSON.parse(data);
-      if (Array.isArray(list) && list.length > 0) return list;
+      if (Array.isArray(list)) {
+        // Eski demo o'yinni (game_init_1) tozalash
+        const filtered = list.filter((g) => g && g.id !== 'game_init_1');
+        return filtered;
+      }
     }
   } catch {}
-  return DEFAULT_RECENT_GAMES;
+  return [];
 }
 
 export function saveRecentGame(game: Omit<RecentGame, 'id' | 'date'>): RecentGame[] {
