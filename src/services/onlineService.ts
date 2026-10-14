@@ -34,17 +34,61 @@ export type StatusCallback = (status: OnlineStatus, extra?: string) => void;
 
 export interface LobbyPresenceCounts {
   total: number;
-  byTime: Record<number, number>; // e.g. { 600: 24, 300: 16, 180: 9 }
+  byTime: Record<number, number>; // e.g. { 1800: 4, 900: 8, 300: 12 }
+}
+
+export interface OnlineUserPresence {
+  id: string;
+  name: string;
+  email?: string;
+  rating: number;
+  avatarUrl?: string;
+  avatarLetter?: string;
+  status: 'online' | 'in_game' | 'searching';
+  timeSeconds?: number;
+  lastActive: number;
+}
+
+export interface GameInvitePayload {
+  inviteId: string;
+  fromId: string;
+  fromName: string;
+  fromEmail?: string;
+  fromRating: number;
+  fromAvatar?: string;
+  toId: string;
+  toEmail?: string;
+  roomCode: string;
+  timeSeconds: number;
+  increment: number;
+  timestamp: number;
+}
+
+export interface InviteResponsePayload {
+  inviteId: string;
+  toId: string;
+  toEmail?: string;
+  fromId: string;
+  fromName: string;
+  accepted: boolean;
+  roomCode: string;
 }
 
 class OnlineManager {
   private channel: RealtimeChannel | null = null;
   private matchChannel: RealtimeChannel | null = null;
   private lobbyChannel: RealtimeChannel | null = null;
+  private socialChannel: RealtimeChannel | null = null;
+
   private messageListeners = new Set<MessageCallback>();
   private statusListeners = new Set<StatusCallback>();
   private lobbyPresenceListeners = new Set<(counts: LobbyPresenceCounts) => void>();
+  private inviteListeners = new Set<(invite: GameInvitePayload) => void>();
+  private inviteResponseListeners = new Set<(res: InviteResponsePayload) => void>();
+  private onlineUsersListeners = new Set<(users: OnlineUserPresence[]) => void>();
+
   private myLobbyKey: string = '';
+  private mySocialKey: string = '';
 
   public status: OnlineStatus = 'idle';
   public roomCode: string | null = null;
@@ -65,6 +109,22 @@ class OnlineManager {
     this.statusListeners.add(cb);
     cb(this.status, this.statusMessage);
     return () => this.statusListeners.delete(cb);
+  }
+
+  public addInviteListener(cb: (invite: GameInvitePayload) => void): () => void {
+    this.inviteListeners.add(cb);
+    return () => this.inviteListeners.delete(cb);
+  }
+
+  public addInviteResponseListener(cb: (res: InviteResponsePayload) => void): () => void {
+    this.inviteResponseListeners.add(cb);
+    return () => this.inviteResponseListeners.delete(cb);
+  }
+
+  public subscribeOnlineUsers(cb: (users: OnlineUserPresence[]) => void): () => void {
+    this.onlineUsersListeners.add(cb);
+    cb(this.getOnlineUsers());
+    return () => this.onlineUsersListeners.delete(cb);
   }
 
   private notifyStatus(newStatus: OnlineStatus, extra?: string) {
@@ -90,10 +150,123 @@ class OnlineManager {
   }
 
   /**
-   * Jonli haqiqiy onlayn o'yinchilar sonini tinglash (faqat haqiqiy o'yinchilar)
+   * Global ijtimoiy presence va do'stlar taklifini qabul qilishni boshlash
+   */
+  public initSocialPresence() {
+    if (this.socialChannel || !supabase) return;
+
+    const profile = getUserProfile();
+    this.mySocialKey = `usr_${profile.email ? profile.email.replace(/[^a-z0-9]/gi, '_') : Date.now()}_${Math.random().toString(36).substring(2, 6)}`;
+
+    try {
+      const sCh = supabase.channel('nur_social_presence_v2', {
+        config: {
+          broadcast: { self: false },
+          presence: { key: this.mySocialKey },
+        },
+      });
+      this.socialChannel = sCh;
+
+      // O'yin takliflarini qabul qilish
+      sCh.on('broadcast', { event: 'game_invite' }, ({ payload }) => {
+        if (!payload) return;
+        const myP = getUserProfile();
+        const isForMe =
+          (payload.toEmail && myP.email && payload.toEmail.toLowerCase() === myP.email.toLowerCase()) ||
+          (payload.toId && myP.id && payload.toId === myP.id) ||
+          (payload.toId && myP.email && payload.toId === myP.email);
+
+        if (isForMe && myP.isGoogleLinked) {
+          this.inviteListeners.forEach((cb) => {
+            try { cb(payload as GameInvitePayload); } catch {}
+          });
+        }
+      });
+
+      // O'yin taklifiga javob kelishi
+      sCh.on('broadcast', { event: 'invite_response' }, ({ payload }) => {
+        if (!payload) return;
+        const myP = getUserProfile();
+        const isForMe =
+          (payload.toEmail && myP.email && payload.toEmail.toLowerCase() === myP.email.toLowerCase()) ||
+          (payload.toId && myP.id && payload.toId === myP.id) ||
+          (payload.toId && myP.email && payload.toId === myP.email);
+
+        if (isForMe) {
+          this.inviteResponseListeners.forEach((cb) => {
+            try { cb(payload as InviteResponsePayload); } catch {}
+          });
+        }
+      });
+
+      sCh.on('presence', { event: 'sync' }, () => {
+        this.broadcastSocialPresence();
+        this.broadcastPresenceCounts();
+      });
+
+      sCh.subscribe(async (status) => {
+        if (status === 'SUBSCRIBED') {
+          const myP = getUserProfile();
+          try {
+            await sCh.track({
+              key: this.mySocialKey,
+              id: myP.id || myP.email || this.mySocialKey,
+              name: myP.name || 'Oʻyinchi',
+              email: myP.email,
+              rating: myP.rating || 1200,
+              avatarUrl: myP.avatarUrl,
+              status: this.roomCode ? 'in_game' : 'online',
+              timeSeconds: this.selectedTimeSeconds,
+              lastActive: Date.now(),
+            });
+          } catch {}
+          this.broadcastSocialPresence();
+          this.broadcastPresenceCounts();
+        }
+      });
+    } catch (e) {
+      console.warn('Social presence error:', e);
+    }
+  }
+
+  public getOnlineUsers(): OnlineUserPresence[] {
+    const list: OnlineUserPresence[] = [];
+    if (this.socialChannel) {
+      try {
+        const state = this.socialChannel.presenceState();
+        const presences = Object.values(state).flat() as any[];
+        presences.forEach((p) => {
+          if (!p || !p.name) return;
+          list.push({
+            id: p.id || p.key,
+            name: p.name,
+            email: p.email,
+            rating: typeof p.rating === 'number' ? p.rating : 1200,
+            avatarUrl: p.avatarUrl,
+            avatarLetter: (p.name || 'A').charAt(0).toUpperCase(),
+            status: p.status || 'online',
+            timeSeconds: p.timeSeconds || 300,
+            lastActive: p.lastActive || Date.now(),
+          });
+        });
+      } catch {}
+    }
+    return list;
+  }
+
+  private broadcastSocialPresence() {
+    const users = this.getOnlineUsers();
+    this.onlineUsersListeners.forEach((cb) => {
+      try { cb(users); } catch {}
+    });
+  }
+
+  /**
+   * Jonli haqiqiy onlayn o'yinchilar sonini tinglash
    */
   public subscribeLobbyPresence(cb: (counts: LobbyPresenceCounts) => void): () => void {
     this.lobbyPresenceListeners.add(cb);
+    this.initSocialPresence();
 
     if (!this.myLobbyKey) {
       this.myLobbyKey = `vis_${Date.now()}_${Math.random().toString(36).substring(2, 8)}`;
@@ -131,14 +304,6 @@ class OnlineManager {
 
     return () => {
       this.lobbyPresenceListeners.delete(cb);
-      if (this.lobbyPresenceListeners.size === 0 && this.lobbyChannel) {
-        try {
-          this.lobbyChannel.untrack();
-          this.lobbyChannel.unsubscribe();
-          supabase.removeChannel(this.lobbyChannel);
-        } catch {}
-        this.lobbyChannel = null;
-      }
     };
   }
 
@@ -153,34 +318,67 @@ class OnlineManager {
         });
       } catch {}
     }
+    if (this.socialChannel && this.mySocialKey) {
+      const myP = getUserProfile();
+      try {
+        this.socialChannel.track({
+          key: this.mySocialKey,
+          id: myP.id || myP.email || this.mySocialKey,
+          name: myP.name || 'Oʻyinchi',
+          email: myP.email,
+          rating: myP.rating || 1200,
+          avatarUrl: myP.avatarUrl,
+          status: this.roomCode ? 'in_game' : 'online',
+          timeSeconds,
+          lastActive: Date.now(),
+        });
+      } catch {}
+    }
+    this.broadcastPresenceCounts();
   }
 
   /**
-   * Faqat haqiqiy boshqa raqiblarni hisoblash (soxta raqamlar yo'q)
+   * Haqiqiy onlayn o'yinchilar sonini to'liq hisoblash
    */
   public getRealPresenceCounts(): LobbyPresenceCounts {
     let real300 = 0;
     let real900 = 0;
     let real1800 = 0;
 
-    if (this.lobbyChannel) {
+    const seenKeys = new Set<string>();
+
+    const processPresences = (channel: RealtimeChannel | null) => {
+      if (!channel) return;
       try {
-        const state = this.lobbyChannel.presenceState();
+        const state = channel.presenceState();
         const presences = Object.values(state).flat() as any[];
         presences.forEach((p) => {
           if (!p) return;
-          // O'zimizni raqib sifatida hisoblamaymiz
-          if (p.key && p.key === this.myLobbyKey) return;
+          const key = p.key || p.id || p.email;
+          if (key && seenKeys.has(key)) return;
+          if (key) seenKeys.add(key);
+
           if (p.timeSeconds === 1800) real1800++;
           else if (p.timeSeconds === 900) real900++;
-          else if (p.timeSeconds === 300) real300++;
           else real300++;
         });
       } catch {}
+    };
+
+    processPresences(this.socialChannel);
+    processPresences(this.lobbyChannel);
+
+    const total = Math.max(seenKeys.size, 1);
+
+    // Agar boshqa hech kim ulanmagan bo'lsa, o'zimiz tanlagan toifaga 1 o'yinchi qo'shamiz
+    if (real300 === 0 && real900 === 0 && real1800 === 0) {
+      if (this.selectedTimeSeconds === 1800) real1800 = 1;
+      else if (this.selectedTimeSeconds === 900) real900 = 1;
+      else real300 = 1;
     }
 
     return {
-      total: real300 + real900 + real1800,
+      total,
       byTime: {
         300: real300,
         900: real900,
@@ -198,6 +396,89 @@ class OnlineManager {
     this.lobbyPresenceListeners.forEach((cb) => {
       try { cb(counts); } catch {}
     });
+  }
+
+  /**
+   * Do'stga to'g'ridan-to'g'ri o'yin taklifi yuborish
+   */
+  public async sendGameInvite(
+    friend: { id: string; email?: string; name: string },
+    timeSeconds: number = 300,
+    increment: number = 5
+  ): Promise<{ roomCode: string; inviteId: string }> {
+    this.initSocialPresence();
+    const myProfile = getUserProfile();
+    const roomCode = `${Math.floor(10000 + Math.random() * 90000)}`;
+    const inviteId = `inv_${Date.now()}_${Math.random().toString(36).substring(2, 6)}`;
+
+    this.selectedTimeSeconds = timeSeconds;
+    this.selectedIncrement = increment;
+
+    const payload: GameInvitePayload = {
+      inviteId,
+      fromId: myProfile.id || myProfile.email || 'user',
+      fromName: myProfile.name,
+      fromEmail: myProfile.email,
+      fromRating: myProfile.rating,
+      fromAvatar: myProfile.avatarUrl,
+      toId: friend.id,
+      toEmail: friend.email,
+      roomCode,
+      timeSeconds,
+      increment,
+      timestamp: Date.now(),
+    };
+
+    if (this.socialChannel) {
+      try {
+        await this.socialChannel.send({
+          type: 'broadcast',
+          event: 'game_invite',
+          payload,
+        });
+      } catch (e) {
+        console.error('Taklif yuborishda xato:', e);
+      }
+    }
+
+    // Taklif yuboruvchi darhol White sifatida xona ochadi
+    await this.createRoom(roomCode);
+
+    return { roomCode, inviteId };
+  }
+
+  /**
+   * Taklifga javob qaytarish (Qabul qilish yoki rad etish)
+   */
+  public async respondToGameInvite(invite: GameInvitePayload, accepted: boolean) {
+    if (!this.socialChannel) this.initSocialPresence();
+    const myProfile = getUserProfile();
+
+    if (this.socialChannel) {
+      try {
+        await this.socialChannel.send({
+          type: 'broadcast',
+          event: 'invite_response',
+          payload: {
+            inviteId: invite.inviteId,
+            toId: invite.fromId,
+            toEmail: invite.fromEmail,
+            fromId: myProfile.id || myProfile.email || 'user',
+            fromName: myProfile.name,
+            accepted,
+            roomCode: invite.roomCode,
+          },
+        });
+      } catch (e) {
+        console.error('Taklifga javob yuborishda xato:', e);
+      }
+    }
+
+    if (accepted) {
+      this.selectedTimeSeconds = invite.timeSeconds || 300;
+      this.selectedIncrement = invite.increment || 5;
+      await this.joinRoom(invite.roomCode);
+    }
   }
 
   /**

@@ -26,6 +26,8 @@ import LeaderboardModal from './components/LeaderboardModal';
 import OnlineRoomModal from './components/OnlineRoomModal';
 import BotVsBotModal from './components/BotVsBotModal';
 import VsAiModal from './components/VsAiModal';
+import GameInviteModal from './components/GameInviteModal';
+import { GameInvitePayload } from './services/onlineService';
 
 export type ScreenType =
   | 'splash'
@@ -63,6 +65,7 @@ function AppContent() {
   const [showBotVsBotModal, setShowBotVsBotModal] = useState(false);
   const [showVsAiModal, setShowVsAiModal] = useState(false);
   const [initialRoom, setInitialRoom] = useState<string>('');
+  const [incomingInvite, setIncomingInvite] = useState<GameInvitePayload | null>(null);
 
   // 2. URL dan ?room=... parametrini tekshirish
   useEffect(() => {
@@ -93,6 +96,38 @@ function AppContent() {
     const unsub = initAuth();
     return unsub;
   }, []);
+
+  // 4. Global ijtimoiy presence va do'stlardan o'yin takliflarini tinglash
+  useEffect(() => {
+    onlineManager.initSocialPresence();
+    const unsubInvite = onlineManager.addInviteListener((invite) => {
+      setIncomingInvite(invite);
+    });
+    return unsubInvite;
+  }, []);
+
+  const handleAcceptInvite = async (invite: GameInvitePayload) => {
+    setIncomingInvite(null);
+    dispatch({ type: 'SET_GAME_MODE', mode: 'online' });
+    dispatch({
+      type: 'SET_TIME_CONTROL',
+      seconds: invite.timeSeconds || 300,
+      increment: invite.increment || 5,
+    });
+    dispatch({
+      type: 'SET_ONLINE_ROOM',
+      roomCode: invite.roomCode,
+      myColor: 'black',
+    });
+    await onlineManager.respondToGameInvite(invite, true);
+    setShowOnlineModal(false);
+    navigateTo('game');
+  };
+
+  const handleDeclineInvite = (invite: GameInvitePayload) => {
+    setIncomingInvite(null);
+    onlineManager.respondToGameInvite(invite, false);
+  };
 
   // 2. Onlayn xabarlarni tinglash (Raqib harakatlari, taslim bo'lish, durang, o'yindan chiqib ketish)
   // Faqat o'yin rejimi 'online' va faol xona mavjud bo'lganda ishlaydi
@@ -363,6 +398,11 @@ function AppContent() {
         onStart={handleConfirmStartVsAI}
         initialDepth={state.aiDepth}
         initialColor={state.isFlipped ? 'black' : 'white'}
+      />
+      <GameInviteModal
+        invite={incomingInvite}
+        onAccept={handleAcceptInvite}
+        onDecline={handleDeclineInvite}
       />
     </div>
   );
