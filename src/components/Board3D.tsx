@@ -377,15 +377,15 @@ export default function Board3D({
 
     const lightMat = new THREE.MeshStandardMaterial({
       map: lightTex,
-      roughness: 0.42,
+      roughness: 0.36,
       metalness: 0.02,
-      color: 0xffeedd,
+      color: 0xffffff,
     });
     const darkMat = new THREE.MeshStandardMaterial({
       map: darkTex,
-      roughness: 0.38,
+      roughness: 0.34,
       metalness: 0.02,
-      color: 0x824e2b,
+      color: 0xffffff,
     });
 
     const sqGeo = new THREE.BoxGeometry(SQ_SIZE, 0.035, SQ_SIZE);
