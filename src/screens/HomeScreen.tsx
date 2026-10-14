@@ -110,9 +110,9 @@ export default function HomeScreen({
   ];
 
   return (
-    <div className={`min-h-screen w-full ${isLight ? 'bg-[#f5f2eb] md:bg-[url("/desktop-bg.jpg")] text-[#1a1917]' : 'bg-[#121614] md:bg-[url("/desktop-bg.jpg")] text-[#f1f1f1]'} bg-cover bg-center bg-fixed flex flex-col font-sans select-none relative overflow-x-hidden transition-colors duration-200`}>
+    <div className={`min-h-screen w-full ${isLight ? 'bg-[#f6f3ed] md:bg-[url("/desktop-bg-light.jpg")] text-[#1a1917]' : 'bg-[#121614] md:bg-[url("/desktop-bg.jpg")] text-[#f1f1f1]'} bg-cover bg-center bg-fixed flex flex-col font-sans select-none relative overflow-x-hidden transition-colors duration-200`}>
       {/* Fon qatlami (Desktopda va mobilida kontrast va silliq ko'rinish uchun) */}
-      <div className={`absolute inset-0 pointer-events-none z-0 transition-opacity duration-200 ${isLight ? 'bg-gradient-to-b from-[#faf8f4]/95 via-[#f5f1e8]/90 to-[#eae4d5]/95' : 'hidden md:block bg-gradient-to-b from-[#0b100d]/85 via-[#0d1310]/75 to-[#0b100d]/90'}`} />
+      <div className={`absolute inset-0 pointer-events-none z-0 transition-opacity duration-200 ${isLight ? 'bg-gradient-to-b from-[#faf8f4]/80 via-[#f5f1e8]/70 to-[#eae4d5]/85' : 'hidden md:block bg-gradient-to-b from-[#0b100d]/85 via-[#0d1310]/75 to-[#0b100d]/90'}`} />
 
       <div className="relative z-10 w-full flex flex-col justify-between min-h-screen">
         {/* ── 1. YUQORI HEADER (FLOATING GLASS NAVBAR) ── */}

@@ -80,22 +80,25 @@ function AppContent() {
 
   // 3. Google Auth sessiyasini kuzatish (OAuth redirectidan qaytish va avto-login)
   useEffect(() => {
-    // Agar Google OAuth redirectidan qaytgan bo'lsa
+    // Faqat agar foydalanuvchi bevosita Google OAuth redirectidan qaytgan bo'lsa
     if (window.location.hash.includes('access_token')) {
       setCurrentScreen('profile');
+      setTimeout(() => {
+        window.history.replaceState(null, '', window.location.pathname + window.location.search);
+      }, 500);
     }
 
-    const unsub = initAuth((profile) => {
-      if (profile.isGoogleLinked) {
-        setCurrentScreen('profile');
-      }
-    });
+    // initAuth faqat profil ma'lumotlarini fonda sinxronlashtiradi,
+    // hech qachon o'yindagi foydalanuvchini majburan profilga chiqarib yubormaydi!
+    const unsub = initAuth();
     return unsub;
   }, []);
 
   // 2. Onlayn xabarlarni tinglash (Raqib harakatlari, taslim bo'lish, durang, o'yindan chiqib ketish)
+  // Faqat o'yin rejimi 'online' va faol xona mavjud bo'lganda ishlaydi
   useEffect(() => {
     const unsubMsg = onlineManager.addMessageListener((msg) => {
+      if (gameMode !== 'online' || !roomCode) return;
       if (msg.type === 'MOVE') {
         dispatch({ type: 'APPLY_REMOTE_MOVE', move: msg.move });
       } else if (msg.type === 'RESIGN') {
@@ -112,6 +115,7 @@ function AppContent() {
     });
 
     const unsubStatus = onlineManager.addStatusListener((status) => {
+      if (gameMode !== 'online' || !roomCode) return;
       if (status === 'disconnected') {
         dispatch({ type: 'REMOTE_PLAYER_LEFT' });
       }
@@ -121,7 +125,7 @@ function AppContent() {
       unsubMsg();
       unsubStatus();
     };
-  }, [dispatch]);
+  }, [dispatch, gameMode, roomCode]);
 
   const handleBackFromGame = () => {
     if (state.game.status !== 'playing' && state.game.status !== 'check') {
@@ -166,6 +170,10 @@ function AppContent() {
         return true;
       }
       if (currentScreen === 'game') {
+        if (typeof (window as any).__toggleGameMenu === 'function') {
+          (window as any).__toggleGameMenu();
+          return true;
+        }
         handleBackFromGame();
         return true;
       }
@@ -192,6 +200,7 @@ function AppContent() {
   const handleConfirmStartVsAI = (depth: number, playerColor: 'white' | 'black') => {
     setShowVsAiModal(false);
     dispatch({ type: 'SET_GAME_MODE', mode: 'vsAI' });
+    dispatch({ type: 'SET_TIME_CONTROL', seconds: 0, increment: 0 });
     dispatch({ type: 'SET_AI_DEPTH', depth });
     const botColor = playerColor === 'white' ? 'black' : 'white';
     dispatch({ type: 'SET_AI_COLOR', color: botColor });
@@ -202,6 +211,7 @@ function AppContent() {
 
   const handleStartLocal = () => {
     dispatch({ type: 'SET_GAME_MODE', mode: 'pvp' });
+    dispatch({ type: 'SET_TIME_CONTROL', seconds: 0, increment: 0 });
     dispatch({ type: 'NEW_GAME' });
     navigateTo('game');
   };
@@ -209,6 +219,7 @@ function AppContent() {
   const handleStartBotVsBot = (whiteDepth: number, blackDepth: number, speed: number) => {
     setShowBotVsBotModal(false);
     dispatch({ type: 'SET_GAME_MODE', mode: 'aiVsAi' });
+    dispatch({ type: 'SET_TIME_CONTROL', seconds: 0, increment: 0 });
     dispatch({ type: 'SET_AI_VS_AI_CONFIG', whiteDepth, blackDepth, speed });
     dispatch({ type: 'NEW_GAME' });
     navigateTo('game');

@@ -71,6 +71,16 @@ export default function GameScreen({ onBack, onOpenSettings }: GameScreenProps) 
   const [showVsAiLevelModal, setShowVsAiLevelModal] = useState(false);
   const userProfile = getUserProfile();
 
+  // Android back swipe yoki tizim orqaga tugmasi bosilganda o'yin menyusini ochish
+  React.useEffect(() => {
+    (window as any).__toggleGameMenu = () => {
+      setShowMenuModal((prev) => !prev);
+    };
+    return () => {
+      delete (window as any).__toggleGameMenu;
+    };
+  }, []);
+
   React.useEffect(() => {
     if (drawOfferNotice) {
       const timer = setTimeout(() => {

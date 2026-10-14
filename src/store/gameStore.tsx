@@ -583,7 +583,7 @@ function gameReducer(state: AppState, action: Action): AppState {
     }
 
     case 'TICK_TIMER': {
-      if (state.timeControl === 0 || state.game.status !== 'playing' && state.game.status !== 'check') {
+      if (state.timeControl <= 0 || (state.game.status !== 'playing' && state.game.status !== 'check')) {
         return state;
       }
       const isWhiteTurn = state.game.currentTurn === 'white';
