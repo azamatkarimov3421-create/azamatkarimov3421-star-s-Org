@@ -4,7 +4,7 @@
 // =====================================================
 
 import React, { useState, useEffect } from 'react';
-import { GameProvider, useGame } from './store/gameStore';
+import { GameProvider, useGame, clearActiveMatch } from './store/gameStore';
 import { onlineManager } from './services/onlineService';
 import { initAuth } from './services/authService';
 import { recordGameFinished, saveRecentGame } from './store/userProfileStore';
@@ -124,6 +124,10 @@ function AppContent() {
   }, [dispatch]);
 
   const handleBackFromGame = () => {
+    if (state.game.status !== 'playing' && state.game.status !== 'check') {
+      clearActiveMatch();
+      dispatch({ type: 'NEW_GAME' });
+    }
     if (gameMode === 'online' && roomCode) {
       if (state.game.status === 'playing' || state.game.status === 'check') {
         const oppRating = onlineManager.opponentRating || 1200;
@@ -296,9 +300,9 @@ function AppContent() {
         />
       )}
 
-      {/* ── 3. UMUMIY MODALLAR ──────────────────────────────── */}
-      <PromotionModal />
-      <GameOverModal onExit={handleBackFromGame} />
+      {/* ── 3. O'YIN MODALLARI (Faqat O'yin ekranida ochiladi) ── */}
+      {currentScreen === 'game' && <PromotionModal />}
+      {currentScreen === 'game' && <GameOverModal onExit={handleBackFromGame} />}
       <LeaderboardModal
         isOpen={showLeaderboard}
         onClose={() => setShowLeaderboard(false)}

@@ -309,9 +309,10 @@ export default function GameOverModal({ onExit }: GameOverModalProps = {}) {
           {/* 2. O'yindan Chiqish (Bosh Sahifa) */}
           <button
             onClick={() => {
-              setDismissed(false);
+              setDismissed(true);
               setRatingInfo(null);
               clearActiveMatch();
+              dispatch({ type: 'NEW_GAME' });
               if (onExit) onExit();
             }}
             className="w-full py-2.5 px-4 bg-red-950/40 hover:bg-red-900/60 border border-red-800/60 text-red-300 hover:text-white font-bold text-xs rounded-xl shadow-[0_2px_0_#1a0f0d] active:translate-y-0.5 transition-all flex items-center justify-center gap-2 cursor-pointer"
