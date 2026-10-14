@@ -4,7 +4,7 @@
 // =====================================================
 
 import React, { useState } from 'react';
-import { useGame } from '../store/gameStore';
+import { useGame, clearActiveMatch } from '../store/gameStore';
 import Board from '../components/Board';
 import EvalBar from '../components/EvalBar';
 import GameStatusBar from '../components/GameStatusBar';
@@ -489,6 +489,37 @@ export default function GameScreen({ onBack, onOpenSettings }: GameScreenProps) 
         </div>
       )}
 
+      {/* ── O'YIN TUGAGANDA DOSKANI KO'ZDAN KECHIRISH PASTKI PANELI ── */}
+      {isGameOver && (
+        <div className="fixed bottom-4 sm:bottom-6 left-1/2 -translate-x-1/2 z-40 max-w-sm w-[92%] px-4 py-2.5 rounded-2xl bg-[#1c1a17]/95 border border-[#3e342a] shadow-[0_12px_36px_rgba(0,0,0,0.85)] backdrop-blur-md flex items-center justify-between gap-2 animate-fadeIn pointer-events-auto">
+          <div className="flex items-center gap-2 min-w-0">
+            <span className="text-lg">🏁</span>
+            <div className="min-w-0 text-left">
+              <div className="text-xs font-black text-white truncate">Oʻyin yakunlandi</div>
+              <div className="text-[10px] text-zinc-400 truncate">Doskani koʻrmoqdasiz</div>
+            </div>
+          </div>
+          <div className="flex items-center gap-1.5 shrink-0">
+            <button
+              onClick={() => dispatch({ type: 'NEW_GAME' })}
+              className="px-3 py-1.5 rounded-xl bg-[#81b64c] hover:bg-[#92c35a] text-white font-bold text-xs cursor-pointer shadow-md transition-all active:scale-95"
+            >
+              Yangi oʻyin
+            </button>
+            <button
+              onClick={() => {
+                clearActiveMatch();
+                onBack();
+              }}
+              className="px-3 py-1.5 rounded-xl bg-red-950/70 hover:bg-red-900/80 border border-red-800/70 text-red-300 font-bold text-xs cursor-pointer shadow-md transition-all active:scale-95 flex items-center gap-1"
+            >
+              <ArrowLeftIcon size={13} />
+              <span>Chiqish</span>
+            </button>
+          </div>
+        </div>
+      )}
+
       {/* ── 5. ASOSIY O'YIN MENYUSI MODALI (☰ Hamburger bosilganda ochiladi) ── */}
       {showMenuModal && (
         <div className="fixed inset-0 bg-black/80 backdrop-blur-md z-50 flex items-center justify-center p-4 animate-fadeIn">
@@ -523,7 +554,7 @@ export default function GameScreen({ onBack, onOpenSettings }: GameScreenProps) 
                   </div>
                 </div>
               </div>
-              {gameMode === 'vsAI' && (
+              {gameMode === 'vsAI' && !isGameOver && (
                 <button
                   onClick={() => {
                     setShowMenuModal(false);
@@ -539,82 +570,119 @@ export default function GameScreen({ onBack, onOpenSettings }: GameScreenProps) 
 
             {/* ── ASOSIY AMALLAR RO'YXATI ── */}
             <div className="flex flex-col gap-2.5 pt-1">
-              {/* 1. O'yinni davom ettirish (Hozir o'ynash) */}
-              <button
-                onClick={() => setShowMenuModal(false)}
-                className="w-full py-3 px-4 rounded-xl bg-gradient-to-r from-[#6cb83e] to-[#559b2d] hover:from-[#76c444] hover:to-[#5ea833] text-white font-black text-xs sm:text-sm flex items-center justify-center gap-2 shadow-lg cursor-pointer transition-all active:scale-95"
-              >
-                <PlayIcon size={18} className="fill-white" />
-                <span>Oʻyinni davom ettirish</span>
-              </button>
-
-              {/* 2. Onlayn rejimida: Faqat Taslim Bo'lish (O'yindan Chiqish) */}
-              {gameMode === 'online' ? (
-                <button
-                  onClick={() => {
-                    setShowMenuModal(false);
-                    dispatch({ type: 'RESIGN' });
-                    onBack();
-                  }}
-                  disabled={isGameOver}
-                  className="w-full py-3 px-4 rounded-xl bg-red-900/30 hover:bg-red-900/50 border border-red-700/60 text-red-300 font-bold text-xs flex items-center justify-center gap-2 cursor-pointer transition-all active:scale-95 disabled:opacity-30"
-                >
-                  <FlagIcon size={16} />
-                  <span>Taslim boʻlish (Oʻyindan chiqish)</span>
-                </button>
-              ) : (
-                /* 3. Bot bilan yoki Mahalliy rejimda: 
-                      - Keyinroq davom ettirish (bosh sahifaga saqlab chiqish)
-                      - O'yinni yutqazish (Taslim bo'lish)
-                */
+              {isGameOver ? (
                 <>
-                  {/* Keyinroq davom ettirish */}
+                  {/* O'yin tugagan holatda: 1. O'yindan Chiqish (Bosh sahifaga qaytish) */}
                   <button
                     onClick={() => {
                       setShowMenuModal(false);
+                      clearActiveMatch();
                       onBack();
                     }}
-                    className="w-full py-2.5 px-3.5 rounded-xl bg-[#2a241e] hover:bg-[#383129] border border-[#3e342a] text-white font-bold text-xs flex items-center justify-between cursor-pointer transition-all active:scale-95"
+                    className="w-full py-3 px-4 rounded-xl bg-gradient-to-r from-red-700 to-red-800 hover:from-red-600 hover:to-red-700 text-white font-black text-xs sm:text-sm flex items-center justify-center gap-2 shadow-lg cursor-pointer transition-all active:scale-95"
                   >
-                    <div className="flex items-center gap-2.5">
-                      <ClockIcon size={16} className="text-amber-400 shrink-0" />
-                      <div className="text-left">
-                        <div className="font-bold text-white text-xs">Keyinroq davom ettirish</div>
-                        <div className="text-[10px] text-zinc-400 font-normal">Holat saqlanadi, bosh sahifadan kirasiz</div>
-                      </div>
-                    </div>
-                    <ArrowLeftIcon size={16} className="text-zinc-400 shrink-0" />
+                    <ArrowLeftIcon size={18} />
+                    <span>Oʻyindan chiqish (Bosh sahifa)</span>
                   </button>
 
-                  {/* O'yinni yutqazish (Taslim bo'lish) */}
-                  <button
-                    onClick={() => {
-                      setShowMenuModal(false);
-                      dispatch({ type: 'RESIGN' });
-                    }}
-                    disabled={isGameOver}
-                    className="w-full py-2.5 px-3.5 rounded-xl bg-red-950/40 hover:bg-red-900/50 border border-red-800/50 text-red-300 font-bold text-xs flex items-center justify-between cursor-pointer transition-all active:scale-95 disabled:opacity-30"
-                  >
-                    <div className="flex items-center gap-2.5">
-                      <FlagIcon size={16} className="text-red-400 shrink-0" />
-                      <div className="text-left">
-                        <div className="font-bold text-red-300 text-xs">Oʻyinni yutqazish (Taslim boʻlish)</div>
-                        <div className="text-[10px] text-red-400/80 font-normal">Oʻyin yakunlanadi va magʻlubiyat yoziladi</div>
-                      </div>
-                    </div>
-                  </button>
-
-                  {/* Yangi o'yin boshlash */}
+                  {/* 2. Yangi o'yin boshlash */}
                   <button
                     onClick={() => {
                       setShowMenuModal(false);
                       dispatch({ type: 'NEW_GAME' });
                     }}
-                    className="w-full py-2 px-3 rounded-xl bg-[#231e19] hover:bg-[#2e2721] border border-[#362d24] text-zinc-300 font-semibold text-xs flex items-center justify-center gap-2 cursor-pointer transition-all active:scale-95"
+                    className="w-full py-2.5 px-4 rounded-xl bg-[#81b64c] hover:bg-[#92c35a] text-white font-black text-xs sm:text-sm flex items-center justify-center gap-2 shadow-lg cursor-pointer transition-all active:scale-95"
                   >
-                    <RotateCwIcon size={14} className="text-amber-400" />
+                    <RotateCwIcon size={16} />
                     <span>Yangi oʻyin boshlash</span>
                   </button>
+
+                  {/* 3. Doskani ko'rishga qaytish */}
+                  <button
+                    onClick={() => setShowMenuModal(false)}
+                    className="w-full py-2 px-3 rounded-xl bg-[#231e19] hover:bg-[#2e2721] border border-[#362d24] text-zinc-300 font-semibold text-xs flex items-center justify-center gap-2 cursor-pointer transition-all active:scale-95"
+                  >
+                    <span>Doskani koʻrishga qaytish</span>
+                  </button>
+                </>
+              ) : (
+                <>
+                  {/* 1. O'yinni davom ettirish (Hozir o'ynash) */}
+                  <button
+                    onClick={() => setShowMenuModal(false)}
+                    className="w-full py-3 px-4 rounded-xl bg-gradient-to-r from-[#6cb83e] to-[#559b2d] hover:from-[#76c444] hover:to-[#5ea833] text-white font-black text-xs sm:text-sm flex items-center justify-center gap-2 shadow-lg cursor-pointer transition-all active:scale-95"
+                  >
+                    <PlayIcon size={18} className="fill-white" />
+                    <span>Oʻyinni davom ettirish</span>
+                  </button>
+
+                  {/* 2. Onlayn rejimida: Faqat Taslim Bo'lish (O'yindan Chiqish) */}
+                  {gameMode === 'online' ? (
+                    <button
+                      onClick={() => {
+                        setShowMenuModal(false);
+                        dispatch({ type: 'RESIGN' });
+                        onBack();
+                      }}
+                      className="w-full py-3 px-4 rounded-xl bg-red-900/30 hover:bg-red-900/50 border border-red-700/60 text-red-300 font-bold text-xs flex items-center justify-center gap-2 cursor-pointer transition-all active:scale-95"
+                    >
+                      <FlagIcon size={16} />
+                      <span>Taslim boʻlish (Oʻyindan chiqish)</span>
+                    </button>
+                  ) : (
+                    /* 3. Bot bilan yoki Mahalliy rejimda: 
+                          - Keyinroq davom ettirish (bosh sahifaga saqlab chiqish)
+                          - O'yinni yutqazish (Taslim bo'lish)
+                    */
+                    <>
+                      {/* Keyinroq davom ettirish */}
+                      <button
+                        onClick={() => {
+                          setShowMenuModal(false);
+                          onBack();
+                        }}
+                        className="w-full py-2.5 px-3.5 rounded-xl bg-[#2a241e] hover:bg-[#383129] border border-[#3e342a] text-white font-bold text-xs flex items-center justify-between cursor-pointer transition-all active:scale-95"
+                      >
+                        <div className="flex items-center gap-2.5">
+                          <ClockIcon size={16} className="text-amber-400 shrink-0" />
+                          <div className="text-left">
+                            <div className="font-bold text-white text-xs">Keyinroq davom ettirish</div>
+                            <div className="text-[10px] text-zinc-400 font-normal">Holat saqlanadi, bosh sahifadan kirasiz</div>
+                          </div>
+                        </div>
+                        <ArrowLeftIcon size={16} className="text-zinc-400 shrink-0" />
+                      </button>
+
+                      {/* O'yinni yutqazish (Taslim bo'lish) */}
+                      <button
+                        onClick={() => {
+                          setShowMenuModal(false);
+                          dispatch({ type: 'RESIGN' });
+                        }}
+                        className="w-full py-2.5 px-3.5 rounded-xl bg-red-950/40 hover:bg-red-900/50 border border-red-800/50 text-red-300 font-bold text-xs flex items-center justify-between cursor-pointer transition-all active:scale-95"
+                      >
+                        <div className="flex items-center gap-2.5">
+                          <FlagIcon size={16} className="text-red-400 shrink-0" />
+                          <div className="text-left">
+                            <div className="font-bold text-red-300 text-xs">Oʻyinni yutqazish (Taslim boʻlish)</div>
+                            <div className="text-[10px] text-red-400/80 font-normal">Oʻyin yakunlanadi va magʻlubiyat yoziladi</div>
+                          </div>
+                        </div>
+                      </button>
+
+                      {/* Yangi o'yin boshlash */}
+                      <button
+                        onClick={() => {
+                          setShowMenuModal(false);
+                          dispatch({ type: 'NEW_GAME' });
+                        }}
+                        className="w-full py-2 px-3 rounded-xl bg-[#231e19] hover:bg-[#2e2721] border border-[#362d24] text-zinc-300 font-semibold text-xs flex items-center justify-center gap-2 cursor-pointer transition-all active:scale-95"
+                      >
+                        <RotateCwIcon size={14} className="text-amber-400" />
+                        <span>Yangi oʻyin boshlash</span>
+                      </button>
+                    </>
+                  )}
                 </>
               )}
 

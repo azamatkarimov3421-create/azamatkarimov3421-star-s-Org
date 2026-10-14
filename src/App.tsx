@@ -298,7 +298,7 @@ function AppContent() {
 
       {/* ── 3. UMUMIY MODALLAR ──────────────────────────────── */}
       <PromotionModal />
-      <GameOverModal />
+      <GameOverModal onExit={handleBackFromGame} />
       <LeaderboardModal
         isOpen={showLeaderboard}
         onClose={() => setShowLeaderboard(false)}

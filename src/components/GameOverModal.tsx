@@ -3,14 +3,18 @@
 // =====================================================
 
 import React, { useState, useEffect } from 'react';
-import { useGame } from '../store/gameStore';
+import { useGame, clearActiveMatch } from '../store/gameStore';
 import { saveGameResult } from '../services/dbService';
 
 import { recordGameFinished, saveRecentGame, getRecentGames, RecentGame } from '../store/userProfileStore';
 import { onlineManager } from '../services/onlineService';
 import { useTranslation } from '../i18n/translations';
 
-export default function GameOverModal() {
+interface GameOverModalProps {
+  onExit?: () => void;
+}
+
+export default function GameOverModal({ onExit }: GameOverModalProps = {}) {
   const { state, dispatch } = useGame();
   const { t } = useTranslation();
   const { game, gameMode, aiColor, aiDepth, aiWhiteDepth, aiBlackDepth, onlinePlayerColor, roomCode } = state;
@@ -23,6 +27,10 @@ export default function GameOverModal() {
 
   useEffect(() => {
     setRecentGames(getRecentGames());
+    if (status === 'playing' || status === 'check') {
+      setDismissed(false);
+      setSaved(false);
+    }
   }, [status]);
 
   useEffect(() => {
@@ -286,6 +294,7 @@ export default function GameOverModal() {
 
         {/* Tugmalar */}
         <div className="flex flex-col gap-2.5">
+          {/* 1. Yangi O'yin Boshlash */}
           <button
             onClick={() => {
               setDismissed(false);
@@ -297,11 +306,25 @@ export default function GameOverModal() {
             <span>{t('btn_new_game')}</span>
           </button>
 
+          {/* 2. O'yindan Chiqish (Bosh Sahifa) */}
+          <button
+            onClick={() => {
+              setDismissed(false);
+              setRatingInfo(null);
+              clearActiveMatch();
+              if (onExit) onExit();
+            }}
+            className="w-full py-2.5 px-4 bg-red-950/40 hover:bg-red-900/60 border border-red-800/60 text-red-300 hover:text-white font-bold text-xs rounded-xl shadow-[0_2px_0_#1a0f0d] active:translate-y-0.5 transition-all flex items-center justify-center gap-2 cursor-pointer"
+          >
+            <span>🚪 {t('btn_exit_to_home')}</span>
+          </button>
+
+          {/* 3. Doskani Ko'zdan Kechirish */}
           <button
             onClick={() => setDismissed(true)}
-            className="w-full py-2.5 px-4 bg-[#383531] hover:bg-[#45423c] text-[#c3c2be] hover:text-white font-bold text-xs rounded-xl border border-[#383531] shadow-[0_2px_0_#21201d] active:translate-y-0.5 transition-all"
+            className="w-full py-2.5 px-4 bg-[#383531] hover:bg-[#45423c] text-[#c3c2be] hover:text-white font-bold text-xs rounded-xl border border-[#383531] shadow-[0_2px_0_#21201d] active:translate-y-0.5 transition-all flex items-center justify-center gap-2 cursor-pointer"
           >
-            {t('btn_review_board')}
+            <span>🔍 {t('btn_review_board')}</span>
           </button>
         </div>
       </div>
