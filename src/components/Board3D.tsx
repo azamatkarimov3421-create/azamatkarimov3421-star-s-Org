@@ -310,36 +310,37 @@ export default function Board3D({
 
     updateCameraForAspect(width, height);
 
-    // ── YORUG'LIK ──
-    const amb = new THREE.AmbientLight(0xfff5ea, 0.95);
+    // ── YORUG'LIK (Yumshoq, ko'zni qamashtirmaydigan va yaltiramaydigan yoritish) ──
+    const amb = new THREE.AmbientLight(0xfff8f0, 1.25);
     scene.add(amb);
 
-    const key = new THREE.DirectionalLight(0xfffaee, 1.55);
-    key.position.set(6, 18, 8);
+    const key = new THREE.DirectionalLight(0xfff8ea, 1.15);
+    key.position.set(5, 22, 6);
     key.castShadow = true;
     key.shadow.mapSize.width = 2048;
     key.shadow.mapSize.height = 2048;
     key.shadow.camera.near = 0.5;
-    key.shadow.camera.far = 35;
+    key.shadow.camera.far = 40;
     const d = 9.0;
     key.shadow.camera.left = -d;
     key.shadow.camera.right = d;
     key.shadow.camera.top = d;
     key.shadow.camera.bottom = -d;
     key.shadow.bias = -0.0005;
-    key.shadow.radius = 2.2;
+    key.shadow.radius = 2.5;
     scene.add(key);
 
-    const fill = new THREE.DirectionalLight(0xdbe9ff, 0.90);
-    fill.position.set(-8, 12, 8);
+    const fill = new THREE.DirectionalLight(0xdbe9ff, 0.45);
+    fill.position.set(-8, 14, 6);
     scene.add(fill);
 
-    const blackKey = new THREE.DirectionalLight(0xfffaec, 1.25);
-    blackKey.position.set(0, 14, -7);
+    // Qora donalarning orqa siluetini ko'rsatish uchun yumshoq yorug'lik (doskada yaltirash hosil qilmaydi)
+    const blackKey = new THREE.DirectionalLight(0xfff5ea, 0.35);
+    blackKey.position.set(0, 20, -5);
     scene.add(blackKey);
 
-    const rimLight = new THREE.DirectionalLight(0xe4f2ff, 2.8);
-    rimLight.position.set(0, 11, -14);
+    const rimLight = new THREE.DirectionalLight(0xe4f2ff, 0.30);
+    rimLight.position.set(0, 15, -12);
     scene.add(rimLight);
 
     // ── SHAFQATSIZ YUMSHOQ SOYA PLANETASI (ShadowMaterial) ──
@@ -358,8 +359,8 @@ export default function Board3D({
       const frameGeo = new THREE.BoxGeometry(TOTAL_WIDTH, BOARD_THICKNESS, TOTAL_WIDTH);
       const frameMat = new THREE.MeshStandardMaterial({
         map: frameTex,
-        roughness: 0.44,
-        metalness: 0.04,
+        roughness: 0.80,
+        metalness: 0.0,
         color: 0xdeb887,
       });
       const frameMesh = new THREE.Mesh(frameGeo, frameMat);
@@ -377,14 +378,14 @@ export default function Board3D({
 
     const lightMat = new THREE.MeshStandardMaterial({
       map: lightTex,
-      roughness: 0.36,
-      metalness: 0.02,
+      roughness: 0.85,
+      metalness: 0.0,
       color: 0xffffff,
     });
     const darkMat = new THREE.MeshStandardMaterial({
       map: darkTex,
-      roughness: 0.34,
-      metalness: 0.02,
+      roughness: 0.82,
+      metalness: 0.0,
       color: 0xffffff,
     });
 
@@ -409,7 +410,7 @@ export default function Board3D({
     // ── 3D OLD QIRRA PLINTUSI (Doskaning old tomoniga biriktirilgan) ──
     const initialRimTex = createRimTexture(frontRimTitle || 'NUR SHAXMAT 100', frontRimMoveText || '');
     const rimGeo = new THREE.BoxGeometry(TOTAL_WIDTH, 0.34, 0.10);
-    const rimMat = new THREE.MeshStandardMaterial({ map: initialRimTex, roughness: 0.45 });
+    const rimMat = new THREE.MeshStandardMaterial({ map: initialRimTex, roughness: 0.80, metalness: 0.0 });
     const rimMesh = new THREE.Mesh(rimGeo, rimMat);
     rimMesh.position.set(0, -BOARD_THICKNESS / 2 - 0.02, TOTAL_WIDTH / 2 + 0.05);
     rimMesh.rotation.x = -0.22; // Kameraga qarab sal burchak ostida qiya
