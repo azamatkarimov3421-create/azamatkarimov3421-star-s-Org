@@ -18,6 +18,7 @@ import { onlineManager } from '../services/onlineService';
 import { AppLanguage, getAppLanguage, setAppLanguage } from '../i18n/translations';
 
 export type BoardTheme = 'wood' | 'emerald' | 'azure' | 'marble';
+export type AppThemeMode = 'dark' | 'light' | 'system';
 export type TimeControl = number; // in seconds (0=unlimited)
 
 export type GameMode = 'pvp' | 'vsAI' | 'online' | 'aiVsAi';
@@ -31,6 +32,7 @@ export interface AppState {
   history: GameState[];           // Bekor qilish uchun tarix
   useNumericNotation: boolean;
   language: AppLanguage;          // Tanlangan ilova tili
+  appTheme: AppThemeMode;         // Tungi va Kunduzgi rejim (Dark/Light/System)
   gameMode: GameMode;
   aiColor: 'black' | 'white';
   aiDepth: number;                // 1=oson, 2=o'rta, 3=qiyin, 4=pro
@@ -95,7 +97,8 @@ type Action =
   | { type: 'SET_ONLINE_ROOM'; roomCode: string | null; myColor: 'white' | 'black' | null }
   | { type: 'TOGGLE_3D' }
   | { type: 'SET_3D'; enabled: boolean }
-  | { type: 'SET_LANGUAGE'; language: AppLanguage };
+  | { type: 'SET_LANGUAGE'; language: AppLanguage }
+  | { type: 'SET_APP_THEME'; theme: AppThemeMode };
 
 // ── Faol O'yinni Saqlash va Qayta Tiklash (Match Persistence) ────────
 
@@ -190,6 +193,15 @@ export function createFreshAppState(): AppState {
     history: [],
     useNumericNotation: false,
     language: getAppLanguage(),
+    appTheme: (() => {
+      try {
+        const saved = localStorage.getItem('nur_chess_app_theme_v1') as AppThemeMode;
+        if (saved === 'light' || saved === 'dark' || saved === 'system') {
+          return saved;
+        }
+      } catch {}
+      return 'dark';
+    })(),
     gameMode: 'pvp',
     aiColor: 'black',
     aiDepth: 2,
@@ -680,6 +692,13 @@ function gameReducer(state: AppState, action: Action): AppState {
 
     case 'SET_THEME':
       return { ...state, boardTheme: action.theme };
+
+    case 'SET_APP_THEME': {
+      try {
+        localStorage.setItem('nur_chess_app_theme_v1', action.theme);
+      } catch {}
+      return { ...state, appTheme: action.theme };
+    }
 
     case 'TOGGLE_FLIP':
       return { ...state, isFlipped: !state.isFlipped };

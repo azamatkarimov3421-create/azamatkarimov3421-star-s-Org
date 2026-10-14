@@ -235,13 +235,36 @@ function AppContent() {
     return 'home';
   };
 
+  // Mavzu (Dark/Light/System) o'zgarishini butun ilovaga qo'llash
+  useEffect(() => {
+    const isLightMode =
+      state.appTheme === 'light' ||
+      (state.appTheme === 'system' && typeof window !== 'undefined' && !window.matchMedia('(prefers-color-scheme: dark)').matches);
+
+    if (isLightMode) {
+      document.documentElement.classList.add('theme-light');
+      document.documentElement.classList.remove('theme-dark');
+      document.body.classList.add('theme-light');
+      document.body.classList.remove('theme-dark');
+    } else {
+      document.documentElement.classList.remove('theme-light');
+      document.documentElement.classList.add('theme-dark');
+      document.body.classList.remove('theme-light');
+      document.body.classList.add('theme-dark');
+    }
+  }, [state.appTheme]);
+
+  const isLight =
+    state.appTheme === 'light' ||
+    (state.appTheme === 'system' && typeof window !== 'undefined' && !window.matchMedia('(prefers-color-scheme: dark)').matches);
+
   // Pastki menyuni ko'rsatish sharti
   const showBottomNav =
     currentScreen === 'home' ||
     currentScreen === 'profile';
 
   return (
-    <div className="min-h-screen bg-[#262421] text-[#f1f1f1] flex flex-col font-sans select-none">
+    <div className={`min-h-screen ${isLight ? 'bg-[#f4f1ea] text-[#1f1d1a]' : 'bg-[#181614] text-[#f1f1f1]'} flex flex-col font-sans select-none transition-colors duration-200`}>
       {/* ── 1. ASOSIY EKRAN ROUTER ─────────────────────────── */}
       {currentScreen === 'splash' && (
         <SplashScreen onStart={() => navigateTo('home')} />
