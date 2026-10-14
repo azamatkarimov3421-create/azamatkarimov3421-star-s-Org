@@ -335,11 +335,11 @@ export default function Board3D({
     scene.add(fill);
 
     // Qora donalarning orqa siluetini ko'rsatish uchun yumshoq yorug'lik (doskada yaltirash hosil qilmaydi)
-    const blackKey = new THREE.DirectionalLight(0xfff5ea, 0.35);
+    const blackKey = new THREE.DirectionalLight(0xfff5ea, 0.45);
     blackKey.position.set(0, 20, -5);
     scene.add(blackKey);
 
-    const rimLight = new THREE.DirectionalLight(0xe4f2ff, 0.30);
+    const rimLight = new THREE.DirectionalLight(0xe4f2ff, 0.32);
     rimLight.position.set(0, 15, -12);
     scene.add(rimLight);
 
@@ -492,15 +492,18 @@ export default function Board3D({
     const pieceMeshesMap = pieceMeshesMapRef.current;
     const currentPieceIds = new Set<string>();
 
+    // Oq donalar: toza, yorqin va och fil suyagi oqi (luminous ivory white)
     const whiteMat = new THREE.MeshStandardMaterial({
-      color: new THREE.Color(0xf6eee2),
-      roughness: 0.16,
-      metalness: 0.04,
+      color: new THREE.Color(0xfcfaf7),
+      roughness: 0.12,
+      metalness: 0.02,
     });
+    // Qora donalar: ochroq to'q grafit/ebonit (tafsilotlari aniq ko'rinishi uchun),
+    // va sal yaltiroq laklangan silliq jilo (roughness: 0.08)
     const blackMat = new THREE.MeshStandardMaterial({
-      color: new THREE.Color(0x181615),
-      roughness: 0.18,
-      metalness: 0.18,
+      color: new THREE.Color(0x383432),
+      roughness: 0.08,
+      metalness: 0.06,
     });
 
     for (let r = 0; r < 10; r++) {
@@ -563,6 +566,15 @@ export default function Board3D({
           meshGroup.position.x = targetX;
           meshGroup.position.z = targetZ;
           meshGroup.position.y = -offset.y + 0.038;
+
+          // Material yangilanganligini kafolatlash
+          const isWhite = piece.color === 'white';
+          const mat = isWhite ? whiteMat : blackMat;
+          meshGroup.traverse((ch: any) => {
+            if (ch.isMesh && ch.material !== mat) {
+              ch.material = mat;
+            }
+          });
         }
       }
     }
