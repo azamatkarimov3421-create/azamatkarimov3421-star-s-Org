@@ -14,6 +14,7 @@ import { getUserProfile } from '../store/userProfileStore';
 import { getBestMove, getBestMoveAsync } from '../ai/minimax';
 import { onlineManager } from '../services/onlineService';
 import { logger } from '../services/loggerService';
+import GameOverModal from '../components/GameOverModal';
 import {
   ArrowLeftIcon,
   RotateCwIcon,
@@ -69,6 +70,7 @@ export default function GameScreen({ onBack, onOpenSettings }: GameScreenProps) 
   const [showPiecesModal, setShowPiecesModal] = useState(false);
   const [showHistoryModal, setShowHistoryModal] = useState(false);
   const [showVsAiLevelModal, setShowVsAiLevelModal] = useState(false);
+  const [showGameOverModal, setShowGameOverModal] = useState(true);
   const userProfile = getUserProfile();
 
   // Android back swipe yoki tizim orqaga tugmasi bosilganda o'yin menyusini ochish
@@ -91,6 +93,34 @@ export default function GameScreen({ onBack, onOpenSettings }: GameScreenProps) 
   }, [drawOfferNotice, dispatch]);
 
   const isGameOver = status !== 'playing' && status !== 'check';
+
+  React.useEffect(() => {
+    if (isGameOver) {
+      setShowGameOverModal(true);
+    }
+  }, [isGameOver]);
+
+  const handleResignOnline = () => {
+    if (isGameOver) return;
+    const ok = window.confirm("Haqiqatan ham taslim boʻlmoqchimisiz? Raqibingizga gʻalaba, sizga magʻlubiyat yoziladi.");
+    if (!ok) return;
+    setShowMenuModal(false);
+    dispatch({ type: 'RESIGN' });
+    setShowGameOverModal(true);
+  };
+
+  const handleLeaveOnline = () => {
+    if (isGameOver) {
+      clearActiveMatch();
+      onBack();
+      return;
+    }
+    const ok = window.confirm("Oʻyindan chiqsangiz, raqibingizga texnik gʻalaba yoziladi, sizga esa magʻlubiyat. Chiqishni xohlaysizmi?");
+    if (!ok) return;
+    setShowMenuModal(false);
+    onBack();
+  };
+
   const isMyTurn = (gameMode === 'online' && onlinePlayerColor)
     ? currentTurn === onlinePlayerColor
     : (gameMode === 'vsAI')
@@ -403,27 +433,53 @@ export default function GameScreen({ onBack, onOpenSettings }: GameScreenProps) 
         </button>
       </div>
 
-      {/* ── 2. O'NG TOMONDAGI SUZUVCHI TUGMALAR (↶ Undo, ♟ 3D Donalar, 💡 Maslahat) — Screenshotdagi 1 ga 1 ── */}
+      {/* ── 2. O'NG TOMONDAGI SUZUVCHI TUGMALAR ── */}
       <div className="absolute top-6 sm:top-10 md:top-12 right-3 sm:right-6 md:right-8 z-40 flex flex-col gap-3 sm:gap-4 pointer-events-auto">
-        {/* Harakatni bekor qilish (↶ Undo) */}
-        <button
-          onClick={() => dispatch({ type: 'UNDO' })}
-          disabled={history.length === 0 || isGameOver || gameMode === 'online'}
-          className="w-11 h-11 sm:w-13 sm:h-13 md:w-14 md:h-14 rounded-2xl bg-black/65 hover:bg-black/85 disabled:opacity-25 disabled:pointer-events-none active:scale-95 border border-white/20 text-white shadow-[0_12px_28px_rgba(0,0,0,0.75)] flex items-center justify-center transition-all cursor-pointer backdrop-blur-md"
-          title={t('btn_undo')}
-        >
-          <UndoIcon size={24} />
-        </button>
+        {gameMode === 'online' ? (
+          <>
+            {/* Onlayn: Durang taklif qilish */}
+            <button
+              onClick={() => dispatch({ type: 'OFFER_DRAW' })}
+              disabled={isGameOver || drawOfferState === 'sent'}
+              className="w-11 h-11 sm:w-13 sm:h-13 md:w-14 md:h-14 rounded-2xl bg-black/65 hover:bg-black/85 disabled:opacity-30 disabled:pointer-events-none active:scale-95 border border-sky-500/50 text-sky-400 shadow-[0_12px_28px_rgba(0,0,0,0.75)] flex items-center justify-center transition-all cursor-pointer backdrop-blur-md"
+              title="Durang taklif qilish"
+            >
+              <HandshakeIcon size={24} />
+            </button>
 
-        {/* Maslahat olish (💡 Lightbulb Hint) */}
-        <button
-          onClick={handleGetHint}
-          disabled={isGameOver || hintLoading}
-          className="w-11 h-11 sm:w-13 sm:h-13 md:w-14 md:h-14 rounded-2xl bg-black/65 hover:bg-black/85 disabled:opacity-25 disabled:pointer-events-none active:scale-95 border border-white/20 text-amber-300 shadow-[0_12px_28px_rgba(0,0,0,0.75)] flex items-center justify-center transition-all cursor-pointer backdrop-blur-md"
-          title={t('btn_hint')}
-        >
-          <LightbulbIcon size={26} />
-        </button>
+            {/* Onlayn: Taslim bo'lish */}
+            <button
+              onClick={handleResignOnline}
+              disabled={isGameOver}
+              className="w-11 h-11 sm:w-13 sm:h-13 md:w-14 md:h-14 rounded-2xl bg-black/65 hover:bg-black/85 disabled:opacity-30 disabled:pointer-events-none active:scale-95 border border-red-500/50 text-red-400 shadow-[0_12px_28px_rgba(0,0,0,0.75)] flex items-center justify-center transition-all cursor-pointer backdrop-blur-md"
+              title="Taslim boʻlish"
+            >
+              <FlagIcon size={22} />
+            </button>
+          </>
+        ) : (
+          <>
+            {/* Harakatni bekor qilish (↶ Undo) */}
+            <button
+              onClick={() => dispatch({ type: 'UNDO' })}
+              disabled={history.length === 0 || isGameOver}
+              className="w-11 h-11 sm:w-13 sm:h-13 md:w-14 md:h-14 rounded-2xl bg-black/65 hover:bg-black/85 disabled:opacity-25 disabled:pointer-events-none active:scale-95 border border-white/20 text-white shadow-[0_12px_28px_rgba(0,0,0,0.75)] flex items-center justify-center transition-all cursor-pointer backdrop-blur-md"
+              title={t('btn_undo')}
+            >
+              <UndoIcon size={24} />
+            </button>
+
+            {/* Maslahat olish (💡 Lightbulb Hint) */}
+            <button
+              onClick={handleGetHint}
+              disabled={isGameOver || hintLoading}
+              className="w-11 h-11 sm:w-13 sm:h-13 md:w-14 md:h-14 rounded-2xl bg-black/65 hover:bg-black/85 disabled:opacity-25 disabled:pointer-events-none active:scale-95 border border-white/20 text-amber-300 shadow-[0_12px_28px_rgba(0,0,0,0.75)] flex items-center justify-center transition-all cursor-pointer backdrop-blur-md"
+              title={t('btn_hint')}
+            >
+              <LightbulbIcon size={26} />
+            </button>
+          </>
+        )}
       </div>
 
       {/* ── 3. YUQORI HOLAT XABARNOMALARI (Floating Status Indicators) ── */}
@@ -511,14 +567,34 @@ export default function GameScreen({ onBack, onOpenSettings }: GameScreenProps) 
           </div>
           <div className="flex items-center gap-1.5 shrink-0">
             <button
-              onClick={() => dispatch({ type: 'NEW_GAME' })}
+              onClick={() => setShowGameOverModal(true)}
+              className="px-2.5 py-1.5 rounded-xl bg-amber-500/20 hover:bg-amber-500/30 border border-amber-500/40 text-amber-300 font-bold text-xs cursor-pointer shadow-md transition-all active:scale-95 flex items-center gap-1"
+              title="Oʻyin natijasi va reytingni koʻrish"
+            >
+              <span>🏆</span>
+              <span>Natija</span>
+            </button>
+            <button
+              onClick={() => {
+                if (gameMode === 'online') {
+                  onlineManager.disconnect();
+                  dispatch({ type: 'SET_ONLINE_ROOM', roomCode: null, myColor: null });
+                  onBack();
+                } else {
+                  dispatch({ type: 'NEW_GAME' });
+                }
+              }}
               className="px-3 py-1.5 rounded-xl bg-[#81b64c] hover:bg-[#92c35a] text-white font-bold text-xs cursor-pointer shadow-md transition-all active:scale-95"
             >
-              Yangi oʻyin
+              {gameMode === 'online' ? "Yangi raqib" : "Yangi oʻyin"}
             </button>
             <button
               onClick={() => {
                 clearActiveMatch();
+                if (gameMode === 'online') {
+                  onlineManager.disconnect();
+                  dispatch({ type: 'SET_ONLINE_ROOM', roomCode: null, myColor: null });
+                }
                 onBack();
               }}
               className="px-3 py-1.5 rounded-xl bg-red-950/70 hover:bg-red-900/80 border border-red-800/70 text-red-300 font-bold text-xs cursor-pointer shadow-md transition-all active:scale-95 flex items-center gap-1"
@@ -626,19 +702,66 @@ export default function GameScreen({ onBack, onOpenSettings }: GameScreenProps) 
                     <span>Oʻyinni davom ettirish</span>
                   </button>
 
-                  {/* 2. Onlayn rejimida: Faqat Taslim Bo'lish (O'yindan Chiqish) */}
+                  {/* 2. Onlayn rejimida: Durang taklif qilish, Taslim bo'lish, O'yindan chiqish */}
                   {gameMode === 'online' ? (
-                    <button
-                      onClick={() => {
-                        setShowMenuModal(false);
-                        dispatch({ type: 'RESIGN' });
-                        onBack();
-                      }}
-                      className="w-full py-3 px-4 rounded-xl bg-red-900/30 hover:bg-red-900/50 border border-red-700/60 text-red-300 font-bold text-xs flex items-center justify-center gap-2 cursor-pointer transition-all active:scale-95"
-                    >
-                      <FlagIcon size={16} />
-                      <span>Taslim boʻlish (Oʻyindan chiqish)</span>
-                    </button>
+                    <>
+                      {/* Durang taklif qilish */}
+                      <button
+                        onClick={() => {
+                          setShowMenuModal(false);
+                          dispatch({ type: 'OFFER_DRAW' });
+                        }}
+                        disabled={drawOfferState === 'sent'}
+                        className="w-full py-2.5 px-3.5 rounded-xl bg-sky-950/40 hover:bg-sky-900/60 border border-sky-600/50 disabled:opacity-30 disabled:pointer-events-none text-sky-200 font-bold text-xs flex items-center justify-between cursor-pointer transition-all active:scale-95"
+                      >
+                        <div className="flex items-center gap-2.5">
+                          <HandshakeIcon size={16} className="text-sky-400 shrink-0" />
+                          <div className="text-left">
+                            <div className="font-bold text-sky-200 text-xs">Durang taklif qilish</div>
+                            <div className="text-[10px] text-sky-300/70 font-normal">
+                              {drawOfferState === 'sent' ? "Javob kutilmoqda..." : "Raqib bilan teng natijaga rozi boʻlish"}
+                            </div>
+                          </div>
+                        </div>
+                        <span className="text-base">🤝</span>
+                      </button>
+
+                      {/* Taslim bo'lish */}
+                      <button
+                        onClick={() => {
+                          setShowMenuModal(false);
+                          handleResignOnline();
+                        }}
+                        className="w-full py-2.5 px-3.5 rounded-xl bg-amber-950/40 hover:bg-amber-900/60 border border-amber-600/50 text-amber-200 font-bold text-xs flex items-center justify-between cursor-pointer transition-all active:scale-95"
+                      >
+                        <div className="flex items-center gap-2.5">
+                          <FlagIcon size={16} className="text-amber-400 shrink-0" />
+                          <div className="text-left">
+                            <div className="font-bold text-amber-200 text-xs">Taslim boʻlish</div>
+                            <div className="text-[10px] text-amber-300/70 font-normal">Raqibga gʻalaba yoziladi</div>
+                          </div>
+                        </div>
+                        <span className="text-base">🏳️</span>
+                      </button>
+
+                      {/* O'yindan chiqish (Tark etish) */}
+                      <button
+                        onClick={() => {
+                          setShowMenuModal(false);
+                          handleLeaveOnline();
+                        }}
+                        className="w-full py-2.5 px-3.5 rounded-xl bg-red-950/40 hover:bg-red-900/60 border border-red-700/60 text-red-300 font-bold text-xs flex items-center justify-between cursor-pointer transition-all active:scale-95"
+                      >
+                        <div className="flex items-center gap-2.5">
+                          <ArrowLeftIcon size={16} className="text-red-400 shrink-0" />
+                          <div className="text-left">
+                            <div className="font-bold text-red-200 text-xs">Oʻyindan chiqish (Tark etish)</div>
+                            <div className="text-[10px] text-red-300/70 font-normal">Texnik magʻlubiyat yoziladi</div>
+                          </div>
+                        </div>
+                        <span className="text-base">🚪</span>
+                      </button>
+                    </>
                   ) : (
                     /* 3. Bot bilan yoki Mahalliy rejimda: 
                           - Keyinroq davom ettirish (bosh sahifaga saqlab chiqish)
@@ -668,6 +791,7 @@ export default function GameScreen({ onBack, onOpenSettings }: GameScreenProps) 
                         onClick={() => {
                           setShowMenuModal(false);
                           dispatch({ type: 'RESIGN' });
+                          setShowGameOverModal(true);
                         }}
                         className="w-full py-2.5 px-3.5 rounded-xl bg-red-950/40 hover:bg-red-900/50 border border-red-800/50 text-red-300 font-bold text-xs flex items-center justify-between cursor-pointer transition-all active:scale-95"
                       >
@@ -911,6 +1035,13 @@ export default function GameScreen({ onBack, onOpenSettings }: GameScreenProps) 
           </div>
         </div>
       )}
+
+      {/* ── 8. OʻYIN YAKUNI MODALI (G'alaba / Mag'lubiyat / Durang va Reyting hisob-kitobi) ── */}
+      <GameOverModal
+        onExit={onBack}
+        isOpen={showGameOverModal}
+        onClose={() => setShowGameOverModal(false)}
+      />
 
     </div>
   );

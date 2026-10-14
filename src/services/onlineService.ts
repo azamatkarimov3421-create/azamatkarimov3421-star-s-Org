@@ -548,7 +548,7 @@ class OnlineManager {
         });
 
         ch.on('presence', { event: 'leave' }, () => {
-          if (this.status === 'connected') {
+          if (this.roomCode) {
             this.notifyStatus('disconnected', `${this.opponentName} aloqadan uzildi`);
             this.notifyMessage({ type: 'LEAVE' });
           }
@@ -631,7 +631,7 @@ class OnlineManager {
         });
 
         ch.on('presence', { event: 'leave' }, () => {
-          if (this.status === 'connected') {
+          if (this.roomCode) {
             this.notifyStatus('disconnected', `${this.opponentName} aloqadan uzildi`);
             this.notifyMessage({ type: 'LEAVE' });
           }
@@ -692,19 +692,21 @@ class OnlineManager {
   /**
    * Harakat yoki xabarni raqibga yuborish
    */
-  public sendMessage(msg: MessageType) {
+  public sendMessage(msg: MessageType): Promise<any> {
     if (this.channel) {
       try {
-        this.channel.send({
+        return this.channel.send({
           type: 'broadcast',
           event: 'game_event',
           payload: msg,
         });
       } catch (e) {
         console.error('Xabar yuborishda xato:', e);
+        return Promise.resolve();
       }
     } else {
       console.warn('Supabase kanali faol emas, xabar yuborilmadi:', msg);
+      return Promise.resolve();
     }
   }
 
@@ -845,21 +847,49 @@ class OnlineManager {
   }
 
   /**
-   * Aloqani to'xtatish
+   * Xonani tark etish va raqibga zudlik bilan xabar jo'natish
    */
-  public disconnect() {
-    this.stopMatchmaking();
+  public async leaveGame(): Promise<void> {
     if (this.channel) {
       try {
-        this.channel.send({
+        await this.channel.send({
           type: 'broadcast',
           event: 'game_event',
           payload: { type: 'LEAVE' },
         });
-        this.channel.unsubscribe();
-        supabase.removeChannel(this.channel);
-      } catch {}
+        await this.channel.untrack();
+      } catch (e) {
+        console.warn('leaveGame send error:', e);
+      }
+      // WebSocket uzatmasi serverga yetib borishi uchun 200ms kutish
+      await new Promise((r) => setTimeout(r, 200));
+    }
+    this.disconnect();
+  }
+
+  /**
+   * Aloqani to'xtatish (Kanalni xavfsiz va ishonchli tozalash)
+   */
+  public disconnect() {
+    this.stopMatchmaking();
+    if (this.channel) {
+      const ch = this.channel;
       this.channel = null;
+      try {
+        ch.send({
+          type: 'broadcast',
+          event: 'game_event',
+          payload: { type: 'LEAVE' },
+        });
+        ch.untrack();
+      } catch {}
+      // WebSocket buferidagi xabar chiqib ketishiga imkon berish uchun 400ms kechiktirib yopamiz
+      setTimeout(() => {
+        try {
+          ch.unsubscribe();
+          supabase.removeChannel(ch);
+        } catch {}
+      }, 400);
     }
     this.status = 'idle';
     this.roomCode = null;

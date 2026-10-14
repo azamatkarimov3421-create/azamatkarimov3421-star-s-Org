@@ -179,6 +179,7 @@ function AppContent() {
           totalMoves: Math.ceil((state.game.moveHistory?.length || 0) / 2),
           reason: 'Oʻyindan chiqildi',
         });
+        onlineManager.sendMessage({ type: 'LEAVE' });
       }
       onlineManager.disconnect();
       dispatch({ type: 'SET_ONLINE_ROOM', roomCode: null, myColor: null });

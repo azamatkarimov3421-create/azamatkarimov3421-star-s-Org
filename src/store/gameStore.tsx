@@ -482,17 +482,20 @@ function gameReducer(state: AppState, action: Action): AppState {
     }
 
     case 'REMOTE_RESIGN': {
+      if (state.game.status !== 'playing' && state.game.status !== 'check') return state;
       const winnerStatus = state.onlinePlayerColor === 'white' ? 'black_resigned' as const : 'white_resigned' as const;
       playGameOverSound();
       speakUzbek("Raqib taslim boʻldi! Siz gʻalaba qozondingiz.");
       return {
         ...state,
+        drawOfferState: 'none',
+        drawOfferNotice: null,
         game: { ...state.game, status: winnerStatus },
       };
     }
 
     case 'REMOTE_PLAYER_LEFT': {
-      if (state.gameMode !== 'online' || !state.roomCode) return state;
+      if (state.gameMode !== 'online') return state;
       if (state.game.status !== 'playing' && state.game.status !== 'check') return state;
 
       const winnerStatus = state.onlinePlayerColor === 'white' ? ('black_left' as const) : ('white_left' as const);
@@ -875,7 +878,12 @@ function gameReducer(state: AppState, action: Action): AppState {
       const newGame = { ...state.game, status: resignStatus };
       playGameOverSound();
       speakUzbek(resigningColor === state.onlinePlayerColor ? 'Siz taslim boʻldingiz.' : 'Raqib taslim boʻldi.');
-      return { ...state, game: newGame };
+      return {
+        ...state,
+        drawOfferState: 'none',
+        drawOfferNotice: null,
+        game: newGame,
+      };
     }
 
     case 'DESELECT':

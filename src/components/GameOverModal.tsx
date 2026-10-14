@@ -12,9 +12,11 @@ import { useTranslation } from '../i18n/translations';
 
 interface GameOverModalProps {
   onExit?: () => void;
+  isOpen?: boolean;
+  onClose?: () => void;
 }
 
-export default function GameOverModal({ onExit }: GameOverModalProps = {}) {
+export default function GameOverModal({ onExit, isOpen, onClose }: GameOverModalProps = {}) {
   const { state, dispatch } = useGame();
   const { t } = useTranslation();
   const { game, gameMode, aiColor, aiDepth, aiWhiteDepth, aiBlackDepth, onlinePlayerColor, roomCode } = state;
@@ -24,6 +26,12 @@ export default function GameOverModal({ onExit }: GameOverModalProps = {}) {
   const [saved, setSaved] = useState(false);
   const [recentGames, setRecentGames] = useState<RecentGame[]>([]);
   const [ratingInfo, setRatingInfo] = useState<{ newRating: number; delta: number } | null>(null);
+
+  useEffect(() => {
+    if (isOpen) {
+      setDismissed(false);
+    }
+  }, [isOpen]);
 
   useEffect(() => {
     setRecentGames(getRecentGames());
@@ -56,7 +64,7 @@ export default function GameOverModal({ onExit }: GameOverModalProps = {}) {
         white_player: whiteName,
         black_player: blackName,
         winner: winnerName,
-        game_mode: gameMode === 'aiVsAi' ? 'Bot vs Bot' : gameMode === 'vsAI' ? 'vs AI' : '2 Kishi',
+        game_mode: gameMode === 'aiVsAi' ? 'Bot vs Bot' : gameMode === 'vsAI' ? 'vs AI' : gameMode === 'online' ? 'Online' : '2 Kishi',
         total_moves: Math.ceil(moveHistory.length / 2),
         status,
       }).then(() => {
@@ -105,7 +113,7 @@ export default function GameOverModal({ onExit }: GameOverModalProps = {}) {
   }, [status, saved, game.currentTurn, gameMode, aiDepth, aiWhiteDepth, aiBlackDepth, moveHistory.length, onlinePlayerColor, state.isFlipped, roomCode]);
 
   // O'yin davom etayotgan bo'lsa yoki modal vaqtincha yopilgan bo'lsa
-  if (status === 'playing' || status === 'check' || dismissed) {
+  if (status === 'playing' || status === 'check' || (isOpen !== undefined ? !isOpen : dismissed)) {
     return null;
   }
 
@@ -163,15 +171,39 @@ export default function GameOverModal({ onExit }: GameOverModalProps = {}) {
       break;
     }
     case 'white_resigned': {
-      title = gameMode === 'aiVsAi' ? "Qora Bot G'alaba Qozondi!" : "Qora G'alaba Qozondi!";
-      subtitle = gameMode === 'aiVsAi' ? "O'yin to'xtatildi." : "Oq donalar taslim bo'ldi.";
-      icon = '🏳️';
+      if (gameMode === 'online') {
+        const isPlayerWinner = onlinePlayerColor === 'black';
+        title = isPlayerWinner ? "Siz Gʻalaba Qozondingiz! 🏆" : "Siz Taslim Boʻldingiz";
+        subtitle = isPlayerWinner
+          ? "Raqib taslim boʻldi. Gʻalaba va reyting sizga yozildi!"
+          : "Oʻyin yakunlandi va magʻlubiyat qayd etildi.";
+        icon = isPlayerWinner ? '🏆' : '🏳️';
+        badgeColor = isPlayerWinner
+          ? 'bg-emerald-500/20 text-emerald-300 border-emerald-500/40'
+          : 'bg-rose-500/20 text-rose-300 border-rose-500/40';
+      } else {
+        title = gameMode === 'aiVsAi' ? "Qora Bot G'alaba Qozondi!" : "Qora G'alaba Qozondi!";
+        subtitle = gameMode === 'aiVsAi' ? "O'yin to'xtatildi." : "Oq donalar taslim bo'ldi.";
+        icon = '🏳️';
+      }
       break;
     }
     case 'black_resigned': {
-      title = gameMode === 'aiVsAi' ? "Oq Bot G'alaba Qozondi!" : "Oq G'alaba Qozondi!";
-      subtitle = gameMode === 'aiVsAi' ? "O'yin to'xtatildi." : "Qora donalar taslim bo'ldi.";
-      icon = '🏳️';
+      if (gameMode === 'online') {
+        const isPlayerWinner = onlinePlayerColor === 'white';
+        title = isPlayerWinner ? "Siz Gʻalaba Qozondingiz! 🏆" : "Siz Taslim Boʻldingiz";
+        subtitle = isPlayerWinner
+          ? "Raqib taslim boʻldi. Gʻalaba va reyting sizga yozildi!"
+          : "Oʻyin yakunlandi va magʻlubiyat qayd etildi.";
+        icon = isPlayerWinner ? '🏆' : '🏳️';
+        badgeColor = isPlayerWinner
+          ? 'bg-emerald-500/20 text-emerald-300 border-emerald-500/40'
+          : 'bg-rose-500/20 text-rose-300 border-rose-500/40';
+      } else {
+        title = gameMode === 'aiVsAi' ? "Oq Bot G'alaba Qozondi!" : "Oq G'alaba Qozondi!";
+        subtitle = gameMode === 'aiVsAi' ? "O'yin to'xtatildi." : "Qora donalar taslim bo'ldi.";
+        icon = '🏳️';
+      }
       break;
     }
     case 'white_timeout': {
@@ -189,7 +221,7 @@ export default function GameOverModal({ onExit }: GameOverModalProps = {}) {
     case 'white_left': {
       const isPlayerWinner = onlinePlayerColor === 'black';
       title = isPlayerWinner ? "Siz G'alaba Qozondingiz! 🏆" : "Qora G'alaba Qozondi!";
-      subtitle = "Oq donalar oʻyindan chiqib ketdi. Gʻalaba sizga yozildi!";
+      subtitle = isPlayerWinner ? "Raqib oʻyindan chiqib ketdi. Texnik gʻalaba sizga yozildi!" : "Oq donalar oʻyindan chiqib ketdi.";
       icon = '🏆';
       badgeColor = 'bg-emerald-500/20 text-emerald-300 border-emerald-500/40';
       break;
@@ -197,7 +229,7 @@ export default function GameOverModal({ onExit }: GameOverModalProps = {}) {
     case 'black_left': {
       const isPlayerWinner = onlinePlayerColor === 'white';
       title = isPlayerWinner ? "Siz G'alaba Qozondingiz! 🏆" : "Oq G'alaba Qozondi!";
-      subtitle = "Qora donalar oʻyindan chiqib ketdi. Gʻalaba sizga yozildi!";
+      subtitle = isPlayerWinner ? "Raqib oʻyindan chiqib ketdi. Texnik gʻalaba sizga yozildi!" : "Qora donalar oʻyindan chiqib ketdi.";
       icon = '🏆';
       badgeColor = 'bg-emerald-500/20 text-emerald-300 border-emerald-500/40';
       break;
@@ -299,11 +331,17 @@ export default function GameOverModal({ onExit }: GameOverModalProps = {}) {
             onClick={() => {
               setDismissed(false);
               setRatingInfo(null);
-              dispatch({ type: 'NEW_GAME' });
+              if (gameMode === 'online') {
+                onlineManager.disconnect();
+                dispatch({ type: 'SET_ONLINE_ROOM', roomCode: null, myColor: null });
+                if (onExit) onExit();
+              } else {
+                dispatch({ type: 'NEW_GAME' });
+              }
             }}
             className="w-full py-3 px-4 bg-[#81b64c] hover:bg-[#92c35a] text-white font-black text-sm rounded-xl shadow-[0_4px_0_#537a2e] active:translate-y-1 active:shadow-[0_0_0_#537a2e] transition-all flex items-center justify-center gap-2 cursor-pointer"
           >
-            <span>{t('btn_new_game')}</span>
+            <span>{gameMode === 'online' ? "Yangi Raqib Qidirish" : t('btn_new_game')}</span>
           </button>
 
           {/* 2. O'yindan Chiqish (Bosh Sahifa) */}
@@ -312,7 +350,12 @@ export default function GameOverModal({ onExit }: GameOverModalProps = {}) {
               setDismissed(true);
               setRatingInfo(null);
               clearActiveMatch();
-              dispatch({ type: 'NEW_GAME' });
+              if (gameMode === 'online') {
+                onlineManager.disconnect();
+                dispatch({ type: 'SET_ONLINE_ROOM', roomCode: null, myColor: null });
+              } else {
+                dispatch({ type: 'NEW_GAME' });
+              }
               if (onExit) onExit();
             }}
             className="w-full py-2.5 px-4 bg-red-950/40 hover:bg-red-900/60 border border-red-800/60 text-red-300 hover:text-white font-bold text-xs rounded-xl shadow-[0_2px_0_#1a0f0d] active:translate-y-0.5 transition-all flex items-center justify-center gap-2 cursor-pointer"
@@ -322,7 +365,10 @@ export default function GameOverModal({ onExit }: GameOverModalProps = {}) {
 
           {/* 3. Doskani Ko'zdan Kechirish */}
           <button
-            onClick={() => setDismissed(true)}
+            onClick={() => {
+              setDismissed(true);
+              if (onClose) onClose();
+            }}
             className="w-full py-2.5 px-4 bg-[#383531] hover:bg-[#45423c] text-[#c3c2be] hover:text-white font-bold text-xs rounded-xl border border-[#383531] shadow-[0_2px_0_#21201d] active:translate-y-0.5 transition-all flex items-center justify-center gap-2 cursor-pointer"
           >
             <span>🔍 {t('btn_review_board')}</span>
