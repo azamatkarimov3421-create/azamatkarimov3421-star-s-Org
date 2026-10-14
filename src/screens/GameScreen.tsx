@@ -493,28 +493,34 @@ export default function GameScreen({ onBack, onOpenSettings }: GameScreenProps) 
       {showMenuModal && (
         <div className="fixed inset-0 bg-black/80 backdrop-blur-md z-50 flex items-center justify-center p-4 animate-fadeIn">
           <div className="relative w-full max-w-sm bg-[#1e1b18]/95 border border-[#3e342a] rounded-3xl p-5 shadow-2xl flex flex-col gap-4 text-white">
+            {/* Modal Sarlavhasi */}
             <div className="flex items-center justify-between pb-3 border-b border-[#3e342a]">
               <div className="flex items-center gap-2">
                 <span className="w-2.5 h-2.5 rounded-full bg-[#81b64c] animate-pulse" />
-                <h3 className="font-black text-white text-base tracking-wide">{modeTitle}</h3>
+                <h3 className="font-black text-white text-base tracking-wide">
+                  {gameMode === 'online' ? "Onlayn oʻyin" : "Oʻyin Menusi"}
+                </h3>
               </div>
               <button
                 onClick={() => setShowMenuModal(false)}
-                className="w-8 h-8 rounded-xl bg-[#2a241e] hover:bg-[#383129] text-[#c3c2be] hover:text-white font-bold flex items-center justify-center text-sm cursor-pointer"
+                className="w-8 h-8 rounded-xl bg-[#2a241e] hover:bg-[#383129] text-[#c3c2be] hover:text-white font-bold flex items-center justify-center text-sm cursor-pointer transition-all active:scale-95"
+                title="Yopish"
               >
                 ✕
               </button>
             </div>
 
-            {/* O'yin ma'lumotlari */}
-            <div className="bg-[#141210] p-3 rounded-2xl border border-[#2e261f] flex items-center justify-between">
-              <div className="flex items-center gap-2.5">
-                <div className="w-9 h-9 rounded-xl bg-[#2a241e] border border-[#3e342a] flex items-center justify-center text-[#81b64c]">
-                  {gameMode === 'vsAI' || gameMode === 'aiVsAi' ? <BotIcon size={20} /> : <UserIcon size={20} />}
+            {/* O'yin haqida qisqa ma'lumot (ixcham 1 qator) */}
+            <div className="bg-[#141210] px-3.5 py-2.5 rounded-2xl border border-[#2e261f] flex items-center justify-between">
+              <div className="flex items-center gap-2.5 min-w-0">
+                <div className="w-8 h-8 rounded-xl bg-[#2a241e] border border-[#3e342a] flex items-center justify-center text-[#81b64c] shrink-0">
+                  {gameMode === 'vsAI' || gameMode === 'aiVsAi' ? <BotIcon size={18} /> : <UserIcon size={18} />}
                 </div>
-                <div>
-                  <div className="text-xs font-black text-white">{opponentName}</div>
-                  <div className="text-[10px] text-[#9b9893] font-mono">{opponentRating} {t('rating_label')}</div>
+                <div className="min-w-0">
+                  <div className="text-xs font-black text-white truncate">{opponentName}</div>
+                  <div className="text-[10px] text-[#9b9893] font-mono">
+                    {Math.ceil(moveHistory.length / 2)}-yurish • {currentTurn === 'white' ? "Oqlar navbati" : "Qoralar navbati"}
+                  </div>
                 </div>
               </div>
               {gameMode === 'vsAI' && (
@@ -523,115 +529,94 @@ export default function GameScreen({ onBack, onOpenSettings }: GameScreenProps) 
                     setShowMenuModal(false);
                     setShowVsAiLevelModal(true);
                   }}
-                  className="px-2.5 py-1 rounded-lg bg-amber-500/20 hover:bg-amber-500/30 border border-amber-500/40 text-amber-300 text-[11px] font-black cursor-pointer"
+                  className="px-2.5 py-1 rounded-lg bg-amber-500/20 hover:bg-amber-500/30 border border-amber-500/40 text-amber-300 text-[11px] font-black cursor-pointer shrink-0"
+                  title="Bot darajasi"
                 >
                   🎯 {AI_LEVEL_NAMES[aiDepth]}
                 </button>
               )}
             </div>
 
-            {/* O'yinchilar profillari, soatlari va baholanish */}
-            <div className="flex flex-col gap-2 p-2 rounded-2xl bg-[#141210] border border-[#2e261f]">
-              <PlayerCard
-                playerColor={topColor}
-                position="top"
-                customName={opponentName}
-                customRating={opponentRating}
-              />
-              <div className="py-1">
-                <div className="text-[10px] font-bold text-zinc-400 mb-1 flex items-center justify-between">
-                  <span>{t('eval_label') || 'Holat baholanishi'}:</span>
-                  <span className="text-amber-300 font-mono text-[10px]">{moveHistory.length} ta yurish</span>
-                </div>
-                <EvalBar orientation="horizontal" />
-              </div>
-              <PlayerCard
-                playerColor={bottomColor}
-                position="bottom"
-                customName={bottomName}
-                customRating={bottomRating}
-              />
-            </div>
-
-            {/* Asosiy amallar ro'yxati */}
-            <div className="flex flex-col gap-2">
-              {/* Ekranni 90° burish */}
+            {/* ── ASOSIY AMALLAR RO'YXATI ── */}
+            <div className="flex flex-col gap-2.5 pt-1">
+              {/* 1. O'yinni davom ettirish (Hozir o'ynash) */}
               <button
-                onClick={() => {
-                  setShowMenuModal(false);
-                  handleToggleOrientation();
-                }}
-                className="w-full py-2.5 px-3.5 rounded-xl bg-[#2a241e] hover:bg-[#383129] border border-[#3e342a] text-white font-bold text-xs flex items-center justify-between cursor-pointer transition-all active:scale-95"
+                onClick={() => setShowMenuModal(false)}
+                className="w-full py-3 px-4 rounded-xl bg-gradient-to-r from-[#6cb83e] to-[#559b2d] hover:from-[#76c444] hover:to-[#5ea833] text-white font-black text-xs sm:text-sm flex items-center justify-center gap-2 shadow-lg cursor-pointer transition-all active:scale-95"
               >
-                <div className="flex items-center gap-2.5">
-                  <span className="text-amber-400 font-black text-xs">90°</span>
-                  <span>Ekranni 90° burish (Yonboshcha / Tikka)</span>
-                </div>
+                <PlayIcon size={18} className="fill-white" />
+                <span>Oʻyinni davom ettirish</span>
               </button>
 
-              {/* 2D / 3D almashish */}
-              <button
-                onClick={() => dispatch({ type: 'SET_3D', enabled: !is3D })}
-                className="w-full py-2.5 px-3.5 rounded-xl bg-[#2a241e] hover:bg-[#383129] border border-[#3e342a] text-white font-bold text-xs flex items-center justify-between cursor-pointer transition-all active:scale-95"
-              >
-                <div className="flex items-center gap-2.5">
-                  <span>🎲</span>
-                  <span>{is3D ? '2D Rejimga oʻtish' : '3D Rejimga oʻtish'}</span>
-                </div>
-                <span className="text-[10px] px-2 py-0.5 rounded-md bg-[#81b64c]/20 text-[#81b64c] font-black">
-                  {is3D ? '3D' : '2D'}
-                </span>
-              </button>
+              {/* 2. Onlayn rejimida: Faqat Taslim Bo'lish (O'yindan Chiqish) */}
+              {gameMode === 'online' ? (
+                <button
+                  onClick={() => {
+                    setShowMenuModal(false);
+                    dispatch({ type: 'RESIGN' });
+                    onBack();
+                  }}
+                  disabled={isGameOver}
+                  className="w-full py-3 px-4 rounded-xl bg-red-900/30 hover:bg-red-900/50 border border-red-700/60 text-red-300 font-bold text-xs flex items-center justify-center gap-2 cursor-pointer transition-all active:scale-95 disabled:opacity-30"
+                >
+                  <FlagIcon size={16} />
+                  <span>Taslim boʻlish (Oʻyindan chiqish)</span>
+                </button>
+              ) : (
+                /* 3. Bot bilan yoki Mahalliy rejimda: 
+                      - Keyinroq davom ettirish (bosh sahifaga saqlab chiqish)
+                      - O'yinni yutqazish (Taslim bo'lish)
+                */
+                <>
+                  {/* Keyinroq davom ettirish */}
+                  <button
+                    onClick={() => {
+                      setShowMenuModal(false);
+                      onBack();
+                    }}
+                    className="w-full py-2.5 px-3.5 rounded-xl bg-[#2a241e] hover:bg-[#383129] border border-[#3e342a] text-white font-bold text-xs flex items-center justify-between cursor-pointer transition-all active:scale-95"
+                  >
+                    <div className="flex items-center gap-2.5">
+                      <ClockIcon size={16} className="text-amber-400 shrink-0" />
+                      <div className="text-left">
+                        <div className="font-bold text-white text-xs">Keyinroq davom ettirish</div>
+                        <div className="text-[10px] text-zinc-400 font-normal">Holat saqlanadi, bosh sahifadan kirasiz</div>
+                      </div>
+                    </div>
+                    <ArrowLeftIcon size={16} className="text-zinc-400 shrink-0" />
+                  </button>
 
-              {/* Qayta yangi o'yin */}
-              <button
-                onClick={() => {
-                  setShowMenuModal(false);
-                  dispatch({ type: 'NEW_GAME' });
-                }}
-                className="w-full py-2.5 px-3.5 rounded-xl bg-[#2a241e] hover:bg-[#383129] border border-[#3e342a] text-white font-bold text-xs flex items-center gap-2.5 cursor-pointer transition-all active:scale-95"
-              >
-                <RotateCwIcon size={16} className="text-amber-400" />
-                <span>{t('btn_restart')}</span>
-              </button>
+                  {/* O'yinni yutqazish (Taslim bo'lish) */}
+                  <button
+                    onClick={() => {
+                      setShowMenuModal(false);
+                      dispatch({ type: 'RESIGN' });
+                    }}
+                    disabled={isGameOver}
+                    className="w-full py-2.5 px-3.5 rounded-xl bg-red-950/40 hover:bg-red-900/50 border border-red-800/50 text-red-300 font-bold text-xs flex items-center justify-between cursor-pointer transition-all active:scale-95 disabled:opacity-30"
+                  >
+                    <div className="flex items-center gap-2.5">
+                      <FlagIcon size={16} className="text-red-400 shrink-0" />
+                      <div className="text-left">
+                        <div className="font-bold text-red-300 text-xs">Oʻyinni yutqazish (Taslim boʻlish)</div>
+                        <div className="text-[10px] text-red-400/80 font-normal">Oʻyin yakunlanadi va magʻlubiyat yoziladi</div>
+                      </div>
+                    </div>
+                  </button>
 
-              {/* Harakatlar tarixi */}
-              <button
-                onClick={() => {
-                  setShowMenuModal(false);
-                  setShowHistoryModal(true);
-                }}
-                className="w-full py-2.5 px-3.5 rounded-xl bg-[#2a241e] hover:bg-[#383129] border border-[#3e342a] text-white font-bold text-xs flex items-center gap-2.5 cursor-pointer transition-all active:scale-95"
-              >
-                <ScrollTextIcon size={16} className="text-sky-400" />
-                <span>{t('history_title')}</span>
-              </button>
-
-              {/* Durang taklif qilish */}
-              <button
-                onClick={() => {
-                  setShowMenuModal(false);
-                  dispatch({ type: 'OFFER_DRAW' });
-                }}
-                disabled={isGameOver}
-                className="w-full py-2.5 px-3.5 rounded-xl bg-[#2a241e] hover:bg-[#383129] disabled:opacity-30 border border-[#3e342a] text-white font-bold text-xs flex items-center gap-2.5 cursor-pointer transition-all active:scale-95"
-              >
-                <HandshakeIcon size={16} className="text-blue-400" />
-                <span>{t('btn_draw')}</span>
-              </button>
-
-              {/* Taslim bo'lish */}
-              <button
-                onClick={() => {
-                  setShowMenuModal(false);
-                  dispatch({ type: 'RESIGN' });
-                }}
-                disabled={isGameOver}
-                className="w-full py-2.5 px-3.5 rounded-xl bg-[#2a241e] hover:bg-[#383129] disabled:opacity-30 border border-[#3e342a] text-[#e74c3c] font-bold text-xs flex items-center gap-2.5 cursor-pointer transition-all active:scale-95"
-              >
-                <FlagIcon size={16} />
-                <span>{t('btn_resign')}</span>
-              </button>
+                  {/* Yangi o'yin boshlash */}
+                  <button
+                    onClick={() => {
+                      setShowMenuModal(false);
+                      dispatch({ type: 'NEW_GAME' });
+                    }}
+                    className="w-full py-2 px-3 rounded-xl bg-[#231e19] hover:bg-[#2e2721] border border-[#362d24] text-zinc-300 font-semibold text-xs flex items-center justify-center gap-2 cursor-pointer transition-all active:scale-95"
+                  >
+                    <RotateCwIcon size={14} className="text-amber-400" />
+                    <span>Yangi oʻyin boshlash</span>
+                  </button>
+                </>
+              )}
 
               {/* Sozlamalar */}
               {onOpenSettings && (
@@ -640,24 +625,12 @@ export default function GameScreen({ onBack, onOpenSettings }: GameScreenProps) 
                     setShowMenuModal(false);
                     onOpenSettings();
                   }}
-                  className="w-full py-2.5 px-3.5 rounded-xl bg-[#2a241e] hover:bg-[#383129] border border-[#3e342a] text-white font-bold text-xs flex items-center gap-2.5 cursor-pointer transition-all active:scale-95"
+                  className="w-full py-1.5 px-3 text-zinc-400 hover:text-white text-[11px] font-bold flex items-center justify-center gap-1.5 cursor-pointer transition-all"
                 >
-                  <SettingsIcon size={16} className="text-zinc-400" />
+                  <SettingsIcon size={13} />
                   <span>{t('nav_settings')}</span>
                 </button>
               )}
-
-              {/* Bosh sahifaga chiqish */}
-              <button
-                onClick={() => {
-                  setShowMenuModal(false);
-                  onBack();
-                }}
-                className="w-full mt-1 py-2.5 px-3.5 rounded-xl bg-red-900/30 hover:bg-red-900/50 border border-red-700/50 text-red-300 font-bold text-xs flex items-center gap-2.5 cursor-pointer transition-all active:scale-95"
-              >
-                <ArrowLeftIcon size={16} />
-                <span>Bosh sahifaga chiqish</span>
-              </button>
             </div>
           </div>
         </div>
