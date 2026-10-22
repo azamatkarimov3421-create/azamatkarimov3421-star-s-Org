@@ -276,7 +276,7 @@ export default function Board3D({
     renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
     renderer.setClearColor(0x000000, 0); // 100% shaffof fon
     renderer.toneMapping = THREE.ACESFilmicToneMapping;
-    renderer.toneMappingExposure = 1.10;
+    renderer.toneMappingExposure = 1.0;
     renderer.shadowMap.enabled = true;
     renderer.shadowMap.type = THREE.PCFSoftShadowMap;
     rendererRef.current = renderer;
@@ -311,10 +311,10 @@ export default function Board3D({
     updateCameraForAspect(width, height);
 
     // ── YORUG'LIK (Yumshoq, ko'zni qamashtirmaydigan va yaltiramaydigan yoritish) ──
-    const amb = new THREE.AmbientLight(0xfff8f0, 1.25);
+    const amb = new THREE.AmbientLight(0xfff8ee, 1.15);
     scene.add(amb);
 
-    const key = new THREE.DirectionalLight(0xfff8ea, 1.15);
+    const key = new THREE.DirectionalLight(0xfffae8, 1.10);
     key.position.set(5, 22, 6);
     key.castShadow = true;
     key.shadow.mapSize.width = 2048;
@@ -330,16 +330,16 @@ export default function Board3D({
     key.shadow.radius = 2.5;
     scene.add(key);
 
-    const fill = new THREE.DirectionalLight(0xdbe9ff, 0.45);
+    const fill = new THREE.DirectionalLight(0xfff6ec, 0.38);
     fill.position.set(-8, 14, 6);
     scene.add(fill);
 
     // Qora donalarning orqa siluetini ko'rsatish uchun yumshoq yorug'lik (doskada yaltirash hosil qilmaydi)
-    const blackKey = new THREE.DirectionalLight(0xfff5ea, 0.45);
+    const blackKey = new THREE.DirectionalLight(0xfff5ea, 0.40);
     blackKey.position.set(0, 20, -5);
     scene.add(blackKey);
 
-    const rimLight = new THREE.DirectionalLight(0xe4f2ff, 0.32);
+    const rimLight = new THREE.DirectionalLight(0xfff5ec, 0.28);
     rimLight.position.set(0, 15, -12);
     scene.add(rimLight);
 
@@ -378,15 +378,15 @@ export default function Board3D({
 
     const lightMat = new THREE.MeshStandardMaterial({
       map: lightTex,
-      roughness: 0.85,
+      roughness: 0.82,
       metalness: 0.0,
-      color: 0xffffff,
+      color: new THREE.Color(0xfff4c6), // Oq kataklarni yanada iliq sarg'ish-oq / mayin fil suyagi qiladi
     });
     const darkMat = new THREE.MeshStandardMaterial({
       map: darkTex,
-      roughness: 0.82,
+      roughness: 0.80,
       metalness: 0.0,
-      color: 0xffffff,
+      color: new THREE.Color(0xfff5ea),
     });
 
     const sqGeo = new THREE.BoxGeometry(SQ_SIZE, 0.035, SQ_SIZE);
