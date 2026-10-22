@@ -1,5 +1,5 @@
 // =====================================================
-// NUR SHAXMAT 100 — Haqiqiy 3D Three.js Dosqa Komponenti
+// NUR SHAXMAT 100 ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬Â Haqiqiy 3D Three.js Dosqa Komponenti
 // =====================================================
 
 import React, { useEffect, useRef, useState, useCallback } from 'react';
@@ -75,6 +75,106 @@ const SCALES: Record<string, number> = {
   queen: 1.50,
   king: 1.62,
 };
+
+// Shoh (King) uchun hashamatli sarg'ish-tillarang Oliy Qirollik Toji (Gold Royal Crown)
+function createKingCrown(goldCrownMat: THREE.Material, pieceId: string): THREE.Group {
+  const crownGroup = new THREE.Group();
+  crownGroup.name = 'kingCrown';
+
+  // 1. Asosiy toj gardishi (Crown Band)
+  const bandGeo = new THREE.CylinderGeometry(0.108, 0.116, 0.038, 24);
+  const band = new THREE.Mesh(bandGeo, goldCrownMat);
+  band.position.y = 0.925;
+  band.castShadow = true;
+  band.receiveShadow = true;
+  band.userData = { isCrown: true, pieceId };
+  crownGroup.add(band);
+
+  // 2. Gardishning qabariq halqasi (Torus Bead Rim)
+  const ringGeo = new THREE.TorusGeometry(0.114, 0.010, 10, 24);
+  ringGeo.rotateX(Math.PI / 2);
+  const ring = new THREE.Mesh(ringGeo, goldCrownMat);
+  ring.position.y = 0.910;
+  ring.castShadow = true;
+  ring.receiveShadow = true;
+  ring.userData = { isCrown: true, pieceId };
+  crownGroup.add(ring);
+
+  // 3. Tojning 8 ta sarg'ish-tillarang tishlari va marvaridlari
+  const numSpikes = 8;
+  const spikeGeo = new THREE.ConeGeometry(0.018, 0.075, 10);
+  const pearlGeo = new THREE.SphereGeometry(0.013, 12, 12);
+
+  for (let i = 0; i < numSpikes; i++) {
+    const angle = (i / numSpikes) * Math.PI * 2;
+    const r = 0.108;
+    const sx = Math.cos(angle) * r;
+    const sz = Math.sin(angle) * r;
+
+    const spike = new THREE.Mesh(spikeGeo, goldCrownMat);
+    spike.position.set(sx, 0.965, sz);
+    spike.rotation.y = -angle;
+    spike.rotation.z = Math.cos(angle) * 0.16;
+    spike.rotation.x = -Math.sin(angle) * 0.16;
+    spike.castShadow = true;
+    spike.receiveShadow = true;
+    spike.userData = { isCrown: true, pieceId };
+    crownGroup.add(spike);
+
+    const pearl = new THREE.Mesh(pearlGeo, goldCrownMat);
+    pearl.position.set(sx * 1.06, 1.006, sz * 1.06);
+    pearl.castShadow = true;
+    pearl.receiveShadow = true;
+    pearl.userData = { isCrown: true, pieceId };
+    crownGroup.add(pearl);
+  }
+
+  // 4. Markaziy oltin gumbaz
+  const domeGeo = new THREE.SphereGeometry(0.062, 16, 12, 0, Math.PI * 2, 0, Math.PI / 2);
+  const dome = new THREE.Mesh(domeGeo, goldCrownMat);
+  dome.position.y = 0.942;
+  dome.castShadow = true;
+  dome.receiveShadow = true;
+  dome.userData = { isCrown: true, pieceId };
+  crownGroup.add(dome);
+
+  // 5. Markaziy saltanat globusi (Royal Orb)
+  const orbGeo = new THREE.SphereGeometry(0.026, 14, 14);
+  const orb = new THREE.Mesh(orbGeo, goldCrownMat);
+  orb.position.y = 1.018;
+  orb.castShadow = true;
+  orb.receiveShadow = true;
+  orb.userData = { isCrown: true, pieceId };
+  crownGroup.add(orb);
+
+  // 6. Markaziy Oliy Xoch
+  const vBarGeo = new THREE.CylinderGeometry(0.009, 0.009, 0.072, 8);
+  const vBar = new THREE.Mesh(vBarGeo, goldCrownMat);
+  vBar.position.y = 1.066;
+  vBar.castShadow = true;
+  vBar.receiveShadow = true;
+  vBar.userData = { isCrown: true, pieceId };
+  crownGroup.add(vBar);
+
+  const hBarGeo = new THREE.CylinderGeometry(0.008, 0.008, 0.048, 8);
+  hBarGeo.rotateZ(Math.PI / 2);
+  const hBar = new THREE.Mesh(hBarGeo, goldCrownMat);
+  hBar.position.y = 1.076;
+  hBar.castShadow = true;
+  hBar.receiveShadow = true;
+  hBar.userData = { isCrown: true, pieceId };
+  crownGroup.add(hBar);
+
+  const jewelGeo = new THREE.SphereGeometry(0.012, 10, 10);
+  const jewel = new THREE.Mesh(jewelGeo, goldCrownMat);
+  jewel.position.y = 1.076;
+  jewel.castShadow = true;
+  jewel.receiveShadow = true;
+  jewel.userData = { isCrown: true, pieceId };
+  crownGroup.add(jewel);
+
+  return crownGroup;
+}
 
 export default function Board3D({
   game,
@@ -269,7 +369,7 @@ export default function Board3D({
     const renderer = new THREE.WebGLRenderer({
       canvas,
       antialias: true,
-      alpha: true, // Shaffof fon — orqa fonga tabiiy qo'shiladi!
+      alpha: true, // Shaffof fon ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬Â orqa fonga tabiiy qo'shiladi!
       powerPreference: 'high-performance',
     });
     renderer.setSize(width, height);
@@ -310,7 +410,7 @@ export default function Board3D({
 
     updateCameraForAspect(width, height);
 
-    // ── YORUG'LIK (Yumshoq, ko'zni qamashtirmaydigan va yaltiramaydigan yoritish) ──
+    // ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ YORUG'LIK (Yumshoq, ko'zni qamashtirmaydigan va yaltiramaydigan yoritish) ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬
     const amb = new THREE.AmbientLight(0xfff8ee, 1.15);
     scene.add(amb);
 
@@ -343,7 +443,7 @@ export default function Board3D({
     rimLight.position.set(0, 15, -12);
     scene.add(rimLight);
 
-    // ── SHAFQATSIZ YUMSHOQ SOYA PLANETASI (ShadowMaterial) ──
+    // ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ SHAFQATSIZ YUMSHOQ SOYA PLANETASI (ShadowMaterial) ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬
     // Orqa fondagi yog'och stol ustiga faqat realistik 3D soya tushadi, hech qanday qora to'rtburchak yo'q!
     const shadowGeo = new THREE.PlaneGeometry(60, 60);
     const shadowMat = new THREE.ShadowMaterial({ opacity: 0.58 });
@@ -353,7 +453,7 @@ export default function Board3D({
     shadowPlane.receiveShadow = true;
     scene.add(shadowPlane);
 
-    // ── DOSQA RAMKASI (Koordinatali asal-eman yog'ochi) ──
+    // ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ DOSQA RAMKASI (Koordinatali asal-eman yog'ochi) ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬
     createFrameTexture(isFlipped).then((frameTex) => {
       if (destroyed) return;
       const frameGeo = new THREE.BoxGeometry(TOTAL_WIDTH, BOARD_THICKNESS, TOTAL_WIDTH);
@@ -371,7 +471,7 @@ export default function Board3D({
       frameMeshRef.current = frameMesh;
     });
 
-    // ── 10x10 KVADRATLAR ──
+    // ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ 10x10 KVADRATLAR ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬
     const textureLoader = new THREE.TextureLoader();
     const lightTex = textureLoader.load('/textures/wood_light_square.jpg');
     const darkTex = textureLoader.load('/textures/wood_dark_square.jpg');
@@ -407,7 +507,7 @@ export default function Board3D({
     }
     squareMeshesRef.current = squareMeshes;
 
-    // ── 3D OLD QIRRA PLINTUSI (Doskaning old tomoniga biriktirilgan) ──
+    // ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ 3D OLD QIRRA PLINTUSI (Doskaning old tomoniga biriktirilgan) ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬
     const initialRimTex = createRimTexture(frontRimTitle || 'NUR SHAXMAT 100', frontRimMoveText || '');
     const rimGeo = new THREE.BoxGeometry(TOTAL_WIDTH, 0.34, 0.10);
     const rimMat = new THREE.MeshStandardMaterial({ map: initialRimTex, roughness: 0.80, metalness: 0.0 });
@@ -482,7 +582,7 @@ export default function Board3D({
     (rimMeshRef.current.material as THREE.MeshStandardMaterial).needsUpdate = true;
   }, [frontRimTitle, frontRimMoveText, createRimTexture]);
 
-  // ── DONALAR VA BELGILARNI YANGILASH (Game State o'zgarganda) ──
+  // ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ DONALAR VA BELGILARNI YANGILASH (Game State o'zgarganda) ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬
   useEffect(() => {
     const scene = sceneRef.current;
     if (!scene || !isLoaded) return;
@@ -491,6 +591,13 @@ export default function Board3D({
     const flipped = isFlipped;
     const pieceMeshesMap = pieceMeshesMapRef.current;
     const currentPieceIds = new Set<string>();
+
+    // Shohlar uchun 2 tarafga ham hashamatli sarg'ish-tillarang toj materiali
+    const goldCrownMat = new THREE.MeshStandardMaterial({
+      color: new THREE.Color(0xf8be1a),
+      roughness: 0.20,
+      metalness: 0.88,
+    });
 
     // Oq donalar: toza, yorqin va och fil suyagi oqi (luminous ivory white)
     const whiteMat = new THREE.MeshStandardMaterial({
@@ -533,6 +640,12 @@ export default function Board3D({
             }
           });
 
+          // Shohga 2 tarafga ham sarg'ish-tillarang Oliy Toj taqish (White & Black Kings)
+          if (typeKey === 'king') {
+            const crown = createKingCrown(goldCrownMat, piece.id);
+            meshGroup.add(crown);
+          }
+
           const box = new THREE.Box3().setFromObject(meshGroup);
           const sz = new THREE.Vector3();
           box.getSize(sz);
@@ -571,7 +684,7 @@ export default function Board3D({
           const isWhite = piece.color === 'white';
           const mat = isWhite ? whiteMat : blackMat;
           meshGroup.traverse((ch: any) => {
-            if (ch.isMesh && ch.material !== mat) {
+            if (ch.isMesh && !ch.userData?.isCrown && ch.material !== mat) {
               ch.material = mat;
             }
           });
@@ -587,7 +700,7 @@ export default function Board3D({
       }
     }
 
-    // ── HIGHLIGHTS: Tanlangan, So'nggi yurish va Mumkin bo'lgan harakatlar ──
+    // ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ HIGHLIGHTS: Tanlangan, So'nggi yurish va Mumkin bo'lgan harakatlar ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬
     const hlGroup = highlightsGroupRef.current;
     if (hlGroup) {
       while (hlGroup.children.length > 0) {
@@ -682,7 +795,7 @@ export default function Board3D({
         }
       }
 
-      // 4. Shoh xavf ostida (Check) bo'lsa — Shoh tagida qizil nurlanish
+      // 4. Shoh xavf ostida (Check) bo'lsa ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬Â Shoh tagida qizil nurlanish
       if (game.isInCheck) {
         const kingColor = game.currentTurn;
         let kingSq: Square | null = null;
@@ -715,7 +828,7 @@ export default function Board3D({
     }
   }, [isLoaded, game.board, game.lastMove, game.isInCheck, game.currentTurn, selectedSquare, legalMoves, isFlipped, getSquareWorldPos]);
 
-  // ── KVADRATNI ANIQLASH (3D Dona Mesh'lari va Kataklar bo'yicha 100% ANIQ) ──
+  // ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ KVADRATNI ANIQLASH (3D Dona Mesh'lari va Kataklar bo'yicha 100% ANIQ) ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬
   const getSquareFromPointer = useCallback(
     (clientX: number, clientY: number): Square | null => {
       const canvas = canvasRef.current;
@@ -774,7 +887,7 @@ export default function Board3D({
     []
   );
 
-  // ── KVADRATNI BOSISH (Click-To-Move — Mutlaqo Barqaror) ──
+  // ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ KVADRATNI BOSISH (Click-To-Move ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬Â Mutlaqo Barqaror) ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬
   const handleSquareClick = useCallback(
     (sq: Square) => {
       const {
@@ -816,7 +929,7 @@ export default function Board3D({
     [dispatch]
   );
 
-  // ── FOYDALANUVCHI INTERAKTIV HARAKATLARI (Pointer Down / Move / Up) ──
+  // ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ FOYDALANUVCHI INTERAKTIV HARAKATLARI (Pointer Down / Move / Up) ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬
   const handlePointerDown = (e: React.PointerEvent) => {
     if (e.button !== 0 && e.pointerType === 'mouse') return;
 

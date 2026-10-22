@@ -155,6 +155,101 @@ const server = http.createServer((req, res) => {
           }
         });
 
+        // Apply gold royal crown (shoxga 2 tarafga ham sarg'ish/tillarang toj)
+        const goldCrownMat = new THREE.MeshStandardMaterial({
+          color: new THREE.Color(0xf8be1a), // Boy, iliq va jozibador sarg'ish-tillarang
+          roughness: 0.20,
+          metalness: 0.88,
+        });
+
+        const crownGroup = new THREE.Group();
+        crownGroup.name = 'kingCrown';
+
+        // 1. Asosiy toj gardishi (Crown Band)
+        const bandGeo = new THREE.CylinderGeometry(0.108, 0.116, 0.038, 32);
+        const band = new THREE.Mesh(bandGeo, goldCrownMat);
+        band.position.y = 0.925;
+        band.castShadow = true;
+        band.receiveShadow = true;
+        crownGroup.add(band);
+
+        // 2. Gardishning qabariq halqasi (Torus Bead Rim)
+        const ringGeo = new THREE.TorusGeometry(0.114, 0.010, 12, 32);
+        ringGeo.rotateX(Math.PI / 2);
+        const ring = new THREE.Mesh(ringGeo, goldCrownMat);
+        ring.position.y = 0.910;
+        ring.castShadow = true;
+        ring.receiveShadow = true;
+        crownGroup.add(ring);
+
+        // 3. Tojning 8 ta sarg'ish-tillarang tishlari va marvaridlari
+        const numSpikes = 8;
+        const spikeGeo = new THREE.ConeGeometry(0.018, 0.075, 12);
+        const pearlGeo = new THREE.SphereGeometry(0.013, 16, 16);
+
+        for (let i = 0; i < numSpikes; i++) {
+          const angle = (i / numSpikes) * Math.PI * 2;
+          const r = 0.108;
+          const sx = Math.cos(angle) * r;
+          const sz = Math.sin(angle) * r;
+
+          const spike = new THREE.Mesh(spikeGeo, goldCrownMat);
+          spike.position.set(sx, 0.965, sz);
+          spike.rotation.y = -angle;
+          spike.rotation.z = Math.cos(angle) * 0.16;
+          spike.rotation.x = -Math.sin(angle) * 0.16;
+          spike.castShadow = true;
+          spike.receiveShadow = true;
+          crownGroup.add(spike);
+
+          const pearl = new THREE.Mesh(pearlGeo, goldCrownMat);
+          pearl.position.set(sx * 1.06, 1.006, sz * 1.06);
+          pearl.castShadow = true;
+          pearl.receiveShadow = true;
+          crownGroup.add(pearl);
+        }
+
+        // 4. Markaziy oltin gumbaz
+        const domeGeo = new THREE.SphereGeometry(0.062, 24, 16, 0, Math.PI * 2, 0, Math.PI / 2);
+        const dome = new THREE.Mesh(domeGeo, goldCrownMat);
+        dome.position.y = 0.942;
+        dome.castShadow = true;
+        dome.receiveShadow = true;
+        crownGroup.add(dome);
+
+        // 5. Markaziy saltanat globusi (Royal Orb)
+        const orbGeo = new THREE.SphereGeometry(0.026, 16, 16);
+        const orb = new THREE.Mesh(orbGeo, goldCrownMat);
+        orb.position.y = 1.018;
+        orb.castShadow = true;
+        orb.receiveShadow = true;
+        crownGroup.add(orb);
+
+        // 6. Markaziy Oliy Xoch
+        const vBarGeo = new THREE.CylinderGeometry(0.009, 0.009, 0.072, 12);
+        const vBar = new THREE.Mesh(vBarGeo, goldCrownMat);
+        vBar.position.y = 1.066;
+        vBar.castShadow = true;
+        vBar.receiveShadow = true;
+        crownGroup.add(vBar);
+
+        const hBarGeo = new THREE.CylinderGeometry(0.008, 0.008, 0.048, 12);
+        hBarGeo.rotateZ(Math.PI / 2);
+        const hBar = new THREE.Mesh(hBarGeo, goldCrownMat);
+        hBar.position.y = 1.076;
+        hBar.castShadow = true;
+        hBar.receiveShadow = true;
+        crownGroup.add(hBar);
+
+        const jewelGeo = new THREE.SphereGeometry(0.012, 12, 12);
+        const jewel = new THREE.Mesh(jewelGeo, goldCrownMat);
+        jewel.position.y = 1.076;
+        jewel.castShadow = true;
+        jewel.receiveShadow = true;
+        crownGroup.add(jewel);
+
+        model.add(crownGroup);
+
         // Center and scale model
         const box = new THREE.Box3().setFromObject(model);
         const center = new THREE.Vector3();
