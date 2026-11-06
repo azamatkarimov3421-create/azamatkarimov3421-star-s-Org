@@ -574,7 +574,7 @@ export default function SettingsScreen({ onBack, onOpenRules }: SettingsScreenPr
         {/* Versiya & Mualliflik Matni */}
         <div className="text-center pt-2 pb-6 select-none">
           <div className={`text-xs font-mono font-bold ${isLight ? 'text-zinc-400' : 'text-zinc-500'}`}>
-            Nur Shaxmat 100 • v1.1.4
+            Nur Shaxmat 100 • v1.2.17
           </div>
           <div className={`text-[10px] mt-0.5 ${isLight ? 'text-zinc-400' : 'text-zinc-600'}`}>
             Oʻzbekiston Milliy Shaxmati © 2026

@@ -67,25 +67,14 @@ public class MainActivity extends AppCompatActivity {
         @JavascriptInterface
         public void setOrientation(String orientation) {
             runOnUiThread(() -> {
-                if ("landscape".equalsIgnoreCase(orientation)) {
-                    setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_SENSOR_LANDSCAPE);
-                } else if ("portrait".equalsIgnoreCase(orientation)) {
-                    setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_SENSOR_PORTRAIT);
-                } else {
-                    setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_USER);
-                }
+                setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_SENSOR_LANDSCAPE);
             });
         }
 
         @JavascriptInterface
         public void toggleOrientation() {
             runOnUiThread(() -> {
-                int current = getResources().getConfiguration().orientation;
-                if (current == Configuration.ORIENTATION_LANDSCAPE) {
-                    setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_SENSOR_PORTRAIT);
-                } else {
-                    setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_SENSOR_LANDSCAPE);
-                }
+                setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_SENSOR_LANDSCAPE);
             });
         }
 
@@ -286,6 +275,7 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_SENSOR_LANDSCAPE);
 
         // To'liq ekranli o'yin rejimi (Immersive Sticky - brauzerga o'xshamaydi, sof mobil o'yin)
         getWindow().getDecorView().setSystemUiVisibility(

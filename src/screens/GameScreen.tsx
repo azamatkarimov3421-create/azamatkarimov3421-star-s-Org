@@ -179,42 +179,7 @@ export default function GameScreen({ onBack, onOpenSettings }: GameScreenProps) 
     logger.logInfo('SYSTEM', "Foydalanuvchi tomonidan doska holati muvaffaqiyatli tiklandi va qotishdan chiqarildi.");
   }, [dispatch]);
 
-  // Ekranni 90° burish / Yonboshcha qilish (Landscape Toggle) - Samsung, Redmi, Honor va barcha telifonlarga
-  const handleToggleOrientation = React.useCallback(() => {
-    try {
-      const bridge = (window as any).AndroidBridge || (window as any).Android;
-      if (bridge?.toggleOrientation) {
-        bridge.toggleOrientation();
-        const isLandscapeNow = window.innerWidth > window.innerHeight;
-        setSideNotice(isLandscapeNow ? "📱 Tik (vertikal) rejim" : "🔄 Yonbosh (gorizontal) rejim");
-        setTimeout(() => setSideNotice(null), 2200);
-        return;
-      }
-    } catch {}
-
-    try {
-      if (screen.orientation && (screen.orientation as any).lock) {
-        const isPortrait = window.innerHeight > window.innerWidth;
-        if (isPortrait) {
-          (screen.orientation as any).lock('landscape').then(() => {
-            setSideNotice("🔄 Yonbosh (gorizontal) rejim");
-            setTimeout(() => setSideNotice(null), 2200);
-          }).catch(() => {});
-        } else {
-          (screen.orientation as any).lock('portrait').then(() => {
-            setSideNotice("📱 Tik (vertikal) rejim");
-            setTimeout(() => setSideNotice(null), 2200);
-          }).catch(() => {});
-        }
-        return;
-      }
-    } catch {}
-
-    // Brauzer fallback xabarnomasi
-    const isLand = window.innerWidth > window.innerHeight;
-    setSideNotice(isLand ? "📱 Telifonni tik holatga buring" : "🔄 Telifonni yonbosh (gorizontal) holatga buring");
-    setTimeout(() => setSideNotice(null), 2500);
-  }, []);
+  // Orientation is strictly locked to landscape for all phones
 
   // Telifon ekrani yoqilganda / o'yinga qaytganda bot holatini uyg'otish va tekshirish
   React.useEffect(() => {
@@ -463,16 +428,6 @@ export default function GameScreen({ onBack, onOpenSettings }: GameScreenProps) 
           title="Menyu"
         >
           <MenuIcon size={24} />
-        </button>
-
-        {/* Ekranni burish (Tik ⇄ Yonbosh / Orientation) */}
-        <button
-          onClick={handleToggleOrientation}
-          className="w-10 h-10 sm:w-12 sm:h-12 rounded-2xl bg-black/65 hover:bg-black/85 active:scale-95 border border-sky-400/40 text-sky-300 shadow-[0_10px_24px_rgba(0,0,0,0.75)] flex flex-col items-center justify-center gap-0.5 transition-all cursor-pointer backdrop-blur-md"
-          title="Ekranni burish (Tik ⇄ Yonbosh)"
-        >
-          <span className="text-sm font-black leading-none">🔄</span>
-          <span className="text-[7px] font-extrabold text-sky-200 uppercase tracking-tighter">Yonbosh</span>
         </button>
 
         {/* Doskani aylantirish (⟲ Rotate / Flip) */}
