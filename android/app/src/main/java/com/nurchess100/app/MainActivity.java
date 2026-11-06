@@ -67,7 +67,11 @@ public class MainActivity extends AppCompatActivity {
         @JavascriptInterface
         public void setOrientation(String orientation) {
             runOnUiThread(() -> {
-                setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_SENSOR_LANDSCAPE);
+                if ("landscape".equalsIgnoreCase(orientation)) {
+                    setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_SENSOR_LANDSCAPE);
+                } else {
+                    setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_SENSOR_PORTRAIT);
+                }
             });
         }
 
@@ -275,7 +279,7 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_SENSOR_LANDSCAPE);
+        setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_SENSOR_PORTRAIT);
 
         // To'liq ekranli o'yin rejimi (Immersive Sticky - brauzerga o'xshamaydi, sof mobil o'yin)
         getWindow().getDecorView().setSystemUiVisibility(

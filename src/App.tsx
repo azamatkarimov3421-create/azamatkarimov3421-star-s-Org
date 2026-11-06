@@ -70,6 +70,27 @@ function AppContent() {
   const [initialRoom, setInitialRoom] = useState<string>('');
   const [incomingInvite, setIncomingInvite] = useState<GameInvitePayload | null>(null);
 
+  // Dinamik Ekran Yo'nalishi:
+  // Hamma joy (Bosh sahifa, Sozlamalar, Qoidalar, Profil, Peshqadamlar, Modallar) — TIK (PORTRAIT).
+  // Faqat 3D o'yin tanlanganda va o'yin ichiga kirilganda — YONBOSH (LANDSCAPE 3D).
+  useEffect(() => {
+    const is3DGame = currentScreen === 'game' && state.is3D;
+    const target = is3DGame ? 'landscape' : 'portrait';
+
+    try {
+      const bridge = (window as any).AndroidBridge || (window as any).Android;
+      if (bridge?.setOrientation) {
+        bridge.setOrientation(target);
+      }
+    } catch {}
+
+    try {
+      if (screen.orientation && (screen.orientation as any).lock) {
+        (screen.orientation as any).lock(target).catch(() => {});
+      }
+    } catch {}
+  }, [currentScreen, state.is3D]);
+
   // 2. URL dan ?room=... parametrini tekshirish
   useEffect(() => {
     try {
