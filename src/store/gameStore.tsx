@@ -70,6 +70,7 @@ type Action =
   | { type: 'REMOTE_DRAW_ACCEPT' }
   | { type: 'REMOTE_DRAW_DECLINE' }
   | { type: 'PROMOTE'; pieceType: PieceType }
+  | { type: 'SHOW_PROMO_TEST' }
   | { type: 'NEW_GAME' }
   | { type: 'UNDO' }
   | { type: 'TOGGLE_NOTATION' }
@@ -543,6 +544,19 @@ function gameReducer(state: AppState, action: Action): AppState {
         ...state,
         drawOfferState: 'none',
         drawOfferNotice: "Raqib durang taklifini rad etdi! Oʻyin davom etadi.",
+      };
+    }
+
+    case 'SHOW_PROMO_TEST': {
+      return {
+        ...state,
+        showPromotionFor: { rank: 9, file: 4 },
+        pendingMove: {
+          from: { rank: 8, file: 4 },
+          to: { rank: 9, file: 4 },
+          piece: { id: 'pawn-promo-test', type: 'Pawn', color: 'white' },
+          isPromotion: true,
+        },
       };
     }
 

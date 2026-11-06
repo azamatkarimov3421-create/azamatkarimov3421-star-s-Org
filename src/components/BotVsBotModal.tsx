@@ -57,21 +57,21 @@ export default function BotVsBotModal({
 
   return (
     <div className="fixed inset-0 bg-black/80 backdrop-blur-md z-50 flex items-center justify-center p-3 sm:p-4 animate-fadeIn">
-      <div className="relative w-full max-w-lg landscape:max-w-3xl bg-[#181c19] border border-[#2b3d30] rounded-3xl p-3.5 sm:p-6 landscape:p-3 shadow-2xl flex flex-col max-h-[92dvh] overflow-y-auto">
+      <div className="relative w-full max-w-lg landscape:max-w-3xl bg-[#181c19] border border-[#2b3d30] rounded-3xl p-3 sm:p-6 landscape:p-2.5 shadow-2xl flex flex-col max-h-[96dvh] landscape:overflow-hidden text-[#f1f1f1]">
         {/* Sarlavha */}
-        <div className="flex items-center justify-between pb-4 border-b border-[#2b3d30]">
+        <div className="flex items-center justify-between pb-3.5 landscape:pb-1 border-b border-[#2b3d30]">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-2xl bg-[#1e3827] border border-[#285535] flex items-center justify-center text-[#4ade80] shadow-inner shrink-0">
+            <div className="w-10 h-10 landscape:w-7 landscape:h-7 landscape:rounded-xl rounded-2xl bg-[#1e3827] border border-[#285535] flex items-center justify-center text-[#4ade80] shadow-inner shrink-0">
               <SwordsIcon size={22} />
             </div>
             <div>
               <div className="flex items-center gap-2">
-                <h3 className="text-base sm:text-lg font-black text-white">{t('bvb_title')}</h3>
+                <h3 className="text-base sm:text-lg landscape:text-xs font-black text-white">{t('bvb_title')}</h3>
                 <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-amber-400/20 text-amber-300 border border-amber-400/30">
                   AVTOMAT
                 </span>
               </div>
-              <p className="text-xs text-[#9ca3af]">{t('bvb_subtitle')}</p>
+              <p className="text-xs landscape:text-[9.5px] text-[#9ca3af]">{t('bvb_subtitle')}</p>
             </div>
           </div>
           <button
@@ -83,7 +83,7 @@ export default function BotVsBotModal({
         </div>
 
         {/* Asosiy qism */}
-        <div className="py-3 space-y-3.5 landscape:space-y-2.5">
+        <div className="py-2.5 landscape:py-1 space-y-3 landscape:space-y-1">
           <div className="grid grid-cols-1 md:grid-cols-2 landscape:grid-cols-2 gap-3.5">
           {/* 1. Oq Bot Darajasi */}
           <div>
@@ -104,7 +104,7 @@ export default function BotVsBotModal({
                     key={`white-${lvl.depth}`}
                     type="button"
                     onClick={() => setWhiteDepth(lvl.depth)}
-                    className={`p-2.5 rounded-2xl border text-center transition-all flex flex-col items-center justify-center gap-1 cursor-pointer select-none ${
+                    className={`p-2 landscape:p-0.5 rounded-2xl landscape:rounded-xl border text-center transition-all flex flex-col items-center justify-center gap-0.5 cursor-pointer select-none ${
                       isSelected
                         ? 'bg-[#1e3827] border-[#22c55e] text-white shadow-[0_0_12px_rgba(34,197,94,0.3)] ring-1 ring-[#22c55e]'
                         : 'bg-[#141b17] border-[#27372d] text-[#9ca3af] hover:border-[#3a5241]'
@@ -184,7 +184,7 @@ export default function BotVsBotModal({
           </div>
 
           {/* Tezkor Shablonlar (Presets) */}
-          <div className="p-3 rounded-2xl bg-[#141b17] border border-[#27372d] flex items-center justify-between text-xs">
+          <div className="p-2.5 landscape:p-1 rounded-2xl landscape:rounded-xl bg-[#141b17] border border-[#27372d] flex items-center justify-between text-xs landscape:text-[10px]">
             <span className="text-zinc-400 font-medium">{t('bvb_preset_label')}</span>
             <div className="flex items-center gap-1.5">
               <button
@@ -226,7 +226,7 @@ export default function BotVsBotModal({
           <button
             type="button"
             onClick={handleStartGame}
-            className="w-full py-2.5 sm:py-3.5 landscape:py-2.5 px-4 rounded-2xl bg-gradient-to-r from-[#22c55e] to-[#16a34a] hover:from-[#4ade80] hover:to-[#22c55e] text-slate-950 font-black text-sm sm:text-base flex items-center justify-center gap-2 shadow-[0_4px_15px_rgba(34,197,94,0.35)] active:scale-[0.99] transition-all cursor-pointer"
+            className="w-full py-2.5 sm:py-3.5 landscape:py-1.5 landscape:text-xs landscape:rounded-xl px-4 rounded-2xl bg-gradient-to-r from-[#22c55e] to-[#16a34a] hover:from-[#4ade80] hover:to-[#22c55e] text-slate-950 font-black text-sm sm:text-base flex items-center justify-center gap-2 shadow-[0_4px_15px_rgba(34,197,94,0.35)] active:scale-[0.99] transition-all cursor-pointer"
           >
             <PlayIcon size={20} className="fill-slate-950" />
             <span>{t('bvb_start_btn')}</span>

@@ -240,7 +240,7 @@ export default function GameOverModal({ onExit, isOpen, onClose }: GameOverModal
     <div className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-50 p-4 animate-fadeIn">
       <div className="relative max-w-md w-full bg-[#21201d] rounded-2xl p-4 sm:p-6 landscape:p-3.5 shadow-2xl border border-[#383531] text-center max-h-[92dvh] overflow-y-auto">
         {/* Natija Ikonkasi */}
-        <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-[#2c2a26] border border-[#383531] text-3xl mb-3 shadow-inner">
+        <div className="inline-flex items-center justify-center w-16 h-16 landscape:w-8 landscape:h-8 landscape:text-lg landscape:mb-1 rounded-2xl bg-[#2c2a26] border border-[#383531] text-3xl mb-3 shadow-inner">
           {icon}
         </div>
 
@@ -252,10 +252,10 @@ export default function GameOverModal({ onExit, isOpen, onClose }: GameOverModal
         </div>
 
         {/* Asosiy Sarlavha */}
-        <h2 className="text-xl sm:text-2xl font-black text-white mb-1">
+        <h2 className="text-xl sm:text-2xl landscape:text-sm font-black text-white mb-1 landscape:mb-0.5">
           {title}
         </h2>
-        <p className="text-[#9b9893] text-xs sm:text-sm mb-4 leading-relaxed">
+        <p className="text-[#9b9893] text-xs sm:text-sm landscape:text-[10px] mb-3 landscape:mb-1 leading-relaxed">
           {subtitle}
         </p>
 
@@ -282,7 +282,7 @@ export default function GameOverModal({ onExit, isOpen, onClose }: GameOverModal
         )}
 
         {/* Statistika qutisi */}
-        <div className="grid grid-cols-2 gap-2.5 p-3 bg-[#181715] rounded-xl border border-[#383531] mb-4 text-xs">
+        <div className="grid grid-cols-2 gap-2 p-2.5 landscape:p-1.5 landscape:gap-1.5 bg-[#181715] rounded-xl border border-[#383531] mb-3 landscape:mb-1 text-xs landscape:text-[10px]">
           <div>
             <div className="text-[#9b9893] font-medium">{t('total_moves_label')}</div>
             <div className="text-white font-bold text-sm mt-0.5 font-mono">
@@ -299,7 +299,7 @@ export default function GameOverModal({ onExit, isOpen, onClose }: GameOverModal
 
         {/* Oxirgi 5 ta o'yin natijalari */}
         {recentGames.length > 0 && (
-          <div className="mb-4 p-2.5 bg-[#181715] rounded-xl border border-[#383531]">
+          <div className="mb-4 landscape:hidden p-2.5 bg-[#181715] rounded-xl border border-[#383531]">
             <div className="text-[10px] text-[#9b9893] font-bold uppercase tracking-wider mb-1.5 flex items-center justify-between px-1">
               <span>{t('recent_games_label')}</span>
               <span className="text-white font-mono">{Math.min(5, recentGames.length)} ta</span>
@@ -325,7 +325,7 @@ export default function GameOverModal({ onExit, isOpen, onClose }: GameOverModal
         )}
 
         {/* Tugmalar */}
-        <div className="flex flex-col gap-2.5">
+        <div className="flex flex-col landscape:flex-row gap-2.5 landscape:gap-1.5">
           {/* 1. Yangi O'yin Boshlash */}
           <button
             onClick={() => {
@@ -339,7 +339,7 @@ export default function GameOverModal({ onExit, isOpen, onClose }: GameOverModal
                 dispatch({ type: 'NEW_GAME' });
               }
             }}
-            className="w-full py-3 px-4 bg-[#81b64c] hover:bg-[#92c35a] text-white font-black text-sm rounded-xl shadow-[0_4px_0_#537a2e] active:translate-y-1 active:shadow-[0_0_0_#537a2e] transition-all flex items-center justify-center gap-2 cursor-pointer"
+            className="w-full py-2.5 landscape:py-1.5 landscape:text-xs px-3 bg-[#81b64c] hover:bg-[#92c35a] text-white font-black text-sm rounded-xl shadow-[0_4px_0_#537a2e] active:translate-y-1 active:shadow-[0_0_0_#537a2e] transition-all flex items-center justify-center gap-2 cursor-pointer"
           >
             <span>{gameMode === 'online' ? "Yangi Raqib Qidirish" : t('btn_new_game')}</span>
           </button>
@@ -358,7 +358,7 @@ export default function GameOverModal({ onExit, isOpen, onClose }: GameOverModal
               }
               if (onExit) onExit();
             }}
-            className="w-full py-2.5 px-4 bg-red-950/40 hover:bg-red-900/60 border border-red-800/60 text-red-300 hover:text-white font-bold text-xs rounded-xl shadow-[0_2px_0_#1a0f0d] active:translate-y-0.5 transition-all flex items-center justify-center gap-2 cursor-pointer"
+            className="w-full py-2 landscape:py-1.5 landscape:text-xs px-3 bg-red-950/40 hover:bg-red-900/60 border border-red-800/60 text-red-300 hover:text-white font-bold text-xs rounded-xl shadow-[0_2px_0_#1a0f0d] active:translate-y-0.5 transition-all flex items-center justify-center gap-2 cursor-pointer"
           >
             <span>🚪 {t('btn_exit_to_home')}</span>
           </button>
@@ -369,7 +369,7 @@ export default function GameOverModal({ onExit, isOpen, onClose }: GameOverModal
               setDismissed(true);
               if (onClose) onClose();
             }}
-            className="w-full py-2.5 px-4 bg-[#383531] hover:bg-[#45423c] text-[#c3c2be] hover:text-white font-bold text-xs rounded-xl border border-[#383531] shadow-[0_2px_0_#21201d] active:translate-y-0.5 transition-all flex items-center justify-center gap-2 cursor-pointer"
+            className="w-full py-2 landscape:py-1.5 landscape:text-xs px-3 bg-[#383531] hover:bg-[#45423c] text-[#c3c2be] hover:text-white font-bold text-xs rounded-xl border border-[#383531] shadow-[0_2px_0_#21201d] active:translate-y-0.5 transition-all flex items-center justify-center gap-2 cursor-pointer"
           >
             <span>🔍 {t('btn_review_board')}</span>
           </button>

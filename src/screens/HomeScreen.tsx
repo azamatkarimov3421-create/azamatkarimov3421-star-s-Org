@@ -121,14 +121,14 @@ export default function HomeScreen({
   ];
 
   return (
-    <div className={`min-h-screen w-full ${isLight ? 'bg-[#f6f3ed] md:bg-[url("/desktop-bg-light.jpg")] text-[#1a1917]' : 'bg-[#121614] md:bg-[url("/desktop-bg.jpg")] text-[#f1f1f1]'} bg-cover bg-center bg-fixed flex flex-col font-sans select-none relative overflow-x-hidden transition-colors duration-200`}>
+    <div className={`min-h-screen landscape:min-h-0 landscape:h-[100dvh] landscape:max-h-[100dvh] landscape:overflow-hidden w-full ${isLight ? 'bg-[#f6f3ed] md:bg-[url("/desktop-bg-light.jpg")] text-[#1a1917]' : 'bg-[#121614] md:bg-[url("/desktop-bg.jpg")] text-[#f1f1f1]'} bg-cover bg-center bg-fixed flex flex-col font-sans select-none relative overflow-x-hidden transition-colors duration-200`}>
       {/* Fon qatlami (Desktopda va mobilida kontrast va silliq ko'rinish uchun) */}
       <div className={`absolute inset-0 pointer-events-none z-0 transition-opacity duration-200 ${isLight ? 'bg-gradient-to-b from-[#faf8f4]/80 via-[#f5f1e8]/70 to-[#eae4d5]/85' : 'hidden md:block bg-gradient-to-b from-[#0b100d]/85 via-[#0d1310]/75 to-[#0b100d]/90'}`} />
 
-      <div className="relative z-10 w-full flex flex-col justify-between min-h-screen">
+      <div className="relative z-10 w-full flex flex-col justify-between min-h-screen landscape:min-h-0 landscape:h-full landscape:overflow-hidden">
         {/* ── 1. YUQORI HEADER (FLOATING GLASS NAVBAR) ── */}
-        <header className="w-full max-w-6xl mx-auto px-3 sm:px-6 pt-2 sm:pt-6 landscape:pt-2 landscape:px-3">
-          <div className={`w-full rounded-2xl sm:rounded-3xl backdrop-blur-md px-3 sm:px-6 py-2.5 sm:py-3 landscape:py-1.5 landscape:px-3.5 flex items-center justify-between border transition-all ${
+        <header className="w-full max-w-6xl mx-auto px-3 sm:px-6 pt-2 sm:pt-6 landscape:pt-1 landscape:pb-0 landscape:px-3 shrink-0">
+          <div className={`w-full rounded-2xl sm:rounded-3xl backdrop-blur-md px-3 sm:px-6 py-2.5 sm:py-3 landscape:py-1 landscape:px-3 flex items-center justify-between border transition-all ${
 
             isLight
               ? 'bg-white/95 border-[#e2ddd3] shadow-[0_4px_20px_rgba(0,0,0,0.05)]'
@@ -148,7 +148,7 @@ export default function HomeScreen({
             </div>
 
             {/* Desktop Navigatsiya Tugmalari */}
-            <nav className="hidden md:flex items-center gap-2">
+            <nav className="hidden landscape:flex md:flex items-center gap-1.5 sm:gap-2">
               <button
                 onClick={() => {}}
                 className={`px-4 py-2 rounded-xl text-xs font-black flex items-center gap-2 transition-all cursor-pointer ${
@@ -231,7 +231,7 @@ export default function HomeScreen({
             </nav>
 
             {/* Mobil O'ng Blok: Profil va Sozlamalar */}
-            <div className="flex items-center gap-2 md:hidden">
+            <div className="flex items-center gap-2 landscape:hidden md:hidden">
               <button
                 onClick={onOpenStats}
                 className={`h-10 px-2.5 rounded-xl border flex items-center gap-1.5 text-xs font-bold transition-all active:scale-95 cursor-pointer ${
@@ -282,9 +282,9 @@ export default function HomeScreen({
         </header>
 
         {/* ── 2. ASOSIY QISM (1-GA-1 DESKTOP GRID) ── */}
-        <main className="w-full max-w-6xl mx-auto px-3 sm:px-6 py-3 md:py-8 landscape:py-2.5 landscape:gap-3.5 landscape:px-3 grid grid-cols-1 md:grid-cols-12 gap-5 md:gap-6 items-start flex-1">
+        <main className="w-full max-w-6xl mx-auto px-3 sm:px-6 py-3 md:py-8 landscape:py-1.5 landscape:gap-3 landscape:px-3 grid grid-cols-1 landscape:grid-cols-12 md:grid-cols-12 gap-4 md:gap-6 items-stretch flex-1 landscape:overflow-hidden">
           {/* Chap ustun: Boshlash va 3D/2D tanlov (md:col-span-5) */}
-          <div className={`w-full md:col-span-5 p-4 sm:p-6 landscape:p-3.5 rounded-3xl backdrop-blur-md border flex flex-col gap-3.5 landscape:gap-2.5 transition-all ${
+          <div className={`w-full landscape:col-span-5 md:col-span-5 p-4 sm:p-6 landscape:p-2.5 rounded-3xl backdrop-blur-md border flex flex-col justify-between gap-3.5 landscape:gap-1.5 transition-all ${
 
             isLight
               ? 'bg-white/95 border-[#e2ddd3] shadow-[0_8px_30px_rgba(0,0,0,0.06)]'
@@ -335,23 +335,23 @@ export default function HomeScreen({
             )}
 
             <div className="flex items-center gap-3.5">
-              <div className={`w-13 h-13 rounded-2xl border flex items-center justify-center shadow-inner shrink-0 ${
+              <div className={`w-13 h-13 landscape:w-8 landscape:h-8 landscape:rounded-xl rounded-2xl border flex items-center justify-center shadow-inner shrink-0 ${
                 isLight ? 'bg-emerald-50 border-emerald-200 text-emerald-700' : 'bg-[#1e3827] border-[#285535] text-[#4ade80]'
               }`}>
-                <SwordsIcon size={26} />
+                <SwordsIcon size={26} className="landscape:w-4 landscape:h-4" />
               </div>
               <div>
-                <h2 className={`text-lg sm:text-xl font-black ${isLight ? 'text-[#1a1917]' : 'text-white'}`}>{t('start_new_game')}</h2>
-                <p className={`text-xs mt-0.5 ${isLight ? 'text-[#6b6760]' : 'text-[#9ca3af]'}`}>{t('game_motto_1')}</p>
+                <h2 className={`text-lg sm:text-xl landscape:text-sm font-black ${isLight ? 'text-[#1a1917]' : 'text-white'}`}>{t('start_new_game')}</h2>
+                <p className={`text-xs landscape:text-[10px] mt-0.5 ${isLight ? 'text-[#6b6760]' : 'text-[#9ca3af]'}`}>{t('game_motto_1')}</p>
               </div>
             </div>
 
             {/* 3D va 2D Tanlagich (Yonma-yon 2 ta karta) */}
-            <div className="grid grid-cols-2 gap-2.5 sm:gap-3 pt-1">
+            <div className="grid grid-cols-2 gap-2.5 sm:gap-3 landscape:gap-1.5 pt-1 landscape:pt-0">
               {/* 3D Fazoviy Doska */}
               <div
                 onClick={() => dispatch({ type: 'SET_3D', enabled: true })}
-                className={`cursor-pointer p-3 rounded-2xl transition-all border-2 flex items-center justify-between gap-2 select-none ${
+                className={`cursor-pointer p-2.5 sm:p-3 landscape:p-1.5 landscape:rounded-xl rounded-2xl transition-all border-2 flex items-center justify-between gap-2 select-none ${
                   state.is3D
                     ? isLight
                       ? 'border-emerald-600 bg-emerald-50 shadow-[0_2px_12px_rgba(16,185,129,0.15)] ring-1 ring-emerald-500'
@@ -362,7 +362,7 @@ export default function HomeScreen({
                 }`}
               >
                 <div className="flex items-center gap-2 sm:gap-2.5 min-w-0">
-                  <span className="text-xl sm:text-2xl shrink-0">🎲</span>
+                  <span className="text-xl sm:text-2xl landscape:text-sm shrink-0">🎲</span>
                   <div className="min-w-0">
                     <div className={`text-[11px] sm:text-xs font-black flex items-center gap-1 flex-wrap ${isLight ? 'text-[#1a1917]' : 'text-white'}`}>
                       <span>3D</span>
@@ -378,7 +378,7 @@ export default function HomeScreen({
                   </div>
                 </div>
 
-                <div className={`w-4 h-4 rounded-full border-2 shrink-0 flex items-center justify-center transition-all ${
+                <div className={`w-4 h-4 landscape:w-3 landscape:h-3 rounded-full border-2 shrink-0 flex items-center justify-center transition-all ${
                   state.is3D
                     ? isLight ? 'border-emerald-600' : 'border-[#22c55e]'
                     : isLight ? 'border-zinc-300' : 'border-[#4b5563]'
@@ -401,7 +401,7 @@ export default function HomeScreen({
                 }`}
               >
                 <div className="flex items-center gap-2 sm:gap-2.5 min-w-0">
-                  <span className="text-xl sm:text-2xl shrink-0">📐</span>
+                  <span className="text-xl sm:text-2xl landscape:text-sm shrink-0">📐</span>
                   <div className="min-w-0">
                     <div className={`text-[11px] sm:text-xs font-black ${isLight ? 'text-[#1a1917]' : 'text-white'}`}>
                       2D
@@ -423,7 +423,7 @@ export default function HomeScreen({
             </div>
 
             {/* Donalar Rangini Tanlash (Oqlar / Tasodifiy / Qoralar) */}
-            <div className="pt-0.5 space-y-1.5">
+            <div className="pt-0.5 space-y-1.5 landscape:space-y-0.5">
               <div className="flex items-center justify-between px-0.5">
                 <span className={`text-[11px] font-black uppercase tracking-wider ${isLight ? 'text-zinc-600' : 'text-zinc-400'}`}>
                   Donalar rangi:
@@ -437,7 +437,7 @@ export default function HomeScreen({
                 <button
                   type="button"
                   onClick={() => setHomeColorChoice('white')}
-                  className={`py-2 px-1.5 rounded-2xl border flex items-center justify-center gap-1.5 transition-all cursor-pointer ${
+                  className={`py-2 landscape:py-1 px-1.5 rounded-2xl landscape:rounded-xl border flex items-center justify-center gap-1.5 transition-all cursor-pointer landscape:text-[11px] ${
                     homeColorChoice === 'white'
                       ? isLight
                         ? 'bg-emerald-50 border-emerald-600 text-emerald-950 font-black shadow-sm ring-1 ring-emerald-500'
@@ -493,7 +493,7 @@ export default function HomeScreen({
             {/* Katta Yashil O'yin Tugmasi */}
             <button
               onClick={() => onStartVsAI(homeColorChoice)}
-              className="w-full py-3 sm:py-4 landscape:py-2.5 px-4 rounded-2xl bg-gradient-to-b from-[#6cb83e] to-[#559b2d] hover:from-[#76c444] hover:to-[#5ea833] text-white font-black text-base flex items-center justify-center gap-2.5 shadow-[0_5px_0_#386b1c] active:translate-y-1 active:shadow-[0_1px_0_#386b1c] transition-all cursor-pointer mt-1"
+              className="w-full py-3 sm:py-4 landscape:py-1.5 landscape:text-xs landscape:rounded-xl px-4 rounded-2xl bg-gradient-to-b from-[#6cb83e] to-[#559b2d] hover:from-[#76c444] hover:to-[#5ea833] text-white font-black text-base flex items-center justify-center gap-2.5 shadow-[0_5px_0_#386b1c] landscape:shadow-[0_2px_0_#386b1c] active:translate-y-1 active:shadow-[0_1px_0_#386b1c] transition-all cursor-pointer mt-1 landscape:mt-0.5"
             >
               <PlayIcon size={20} className="fill-white" />
               <span>
@@ -506,7 +506,7 @@ export default function HomeScreen({
             </button>
 
             {/* Mualliflik ma'lumoti */}
-            <div className={`pt-3 border-t flex items-center justify-between text-xs ${
+            <div className={`pt-3 landscape:hidden border-t flex items-center justify-between text-xs ${
               isLight ? 'border-[#e2ddd3] text-[#6b6760]' : 'border-[#27372d] text-[#9ca3af]'
             }`}>
               <span>{t('author_label')}</span>
@@ -515,30 +515,30 @@ export default function HomeScreen({
           </div>
 
           {/* O'ng ustun: O'yin Turlari Ro'yxati (md:col-span-7) */}
-          <div className="w-full md:col-span-7 flex flex-col gap-3">
+          <div className="w-full landscape:col-span-7 md:col-span-7 flex flex-col gap-2.5 landscape:gap-1">
             <div className="px-1 text-xs font-black uppercase tracking-wider flex items-center justify-between">
               <span className={isLight ? 'text-[#6b6760]' : 'text-[#9ca3af]'}>{t('game_modes_header')}</span>
             </div>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <div className="grid grid-cols-1 sm:grid-cols-2 landscape:grid-cols-2 gap-2.5 landscape:gap-1.5">
               {gameModes.map((mode) => (
                 <button
                   key={mode.id}
                   onClick={() => mode.action()}
-                  className={`w-full p-3.5 sm:p-4 rounded-2xl border transition-all text-left flex items-center justify-between group active:scale-[0.99] cursor-pointer ${
+                  className={`w-full p-3 sm:p-4 landscape:p-1.5 landscape:rounded-xl rounded-2xl border transition-all text-left flex items-center justify-between group active:scale-[0.99] cursor-pointer ${
                     isLight
                       ? 'bg-white/95 hover:bg-zinc-50 border-[#e2ddd3] hover:border-emerald-500/60 shadow-[0_4px_16px_rgba(0,0,0,0.04)]'
                       : 'bg-[#141b17]/95 hover:bg-[#18221c] border-[#27372d] hover:border-[#22c55e]/50 shadow-xl'
                   }`}
                 >
                   <div className="flex items-center gap-3 min-w-0">
-                    <div className={`w-11 h-11 rounded-2xl border flex items-center justify-center flex-shrink-0 group-hover:scale-105 transition-transform ${mode.iconBg}`}>
+                    <div className={`w-11 h-11 landscape:w-7 landscape:h-7 landscape:rounded-lg rounded-2xl border flex items-center justify-center flex-shrink-0 group-hover:scale-105 transition-transform ${mode.iconBg}`}>
                       {mode.icon}
                     </div>
 
                     <div className="min-w-0">
                       <div className="flex items-center gap-1.5">
-                        <span className={`font-bold text-sm transition-colors truncate ${
+                        <span className={`font-bold text-sm landscape:text-xs transition-colors truncate ${
                           isLight
                             ? 'text-[#1a1917] group-hover:text-emerald-700'
                             : 'text-white group-hover:text-[#4ade80]'
@@ -555,7 +555,7 @@ export default function HomeScreen({
                           </span>
                         )}
                       </div>
-                      <p className={`text-xs mt-0.5 font-medium truncate ${
+                      <p className={`text-xs landscape:text-[9.5px] mt-0.5 font-medium truncate ${
                         isLight ? 'text-[#6b6760]' : 'text-[#9ca3af]'
                       }`}>
                         {mode.subtitle}
@@ -563,7 +563,7 @@ export default function HomeScreen({
                     </div>
                   </div>
 
-                  <div className={`transition-all pl-2 ${
+                  <div className={`transition-all pl-2 landscape:hidden ${
                     isLight
                       ? 'text-[#9ca3af] group-hover:text-[#1a1917] group-hover:translate-x-1'
                       : 'text-[#686560] group-hover:text-white group-hover:translate-x-1'
@@ -577,7 +577,7 @@ export default function HomeScreen({
         </main>
 
         {/* ── 3. PASTDAGI SHIOR VA BREND (1-GA-1 BOTTOM QUOTE) ── */}
-        <footer className="w-full max-w-2xl mx-auto my-6 text-center flex flex-col items-center px-4 pb-2">
+        <footer className="w-full max-w-2xl mx-auto my-6 landscape:hidden text-center flex flex-col items-center px-4 pb-2">
           <div className="flex items-center justify-center gap-4 w-full">
             <div className={`h-[1px] flex-1 bg-gradient-to-r from-transparent to-transparent ${
               isLight ? 'via-zinc-300' : 'via-[#4b5563]/40'

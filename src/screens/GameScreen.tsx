@@ -1176,15 +1176,7 @@ export default function GameScreen({ onBack, onOpenSettings }: GameScreenProps) 
         </div>
       )}
 
-      {/* ── 8. DONANI AYLANTIRISH MODALI (Piyoda marraga yetganda chiqadi) ── */}
-      <PromotionModal />
-
-      {/* ── 9. OʻYIN YAKUNI MODALI (G'alaba / Mag'lubiyat / Durang va Reyting hisob-kitobi) ── */}
-      <GameOverModal
-        onExit={onBack}
-        isOpen={showGameOverModal}
-        onClose={() => setShowGameOverModal(false)}
-      />
+      {/* Modallar App.tsx da boshqariladi */}
 
     </div>
   );

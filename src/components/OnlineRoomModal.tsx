@@ -406,7 +406,7 @@ export default function OnlineRoomModal({
       }}
       className="fixed inset-0 bg-black/85 backdrop-blur-md flex items-center justify-center z-50 p-3 sm:p-4 animate-fadeIn font-sans select-none"
     >
-      <div className="relative max-w-lg landscape:max-w-xl w-full bg-gradient-to-b from-slate-900 via-slate-900 to-slate-950 rounded-3xl p-3.5 sm:p-6 landscape:p-3 shadow-2xl border border-slate-700/80 max-h-[92dvh] flex flex-col overflow-hidden">
+      <div className="relative max-w-lg landscape:max-w-xl w-full bg-gradient-to-b from-slate-900 via-slate-900 to-slate-950 rounded-3xl p-3.5 sm:p-6 landscape:p-3 shadow-2xl border border-slate-700/80 max-h-[96dvh] landscape:max-w-2xl flex flex-col overflow-hidden landscape:p-2.5">
         {/* Yopish tugmasi */}
         <button
           onClick={handleLeaveRoom}
@@ -416,7 +416,7 @@ export default function OnlineRoomModal({
         </button>
 
         {/* ── 1. MODAL YUQORI QISMI VA UMUMIY ONLAYN STATISTIKA ── */}
-        <div className="flex items-center justify-between mb-3.5 pr-7 shrink-0">
+        <div className="flex items-center justify-between mb-3.5 landscape:mb-1 pr-7 shrink-0">
           <div className="flex items-center gap-2.5">
             <div className="w-10 h-10 rounded-2xl bg-amber-500/20 border border-amber-500/40 flex items-center justify-center text-xl shadow-inner shrink-0">
               🌐
@@ -440,14 +440,14 @@ export default function OnlineRoomModal({
 
         {/* ── 2. ASOSIY 3 TA TAB (Tezkor Raqib, Do'stlar, Xona Kodi) ── */}
         {!activeCode && (
-          <div className="flex bg-slate-950/90 p-1 rounded-2xl border border-slate-800 mb-3.5 shrink-0 gap-1">
+          <div className="flex bg-slate-950/90 p-1 rounded-2xl border border-slate-800 mb-3.5 landscape:mb-1.5 shrink-0 gap-1">
             {/* Tab 1: Tezkor Raqib */}
             <button
               onClick={() => {
                 if (onlineStatus === 'searching') handleCancelMatchmaking();
                 setActiveTab('quick');
               }}
-              className={`flex-1 py-2 px-1 rounded-xl font-black text-xs flex items-center justify-center gap-1.5 transition-all cursor-pointer ${
+              className={`flex-1 py-2 landscape:py-1 px-1 rounded-xl font-black text-xs flex items-center justify-center gap-1.5 transition-all cursor-pointer ${
                 activeTab === 'quick'
                   ? 'bg-amber-500 text-slate-950 shadow-md'
                   : 'text-slate-400 hover:text-white'
@@ -624,19 +624,19 @@ export default function OnlineRoomModal({
                   </button>
                 </div>
               ) : (
-                <div className="p-5 bg-slate-950/70 rounded-2xl border border-slate-800/80 space-y-4 text-center">
+                <div className="p-4 sm:p-5 landscape:p-2 bg-slate-950/70 rounded-2xl border border-slate-800/80 space-y-3 landscape:space-y-1.5 text-center">
                   <div className="flex flex-col items-center gap-1.5">
-                    <span className="text-3xl mb-1">⚡</span>
-                    <h4 className="font-black text-base text-white">
+                    <span className="text-3xl mb-1 landscape:hidden">⚡</span>
+                    <h4 className="font-black text-base landscape:text-xs text-white">
                       {t('quick_match_heading')}
                     </h4>
-                    <p className="text-slate-400 text-xs max-w-xs leading-relaxed">
+                    <p className="text-slate-400 text-xs landscape:hidden max-w-xs leading-relaxed">
                       {t('quick_match_sub')}
                     </p>
                   </div>
 
                   {/* ── VAQT TOIFALARI VA ULARDA NECHTA KISHI ONLAYN (100% ANIQLIKDA KO'RINADI) ── */}
-                  <div className="flex flex-col gap-2 text-left bg-slate-900/90 p-3 rounded-2xl border border-slate-800">
+                  <div className="flex flex-col gap-2 landscape:gap-1 text-left bg-slate-900/90 p-3 landscape:p-1.5 rounded-2xl border border-slate-800">
                     <div className="text-[11px] font-bold text-slate-300 flex items-center justify-between">
                       <span className="flex items-center gap-1.5">
                         <span>⏱️</span>
@@ -654,7 +654,7 @@ export default function OnlineRoomModal({
                             key={opt.label}
                             type="button"
                             onClick={() => handleSelectTime(idx)}
-                            className={`py-2.5 px-2 rounded-2xl text-center border transition-all cursor-pointer flex flex-col items-center justify-between gap-1.5 ${
+                            className={`py-2 landscape:py-0.5 px-2 landscape:px-1 rounded-2xl landscape:rounded-xl text-center border transition-all cursor-pointer flex flex-col items-center justify-between gap-1.5 landscape:gap-0.5 ${
                               isSelected
                                 ? 'bg-amber-500/20 border-amber-400 text-amber-300 shadow-[0_0_12px_rgba(245,158,11,0.25)] ring-1 ring-amber-400'
                                 : 'bg-slate-950/80 border-slate-800 text-slate-400 hover:border-slate-700 hover:text-slate-200'
@@ -680,7 +680,7 @@ export default function OnlineRoomModal({
 
                   <button
                     onClick={handleStartMatchmaking}
-                    className="w-full py-3.5 bg-gradient-to-r from-amber-500 via-yellow-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-slate-950 font-black text-sm rounded-2xl shadow-xl transition-all active:scale-95 cursor-pointer flex items-center justify-center gap-2"
+                    className="w-full py-3 landscape:py-1.5 landscape:text-xs landscape:rounded-xl bg-gradient-to-r from-amber-500 via-yellow-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-slate-950 font-black text-sm rounded-2xl shadow-xl transition-all active:scale-95 cursor-pointer flex items-center justify-center gap-2"
                   >
                     <span>🔍</span>
                     <span>{t('start_search_btn')}</span>

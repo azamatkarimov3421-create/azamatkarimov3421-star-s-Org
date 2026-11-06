@@ -541,7 +541,9 @@ export default function Board3D({
       alpha: true, // Shaffof fon ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬Â orqa fonga tabiiy qo'shiladi!
       powerPreference: 'high-performance',
     });
-    renderer.setSize(width, height);
+    renderer.setSize(width, height, false);
+    canvas.style.width = "100%";
+    canvas.style.height = "100%";
     renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
     renderer.setClearColor(0x000000, 0); // 100% shaffof fon
     renderer.toneMapping = THREE.ACESFilmicToneMapping;
@@ -566,24 +568,31 @@ export default function Board3D({
       // Foydalanuvchi chizgan binafsha chiziqlar bo'yicha doska maksimal katta qilib o'rnatiladi!
       // Cinema Mode (Kino ko'rish rejimi) yoqilganda esa doska butun ekranni 98% to'ldiradi!
       const isCinema = !!cinemaModeRef.current;
-      const baseDist = isCinema ? 14.8 : 16.6;
-      const lookAtY = 0.0;
-      const lookAtZ = 0.22;
+      const isLandscape = aspect > 1.05;
 
-      // Mobil vertikal va gorizontal ekranlarda masofani proporsional moslash
-      // Samsung A10 dan S26 gacha, Redmi, Honor va barcha telifonlarga 100% moslash
-      const isLandscape = aspect > 1.15;
+      let baseDist: number;
+      let lookAtZ: number;
+
+      if (isLandscape) {
+        // Gorizontal ko'rinish: foydalanuvchi chizgan binafsha chiziqqacha (ekran bo'yicha 95% vertikal)
+        baseDist = isCinema ? 14.2 : 15.6;
+        lookAtZ = 0.75;
+      } else {
+        // Vertikal telefon: barcha 10 ta ustun (A-H) va raqamlar (1-10) to'liq va maksimal keng
+        baseDist = isCinema ? 42.0 : 48.0;
+        lookAtZ = 0.40;
+      }
+
       const scaleFactor = isLandscape
-        ? (isCinema ? Math.max(1.0, 1.48 / aspect) : Math.max(1.0, 1.58 / aspect))
-        : (isCinema ? Math.max(1.0, 1.04 / aspect) : Math.max(1.0, 1.12 / aspect));
+        ? Math.max(1.0, 1.40 / aspect)
+        : Math.max(1.0, 0.46 / aspect);
 
       const camDist = baseDist * scaleFactor;
-
-      const camY = lookAtY + 0.84 * camDist;
+      const camY = 0.84 * camDist;
       const camZ = lookAtZ + 0.54 * camDist;
 
       cameraRef.current.position.set(0, camY, camZ);
-      cameraRef.current.lookAt(0, lookAtY, lookAtZ);
+      cameraRef.current.lookAt(0, 0, lookAtZ);
       cameraRef.current.updateProjectionMatrix();
     };
 
@@ -738,7 +747,11 @@ export default function Board3D({
         const h = entry.contentRect.height;
         if (w > 0 && h > 0 && cameraRef.current && rendererRef.current) {
           updateCameraForAspect(w, h);
-          rendererRef.current.setSize(w, h);
+          rendererRef.current.setSize(w, h, false);
+          if (canvasRef.current) {
+            canvasRef.current.style.width = "100%";
+            canvasRef.current.style.height = "100%";
+          }
         }
       }
     });
@@ -752,7 +765,11 @@ export default function Board3D({
         const h = container.clientHeight || window.innerHeight;
         if (w > 0 && h > 0) {
           updateCameraForAspect(w, h);
-          rendererRef.current.setSize(w, h);
+          rendererRef.current.setSize(w, h, false);
+          if (canvasRef.current) {
+            canvasRef.current.style.width = "100%";
+            canvasRef.current.style.height = "100%";
+          }
         }
       };
       recompute();
@@ -1339,7 +1356,7 @@ export default function Board3D({
         onPointerDown={handlePointerDown}
         onPointerMove={handlePointerMove}
         onPointerUp={handlePointerUp}
-        className="w-full h-full block cursor-pointer select-none touch-none bg-transparent"
+        className="w-full h-full block cursor-pointer select-none touch-none bg-transparent" style={{ width: "100%", height: "100%", display: "block" }}
       />
 
       {/* Yuklanish aylanasi */}

@@ -84,6 +84,7 @@ function AppContent() {
       if (mdl === 'online') setShowOnlineModal(true);
       if (mdl === 'leaderboard') setShowLeaderboard(true);
       if (mdl === 'clock') setShowStandaloneClock(true);
+      if (mdl === 'promo') dispatch({ type: 'SHOW_PROMO_TEST' });
 
       if (params.get('force3d') === '1') {
         dispatch({ type: 'SET_3D', enabled: true });
