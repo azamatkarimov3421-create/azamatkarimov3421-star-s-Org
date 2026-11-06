@@ -27,6 +27,14 @@
         --board-size: min(calc(100vw - 16px), calc(100dvh - 195px), 480px);
         --board-size-3d: min(calc(100vw - 16px), calc(100dvh - 215px), 440px);
       }
+      /* Mobil telefonlar gorizontal (yonbosh) holatida: to'liq ekran bo'yicha tabiiy moslash */
+      @media (orientation: landscape) and (max-height: 560px) {
+        :root {
+          --board-size: min(calc(100dvh - 16px), calc(100vw - 160px), 480px);
+          --board-size-3d: min(calc(100dvh - 16px), calc(100vw - 160px), 480px);
+        }
+      }
+
       @media (min-width: 768px) {
         :root {
           --board-size: min(calc(100dvh - 145px), calc(100vw - 370px), 560px);
@@ -58,8 +66,8 @@
         margin-right: auto !important;
       }
     </style>
-    <script type="module" crossorigin src="./assets/index-BaBxsr9M.js"></script>
-    <link rel="stylesheet" crossorigin href="./assets/index-D1w9xRhu.css">
+    <script type="module" crossorigin src="./assets/index-DeHsHj1d.js"></script>
+    <link rel="stylesheet" crossorigin href="./assets/index-UX5g50Zo.css">
   </head>
   <body class="overscroll-none select-none touch-manipulation">
     <div id="root"></div>

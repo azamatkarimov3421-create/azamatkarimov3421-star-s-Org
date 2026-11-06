@@ -557,12 +557,17 @@ export default function Board3D({
       // Responsive masofa va balandlik: telefonning tor vertikal ekranida (aspect < 0.94)
       // doskaning 10 ta ustuni va 1-10 raqamlari har doim to'liq ekranga sig'adi!
       // Qulay, keng va professional 61 darajali ko'rish burchagi
-      const baseDist = 18.2;
+      const baseDist = 18.6;
       const lookAtY = 0.0;
       const lookAtZ = 0.22;
 
-      // Mobil vertikal ekranlarda masofani proporsional moslash
-      const scaleFactor = Math.max(1.0, 0.95 / aspect);
+      // Mobil vertikal va gorizontal ekranlarda masofani proporsional moslash
+      // Samsung A10 dan S26 gacha, Redmi, Honor va barcha telifonlarga 100% moslash
+      const isLandscape = aspect > 1.15;
+      const scaleFactor = isLandscape
+        ? Math.max(1.0, 1.70 / aspect)
+        : Math.max(1.0, 1.10 / aspect);
+
       const camDist = baseDist * scaleFactor;
 
       const camY = lookAtY + 0.84 * camDist;
@@ -729,6 +734,24 @@ export default function Board3D({
     });
     resizeObserver.observe(container);
 
+    // Telifon ekrani burilganda (Samsung, Redmi, Honor va boshqalar) darhol kamerani tekislash
+    const handleOrientationChange = () => {
+      const recompute = () => {
+        if (!container || !cameraRef.current || !rendererRef.current) return;
+        const w = container.clientWidth || window.innerWidth;
+        const h = container.clientHeight || window.innerHeight;
+        if (w > 0 && h > 0) {
+          updateCameraForAspect(w, h);
+          rendererRef.current.setSize(w, h);
+        }
+      };
+      recompute();
+      setTimeout(recompute, 80);
+      setTimeout(recompute, 280);
+    };
+    window.addEventListener('orientationchange', handleOrientationChange);
+    window.addEventListener('resize', handleOrientationChange);
+
     // WebGL Context Lost / Restored boshqaruvi (Telifon ekrani o'chib-yoqilganda qotmasligi uchun)
     const handleContextLost = (e: Event) => {
       e.preventDefault();
@@ -743,6 +766,8 @@ export default function Board3D({
     return () => {
       destroyed = true;
       resizeObserver.disconnect();
+      window.removeEventListener('orientationchange', handleOrientationChange);
+      window.removeEventListener('resize', handleOrientationChange);
       canvas.removeEventListener('webglcontextlost', handleContextLost);
       canvas.removeEventListener('webglcontextrestored', handleContextRestored);
       if (animFrameRef.current) cancelAnimationFrame(animFrameRef.current);

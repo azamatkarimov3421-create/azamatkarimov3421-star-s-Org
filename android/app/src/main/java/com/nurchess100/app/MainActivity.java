@@ -348,7 +348,9 @@ public class MainActivity extends AppCompatActivity {
         }
 
         // Javascript Bridge ulash
-        webView.addJavascriptInterface(new AndroidBridge(), "AndroidBridge");
+        AndroidBridge bridge = new AndroidBridge();
+        webView.addJavascriptInterface(bridge, "AndroidBridge");
+        webView.addJavascriptInterface(bridge, "Android");
 
         // Fayl yuklab olish (APK yoki boshqa fayllar)
         webView.setDownloadListener((url, userAgent, contentDisposition, mimetype, contentLength) -> {

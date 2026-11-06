@@ -27,6 +27,14 @@
         --board-size: min(calc(100vw - 16px), calc(100dvh - 195px), 480px);
         --board-size-3d: min(calc(100vw - 16px), calc(100dvh - 215px), 440px);
       }
+      /* Mobil telefonlar gorizontal (yonbosh) holatida: to'liq ekran bo'yicha tabiiy moslash */
+      @media (orientation: landscape) and (max-height: 560px) {
+        :root {
+          --board-size: min(calc(100dvh - 16px), calc(100vw - 160px), 480px);
+          --board-size-3d: min(calc(100dvh - 16px), calc(100vw - 160px), 480px);
+        }
+      }
+
       @media (min-width: 768px) {
         :root {
           --board-size: min(calc(100dvh - 145px), calc(100vw - 370px), 560px);

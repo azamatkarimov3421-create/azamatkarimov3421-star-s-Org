@@ -177,11 +177,15 @@ export default function GameScreen({ onBack, onOpenSettings }: GameScreenProps) 
     logger.logInfo('SYSTEM', "Foydalanuvchi tomonidan doska holati muvaffaqiyatli tiklandi va qotishdan chiqarildi.");
   }, [dispatch]);
 
-  // Ekranni 90° burish / Yonboshcha qilish (Landscape Toggle)
+  // Ekranni 90° burish / Yonboshcha qilish (Landscape Toggle) - Samsung, Redmi, Honor va barcha telifonlarga
   const handleToggleOrientation = React.useCallback(() => {
     try {
-      if ((window as any).Android?.toggleOrientation) {
-        (window as any).Android.toggleOrientation();
+      const bridge = (window as any).AndroidBridge || (window as any).Android;
+      if (bridge?.toggleOrientation) {
+        bridge.toggleOrientation();
+        const isLandscapeNow = window.innerWidth > window.innerHeight;
+        setSideNotice(isLandscapeNow ? "📱 Tik (vertikal) rejim" : "🔄 Yonbosh (gorizontal) rejim");
+        setTimeout(() => setSideNotice(null), 2200);
         return;
       }
     } catch {}
@@ -190,12 +194,24 @@ export default function GameScreen({ onBack, onOpenSettings }: GameScreenProps) 
       if (screen.orientation && (screen.orientation as any).lock) {
         const isPortrait = window.innerHeight > window.innerWidth;
         if (isPortrait) {
-          (screen.orientation as any).lock('landscape').catch(() => {});
+          (screen.orientation as any).lock('landscape').then(() => {
+            setSideNotice("🔄 Yonbosh (gorizontal) rejim");
+            setTimeout(() => setSideNotice(null), 2200);
+          }).catch(() => {});
         } else {
-          (screen.orientation as any).lock('portrait').catch(() => {});
+          (screen.orientation as any).lock('portrait').then(() => {
+            setSideNotice("📱 Tik (vertikal) rejim");
+            setTimeout(() => setSideNotice(null), 2200);
+          }).catch(() => {});
         }
+        return;
       }
     } catch {}
+
+    // Brauzer fallback xabarnomasi
+    const isLand = window.innerWidth > window.innerHeight;
+    setSideNotice(isLand ? "📱 Telifonni tik holatga buring" : "🔄 Telifonni yonbosh (gorizontal) holatga buring");
+    setTimeout(() => setSideNotice(null), 2500);
   }, []);
 
   // Telifon ekrani yoqilganda / o'yinga qaytganda bot holatini uyg'otish va tekshirish
@@ -434,39 +450,49 @@ export default function GameScreen({ onBack, onOpenSettings }: GameScreenProps) 
       {/* Hashamatli xalqaro shaxmat studiyasi mayin vinetka foni */}
       <div className="absolute inset-0 bg-black/25 pointer-events-none z-0" />
 
-      {/* ── 1. CHAP TOMONDAGI SUZUVCHI TUGMALAR (☰ Menyu, ⟲ Doskani burish) — Screenshotdagi 1 ga 1 ── */}
-      <div className="absolute top-6 sm:top-10 md:top-12 left-3 sm:left-6 md:left-8 z-40 flex flex-col gap-3 sm:gap-4 pointer-events-auto">
+      {/* ── 1. CHAP TOMONDAGI SUZUVCHI TUGMALAR (☰ Menyu, 📱 Yonbosh/Tik, ⟲ Doskani burish, ⇄ Oq/Qora) ── */}
+      <div className="absolute top-4 sm:top-8 landscape:top-1/2 landscape:-translate-y-1/2 left-[max(0.6rem,env(safe-area-inset-left))] z-40 flex flex-col gap-2 sm:gap-3 pointer-events-auto">
         {/* Menyuni ochish (☰ Hamburger) */}
         <button
           onClick={() => setShowMenuModal(true)}
-          className="w-11 h-11 sm:w-13 sm:h-13 md:w-14 md:h-14 rounded-2xl bg-black/65 hover:bg-black/85 active:scale-95 border border-white/20 text-white shadow-[0_12px_28px_rgba(0,0,0,0.75)] flex items-center justify-center transition-all cursor-pointer backdrop-blur-md"
+          className="w-10 h-10 sm:w-12 sm:h-12 rounded-2xl bg-black/65 hover:bg-black/85 active:scale-95 border border-white/20 text-white shadow-[0_10px_24px_rgba(0,0,0,0.75)] flex items-center justify-center transition-all cursor-pointer backdrop-blur-md"
           title="Menyu"
         >
-          <MenuIcon size={26} />
+          <MenuIcon size={24} />
+        </button>
+
+        {/* Ekranni burish (Tik ⇄ Yonbosh / Orientation) */}
+        <button
+          onClick={handleToggleOrientation}
+          className="w-10 h-10 sm:w-12 sm:h-12 rounded-2xl bg-black/65 hover:bg-black/85 active:scale-95 border border-sky-400/40 text-sky-300 shadow-[0_10px_24px_rgba(0,0,0,0.75)] flex flex-col items-center justify-center gap-0.5 transition-all cursor-pointer backdrop-blur-md"
+          title="Ekranni burish (Tik ⇄ Yonbosh)"
+        >
+          <span className="text-sm font-black leading-none">🔄</span>
+          <span className="text-[7px] font-extrabold text-sky-200 uppercase tracking-tighter">Yonbosh</span>
         </button>
 
         {/* Doskani aylantirish (⟲ Rotate / Flip) */}
         <button
           onClick={() => dispatch({ type: 'TOGGLE_FLIP' })}
-          className="w-11 h-11 sm:w-13 sm:h-13 md:w-14 md:h-14 rounded-2xl bg-black/65 hover:bg-black/85 active:scale-95 border border-white/20 text-white shadow-[0_12px_28px_rgba(0,0,0,0.75)] flex items-center justify-center transition-all cursor-pointer backdrop-blur-md"
+          className="w-10 h-10 sm:w-12 sm:h-12 rounded-2xl bg-black/65 hover:bg-black/85 active:scale-95 border border-white/20 text-white shadow-[0_10px_24px_rgba(0,0,0,0.75)] flex items-center justify-center transition-all cursor-pointer backdrop-blur-md"
           title={t('btn_flip')}
         >
-          <RotateCcwIcon size={24} />
+          <RotateCcwIcon size={22} />
         </button>
 
         {/* Tomonni almashtirish (⇄ Oq / Qora) */}
         <button
           onClick={handleSwitchSides}
-          className="w-11 h-11 sm:w-13 sm:h-13 md:w-14 md:h-14 rounded-2xl bg-black/65 hover:bg-black/85 active:scale-95 border border-amber-500/40 text-amber-300 shadow-[0_12px_28px_rgba(0,0,0,0.75)] flex flex-col items-center justify-center gap-0.5 transition-all cursor-pointer backdrop-blur-md"
+          className="w-10 h-10 sm:w-12 sm:h-12 rounded-2xl bg-black/65 hover:bg-black/85 active:scale-95 border border-amber-500/40 text-amber-300 shadow-[0_10px_24px_rgba(0,0,0,0.75)] flex flex-col items-center justify-center gap-0.5 transition-all cursor-pointer backdrop-blur-md"
           title="Tomonni almashtirish (Oq ⇄ Qora)"
         >
-          <span className="text-base font-black leading-none">⇄</span>
-          <span className="text-[7.5px] font-bold text-amber-200 uppercase tracking-tighter">Oq/Qora</span>
+          <span className="text-sm font-black leading-none">⇄</span>
+          <span className="text-[7px] font-bold text-amber-200 uppercase tracking-tighter">Oq/Qora</span>
         </button>
       </div>
 
       {/* ── 2. O'NG TOMONDAGI SUZUVCHI TUGMALAR ── */}
-      <div className="absolute top-6 sm:top-10 md:top-12 right-3 sm:right-6 md:right-8 z-40 flex flex-col gap-3 sm:gap-4 pointer-events-auto">
+      <div className="absolute top-4 sm:top-8 landscape:top-1/2 landscape:-translate-y-1/2 right-[max(0.6rem,env(safe-area-inset-right))] z-40 flex flex-col gap-2 sm:gap-3 pointer-events-auto">
         {gameMode === 'online' ? (
           <>
             {/* Onlayn: Durang taklif qilish */}
