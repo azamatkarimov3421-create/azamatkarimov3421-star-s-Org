@@ -406,7 +406,7 @@ export default function OnlineRoomModal({
       }}
       className="fixed inset-0 bg-black/85 backdrop-blur-md flex items-center justify-center z-50 p-3 sm:p-4 animate-fadeIn font-sans select-none"
     >
-      <div className="relative max-w-lg w-full bg-gradient-to-b from-slate-900 via-slate-900 to-slate-950 rounded-3xl p-5 sm:p-6 shadow-2xl border border-slate-700/80 max-h-[92vh] flex flex-col overflow-hidden">
+      <div className="relative max-w-lg landscape:max-w-xl w-full bg-gradient-to-b from-slate-900 via-slate-900 to-slate-950 rounded-3xl p-3.5 sm:p-6 landscape:p-3 shadow-2xl border border-slate-700/80 max-h-[92dvh] flex flex-col overflow-hidden">
         {/* Yopish tugmasi */}
         <button
           onClick={handleLeaveRoom}

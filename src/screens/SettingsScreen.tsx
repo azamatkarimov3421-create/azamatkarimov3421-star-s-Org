@@ -131,7 +131,7 @@ export default function SettingsScreen({ onBack, onOpenRules }: SettingsScreenPr
     <div className={`min-h-screen w-full ${isLight ? 'bg-[#f6f4ee]' : 'bg-[#181614]'} flex flex-col font-sans select-none pb-16 transition-colors duration-200`}>
       {/* ── HEADER ── */}
       <header className={`sticky top-0 z-30 ${isLight ? 'bg-[#f6f4ee]/95 border-[#e2ddd3]' : 'bg-[#181614]/95 border-[#352f28]'} backdrop-blur-md border-b px-4 sm:px-6 py-3.5 flex items-center justify-between pt-[max(0.7rem,env(safe-area-inset-top))] transition-colors`}>
-        <div className="flex items-center gap-3.5 max-w-xl mx-auto w-full">
+        <div className="flex items-center gap-3.5 max-w-xl landscape:max-w-5xl mx-auto w-full">
           <button
             onClick={onBack}
             className={`w-9 h-9 rounded-xl flex items-center justify-center transition-all active:scale-95 cursor-pointer shadow-sm ${
@@ -155,7 +155,7 @@ export default function SettingsScreen({ onBack, onOpenRules }: SettingsScreenPr
       </header>
 
       {/* ── ASOSIY GURUHLANGAN SOZLAMALAR MAZMUNI ── */}
-      <main className="flex-1 max-w-xl mx-auto w-full px-4 sm:px-6 py-5 flex flex-col gap-6">
+      <main className="flex-1 max-w-xl landscape:max-w-5xl mx-auto w-full px-4 sm:px-6 py-4 landscape:py-3 grid grid-cols-1 landscape:grid-cols-2 gap-4 sm:gap-6">
 
         {/* ══════════════════════════════════════════════
             1-BO'LIM: KO'RINISH VA MAVZU (APPEARANCE & THEME)

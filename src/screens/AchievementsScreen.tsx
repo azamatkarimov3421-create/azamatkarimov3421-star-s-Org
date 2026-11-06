@@ -23,7 +23,7 @@ export default function AchievementsScreen({ onBack }: AchievementsScreenProps) 
       !window.matchMedia('(prefers-color-scheme: dark)').matches);
 
   return (
-    <div className={`min-h-screen w-full ${isLight ? 'bg-[#f5f2eb] text-[#1a1917]' : 'bg-[#070b12] text-slate-100'} flex flex-col font-sans select-none pb-12 max-w-md mx-auto sm:max-w-2xl lg:max-w-4xl transition-colors duration-200`}>
+    <div className={`min-h-screen w-full ${isLight ? 'bg-[#f5f2eb] text-[#1a1917]' : 'bg-[#070b12] text-slate-100'} flex flex-col font-sans select-none pb-12 max-w-md mx-auto sm:max-w-2xl landscape:max-w-4xl lg:max-w-4xl transition-colors duration-200`}>
       {/* Header */}
       <header className={`sticky top-0 z-30 backdrop-blur-xl ${isLight ? 'bg-white/95 border-b border-[#e2ddd3]' : 'bg-slate-950/85 border-b border-slate-800/80'} px-4 py-3.5 flex items-center gap-3 pt-[max(0.8rem,env(safe-area-inset-top))] transition-colors`}>
         <button
@@ -42,7 +42,7 @@ export default function AchievementsScreen({ onBack }: AchievementsScreenProps) 
       </header>
 
       {/* Yutuqlar Ro'yxati (Mockup #8 kabi) */}
-      <main className="flex-1 px-4 py-5 flex flex-col sm:grid sm:grid-cols-2 gap-3">
+      <main className="flex-1 px-4 py-3 sm:py-5 flex flex-col sm:grid sm:grid-cols-2 landscape:grid-cols-2 gap-2.5 sm:gap-3">
         {achievements.map((ach) => {
           const isComplete = ach.unlocked || ach.current >= ach.target;
           const percent = Math.min(100, Math.round((ach.current / ach.target) * 100));

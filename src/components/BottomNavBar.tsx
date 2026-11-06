@@ -32,7 +32,7 @@ export default function BottomNavBar({ activeTab, onSelectTab }: BottomNavBarPro
   ];
 
   return (
-    <nav className={`md:hidden fixed bottom-0 left-0 right-0 z-40 backdrop-blur-md px-3 py-1.5 flex items-center justify-around pb-[max(0.6rem,env(safe-area-inset-bottom))] max-w-md mx-auto sm:max-w-none transition-colors duration-200 ${
+    <nav className={`md:hidden landscape:hidden fixed bottom-0 left-0 right-0 z-40 backdrop-blur-md px-3 py-1.5 flex items-center justify-around pb-[max(0.6rem,env(safe-area-inset-bottom))] max-w-md mx-auto sm:max-w-none transition-colors duration-200 ${
       isLight
         ? 'bg-white/95 border-t border-[#e2ddd3] shadow-[0_-4px_20px_rgba(0,0,0,0.06)]'
         : 'bg-[#21201d]/95 border-t border-[#383531] shadow-[0_-4px_20px_rgba(0,0,0,0.5)]'

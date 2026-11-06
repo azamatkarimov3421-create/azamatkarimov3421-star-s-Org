@@ -103,7 +103,7 @@ export default function VsAiModal({
 
   return (
     <div className="fixed inset-0 bg-black/85 backdrop-blur-md z-50 flex items-center justify-center p-3 sm:p-4 animate-fadeIn">
-      <div className="relative w-full max-w-lg bg-[#181c19] border border-[#2b3d30] rounded-3xl p-4 sm:p-6 shadow-2xl flex flex-col max-h-[92vh] overflow-hidden text-[#f1f1f1]">
+      <div className="relative w-full max-w-lg landscape:max-w-2xl bg-[#181c19] border border-[#2b3d30] rounded-3xl p-3 sm:p-6 landscape:p-3 shadow-2xl flex flex-col max-h-[92dvh] overflow-hidden text-[#f1f1f1]">
         {/* ── 1. MODAL SARLAVHASI ──────────────────────────────── */}
         <div className="flex items-center justify-between pb-3.5 border-b border-[#2b3d30] shrink-0">
           <div className="flex items-center gap-3">
@@ -146,7 +146,7 @@ export default function VsAiModal({
               </span>
             </div>
 
-            <div className="grid grid-cols-1 gap-2">
+            <div className="grid grid-cols-1 sm:grid-cols-2 landscape:grid-cols-2 gap-2">
               {BOT_ROSTER.map((bot) => {
                 const isSelected = selectedDepth === bot.depth;
                 return (
@@ -162,7 +162,7 @@ export default function VsAiModal({
                   >
                     {/* Bot Avatari */}
                     <div
-                      className={`w-12 h-12 rounded-2xl border flex items-center justify-center text-2xl shadow-md shrink-0 ${
+                      className={`w-10 h-10 sm:w-12 sm:h-12 landscape:w-10 landscape:h-10 rounded-2xl border flex items-center justify-center text-xl sm:text-2xl landscape:text-xl shadow-md shrink-0 ${
                         isSelected ? bot.accentColor : 'bg-[#1d2720] border-[#2a3a2e]'
                       }`}
                     >
@@ -273,7 +273,7 @@ export default function VsAiModal({
           <button
             type="button"
             onClick={handleStartGame}
-            className="w-full py-3.5 px-4 rounded-2xl bg-gradient-to-r from-[#22c55e] to-[#16a34a] hover:from-[#4ade80] hover:to-[#22c55e] text-slate-950 font-black text-sm sm:text-base flex items-center justify-center gap-2 shadow-[0_4px_15px_rgba(34,197,94,0.35)] active:scale-[0.99] transition-all cursor-pointer"
+            className="w-full py-2.5 sm:py-3.5 landscape:py-2.5 px-4 rounded-2xl bg-gradient-to-r from-[#22c55e] to-[#16a34a] hover:from-[#4ade80] hover:to-[#22c55e] text-slate-950 font-black text-sm sm:text-base flex items-center justify-center gap-2 shadow-[0_4px_15px_rgba(34,197,94,0.35)] active:scale-[0.99] transition-all cursor-pointer"
           >
             <PlayIcon size={20} className="fill-slate-950" />
             <span>

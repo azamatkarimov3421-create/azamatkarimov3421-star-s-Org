@@ -96,7 +96,7 @@ export default function LeaderboardModal({ isOpen, onClose }: LeaderboardModalPr
 
   return (
     <div className="fixed inset-0 bg-black/85 backdrop-blur-md flex items-center justify-center z-50 p-4 animate-fadeIn font-sans">
-      <div className="relative max-w-xl w-full bg-gradient-to-b from-slate-900 via-slate-900 to-slate-950 rounded-3xl p-5 sm:p-7 shadow-2xl border border-slate-700/80">
+      <div className="relative max-w-xl w-full bg-gradient-to-b from-slate-900 via-slate-900 to-slate-950 rounded-3xl p-3.5 sm:p-6 landscape:p-3 shadow-2xl border border-slate-700/80 max-h-[92dvh] flex flex-col overflow-hidden">
         {/* Yopish tugmasi */}
         <button
           onClick={onClose}
@@ -152,7 +152,7 @@ export default function LeaderboardModal({ isOpen, onClose }: LeaderboardModalPr
         </div>
 
         {/* Asosiy Tarkib */}
-        <div className="max-h-[350px] overflow-y-auto space-y-2 pr-1">
+        <div className="flex-1 overflow-y-auto space-y-2 pr-1">
           {loading ? (
             <div className="text-center py-12 text-slate-400 text-xs">
               <span className="w-5 h-5 border-2 border-amber-400 border-t-transparent rounded-full inline-block animate-spin mr-2" />

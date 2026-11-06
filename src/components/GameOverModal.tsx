@@ -238,7 +238,7 @@ export default function GameOverModal({ onExit, isOpen, onClose }: GameOverModal
 
   return (
     <div className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-50 p-4 animate-fadeIn">
-      <div className="relative max-w-md w-full bg-[#21201d] rounded-2xl p-6 sm:p-7 shadow-2xl border border-[#383531] text-center">
+      <div className="relative max-w-md w-full bg-[#21201d] rounded-2xl p-4 sm:p-6 landscape:p-3.5 shadow-2xl border border-[#383531] text-center max-h-[92dvh] overflow-y-auto">
         {/* Natija Ikonkasi */}
         <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-[#2c2a26] border border-[#383531] text-3xl mb-3 shadow-inner">
           {icon}

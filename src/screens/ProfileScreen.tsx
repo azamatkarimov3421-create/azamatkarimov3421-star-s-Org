@@ -133,7 +133,7 @@ export default function ProfileScreen({
   };
 
   return (
-    <div className={`min-h-screen w-full ${isLight ? 'bg-[#f5f2eb] text-[#1a1917]' : 'bg-[#262421] text-[#f1f1f1]'} flex flex-col font-sans select-none pb-24 max-w-md mx-auto sm:max-w-2xl lg:max-w-4xl transition-colors duration-200`}>
+    <div className={`min-h-screen w-full ${isLight ? 'bg-[#f5f2eb] text-[#1a1917]' : 'bg-[#262421] text-[#f1f1f1]'} flex flex-col font-sans select-none pb-24 max-w-md mx-auto sm:max-w-2xl landscape:max-w-5xl lg:max-w-5xl transition-colors duration-200`}>
       {/* Muvaffaqiyat xabari (Toast) */}
       {successMsg && (
         <div className="fixed top-4 left-1/2 -translate-x-1/2 z-50 px-4 py-2.5 rounded-2xl bg-emerald-600 text-white font-bold text-xs shadow-2xl flex items-center gap-2 animate-fadeIn border border-emerald-400">
@@ -165,7 +165,7 @@ export default function ProfileScreen({
         </button>
       </header>
 
-      <main className="flex-1 px-4 py-4 space-y-4">
+      <main className="flex-1 px-4 py-3 sm:py-4 space-y-4 landscape:space-y-0 landscape:grid landscape:grid-cols-2 landscape:gap-4">
         {/* AGAR GOOGLE ULANGAN BO'LMASA — FAQAT GOOGLE AKAUTDAN KIRISH VA RO'YXATDAN O'TISH */}
         {!profile.isGoogleLinked ? (
           <div className={`p-6 sm:p-8 rounded-3xl ${isLight ? 'bg-white border border-[#e2ddd3] shadow-md' : 'bg-gradient-to-b from-[#2a2723] to-[#21201d] border border-[#81b64c]/40 shadow-2xl'} flex flex-col items-center text-center gap-4 animate-fadeIn`}>

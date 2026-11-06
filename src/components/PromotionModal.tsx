@@ -33,12 +33,12 @@ export default function PromotionModal() {
 
   return (
     <div className="fixed inset-0 bg-black/85 backdrop-blur-md flex items-center justify-center z-[100] p-4 animate-fadeIn">
-      <div className="relative max-w-lg w-full bg-gradient-to-b from-slate-900 via-slate-900 to-slate-950 rounded-3xl p-6 sm:p-8 shadow-[0_25px_60px_rgba(0,0,0,0.95)] border-2 border-amber-500/60 ring-1 ring-amber-400/30">
+      <div className="relative max-w-lg landscape:max-w-xl w-full bg-gradient-to-b from-slate-900 via-slate-900 to-slate-950 rounded-3xl p-4 sm:p-6 landscape:p-3 shadow-[0_25px_60px_rgba(0,0,0,0.95)] border-2 border-amber-500/60 ring-1 ring-amber-400/30 max-h-[92dvh] overflow-y-auto">
         {/* Dekorativ nur effekti */}
         <div className="absolute -top-12 left-1/2 -translate-x-1/2 w-32 h-32 bg-amber-500/20 rounded-full blur-2xl pointer-events-none" />
 
         {/* Sarlavha */}
-        <div className="text-center mb-6 relative">
+        <div className="text-center mb-3 sm:mb-6 landscape:mb-2 relative">
           <span className="inline-block p-3 rounded-2xl bg-amber-500/15 border border-amber-500/30 text-2xl mb-2 shadow-inner">
             👑
           </span>
@@ -51,7 +51,7 @@ export default function PromotionModal() {
         </div>
 
         {/* Donalar kartalari */}
-        <div className="grid grid-cols-2 sm:grid-cols-5 gap-3">
+        <div className="grid grid-cols-2 sm:grid-cols-5 landscape:grid-cols-5 gap-2 sm:gap-3">
           {PROMOTION_PIECES.map(({ type, name, score }) => {
             const isNur = type === 'Nur';
             return (
@@ -66,7 +66,7 @@ export default function PromotionModal() {
               >
                 {/* Don ikonkasi */}
                 <div className="w-14 h-14 sm:w-16 sm:h-16 flex items-center justify-center my-1 group-hover:scale-110 transition-transform">
-                  <PieceIcon type={type} color={color} size={54} is3D={is3D} />
+                  <PieceIcon type={type} color={color} size={46} is3D={false} />
                 </div>
 
                 {/* Nomi */}

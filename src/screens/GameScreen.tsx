@@ -692,8 +692,8 @@ export default function GameScreen({ onBack, onOpenSettings }: GameScreenProps) 
 
       {/* ── 5. ASOSIY O'YIN MENYUSI MODALI (☰ Hamburger bosilganda ochiladi) ── */}
       {showMenuModal && (
-        <div className="fixed inset-0 bg-black/80 backdrop-blur-md z-50 flex items-center justify-center p-4 animate-fadeIn">
-          <div className="relative w-full max-w-sm bg-[#1e1b18]/95 border border-[#3e342a] rounded-3xl p-5 shadow-2xl flex flex-col gap-4 text-white">
+        <div className="fixed inset-0 bg-black/80 backdrop-blur-md z-50 flex items-center justify-center p-3 sm:p-4 animate-fadeIn">
+          <div className="relative w-full max-w-sm landscape:max-w-md bg-[#1e1b18]/95 border border-[#3e342a] rounded-3xl p-3.5 sm:p-5 landscape:p-3 shadow-2xl flex flex-col gap-3.5 landscape:gap-2 text-white max-h-[92dvh] overflow-y-auto">
             {/* Modal Sarlavhasi */}
             <div className="flex items-center justify-between pb-3 border-b border-[#3e342a]">
               <div className="flex items-center gap-2">
@@ -980,8 +980,8 @@ export default function GameScreen({ onBack, onOpenSettings }: GameScreenProps) 
 
       {/* ── 6. DONALAR VA O'YINCHI HOLATI MODALI (♟ bosilganda ochiladi) ── */}
       {showPiecesModal && (
-        <div className="fixed inset-0 bg-black/80 backdrop-blur-md z-50 flex items-center justify-center p-4 animate-fadeIn">
-          <div className="relative w-full max-w-sm bg-[#1e1b18]/95 border border-[#3e342a] rounded-3xl p-5 shadow-2xl flex flex-col gap-4 text-white">
+        <div className="fixed inset-0 bg-black/80 backdrop-blur-md z-50 flex items-center justify-center p-3 sm:p-4 animate-fadeIn">
+          <div className="relative w-full max-w-sm landscape:max-w-md bg-[#1e1b18]/95 border border-[#3e342a] rounded-3xl p-3.5 sm:p-5 landscape:p-3 shadow-2xl flex flex-col gap-3.5 landscape:gap-2 text-white max-h-[92dvh] overflow-y-auto">
             <div className="flex items-center justify-between pb-3 border-b border-[#3e342a]">
               <div className="flex items-center gap-2">
                 <ChessPawnIcon size={20} className="text-[#81b64c]" />
@@ -1038,8 +1038,8 @@ export default function GameScreen({ onBack, onOpenSettings }: GameScreenProps) 
 
       {/* Bot darajasini o'zgartirish modali (vsAI rejimida) */}
       {showVsAiLevelModal && (
-        <div className="fixed inset-0 bg-black/75 backdrop-blur-sm z-50 flex items-center justify-center p-4 animate-fadeIn">
-          <div className="relative w-full max-w-sm bg-[#21201d] border border-[#383531] rounded-2xl p-5 shadow-2xl flex flex-col gap-4">
+        <div className="fixed inset-0 bg-black/75 backdrop-blur-sm z-50 flex items-center justify-center p-3 sm:p-4 animate-fadeIn">
+          <div className="relative w-full max-w-sm landscape:max-w-md bg-[#21201d] border border-[#383531] rounded-2xl p-3.5 sm:p-5 landscape:p-3 shadow-2xl flex flex-col gap-3.5 landscape:gap-2 max-h-[92dvh] overflow-y-auto">
             <div className="flex items-center justify-between pb-3 border-b border-[#383531]">
               <div className="flex items-center gap-2">
                 <BotIcon size={20} className="text-[#81b64c]" />

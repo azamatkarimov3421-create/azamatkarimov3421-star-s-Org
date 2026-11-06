@@ -392,7 +392,7 @@ export default function RulesScreen({ onBack }: RulesScreenProps) {
   ];
 
   return (
-    <div className={`min-h-screen w-full ${isLight ? 'bg-[#f5f2eb] text-[#1a1917]' : 'bg-[#262421] text-[#f1f1f1]'} flex flex-col font-sans select-none pb-14 max-w-md mx-auto sm:max-w-2xl lg:max-w-5xl transition-colors duration-200`}>
+    <div className={`min-h-screen w-full ${isLight ? 'bg-[#f5f2eb] text-[#1a1917]' : 'bg-[#262421] text-[#f1f1f1]'} flex flex-col font-sans select-none pb-14 max-w-md mx-auto sm:max-w-2xl landscape:max-w-5xl lg:max-w-5xl transition-colors duration-200`}>
       {/* ── YUQORI SIKLLIK HEADER ── */}
       <header className={`sticky top-0 z-30 ${isLight ? 'bg-white/95 border-b border-[#e2ddd3]' : 'bg-[#21201d]/95 border-b border-[#383531]'} backdrop-blur-md px-4 py-3 flex items-center gap-3 pt-[max(0.7rem,env(safe-area-inset-top))] transition-colors`}>
         <button

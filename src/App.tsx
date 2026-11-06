@@ -74,6 +74,21 @@ function AppContent() {
   useEffect(() => {
     try {
       const params = new URLSearchParams(window.location.search);
+      const scr = params.get('screen') as ScreenType;
+      if (scr && ['home', 'game', 'settings', 'profile', 'rules', 'achievements', 'splash'].includes(scr)) {
+        setCurrentScreen(scr);
+      }
+      const mdl = params.get('modal');
+      if (mdl === 'vsai') setShowVsAiModal(true);
+      if (mdl === 'botvsbot') setShowBotVsBotModal(true);
+      if (mdl === 'online') setShowOnlineModal(true);
+      if (mdl === 'leaderboard') setShowLeaderboard(true);
+      if (mdl === 'clock') setShowStandaloneClock(true);
+
+      if (params.get('force3d') === '1') {
+        dispatch({ type: 'SET_3D', enabled: true });
+      }
+
       const room = params.get('room');
       if (room) {
         const clean = room.trim().toUpperCase().replace(/^NUR-?/i, '');

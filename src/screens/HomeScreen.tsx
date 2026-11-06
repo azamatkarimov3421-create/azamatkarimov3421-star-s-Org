@@ -127,8 +127,9 @@ export default function HomeScreen({
 
       <div className="relative z-10 w-full flex flex-col justify-between min-h-screen">
         {/* ── 1. YUQORI HEADER (FLOATING GLASS NAVBAR) ── */}
-        <header className="w-full max-w-6xl mx-auto px-4 sm:px-6 pt-4 sm:pt-6">
-          <div className={`w-full rounded-2xl sm:rounded-3xl backdrop-blur-md px-4 sm:px-6 py-3 flex items-center justify-between border transition-all ${
+        <header className="w-full max-w-6xl mx-auto px-3 sm:px-6 pt-2 sm:pt-6 landscape:pt-2 landscape:px-3">
+          <div className={`w-full rounded-2xl sm:rounded-3xl backdrop-blur-md px-3 sm:px-6 py-2.5 sm:py-3 landscape:py-1.5 landscape:px-3.5 flex items-center justify-between border transition-all ${
+
             isLight
               ? 'bg-white/95 border-[#e2ddd3] shadow-[0_4px_20px_rgba(0,0,0,0.05)]'
               : 'bg-[#141b17]/90 border-[#27372d] shadow-2xl'
@@ -197,7 +198,7 @@ export default function HomeScreen({
               {profile.isGoogleLinked ? (
                 <button
                   onClick={onOpenStats}
-                  className={`ml-1 px-3 py-1.5 rounded-xl text-xs font-bold transition-all flex items-center gap-2 cursor-pointer shadow-sm border ${
+                  className={`ml-1 px-3 py-1.5 rounded-xl text-xs font-bold transition-all flex items-center gap-2 cursor-pointer shadow-sm border whitespace-nowrap ${
                     isLight
                       ? 'bg-zinc-100 hover:bg-zinc-200 border-zinc-300 text-zinc-900'
                       : 'bg-[#1d2b21] hover:bg-[#25372a] border-[#304736] text-white'
@@ -220,7 +221,7 @@ export default function HomeScreen({
               ) : (
                 <button
                   onClick={onOpenStats}
-                  className="ml-1 px-3.5 py-1.5 rounded-xl text-xs font-black bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-slate-950 flex items-center gap-2 transition-all cursor-pointer shadow-[0_0_12px_rgba(245,158,11,0.35)]"
+                  className="ml-1 px-3.5 py-1.5 rounded-xl text-xs font-black whitespace-nowrap bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-slate-950 flex items-center gap-2 transition-all cursor-pointer shadow-[0_0_12px_rgba(245,158,11,0.35)]"
                   title={t('google_profile_btn')}
                 >
                   <GoogleIcon size={15} />
@@ -281,9 +282,10 @@ export default function HomeScreen({
         </header>
 
         {/* ── 2. ASOSIY QISM (1-GA-1 DESKTOP GRID) ── */}
-        <main className="w-full max-w-6xl mx-auto px-4 sm:px-6 py-6 md:py-8 grid grid-cols-1 md:grid-cols-12 gap-6 items-start flex-1">
+        <main className="w-full max-w-6xl mx-auto px-3 sm:px-6 py-3 md:py-8 landscape:py-2.5 landscape:gap-3.5 landscape:px-3 grid grid-cols-1 md:grid-cols-12 gap-5 md:gap-6 items-start flex-1">
           {/* Chap ustun: Boshlash va 3D/2D tanlov (md:col-span-5) */}
-          <div className={`w-full md:col-span-5 p-5 sm:p-6 rounded-3xl backdrop-blur-md border flex flex-col gap-4 transition-all ${
+          <div className={`w-full md:col-span-5 p-4 sm:p-6 landscape:p-3.5 rounded-3xl backdrop-blur-md border flex flex-col gap-3.5 landscape:gap-2.5 transition-all ${
+
             isLight
               ? 'bg-white/95 border-[#e2ddd3] shadow-[0_8px_30px_rgba(0,0,0,0.06)]'
               : 'bg-[#141b17]/95 border-[#27372d] shadow-2xl'
@@ -491,7 +493,7 @@ export default function HomeScreen({
             {/* Katta Yashil O'yin Tugmasi */}
             <button
               onClick={() => onStartVsAI(homeColorChoice)}
-              className="w-full py-4 px-4 rounded-2xl bg-gradient-to-b from-[#6cb83e] to-[#559b2d] hover:from-[#76c444] hover:to-[#5ea833] text-white font-black text-base flex items-center justify-center gap-2.5 shadow-[0_5px_0_#386b1c] active:translate-y-1 active:shadow-[0_1px_0_#386b1c] transition-all cursor-pointer mt-1"
+              className="w-full py-3 sm:py-4 landscape:py-2.5 px-4 rounded-2xl bg-gradient-to-b from-[#6cb83e] to-[#559b2d] hover:from-[#76c444] hover:to-[#5ea833] text-white font-black text-base flex items-center justify-center gap-2.5 shadow-[0_5px_0_#386b1c] active:translate-y-1 active:shadow-[0_1px_0_#386b1c] transition-all cursor-pointer mt-1"
             >
               <PlayIcon size={20} className="fill-white" />
               <span>

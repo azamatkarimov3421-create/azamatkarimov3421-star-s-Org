@@ -57,7 +57,7 @@ export default function BotVsBotModal({
 
   return (
     <div className="fixed inset-0 bg-black/80 backdrop-blur-md z-50 flex items-center justify-center p-3 sm:p-4 animate-fadeIn">
-      <div className="relative w-full max-w-lg bg-[#181c19] border border-[#2b3d30] rounded-3xl p-5 sm:p-6 shadow-2xl flex flex-col max-h-[92vh] overflow-y-auto">
+      <div className="relative w-full max-w-lg landscape:max-w-3xl bg-[#181c19] border border-[#2b3d30] rounded-3xl p-3.5 sm:p-6 landscape:p-3 shadow-2xl flex flex-col max-h-[92dvh] overflow-y-auto">
         {/* Sarlavha */}
         <div className="flex items-center justify-between pb-4 border-b border-[#2b3d30]">
           <div className="flex items-center gap-3">
@@ -83,7 +83,8 @@ export default function BotVsBotModal({
         </div>
 
         {/* Asosiy qism */}
-        <div className="py-4 space-y-5">
+        <div className="py-3 space-y-3.5 landscape:space-y-2.5">
+          <div className="grid grid-cols-1 md:grid-cols-2 landscape:grid-cols-2 gap-3.5">
           {/* 1. Oq Bot Darajasi */}
           <div>
             <div className="flex items-center justify-between mb-2">
@@ -148,6 +149,7 @@ export default function BotVsBotModal({
                 );
               })}
             </div>
+          </div>
           </div>
 
           {/* 3. O'yin Tezligi (Yurishlar oralig'i) */}
@@ -224,7 +226,7 @@ export default function BotVsBotModal({
           <button
             type="button"
             onClick={handleStartGame}
-            className="w-full py-3.5 px-4 rounded-2xl bg-gradient-to-r from-[#22c55e] to-[#16a34a] hover:from-[#4ade80] hover:to-[#22c55e] text-slate-950 font-black text-sm sm:text-base flex items-center justify-center gap-2 shadow-[0_4px_15px_rgba(34,197,94,0.35)] active:scale-[0.99] transition-all cursor-pointer"
+            className="w-full py-2.5 sm:py-3.5 landscape:py-2.5 px-4 rounded-2xl bg-gradient-to-r from-[#22c55e] to-[#16a34a] hover:from-[#4ade80] hover:to-[#22c55e] text-slate-950 font-black text-sm sm:text-base flex items-center justify-center gap-2 shadow-[0_4px_15px_rgba(34,197,94,0.35)] active:scale-[0.99] transition-all cursor-pointer"
           >
             <PlayIcon size={20} className="fill-slate-950" />
             <span>{t('bvb_start_btn')}</span>
