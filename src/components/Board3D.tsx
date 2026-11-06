@@ -177,55 +177,70 @@ function createKingCrown(goldCrownMat: THREE.Material, pieceId: string): THREE.G
 }
 
 // Nur donasi uchun maxsus 3D qarama-qarshi rangli '+' romb nishoni
-// Oq Nur figurasiga: Qora '+' nishon
-// Qora Nur figurasiga: Oq '+' nishon
-function createNurEmblem(isWhite: boolean, pieceId: string, contrastMat: THREE.Material, goldMat: THREE.Material): THREE.Group {
+// Oq Nur figurasiga: Qora disk va romb, oq '+' xoch
+// Qora Nur figurasiga: Oq disk va romb, qora '+' xoch
+function createNurEmblem(
+  isWhite: boolean,
+  pieceId: string,
+  baseMat: THREE.Material,
+  crossMat: THREE.Material,
+  goldMat: THREE.Material
+): THREE.Group {
   const emblemGroup = new THREE.Group();
   emblemGroup.name = 'nurEmblem';
+  emblemGroup.userData = { isNurEmblem: true, isCrown: true, pieceId };
 
   // 1. Asosiy dumaloq tepalik gardishi (Top Disc Plateau)
-  const discGeo = new THREE.CylinderGeometry(0.092, 0.096, 0.016, 24);
-  const disc = new THREE.Mesh(discGeo, contrastMat);
-  disc.position.y = 0.978;
+  const discGeo = new THREE.CylinderGeometry(0.082, 0.086, 0.018, 32);
+  const disc = new THREE.Mesh(discGeo, baseMat);
+  disc.position.y = 0.976;
   disc.castShadow = true;
   disc.receiveShadow = true;
-  disc.userData = { isNurEmblem: true, pieceId };
+  disc.userData = { isNurEmblem: true, isCrown: true, pieceId };
   emblemGroup.add(disc);
 
   // 2. Romb / Diamond asos (Chamfered Diamond)
-  const diamondGeo = new THREE.CylinderGeometry(0.065, 0.072, 0.012, 4);
+  const diamondGeo = new THREE.CylinderGeometry(0.058, 0.064, 0.014, 4);
   diamondGeo.rotateY(Math.PI / 4);
-  const diamond = new THREE.Mesh(diamondGeo, contrastMat);
-  diamond.position.y = 0.988;
+  const diamond = new THREE.Mesh(diamondGeo, baseMat);
+  diamond.position.y = 0.986;
   diamond.castShadow = true;
   diamond.receiveShadow = true;
-  diamond.userData = { isNurEmblem: true, pieceId };
+  diamond.userData = { isNurEmblem: true, isCrown: true, pieceId };
   emblemGroup.add(diamond);
 
+  // Oltin romb gardishi (Gold diamond trim)
+  const trimGeo = new THREE.CylinderGeometry(0.061, 0.066, 0.008, 4);
+  trimGeo.rotateY(Math.PI / 4);
+  const trim = new THREE.Mesh(trimGeo, goldMat);
+  trim.position.y = 0.984;
+  trim.userData = { isNurEmblem: true, isCrown: true, pieceId };
+  emblemGroup.add(trim);
+
   // 3. Markazdagi bo'rtib chiqqan '+' krest (Cross)
-  const vCrossGeo = new THREE.BoxGeometry(0.022, 0.014, 0.092);
-  const vCross = new THREE.Mesh(vCrossGeo, goldMat);
-  vCross.position.y = 0.996;
+  const vCrossGeo = new THREE.BoxGeometry(0.018, 0.016, 0.076);
+  const vCross = new THREE.Mesh(vCrossGeo, crossMat);
+  vCross.position.y = 0.995;
   vCross.castShadow = true;
   vCross.receiveShadow = true;
-  vCross.userData = { isNurEmblem: true, pieceId };
+  vCross.userData = { isNurEmblem: true, isCrown: true, pieceId };
   emblemGroup.add(vCross);
 
-  const hCrossGeo = new THREE.BoxGeometry(0.092, 0.014, 0.022);
-  const hCross = new THREE.Mesh(hCrossGeo, goldMat);
-  hCross.position.y = 0.996;
+  const hCrossGeo = new THREE.BoxGeometry(0.076, 0.016, 0.018);
+  const hCross = new THREE.Mesh(hCrossGeo, crossMat);
+  hCross.position.y = 0.995;
   hCross.castShadow = true;
   hCross.receiveShadow = true;
-  hCross.userData = { isNurEmblem: true, pieceId };
+  hCross.userData = { isNurEmblem: true, isCrown: true, pieceId };
   emblemGroup.add(hCross);
 
   // 4. Markaziy yorqin olmos / gavhar (Center Jewel)
-  const centerJewelGeo = new THREE.OctahedronGeometry(0.016, 0);
+  const centerJewelGeo = new THREE.OctahedronGeometry(0.014, 0);
   const centerJewel = new THREE.Mesh(centerJewelGeo, goldMat);
-  centerJewel.position.y = 1.006;
+  centerJewel.position.y = 1.004;
   centerJewel.castShadow = true;
   centerJewel.receiveShadow = true;
-  centerJewel.userData = { isNurEmblem: true, pieceId };
+  centerJewel.userData = { isNurEmblem: true, isCrown: true, pieceId };
   emblemGroup.add(centerJewel);
 
   return emblemGroup;
@@ -668,6 +683,18 @@ export default function Board3D({
       metalness: 0.06,
     });
 
+    // Nur donasi uchun maxsus mustaqil kontrast materiallar (o'yin boshlanganda yo'qolib ketmaydi)
+    const nurWhiteMat = new THREE.MeshStandardMaterial({
+      color: new THREE.Color(0xfefefe),
+      roughness: 0.10,
+      metalness: 0.05,
+    });
+    const nurBlackMat = new THREE.MeshStandardMaterial({
+      color: new THREE.Color(0x111113),
+      roughness: 0.12,
+      metalness: 0.15,
+    });
+
     for (let r = 0; r < 10; r++) {
       for (let f = 0; f < 10; f++) {
         const piece = board[r]?.[f];
@@ -703,8 +730,9 @@ export default function Board3D({
 
           // Nur figurasiga tepasidagi qarama-qarshi rangli '+' (Oq donaga qora +, Qora donaga oq +)
           if (typeKey === 'nur') {
-            const contrastMat = isWhite ? blackMat : whiteMat;
-            const nurEmblem = createNurEmblem(isWhite, piece.id, contrastMat, goldCrownMat);
+            const baseMat = isWhite ? nurBlackMat : nurWhiteMat;
+            const crossMat = isWhite ? nurWhiteMat : nurBlackMat;
+            const nurEmblem = createNurEmblem(isWhite, piece.id, baseMat, crossMat, goldCrownMat);
             meshGroup.add(nurEmblem);
           }
 
@@ -746,7 +774,7 @@ export default function Board3D({
           const isWhite = piece.color === 'white';
           const mat = isWhite ? whiteMat : blackMat;
           meshGroup.traverse((ch: any) => {
-            if (ch.isMesh && !ch.userData?.isCrown && ch.material !== mat) {
+            if (ch.isMesh && !ch.userData?.isCrown && !ch.userData?.isNurEmblem && ch.material !== mat) {
               ch.material = mat;
             }
           });
