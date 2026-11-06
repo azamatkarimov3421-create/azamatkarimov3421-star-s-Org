@@ -75,7 +75,6 @@ export default function HomeScreen({
       subtitle: t('mode_ai_vs_ai_desc'),
       icon: <SwordsIcon size={22} className={isLight ? 'text-amber-700' : 'text-amber-400'} />,
       iconBg: isLight ? 'bg-amber-50 border-amber-200' : 'bg-[#332616] border-[#553c20]',
-      badge: t('badge_new'),
       action: onOpenBotVsBot,
     },
     {
