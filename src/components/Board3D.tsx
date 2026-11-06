@@ -264,7 +264,7 @@ function createQueenDiamond(isWhite: boolean, pieceId: string, nurWhiteMat: THRE
   for (let i = 0; i < 4; i++) {
     const angle = (Math.PI / 4) + i * (Math.PI / 2);
     // Tapered cylinder: uchida ingichka (radius 0.0035), pastda qalinlashgan (radius 0.009)
-    const ribGeo = new THREE.CylinderGeometry(0.0035, 0.009, armLen, 4);
+    const ribGeo = new THREE.CylinderGeometry(0.0020, 0.0050, armLen, 6);
     const rib = new THREE.Mesh(ribGeo, nurBlackMat);
 
     // Burchakdan uchiga tomon yo'naltirish
@@ -280,7 +280,7 @@ function createQueenDiamond(isWhite: boolean, pieceId: string, nurWhiteMat: THRE
   }
 
   // 4. Cho'qqidagi qoracha nuqta (Uchida qoracha apex cap)
-  const apexGeo = new THREE.ConeGeometry(0.014, 0.016, 4);
+  const apexGeo = new THREE.ConeGeometry(0.008, 0.010, 4);
   apexGeo.rotateY(Math.PI / 4);
   const apexMesh = new THREE.Mesh(apexGeo, nurBlackMat);
   apexMesh.position.y = apexY - 0.001;
@@ -557,16 +557,16 @@ export default function Board3D({
       // Responsive masofa va balandlik: telefonning tor vertikal ekranida (aspect < 0.94)
       // doskaning 10 ta ustuni va 1-10 raqamlari har doim to'liq ekranga sig'adi!
       // Qulay, keng va professional 61 darajali ko'rish burchagi
-      const baseDist = 16.6;
+      const baseDist = 18.2;
       const lookAtY = 0.0;
-      const lookAtZ = 0.0;
+      const lookAtZ = 0.22;
 
       // Mobil vertikal ekranlarda masofani proporsional moslash
-      const scaleFactor = Math.max(1.0, 0.92 / aspect);
+      const scaleFactor = Math.max(1.0, 0.95 / aspect);
       const camDist = baseDist * scaleFactor;
 
-      const camY = lookAtY + 0.875 * camDist;
-      const camZ = lookAtZ + 0.485 * camDist;
+      const camY = lookAtY + 0.84 * camDist;
+      const camZ = lookAtZ + 0.54 * camDist;
 
       cameraRef.current.position.set(0, camY, camZ);
       cameraRef.current.lookAt(0, lookAtY, lookAtZ);
@@ -576,10 +576,10 @@ export default function Board3D({
     updateCameraForAspect(width, height);
 
     // ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ YORUG'LIK (Yumshoq, ko'zni qamashtirmaydigan va yaltiramaydigan yoritish) ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬
-    const amb = new THREE.AmbientLight(0xfff8ee, 0.82);
+    const amb = new THREE.AmbientLight(0xfff8ee, 0.56);
     scene.add(amb);
 
-    const key = new THREE.DirectionalLight(0xfffae8, 0.90);
+    const key = new THREE.DirectionalLight(0xfffae8, 0.68);
     key.position.set(5, 22, 6);
     key.castShadow = true;
     key.shadow.mapSize.width = 2048;
@@ -595,16 +595,16 @@ export default function Board3D({
     key.shadow.radius = 2.5;
     scene.add(key);
 
-    const fill = new THREE.DirectionalLight(0xfff6ec, 0.22);
+    const fill = new THREE.DirectionalLight(0xfff6ec, 0.18);
     fill.position.set(-8, 14, 6);
     scene.add(fill);
 
     // Qora donalarning orqa siluetini ko'rsatish uchun yumshoq yorug'lik (doskada yaltirash hosil qilmaydi)
-    const blackKey = new THREE.DirectionalLight(0xfff5ea, 0.28);
+    const blackKey = new THREE.DirectionalLight(0xfff5ea, 0.24);
     blackKey.position.set(0, 20, -5);
     scene.add(blackKey);
 
-    const rimLight = new THREE.DirectionalLight(0xfff5ec, 0.20);
+    const rimLight = new THREE.DirectionalLight(0xfff5ec, 0.16);
     rimLight.position.set(0, 15, -12);
     scene.add(rimLight);
 
@@ -658,7 +658,9 @@ export default function Board3D({
     }
 
     const lightTex = textureLoader.load(initLightTex);
+    lightTex.colorSpace = THREE.SRGBColorSpace;
     const darkTex = textureLoader.load(initDarkTex);
+    darkTex.colorSpace = THREE.SRGBColorSpace;
 
     const lightMat = new THREE.MeshStandardMaterial({
       map: lightTex,
@@ -772,12 +774,16 @@ export default function Board3D({
 
     if (currentTheme === 'classic') {
       const lightTex = textureLoader.load('/textures/classic_light_square.jpg');
+      lightTex.colorSpace = THREE.SRGBColorSpace;
       const darkTex = textureLoader.load('/textures/classic_dark_square.jpg');
+      darkTex.colorSpace = THREE.SRGBColorSpace;
       newLightMat = new THREE.MeshStandardMaterial({ map: lightTex, roughness: 0.35, metalness: 0.05 });
       newDarkMat = new THREE.MeshStandardMaterial({ map: darkTex, roughness: 0.35, metalness: 0.05 });
     } else if (currentTheme === 'wood') {
       const lightTex = textureLoader.load('/textures/wood_light_square.jpg');
+      lightTex.colorSpace = THREE.SRGBColorSpace;
       const darkTex = textureLoader.load('/textures/wood_dark_square.jpg');
+      darkTex.colorSpace = THREE.SRGBColorSpace;
       newLightMat = new THREE.MeshStandardMaterial({ map: lightTex, roughness: 0.35, metalness: 0.05 });
       newDarkMat = new THREE.MeshStandardMaterial({ map: darkTex, roughness: 0.35, metalness: 0.05 });
     } else if (currentTheme === 'emerald') {

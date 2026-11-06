@@ -430,9 +430,9 @@ export default function GameScreen({ onBack, onOpenSettings }: GameScreenProps) 
   const isBottomTurn = currentTurn === bottomColor && !isGameOver;
 
   return (
-    <div className="h-[100dvh] max-h-[100dvh] w-full bg-[#151311] text-[#f1f1f1] flex flex-col justify-center items-center font-sans select-none fixed inset-0 overflow-hidden touch-none overscroll-none">
+    <div className="h-[100dvh] max-h-[100dvh] w-full bg-[#120e0a] bg-[url('/wood_table_bg.jpg')] bg-cover bg-center text-[#f1f1f1] flex flex-col justify-center items-center font-sans select-none fixed inset-0 overflow-hidden touch-none overscroll-none">
       {/* Hashamatli xalqaro shaxmat studiyasi mayin vinetka foni */}
-      <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,_#2b2520_0%,_#171412_55%,_#0b0a09_100%)] pointer-events-none z-0" />
+      <div className="absolute inset-0 bg-black/25 pointer-events-none z-0" />
 
       {/* ── 1. CHAP TOMONDAGI SUZUVCHI TUGMALAR (☰ Menyu, ⟲ Doskani burish) — Screenshotdagi 1 ga 1 ── */}
       <div className="absolute top-6 sm:top-10 md:top-12 left-3 sm:left-6 md:left-8 z-40 flex flex-col gap-3 sm:gap-4 pointer-events-auto">
