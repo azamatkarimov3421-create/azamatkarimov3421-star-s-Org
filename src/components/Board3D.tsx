@@ -566,7 +566,7 @@ export default function Board3D({
       const isLandscape = aspect > 1.15;
       const scaleFactor = isLandscape
         ? Math.max(1.0, 1.70 / aspect)
-        : Math.max(1.0, 1.10 / aspect);
+        : Math.max(1.0, 1.25 / aspect);
 
       const camDist = baseDist * scaleFactor;
 

@@ -301,27 +301,20 @@ public class MainActivity extends AppCompatActivity {
                 android.view.WindowManager.LayoutParams.FLAG_HARDWARE_ACCELERATED
         );
 
-        // Agar yangi APK o'rnatilgan bo'lsa (apkCode >= liveCode), eski live_web keshini tozalash
-        int apkCode = 1;
+        // Har doim eski live_web keshini to'liq tozalash — APK'ning yangi aktivlari 100% yuklanadi!
         try {
-            PackageInfo pInfo = getPackageManager().getPackageInfo(getPackageName(), 0);
-            apkCode = pInfo.versionCode;
-        } catch (Exception ignored) {}
-
-        int liveCode = getSharedPreferences("app_live_update", MODE_PRIVATE).getInt("version_code", -1);
-        if (apkCode >= liveCode) {
             File liveDir = new File(getFilesDir(), "live_web");
             if (liveDir.exists()) {
                 deleteRecursive(liveDir);
             }
             getSharedPreferences("app_live_update", MODE_PRIVATE)
                 .edit()
-                .remove("version_code")
-                .remove("version_name")
+                .clear()
                 .apply();
-        }
+        } catch (Exception ignored) {}
 
         webView = new WebView(this);
+        webView.clearCache(true);
         // Dark background qora fon - oq charaqlashni oldini olish
         webView.setBackgroundColor(0xFF121614);
         // GPU apparat tezlatkichini qat'iy yoqish (3D animatsiya va silliq harakat uchun)
