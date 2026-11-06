@@ -395,7 +395,7 @@ export default function Board3D({
           ctx.lineWidth = 2;
           ctx.strokeRect(marginPx - 2, marginPx - 2, innerSize + 4, innerSize + 4);
 
-          ctx.font = 'bold 24px system-ui, -apple-system, sans-serif';
+          ctx.font = 'bold 26px system-ui, -apple-system, sans-serif';
           ctx.fillStyle = '#2b1608';
           ctx.textAlign = 'center';
           ctx.textBaseline = 'middle';
@@ -406,15 +406,15 @@ export default function Board3D({
 
           for (let f = 0; f < 10; f++) {
             const x = marginPx + (f + 0.5) * sqPx;
-            ctx.fillText(files[f], x, 1024 - marginPx * 0.46);
-            ctx.fillText(files[f], x, marginPx * 0.46);
+            ctx.fillText(files[f], x, 1024 - marginPx * 0.48);
+            ctx.fillText(files[f], x, marginPx * 0.48);
           }
 
           for (let r = 0; r < 10; r++) {
             const num = flipped ? 10 - r : r + 1;
             const y = marginPx + (9 - r + 0.5) * sqPx;
-            ctx.fillText(String(num), marginPx * 0.46, y);
-            ctx.fillText(String(num), 1024 - marginPx * 0.46, y);
+            ctx.fillText(String(num), marginPx * 0.48, y);
+            ctx.fillText(String(num), 1024 - marginPx * 0.48, y);
           }
 
           const tex = new THREE.CanvasTexture(cv);
@@ -434,21 +434,25 @@ export default function Board3D({
       });
     }
 
-    // Classic (Rasmiy Nur), Emerald, Azure, Marble
+    // Classic (Rasmiy Nur Doskasi - Foydalanuvchi fotosurati bilan 1 ga 1)
     return new Promise((resolve) => {
-      ctx.fillStyle = currentTheme === 'emerald' ? '#122012' : currentTheme === 'azure' ? '#0f1b2b' : currentTheme === 'marble' ? '#1a1d24' : '#fcfcfa';
+      // 1. Toza oq ramka
+      ctx.fillStyle = currentTheme === 'emerald' ? '#122012' : currentTheme === 'azure' ? '#0f1b2b' : currentTheme === 'marble' ? '#1a1d24' : '#ffffff';
       ctx.fillRect(0, 0, 1024, 1024);
 
-      const borderCol = currentTheme === 'emerald' ? '#386632' : currentTheme === 'azure' ? '#325884' : currentTheme === 'marble' ? '#4b5563' : '#904019';
+      // 2. Kataklarni o'rab turuvchi boy shokolad-jigarrang hoshiya chizig'i
+      const borderCol = currentTheme === 'emerald' ? '#386632' : currentTheme === 'azure' ? '#325884' : currentTheme === 'marble' ? '#4b5563' : '#853613';
       ctx.strokeStyle = borderCol;
-      ctx.lineWidth = 5;
-      ctx.strokeRect(marginPx, marginPx, innerSize, innerSize);
+      ctx.lineWidth = 6;
+      ctx.strokeRect(marginPx - 3, marginPx - 3, innerSize + 6, innerSize + 6);
 
-      ctx.strokeStyle = currentTheme === 'classic' ? 'rgba(0,0,0,0.12)' : 'rgba(255,255,255,0.15)';
+      // 3. Nozik tashqi chet chizig'i
+      ctx.strokeStyle = currentTheme === 'classic' ? '#dcdad4' : 'rgba(255,255,255,0.15)';
       ctx.lineWidth = 2;
-      ctx.strokeRect(4, 4, 1016, 1016);
+      ctx.strokeRect(3, 3, 1018, 1018);
 
-      ctx.font = '900 25px system-ui, -apple-system, sans-serif';
+      // 4. Aniq, qop-qora, o'qilishi oson koordinatalar
+      ctx.font = '900 30px system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif';
       ctx.fillStyle = currentTheme === 'emerald' ? '#9ae6b4' : currentTheme === 'azure' ? '#90cdf4' : currentTheme === 'marble' ? '#e2e8f0' : '#111111';
       ctx.textAlign = 'center';
       ctx.textBaseline = 'middle';
@@ -457,17 +461,19 @@ export default function Board3D({
       const files = flipped ? [...rawFiles].reverse() : rawFiles;
       const sqPx = innerSize / 10;
 
+      // Yuqori va pastki harflar (A, B, C, N, E, D, M, F, G, H)
       for (let f = 0; f < 10; f++) {
         const x = marginPx + (f + 0.5) * sqPx;
-        ctx.fillText(files[f], x, 1024 - marginPx * 0.46);
-        ctx.fillText(files[f], x, marginPx * 0.46);
+        ctx.fillText(files[f], x, 1024 - marginPx * 0.50);
+        ctx.fillText(files[f], x, marginPx * 0.50);
       }
 
+      // Chap va o'ng raqamlar (1 pastda, 10 tepada)
       for (let r = 0; r < 10; r++) {
         const num = flipped ? 10 - r : r + 1;
         const y = marginPx + (9 - r + 0.5) * sqPx;
-        ctx.fillText(String(num), marginPx * 0.46, y);
-        ctx.fillText(String(num), 1024 - marginPx * 0.46, y);
+        ctx.fillText(String(num), marginPx * 0.50, y);
+        ctx.fillText(String(num), 1024 - marginPx * 0.50, y);
       }
 
       const tex = new THREE.CanvasTexture(cv);
@@ -569,10 +575,10 @@ export default function Board3D({
     updateCameraForAspect(width, height);
 
     // ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ YORUG'LIK (Yumshoq, ko'zni qamashtirmaydigan va yaltiramaydigan yoritish) ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬
-    const amb = new THREE.AmbientLight(0xfff8ee, 1.15);
+    const amb = new THREE.AmbientLight(0xfff8ee, 0.76);
     scene.add(amb);
 
-    const key = new THREE.DirectionalLight(0xfffae8, 1.10);
+    const key = new THREE.DirectionalLight(0xfffae8, 0.86);
     key.position.set(5, 22, 6);
     key.castShadow = true;
     key.shadow.mapSize.width = 2048;
@@ -588,16 +594,16 @@ export default function Board3D({
     key.shadow.radius = 2.5;
     scene.add(key);
 
-    const fill = new THREE.DirectionalLight(0xfff6ec, 0.38);
+    const fill = new THREE.DirectionalLight(0xfff6ec, 0.22);
     fill.position.set(-8, 14, 6);
     scene.add(fill);
 
     // Qora donalarning orqa siluetini ko'rsatish uchun yumshoq yorug'lik (doskada yaltirash hosil qilmaydi)
-    const blackKey = new THREE.DirectionalLight(0xfff5ea, 0.40);
+    const blackKey = new THREE.DirectionalLight(0xfff5ea, 0.28);
     blackKey.position.set(0, 20, -5);
     scene.add(blackKey);
 
-    const rimLight = new THREE.DirectionalLight(0xfff5ec, 0.28);
+    const rimLight = new THREE.DirectionalLight(0xfff5ec, 0.20);
     rimLight.position.set(0, 15, -12);
     scene.add(rimLight);
 
@@ -612,14 +618,15 @@ export default function Board3D({
     scene.add(shadowPlane);
 
     // ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ DOSQA RAMKASI (Koordinatali asal-eman yog'ochi) ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬
-    createFrameTexture(isFlipped).then((frameTex) => {
+    const currentTheme = boardTheme || 'classic';
+    createFrameTexture(isFlipped, currentTheme).then((frameTex) => {
       if (destroyed) return;
       const frameGeo = new THREE.BoxGeometry(TOTAL_WIDTH, BOARD_THICKNESS, TOTAL_WIDTH);
       const frameMat = new THREE.MeshStandardMaterial({
         map: frameTex,
-        roughness: 0.80,
+        roughness: 0.35,
         metalness: 0.0,
-        color: 0xdeb887,
+        color: 0xffffff, // Toza oq baza: teksturaning asl ranglari yorqin va buzilmasdan ko'rinadi
       });
       const frameMesh = new THREE.Mesh(frameGeo, frameMat);
       frameMesh.position.y = -BOARD_THICKNESS / 2;
@@ -629,25 +636,33 @@ export default function Board3D({
       frameMeshRef.current = frameMesh;
     });
 
-    // ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ 10x10 KVADRATLAR ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬
+    // ── 10x10 KVADRATLAR ──
     const textureLoader = new THREE.TextureLoader();
-    const lightTex = textureLoader.load('/textures/wood_light_square.jpg');
-    const darkTex = textureLoader.load('/textures/wood_dark_square.jpg');
+    let initLightTex = '/textures/classic_light_square.jpg';
+    let initDarkTex = '/textures/classic_dark_square.jpg';
+    if (currentTheme === 'wood') {
+      initLightTex = '/textures/wood_light_square.jpg';
+      initDarkTex = '/textures/wood_dark_square.jpg';
+    }
+
+    const lightTex = textureLoader.load(initLightTex);
+    const darkTex = textureLoader.load(initDarkTex);
 
     const lightMat = new THREE.MeshStandardMaterial({
       map: lightTex,
-      roughness: 0.82,
-      metalness: 0.0,
-      color: new THREE.Color(0xfff4c6), // Oq kataklarni yanada iliq sarg'ish-oq / mayin fil suyagi qiladi
+      roughness: 0.30,
+      metalness: 0.02,
+      color: 0xffffff,
     });
     const darkMat = new THREE.MeshStandardMaterial({
       map: darkTex,
-      roughness: 0.80,
-      metalness: 0.0,
-      color: new THREE.Color(0xfff5ea),
+      roughness: 0.28,
+      metalness: 0.02,
+      color: 0xffffff,
     });
 
-    const sqGeo = new THREE.BoxGeometry(SQ_SIZE, 0.035, SQ_SIZE);
+    // Kataklar orasida 0.6% nozik mikrotirqish: haqiqiy yog'och plitka qirrasini beradi
+    const sqGeo = new THREE.BoxGeometry(SQ_SIZE * 0.994, 0.035, SQ_SIZE * 0.994);
     const squareMeshes: THREE.Mesh[] = [];
 
     for (let r = 0; r < 10; r++) {

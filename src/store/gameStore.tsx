@@ -253,7 +253,14 @@ export function createInitialAppState(): AppState {
       aiWhiteDepth: saved.aiWhiteDepth ?? 2,
       aiBlackDepth: saved.aiBlackDepth ?? 2,
       aiVsAiSpeed: saved.aiVsAiSpeed ?? 2000,
-      boardTheme: saved.boardTheme || 'classic',
+      boardTheme: (() => {
+        // Migration: avvalgi versiyadagi 'wood' ni yangi rasmiy 'classic' ga o'tkazish
+        if (typeof window !== 'undefined' && !localStorage.getItem('nur_theme_v1211_applied')) {
+          localStorage.setItem('nur_theme_v1211_applied', 'true');
+          return 'classic';
+        }
+        return saved.boardTheme || 'classic';
+      })(),
       isFlipped: saved.isFlipped ?? false,
       timeControl: saved.timeControl ?? 0,
       timeIncrement: saved.timeIncrement ?? 0,
