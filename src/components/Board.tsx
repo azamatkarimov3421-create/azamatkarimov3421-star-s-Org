@@ -437,6 +437,7 @@ export default function Board() {
           aiThinking={aiThinking}
           frontRimTitle={frontRimTitle}
           frontRimMoveText={frontRimMoveText}
+          boardTheme={boardTheme}
         />
       </div>
     );

@@ -556,16 +556,17 @@ export default function Board3D({
 
       // Responsive masofa va balandlik: telefonning tor vertikal ekranida (aspect < 0.94)
       // doskaning 10 ta ustuni va 1-10 raqamlari har doim to'liq ekranga sig'adi!
-      const baseDist = 18.6;
-      const lookAtY = -0.2;
-      const lookAtZ = 0.2;
+      // Qulay, keng va professional 61 darajali ko'rish burchagi
+      const baseDist = 16.6;
+      const lookAtY = 0.0;
+      const lookAtZ = 0.0;
 
-      // Mobil vertikal ekranlarda (aspect < 0.94) masofani proporsional oshiramiz
-      const scaleFactor = Math.max(1.0, 0.94 / aspect);
+      // Mobil vertikal ekranlarda masofani proporsional moslash
+      const scaleFactor = Math.max(1.0, 0.92 / aspect);
       const camDist = baseDist * scaleFactor;
 
-      const camY = lookAtY + 0.806 * camDist;
-      const camZ = lookAtZ + 0.591 * camDist;
+      const camY = lookAtY + 0.875 * camDist;
+      const camZ = lookAtZ + 0.485 * camDist;
 
       cameraRef.current.position.set(0, camY, camZ);
       cameraRef.current.lookAt(0, lookAtY, lookAtZ);
@@ -575,10 +576,10 @@ export default function Board3D({
     updateCameraForAspect(width, height);
 
     // ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ YORUG'LIK (Yumshoq, ko'zni qamashtirmaydigan va yaltiramaydigan yoritish) ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬
-    const amb = new THREE.AmbientLight(0xfff8ee, 0.76);
+    const amb = new THREE.AmbientLight(0xfff8ee, 0.82);
     scene.add(amb);
 
-    const key = new THREE.DirectionalLight(0xfffae8, 0.86);
+    const key = new THREE.DirectionalLight(0xfffae8, 0.90);
     key.position.set(5, 22, 6);
     key.castShadow = true;
     key.shadow.mapSize.width = 2048;
@@ -622,13 +623,24 @@ export default function Board3D({
     createFrameTexture(isFlipped, currentTheme).then((frameTex) => {
       if (destroyed) return;
       const frameGeo = new THREE.BoxGeometry(TOTAL_WIDTH, BOARD_THICKNESS, TOTAL_WIDTH);
-      const frameMat = new THREE.MeshStandardMaterial({
+      
+      // Ustki yuza: oq turnir hoshiyasi va koordinatalar
+      const topMat = new THREE.MeshStandardMaterial({
         map: frameTex,
-        roughness: 0.35,
+        roughness: 0.28,
         metalness: 0.0,
-        color: 0xffffff, // Toza oq baza: teksturaning asl ranglari yorqin va buzilmasdan ko'rinadi
+        color: 0xffffff,
       });
-      const frameMesh = new THREE.Mesh(frameGeo, frameMat);
+      // 4 ta yon tomon va osti: sayqallangan to'q mahogani yog'och plitasi
+      const sideMat = new THREE.MeshStandardMaterial({
+        color: 0x3d1808,
+        roughness: 0.42,
+        metalness: 0.05,
+      });
+
+      // BoxGeometry 6 ta yuzasi: [+X, -X, +Y (tepa), -Y (osti), +Z, -Z]
+      const materials = [sideMat, sideMat, topMat, sideMat, sideMat, sideMat];
+      const frameMesh = new THREE.Mesh(frameGeo, materials);
       frameMesh.position.y = -BOARD_THICKNESS / 2;
       frameMesh.castShadow = true;
       frameMesh.receiveShadow = true;
@@ -687,7 +699,7 @@ export default function Board3D({
     const rimMesh = new THREE.Mesh(rimGeo, rimMat);
     rimMesh.position.set(0, -BOARD_THICKNESS / 2 - 0.02, TOTAL_WIDTH / 2 + 0.05);
     rimMesh.rotation.x = -0.22; // Kameraga qarab sal burchak ostida qiya
-    scene.add(rimMesh);
+    // rimMesh olib tashlandi: haqiqiy shaxmat doskasida oldida bufer plastinka bo'lmaydi
     rimMeshRef.current = rimMesh;
 
     // Belgilash guruhlari (Highlights)
@@ -742,8 +754,15 @@ export default function Board3D({
     const currentTheme = boardTheme || 'classic';
     createFrameTexture(isFlipped, currentTheme).then((newTex) => {
       if (frameMeshRef.current) {
-        (frameMeshRef.current.material as THREE.MeshStandardMaterial).map = newTex;
-        (frameMeshRef.current.material as THREE.MeshStandardMaterial).needsUpdate = true;
+        const mat = frameMeshRef.current.material;
+        if (Array.isArray(mat)) {
+          // mat[2] is the +Y top face
+          (mat[2] as THREE.MeshStandardMaterial).map = newTex;
+          (mat[2] as THREE.MeshStandardMaterial).needsUpdate = true;
+        } else {
+          (mat as THREE.MeshStandardMaterial).map = newTex;
+          (mat as THREE.MeshStandardMaterial).needsUpdate = true;
+        }
       }
     });
 
