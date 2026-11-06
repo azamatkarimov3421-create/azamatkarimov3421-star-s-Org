@@ -356,7 +356,10 @@ function AppContent() {
     currentScreen === 'profile';
 
   return (
-    <div className={`min-h-screen ${isLight ? 'bg-[#f4f1ea] text-[#1f1d1a]' : 'bg-[#181614] text-[#f1f1f1]'} flex flex-col font-sans select-none transition-colors duration-200`}>
+    <div className={`min-h-screen ${isLight ? 'bg-[#f4f1ea] bg-[url("/desktop-bg-light.jpg")] text-[#1f1d1a]' : 'bg-[#0a0e0c] bg-[url("/desktop-bg.jpg")] text-[#f1f1f1]'} bg-cover bg-center bg-fixed flex flex-col font-sans select-none relative transition-colors duration-200`}>
+      {/* Shaffoflik uchun mayin fon vinetkasi */}
+      <div className={`fixed inset-0 pointer-events-none z-0 ${isLight ? 'bg-gradient-to-b from-white/75 via-white/55 to-white/80' : 'bg-gradient-to-b from-black/65 via-black/45 to-black/80'}`} />
+
       {/* ── 1. ASOSIY EKRAN ROUTER ─────────────────────────── */}
       {currentScreen === 'splash' && (
         <SplashScreen onStart={() => navigateTo('home')} />

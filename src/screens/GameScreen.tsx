@@ -424,7 +424,7 @@ export default function GameScreen({ onBack, onOpenSettings }: GameScreenProps) 
         {/* Menyuni ochish (☰ Hamburger) */}
         <button
           onClick={() => setShowMenuModal(true)}
-          className="w-10 h-10 sm:w-12 sm:h-12 rounded-2xl bg-black/65 hover:bg-black/85 active:scale-95 border border-white/20 text-white shadow-[0_10px_24px_rgba(0,0,0,0.75)] flex items-center justify-center transition-all cursor-pointer backdrop-blur-md"
+          className="w-10 h-10 sm:w-12 sm:h-12 rounded-2xl bg-white/[0.08] hover:bg-white/[0.18] active:scale-95 border border-white/20 shadow-[0_8px_32px_rgba(0,0,0,0.6)] backdrop-blur-2xl text-white shadow-[0_10px_24px_rgba(0,0,0,0.75)] flex items-center justify-center transition-all cursor-pointer backdrop-blur-md"
           title="Menyu"
         >
           <MenuIcon size={24} />
@@ -433,7 +433,7 @@ export default function GameScreen({ onBack, onOpenSettings }: GameScreenProps) 
         {/* Doskani aylantirish (⟲ Rotate / Flip) */}
         <button
           onClick={() => dispatch({ type: 'TOGGLE_FLIP' })}
-          className="w-10 h-10 sm:w-12 sm:h-12 rounded-2xl bg-black/65 hover:bg-black/85 active:scale-95 border border-white/20 text-white shadow-[0_10px_24px_rgba(0,0,0,0.75)] flex items-center justify-center transition-all cursor-pointer backdrop-blur-md"
+          className="w-10 h-10 sm:w-12 sm:h-12 rounded-2xl bg-white/[0.08] hover:bg-white/[0.18] active:scale-95 border border-white/20 shadow-[0_8px_32px_rgba(0,0,0,0.6)] backdrop-blur-2xl text-white shadow-[0_10px_24px_rgba(0,0,0,0.75)] flex items-center justify-center transition-all cursor-pointer backdrop-blur-md"
           title={t('btn_flip')}
         >
           <RotateCcwIcon size={22} />
@@ -442,7 +442,7 @@ export default function GameScreen({ onBack, onOpenSettings }: GameScreenProps) 
         {/* Tomonni almashtirish (⇄ Oq / Qora) */}
         <button
           onClick={handleSwitchSides}
-          className="w-10 h-10 sm:w-12 sm:h-12 rounded-2xl bg-black/65 hover:bg-black/85 active:scale-95 border border-amber-500/40 text-amber-300 shadow-[0_10px_24px_rgba(0,0,0,0.75)] flex flex-col items-center justify-center gap-0.5 transition-all cursor-pointer backdrop-blur-md"
+          className="w-10 h-10 sm:w-12 sm:h-12 rounded-2xl bg-amber-500/15 hover:bg-amber-500/25 active:scale-95 border border-amber-400/40 text-amber-300 shadow-[0_8px_32px_rgba(0,0,0,0.6)] backdrop-blur-2xl shadow-[0_10px_24px_rgba(0,0,0,0.75)] flex flex-col items-center justify-center gap-0.5 transition-all cursor-pointer backdrop-blur-md"
           title="Tomonni almashtirish (Oq ⇄ Qora)"
         >
           <span className="text-sm font-black leading-none">⇄</span>
@@ -648,7 +648,7 @@ export default function GameScreen({ onBack, onOpenSettings }: GameScreenProps) 
       {/* ── 5. ASOSIY O'YIN MENYUSI MODALI (☰ Hamburger bosilganda ochiladi) ── */}
       {showMenuModal && (
         <div className="fixed inset-0 bg-black/80 backdrop-blur-md z-50 flex items-center justify-center p-3 sm:p-4 animate-fadeIn">
-          <div className="relative w-full max-w-sm landscape:max-w-md bg-[#1e1b18]/95 border border-[#3e342a] rounded-3xl p-3.5 sm:p-5 landscape:p-3 shadow-2xl flex flex-col gap-3.5 landscape:gap-2 text-white max-h-[92dvh] overflow-y-auto">
+          <div className="relative w-full max-w-sm landscape:max-w-md bg-black/60 backdrop-blur-3xl border border-white/15 rounded-3xl p-3.5 sm:p-5 landscape:p-3 shadow-[0_24px_70px_rgba(0,0,0,0.85)] flex flex-col gap-3.5 landscape:gap-2 text-white max-h-[92dvh] overflow-y-auto">
             {/* Modal Sarlavhasi */}
             <div className="flex items-center justify-between pb-3 border-b border-[#3e342a]">
               <div className="flex items-center gap-2">
@@ -667,7 +667,7 @@ export default function GameScreen({ onBack, onOpenSettings }: GameScreenProps) 
             </div>
 
             {/* O'yin haqida qisqa ma'lumot (ixcham 1 qator) */}
-            <div className="bg-[#141210] px-3.5 py-2.5 rounded-2xl border border-[#2e261f] flex items-center justify-between">
+            <div className="bg-white/[0.05] backdrop-blur-md px-3.5 py-2.5 rounded-2xl border border-white/10 flex items-center justify-between">
               <div className="flex items-center gap-2.5 min-w-0">
                 <div className="w-8 h-8 rounded-xl bg-[#2a241e] border border-[#3e342a] flex items-center justify-center text-[#81b64c] shrink-0">
                   {gameMode === 'vsAI' || gameMode === 'aiVsAi' ? <BotIcon size={18} /> : <UserIcon size={18} />}
@@ -694,7 +694,7 @@ export default function GameScreen({ onBack, onOpenSettings }: GameScreenProps) 
             </div>
 
             {/* Kino Ko'rish Rejimi (Katta ekran) Tezkor Switch */}
-            <div className="bg-[#141210] p-3 rounded-2xl border border-[#2e261f] flex items-center justify-between">
+            <div className="bg-white/[0.05] backdrop-blur-md p-3 rounded-2xl border border-white/10 flex items-center justify-between">
               <div className="flex items-center gap-2.5">
                 <span className="text-xl">🎬</span>
                 <div className="text-left">
@@ -936,7 +936,7 @@ export default function GameScreen({ onBack, onOpenSettings }: GameScreenProps) 
       {/* ── 6. DONALAR VA O'YINCHI HOLATI MODALI (♟ bosilganda ochiladi) ── */}
       {showPiecesModal && (
         <div className="fixed inset-0 bg-black/80 backdrop-blur-md z-50 flex items-center justify-center p-3 sm:p-4 animate-fadeIn">
-          <div className="relative w-full max-w-sm landscape:max-w-md bg-[#1e1b18]/95 border border-[#3e342a] rounded-3xl p-3.5 sm:p-5 landscape:p-3 shadow-2xl flex flex-col gap-3.5 landscape:gap-2 text-white max-h-[92dvh] overflow-y-auto">
+          <div className="relative w-full max-w-sm landscape:max-w-md bg-black/60 backdrop-blur-3xl border border-white/15 rounded-3xl p-3.5 sm:p-5 landscape:p-3 shadow-[0_24px_70px_rgba(0,0,0,0.85)] flex flex-col gap-3.5 landscape:gap-2 text-white max-h-[92dvh] overflow-y-auto">
             <div className="flex items-center justify-between pb-3 border-b border-[#3e342a]">
               <div className="flex items-center gap-2">
                 <ChessPawnIcon size={20} className="text-[#81b64c]" />

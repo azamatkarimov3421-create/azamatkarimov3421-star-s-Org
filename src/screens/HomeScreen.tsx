@@ -121,7 +121,7 @@ export default function HomeScreen({
   ];
 
   return (
-    <div className={`min-h-screen landscape:min-h-0 landscape:h-[100dvh] landscape:max-h-[100dvh] landscape:overflow-hidden w-full ${isLight ? 'bg-[#f6f3ed] md:bg-[url("/desktop-bg-light.jpg")] text-[#1a1917]' : 'bg-[#121614] md:bg-[url("/desktop-bg.jpg")] text-[#f1f1f1]'} bg-cover bg-center bg-fixed flex flex-col font-sans select-none relative overflow-x-hidden transition-colors duration-200`}>
+    <div className={`min-h-screen landscape:min-h-0 landscape:h-[100dvh] landscape:max-h-[100dvh] landscape:overflow-hidden w-full ${isLight ? 'bg-transparent text-[#1a1917]' : 'bg-transparent text-[#f1f1f1]'} flex flex-col font-sans select-none relative overflow-x-hidden transition-colors duration-200`}>
       {/* Fon qatlami (Desktopda va mobilida kontrast va silliq ko'rinish uchun) */}
       <div className={`absolute inset-0 pointer-events-none z-0 transition-opacity duration-200 ${isLight ? 'bg-gradient-to-b from-[#faf8f4]/80 via-[#f5f1e8]/70 to-[#eae4d5]/85' : 'hidden md:block bg-gradient-to-b from-[#0b100d]/85 via-[#0d1310]/75 to-[#0b100d]/90'}`} />
 
@@ -130,9 +130,7 @@ export default function HomeScreen({
         <header className="w-full max-w-6xl mx-auto px-3 sm:px-6 pt-2 sm:pt-6 landscape:pt-1 landscape:pb-0 landscape:px-3 shrink-0">
           <div className={`w-full rounded-2xl sm:rounded-3xl backdrop-blur-md px-3 sm:px-6 py-2.5 sm:py-3 landscape:py-1 landscape:px-3 flex items-center justify-between border transition-all ${
 
-            isLight
-              ? 'bg-white/95 border-[#e2ddd3] shadow-[0_4px_20px_rgba(0,0,0,0.05)]'
-              : 'bg-[#141b17]/90 border-[#27372d] shadow-2xl'
+            isLight ? 'bg-white/80 border-white/60 shadow-[0_8px_32px_rgba(0,0,0,0.06)] backdrop-blur-2xl' : 'bg-white/[0.06] border-white/15 shadow-[0_8px_32px_rgba(0,0,0,0.4)] backdrop-blur-2xl'
           }`}>
             {/* Logo va Brend */}
             <div className="flex items-center gap-3">
@@ -142,7 +140,7 @@ export default function HomeScreen({
                   NUR SHAXMAT <span className="text-[#d97706]">100</span>
                 </h1>
                 <p className={`text-[10px] font-bold tracking-wider uppercase ${isLight ? 'text-amber-700' : 'text-amber-400'}`}>
-                  V1.2.18 • OʻZBEK SHAXMATI (10X10)
+                  V1.2.19 • OʻZBEK SHAXMATI (10X10)
                 </p>
               </div>
             </div>
@@ -286,9 +284,7 @@ export default function HomeScreen({
           {/* Chap ustun: Boshlash va 3D/2D tanlov (md:col-span-5) */}
           <div className={`w-full landscape:col-span-5 md:col-span-5 p-4 sm:p-6 landscape:p-2.5 rounded-3xl backdrop-blur-md border flex flex-col justify-between gap-3.5 landscape:gap-1.5 transition-all ${
 
-            isLight
-              ? 'bg-white/95 border-[#e2ddd3] shadow-[0_8px_30px_rgba(0,0,0,0.06)]'
-              : 'bg-[#141b17]/95 border-[#27372d] shadow-2xl'
+            isLight ? 'bg-white/80 border-white/60 shadow-[0_8px_32px_rgba(0,0,0,0.06)] backdrop-blur-2xl' : 'bg-white/[0.05] border-white/15 shadow-[0_12px_40px_rgba(0,0,0,0.45)] backdrop-blur-2xl'
           }`}>
             {/* Faol O'yinni Davom Ettirish Kartasi (Resume Game Banner) */}
             {hasActiveMatch && (
@@ -442,9 +438,7 @@ export default function HomeScreen({
                       ? isLight
                         ? 'bg-emerald-50 border-emerald-600 text-emerald-950 font-black shadow-sm ring-1 ring-emerald-500'
                         : 'bg-[#1b2b20] border-[#22c55e] text-white font-black shadow-[0_0_12px_rgba(34,197,94,0.25)] ring-1 ring-[#22c55e]'
-                      : isLight
-                      ? 'bg-zinc-50 border-zinc-200 text-zinc-600 hover:border-zinc-300'
-                      : 'bg-[#141b17] border-[#27372d] text-zinc-400 hover:border-[#384f3f]'
+                      : isLight ? 'bg-white/50 border-white/60 text-zinc-600 hover:bg-white/80' : 'bg-white/[0.04] border-white/10 text-zinc-300 hover:bg-white/[0.08] hover:border-white/20'
                   }`}
                   title="Oqlar bilan o'ynash"
                 >
@@ -460,9 +454,7 @@ export default function HomeScreen({
                       ? isLight
                         ? 'bg-emerald-50 border-emerald-600 text-emerald-950 font-black shadow-sm ring-1 ring-emerald-500'
                         : 'bg-[#1b2b20] border-[#22c55e] text-white font-black shadow-[0_0_12px_rgba(34,197,94,0.25)] ring-1 ring-[#22c55e]'
-                      : isLight
-                      ? 'bg-zinc-50 border-zinc-200 text-zinc-600 hover:border-zinc-300'
-                      : 'bg-[#141b17] border-[#27372d] text-zinc-400 hover:border-[#384f3f]'
+                      : isLight ? 'bg-white/50 border-white/60 text-zinc-600 hover:bg-white/80' : 'bg-white/[0.04] border-white/10 text-zinc-300 hover:bg-white/[0.08] hover:border-white/20'
                   }`}
                   title="Tasodifiy rang"
                 >
@@ -478,9 +470,7 @@ export default function HomeScreen({
                       ? isLight
                         ? 'bg-emerald-50 border-emerald-600 text-emerald-950 font-black shadow-sm ring-1 ring-emerald-500'
                         : 'bg-[#1b2b20] border-[#22c55e] text-white font-black shadow-[0_0_12px_rgba(34,197,94,0.25)] ring-1 ring-[#22c55e]'
-                      : isLight
-                      ? 'bg-zinc-50 border-zinc-200 text-zinc-600 hover:border-zinc-300'
-                      : 'bg-[#141b17] border-[#27372d] text-zinc-400 hover:border-[#384f3f]'
+                      : isLight ? 'bg-white/50 border-white/60 text-zinc-600 hover:bg-white/80' : 'bg-white/[0.04] border-white/10 text-zinc-300 hover:bg-white/[0.08] hover:border-white/20'
                   }`}
                   title="Qoralar bilan o'ynash"
                 >
@@ -526,9 +516,7 @@ export default function HomeScreen({
                   key={mode.id}
                   onClick={() => mode.action()}
                   className={`w-full p-3 sm:p-4 landscape:p-1.5 landscape:rounded-xl rounded-2xl border transition-all text-left flex items-center justify-between group active:scale-[0.99] cursor-pointer ${
-                    isLight
-                      ? 'bg-white/95 hover:bg-zinc-50 border-[#e2ddd3] hover:border-emerald-500/60 shadow-[0_4px_16px_rgba(0,0,0,0.04)]'
-                      : 'bg-[#141b17]/95 hover:bg-[#18221c] border-[#27372d] hover:border-[#22c55e]/50 shadow-xl'
+                    isLight ? 'bg-white/75 hover:bg-white/95 border-white/60 hover:border-emerald-500/60 shadow-[0_4px_20px_rgba(0,0,0,0.03)] backdrop-blur-xl' : 'bg-white/[0.05] hover:bg-white/[0.09] border-white/10 hover:border-white/25 shadow-[0_8px_32px_rgba(0,0,0,0.35)] hover:shadow-[0_12px_40px_rgba(0,0,0,0.5)] backdrop-blur-2xl'
                   }`}
                 >
                   <div className="flex items-center gap-3 min-w-0">
