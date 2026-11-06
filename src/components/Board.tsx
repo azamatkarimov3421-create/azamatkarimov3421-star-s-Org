@@ -20,6 +20,15 @@ const THEME_STYLES: Record<BoardTheme, {
   lastMove: string;
   selectedSquare: string;
 }> = {
+  classic: {
+    lightSquare: 'bg-[#fef596] text-[#2b1608] font-black',
+    darkSquare: 'bg-[#904019] text-[#fef596] font-black',
+    frameBorder: 'border-[#904019] shadow-[0_15px_40px_rgba(0,0,0,0.6)]',
+    frameBg: 'bg-white',
+    coordText: 'text-black font-extrabold drop-shadow-[0_1px_1px_rgba(255,255,255,0.8)]',
+    lastMove: 'bg-amber-400/45 ring-2 ring-amber-500/60 inset-0',
+    selectedSquare: 'bg-yellow-400/60 ring-2 sm:ring-4 ring-amber-600/80 shadow-[inset_0_0_12px_rgba(217,119,6,0.4)]',
+  },
   wood: {
     lightSquare: 'bg-[#ffff85] text-slate-900',
     darkSquare: 'bg-[#ff9d7a] text-slate-900',
@@ -138,7 +147,7 @@ export default function Board() {
     }
   }, [game.moveHistory.length]);
 
-  const themeStyle = THEME_STYLES[boardTheme] || THEME_STYLES.wood;
+  const themeStyle = THEME_STYLES[boardTheme] || THEME_STYLES.classic;
 
   // Qonuniy harakatlar xaritasi
   const legalTargetMap = useMemo(() => {

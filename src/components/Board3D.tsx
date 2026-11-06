@@ -6,6 +6,7 @@ import React, { useEffect, useRef, useState, useCallback } from 'react';
 import * as THREE from 'three';
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
 import { GameState, Move, Piece, Square, squaresEqual, FILES } from '../engine/types';
+import { BoardTheme } from '../store/gameStore';
 
 interface Board3DProps {
   game: GameState;
@@ -20,6 +21,7 @@ interface Board3DProps {
   aiThinking: boolean;
   frontRimTitle?: string;
   frontRimMoveText?: string;
+  boardTheme?: BoardTheme;
 }
 
 // Module-level GLTF model kesh (ilova ochilganda bir marta yuklanadi va qayta yuklanmaydi)
@@ -218,41 +220,74 @@ function createNurCross(isWhite: boolean, pieceId: string, crossMat: THREE.Mater
   return nurGroup;
 }
 
-// Vazir (Queen / Farzin) donasi uchun maxsus 4 qirrali piramida / romb nishoni:
-// Rasmiy fizik donadagidek: Oq Vazirda qora piramida, Qora Vazirda oq piramida
-function createQueenDiamond(isWhite: boolean, pieceId: string, diamondMat: THREE.Material): THREE.Group {
+// Vazir (Queen / Farzin) donasi uchun maxsus 4 qirrali piramida romb nishoni:
+// Rasmiy fizik donadagidek:
+// - Uchida qoracha (black apex cap)
+// - 4 tarafdan yorqin oq fasetkalar (4 gleaming white triangular facets)
+// - Qirralar bo'ylab uchidan pastga ingichka boshlanib, qalinlashib ketgan ko'paytiruv 'X' qovurg'alari
+// - Pastki perimetrida qora romb gardishi
+function createQueenDiamond(isWhite: boolean, pieceId: string, nurWhiteMat: THREE.Material, nurBlackMat: THREE.Material): THREE.Group {
   const queenGroup = new THREE.Group();
   queenGroup.name = 'queenDiamond';
   queenGroup.userData = { isQueenDiamond: true, isCrown: true, pieceId };
 
-  // 1. Asosiy 4 qirrali piramida romb (4-sided pyramid diamond)
-  const pyramidGeo = new THREE.ConeGeometry(0.074, 0.088, 4);
-  pyramidGeo.rotateY(Math.PI / 4);
-  const pyramid = new THREE.Mesh(pyramidGeo, diamondMat);
-  pyramid.position.y = 0.984;
-  pyramid.castShadow = true;
-  pyramid.receiveShadow = true;
-  pyramid.userData = { isQueenDiamond: true, isCrown: true, pieceId };
-  queenGroup.add(pyramid);
+  // Queen head collar level in queen.glb is Y ~ 0.970
+  const baseY = 0.970;
+  const apexY = 1.036;
+  const h = apexY - baseY;
+  const r = 0.076;
 
-  // 2. Piramidaning ostki romb gardishi
-  const baseGeo = new THREE.CylinderGeometry(0.068, 0.076, 0.016, 4);
-  baseGeo.rotateY(Math.PI / 4);
-  const base = new THREE.Mesh(baseGeo, diamondMat);
-  base.position.y = 0.942;
-  base.castShadow = true;
-  base.receiveShadow = true;
-  base.userData = { isQueenDiamond: true, isCrown: true, pieceId };
-  queenGroup.add(base);
+  // 1. Qora ostki romb gardishi (Black outer base border framing the diamond)
+  const baseBorderGeo = new THREE.CylinderGeometry(r * 1.05, r * 1.10, 0.010, 4);
+  baseBorderGeo.rotateY(Math.PI / 4);
+  const baseBorder = new THREE.Mesh(baseBorderGeo, nurBlackMat);
+  baseBorder.position.y = baseY;
+  baseBorder.castShadow = true;
+  baseBorder.receiveShadow = true;
+  baseBorder.userData = { isQueenDiamond: true, isCrown: true, pieceId };
+  queenGroup.add(baseBorder);
 
-  // 3. Cho'qqidagi olmos qirrasi (Apex facet)
-  const apexGeo = new THREE.OctahedronGeometry(0.016, 0);
-  const apex = new THREE.Mesh(apexGeo, diamondMat);
-  apex.position.y = 1.026;
-  apex.castShadow = true;
-  apex.receiveShadow = true;
-  apex.userData = { isQueenDiamond: true, isCrown: true, pieceId };
-  queenGroup.add(apex);
+  // 2. 4 ta yorqin oq fasetka (Pyramid body with 4 white faces)
+  const pyrGeo = new THREE.ConeGeometry(r, h, 4);
+  pyrGeo.rotateY(Math.PI / 4);
+  const pyr = new THREE.Mesh(pyrGeo, nurWhiteMat);
+  pyr.position.y = baseY + h / 2;
+  pyr.castShadow = true;
+  pyr.receiveShadow = true;
+  pyr.userData = { isQueenDiamond: true, isCrown: true, pieceId };
+  queenGroup.add(pyr);
+
+  // 3. Ko'paytiruv 'X' qovurg'alari (Ingichkadan qalinlashib boruvchi 4 qora qirra)
+  // 4 ta burchak: θ = π/4, 3π/4, 5π/4, 7π/4
+  const armLen = Math.sqrt(r * r + h * h);
+
+  for (let i = 0; i < 4; i++) {
+    const angle = (Math.PI / 4) + i * (Math.PI / 2);
+    // Tapered cylinder: uchida ingichka (radius 0.0035), pastda qalinlashgan (radius 0.009)
+    const ribGeo = new THREE.CylinderGeometry(0.0035, 0.009, armLen, 4);
+    const rib = new THREE.Mesh(ribGeo, nurBlackMat);
+
+    // Burchakdan uchiga tomon yo'naltirish
+    const dir = new THREE.Vector3(-r * Math.cos(angle), h, -r * Math.sin(angle)).normalize();
+    rib.quaternion.setFromUnitVectors(new THREE.Vector3(0, 1, 0), dir);
+
+    // O'rtadagi nuqta
+    rib.position.set(r * 0.5 * Math.cos(angle), baseY + h * 0.5, r * 0.5 * Math.sin(angle));
+    rib.castShadow = true;
+    rib.receiveShadow = true;
+    rib.userData = { isQueenDiamond: true, isCrown: true, pieceId };
+    queenGroup.add(rib);
+  }
+
+  // 4. Cho'qqidagi qoracha nuqta (Uchida qoracha apex cap)
+  const apexGeo = new THREE.ConeGeometry(0.014, 0.016, 4);
+  apexGeo.rotateY(Math.PI / 4);
+  const apexMesh = new THREE.Mesh(apexGeo, nurBlackMat);
+  apexMesh.position.y = apexY - 0.001;
+  apexMesh.castShadow = true;
+  apexMesh.receiveShadow = true;
+  apexMesh.userData = { isQueenDiamond: true, isCrown: true, pieceId };
+  queenGroup.add(apexMesh);
 
   return queenGroup;
 }
@@ -270,6 +305,7 @@ export default function Board3D({
   aiThinking,
   frontRimTitle,
   frontRimMoveText,
+  boardTheme = 'classic',
 }: Board3DProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -333,69 +369,110 @@ export default function Board3D({
   }, []);
 
   // Koordinatali yog'och hoshiya teksturasini yaratish (Nur Chess 100: A B C N E D M F G H, 1-10)
-  const createFrameTexture = useCallback((flipped: boolean): Promise<THREE.CanvasTexture> => {
+  const createFrameTexture = useCallback((flipped: boolean, currentTheme: BoardTheme = 'classic'): Promise<THREE.CanvasTexture> => {
     const cv = document.createElement('canvas');
     cv.width = 1024;
     cv.height = 1024;
     const ctx = cv.getContext('2d')!;
 
-    const img = new Image();
-    img.src = '/textures/wood_frame.jpg';
+    const marginPx = (FRAME_MARGIN / TOTAL_WIDTH) * 1024;
+    const innerSize = 1024 - marginPx * 2;
 
+    if (currentTheme === 'wood') {
+      const img = new Image();
+      img.src = '/textures/wood_frame.jpg';
+
+      return new Promise((resolve) => {
+        const renderCoords = () => {
+          ctx.fillStyle = 'rgba(165, 115, 60, 0.25)';
+          ctx.fillRect(0, 0, 1024, 1024);
+
+          ctx.strokeStyle = '#221105';
+          ctx.lineWidth = 4;
+          ctx.strokeRect(marginPx, marginPx, innerSize, innerSize);
+
+          ctx.strokeStyle = '#85552a';
+          ctx.lineWidth = 2;
+          ctx.strokeRect(marginPx - 2, marginPx - 2, innerSize + 4, innerSize + 4);
+
+          ctx.font = 'bold 24px system-ui, -apple-system, sans-serif';
+          ctx.fillStyle = '#2b1608';
+          ctx.textAlign = 'center';
+          ctx.textBaseline = 'middle';
+
+          const rawFiles = [...FILES];
+          const files = flipped ? [...rawFiles].reverse() : rawFiles;
+          const sqPx = innerSize / 10;
+
+          for (let f = 0; f < 10; f++) {
+            const x = marginPx + (f + 0.5) * sqPx;
+            ctx.fillText(files[f], x, 1024 - marginPx * 0.46);
+            ctx.fillText(files[f], x, marginPx * 0.46);
+          }
+
+          for (let r = 0; r < 10; r++) {
+            const num = flipped ? 10 - r : r + 1;
+            const y = marginPx + (9 - r + 0.5) * sqPx;
+            ctx.fillText(String(num), marginPx * 0.46, y);
+            ctx.fillText(String(num), 1024 - marginPx * 0.46, y);
+          }
+
+          const tex = new THREE.CanvasTexture(cv);
+          tex.needsUpdate = true;
+          resolve(tex);
+        };
+
+        img.onload = () => {
+          ctx.drawImage(img, 0, 0, 1024, 1024);
+          renderCoords();
+        };
+        img.onerror = () => {
+          ctx.fillStyle = '#d4a373';
+          ctx.fillRect(0, 0, 1024, 1024);
+          renderCoords();
+        };
+      });
+    }
+
+    // Classic (Rasmiy Nur), Emerald, Azure, Marble
     return new Promise((resolve) => {
-      const renderCoords = () => {
-        ctx.fillStyle = 'rgba(165, 115, 60, 0.25)';
-        ctx.fillRect(0, 0, 1024, 1024);
+      ctx.fillStyle = currentTheme === 'emerald' ? '#122012' : currentTheme === 'azure' ? '#0f1b2b' : currentTheme === 'marble' ? '#1a1d24' : '#fcfcfa';
+      ctx.fillRect(0, 0, 1024, 1024);
 
-        const marginPx = (FRAME_MARGIN / TOTAL_WIDTH) * 1024;
-        const innerSize = 1024 - marginPx * 2;
+      const borderCol = currentTheme === 'emerald' ? '#386632' : currentTheme === 'azure' ? '#325884' : currentTheme === 'marble' ? '#4b5563' : '#904019';
+      ctx.strokeStyle = borderCol;
+      ctx.lineWidth = 5;
+      ctx.strokeRect(marginPx, marginPx, innerSize, innerSize);
 
-        ctx.strokeStyle = '#221105';
-        ctx.lineWidth = 4;
-        ctx.strokeRect(marginPx, marginPx, innerSize, innerSize);
+      ctx.strokeStyle = currentTheme === 'classic' ? 'rgba(0,0,0,0.12)' : 'rgba(255,255,255,0.15)';
+      ctx.lineWidth = 2;
+      ctx.strokeRect(4, 4, 1016, 1016);
 
-        ctx.strokeStyle = '#85552a';
-        ctx.lineWidth = 2;
-        ctx.strokeRect(marginPx - 2, marginPx - 2, innerSize + 4, innerSize + 4);
+      ctx.font = '900 25px system-ui, -apple-system, sans-serif';
+      ctx.fillStyle = currentTheme === 'emerald' ? '#9ae6b4' : currentTheme === 'azure' ? '#90cdf4' : currentTheme === 'marble' ? '#e2e8f0' : '#111111';
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
 
-        ctx.font = 'bold 24px system-ui, -apple-system, sans-serif';
-        ctx.fillStyle = '#2b1608';
-        ctx.textAlign = 'center';
-        ctx.textBaseline = 'middle';
+      const rawFiles = [...FILES];
+      const files = flipped ? [...rawFiles].reverse() : rawFiles;
+      const sqPx = innerSize / 10;
 
-        const rawFiles = [...FILES];
-        const files = flipped ? [...rawFiles].reverse() : rawFiles;
-        const sqPx = innerSize / 10;
+      for (let f = 0; f < 10; f++) {
+        const x = marginPx + (f + 0.5) * sqPx;
+        ctx.fillText(files[f], x, 1024 - marginPx * 0.46);
+        ctx.fillText(files[f], x, marginPx * 0.46);
+      }
 
-        // Quyi va yuqori harflar
-        for (let f = 0; f < 10; f++) {
-          const x = marginPx + (f + 0.5) * sqPx;
-          ctx.fillText(files[f], x, 1024 - marginPx * 0.46);
-          ctx.fillText(files[f], x, marginPx * 0.46);
-        }
+      for (let r = 0; r < 10; r++) {
+        const num = flipped ? 10 - r : r + 1;
+        const y = marginPx + (9 - r + 0.5) * sqPx;
+        ctx.fillText(String(num), marginPx * 0.46, y);
+        ctx.fillText(String(num), 1024 - marginPx * 0.46, y);
+      }
 
-        // Chap va o'ng raqamlar (1 pastda, 10 tepada)
-        for (let r = 0; r < 10; r++) {
-          const num = flipped ? 10 - r : r + 1;
-          const y = marginPx + (9 - r + 0.5) * sqPx;
-          ctx.fillText(String(num), marginPx * 0.46, y);
-          ctx.fillText(String(num), 1024 - marginPx * 0.46, y);
-        }
-
-        const tex = new THREE.CanvasTexture(cv);
-        tex.needsUpdate = true;
-        resolve(tex);
-      };
-
-      img.onload = () => {
-        ctx.drawImage(img, 0, 0, 1024, 1024);
-        renderCoords();
-      };
-      img.onerror = () => {
-        ctx.fillStyle = '#d4a373';
-        ctx.fillRect(0, 0, 1024, 1024);
-        renderCoords();
-      };
+      const tex = new THREE.CanvasTexture(cv);
+      tex.needsUpdate = true;
+      resolve(tex);
     });
   }, []);
 
@@ -647,13 +724,46 @@ export default function Board3D({
   // isFlipped o'zgarganda ramka koordinata teksturasini yangilash
   useEffect(() => {
     if (!frameMeshRef.current) return;
-    createFrameTexture(isFlipped).then((newTex) => {
+    const currentTheme = boardTheme || 'classic';
+    createFrameTexture(isFlipped, currentTheme).then((newTex) => {
       if (frameMeshRef.current) {
         (frameMeshRef.current.material as THREE.MeshStandardMaterial).map = newTex;
         (frameMeshRef.current.material as THREE.MeshStandardMaterial).needsUpdate = true;
       }
     });
-  }, [isFlipped, createFrameTexture]);
+
+    const textureLoader = new THREE.TextureLoader();
+    let newLightMat: THREE.Material;
+    let newDarkMat: THREE.Material;
+
+    if (currentTheme === 'classic') {
+      const lightTex = textureLoader.load('/textures/classic_light_square.jpg');
+      const darkTex = textureLoader.load('/textures/classic_dark_square.jpg');
+      newLightMat = new THREE.MeshStandardMaterial({ map: lightTex, roughness: 0.35, metalness: 0.05 });
+      newDarkMat = new THREE.MeshStandardMaterial({ map: darkTex, roughness: 0.35, metalness: 0.05 });
+    } else if (currentTheme === 'wood') {
+      const lightTex = textureLoader.load('/textures/wood_light_square.jpg');
+      const darkTex = textureLoader.load('/textures/wood_dark_square.jpg');
+      newLightMat = new THREE.MeshStandardMaterial({ map: lightTex, roughness: 0.35, metalness: 0.05 });
+      newDarkMat = new THREE.MeshStandardMaterial({ map: darkTex, roughness: 0.35, metalness: 0.05 });
+    } else if (currentTheme === 'emerald') {
+      newLightMat = new THREE.MeshStandardMaterial({ color: 0xdce6cd, roughness: 0.35, metalness: 0.05 });
+      newDarkMat = new THREE.MeshStandardMaterial({ color: 0x557d38, roughness: 0.35, metalness: 0.05 });
+    } else if (currentTheme === 'azure') {
+      newLightMat = new THREE.MeshStandardMaterial({ color: 0xd0e0f2, roughness: 0.35, metalness: 0.05 });
+      newDarkMat = new THREE.MeshStandardMaterial({ color: 0x385c88, roughness: 0.35, metalness: 0.05 });
+    } else {
+      newLightMat = new THREE.MeshStandardMaterial({ color: 0xe5e7eb, roughness: 0.35, metalness: 0.05 });
+      newDarkMat = new THREE.MeshStandardMaterial({ color: 0x4b5563, roughness: 0.35, metalness: 0.05 });
+    }
+
+    squareMeshesRef.current.forEach((sq, idx) => {
+      const r = Math.floor(idx / 10);
+      const f = idx % 10;
+      const isLight = (r + f) % 2 !== 0;
+      sq.material = isLight ? newLightMat : newDarkMat;
+    });
+  }, [isFlipped, boardTheme, createFrameTexture]);
 
   // Old qirra plintusi matnini yangilash
   useEffect(() => {
@@ -739,10 +849,9 @@ export default function Board3D({
             meshGroup.add(crown);
           }
 
-          // Vazirga (Queen) 4 qirrali piramida romb (Oq Vazirda qora, Qora Vazirda oq)
+          // Vazirga (Queen) 4 qirrali piramida romb (4 ta oq fasetka, qora ko'paytiruv 'X' qirralar, uchida qoracha)
           if (typeKey === 'queen') {
-            const diamondMat = isWhite ? nurBlackMat : nurWhiteMat;
-            const queenDiamond = createQueenDiamond(isWhite, piece.id, diamondMat);
+            const queenDiamond = createQueenDiamond(isWhite, piece.id, nurWhiteMat, nurBlackMat);
             meshGroup.add(queenDiamond);
           }
 

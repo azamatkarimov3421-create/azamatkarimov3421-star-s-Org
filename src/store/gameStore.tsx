@@ -17,7 +17,7 @@ import { speakUzbek, vibrateTouch } from '../audio/speech';
 import { onlineManager } from '../services/onlineService';
 import { AppLanguage, getAppLanguage, setAppLanguage } from '../i18n/translations';
 
-export type BoardTheme = 'wood' | 'emerald' | 'azure' | 'marble';
+export type BoardTheme = 'classic' | 'wood' | 'emerald' | 'azure' | 'marble';
 export type AppThemeMode = 'dark' | 'light' | 'system';
 export type TimeControl = number; // in seconds (0=unlimited)
 
@@ -212,7 +212,7 @@ export function createFreshAppState(): AppState {
     aiThinking: false,
     showPromotionFor: null,
     pendingMove: null,
-    boardTheme: 'wood',
+    boardTheme: 'classic',
     isFlipped: false,
     soundEnabled: isSoundEnabled(),
     timeControl: 0,
@@ -253,7 +253,7 @@ export function createInitialAppState(): AppState {
       aiWhiteDepth: saved.aiWhiteDepth ?? 2,
       aiBlackDepth: saved.aiBlackDepth ?? 2,
       aiVsAiSpeed: saved.aiVsAiSpeed ?? 2000,
-      boardTheme: saved.boardTheme || 'wood',
+      boardTheme: saved.boardTheme || 'classic',
       isFlipped: saved.isFlipped ?? false,
       timeControl: saved.timeControl ?? 0,
       timeIncrement: saved.timeIncrement ?? 0,

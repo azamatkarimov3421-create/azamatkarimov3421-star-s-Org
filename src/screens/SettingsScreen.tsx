@@ -106,7 +106,8 @@ export default function SettingsScreen({ onBack, onOpenRules }: SettingsScreenPr
     (appTheme === 'system' && typeof window !== 'undefined' && !window.matchMedia('(prefers-color-scheme: dark)').matches);
 
   const THEME_NAMES: Record<BoardTheme, { title: string; lightSq: string; darkSq: string }> = {
-    wood: { title: 'Rasmiy Nur 100 (Sariq & Qizgʻish Yogʻoch)', lightSq: '#e8c97e', darkSq: '#8c3826' },
+    classic: { title: '1. Rasmiy Nur Doskasi (Sariq-krem & Jigarrang - Asosiy)', lightSq: '#fef596', darkSq: '#904019' },
+    wood: { title: '2. 3D Qizgʻish Yogʻoch (Klassik Yogʻoch)', lightSq: '#ffff85', darkSq: '#ff9d7a' },
     emerald: { title: 'Zumrad Turniri', lightSq: '#d7e2ca', darkSq: '#447b59' },
     azure: { title: 'Zangori Osmon', lightSq: '#d4e2ee', darkSq: '#4a779d' },
     marble: { title: 'Marmar & Obsidiyan', lightSq: '#e3e4e6', darkSq: '#434750' },
@@ -649,7 +650,7 @@ export default function SettingsScreen({ onBack, onOpenRules }: SettingsScreenPr
           }`}>
             <h3 className="text-base font-black">Dosqa Uslubini Tanlang</h3>
             <div className="space-y-2">
-              {(['wood', 'emerald', 'azure', 'marble'] as BoardTheme[]).map((th) => (
+              {(['classic', 'wood', 'emerald', 'azure', 'marble'] as BoardTheme[]).map((th) => (
                 <button
                   key={th}
                   onClick={() => {
