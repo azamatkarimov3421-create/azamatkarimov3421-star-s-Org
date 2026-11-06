@@ -797,11 +797,18 @@ function renderSculptedPiece(type: PieceType, isWhite: boolean, p: string, isSel
           <path d="M 44 23 Q 48 13 50 7 Q 52 13 56 23" fill="none" stroke={metalTrim} strokeWidth="1.6" />
           <path d="M 42 22 Q 46 14 48 8" fill="none" stroke={specular} strokeWidth="1.4" opacity={0.8} />
 
-          {/* NUR Chirog'i / Zargarona Spire uchligi */}
-          <circle cx="51" cy="7.5" r="3" fill={bevelGrad} />
-          <circle cx="50" cy="6.5" r="3" fill={metalTrim} stroke={strokeColor} strokeWidth="0.8" />
-          <circle cx="49" cy="5.5" r="1.2" fill="#ffffff" />
-          <line x1="50" y1="3.5" x2="50" y2="1" stroke={metalTrim} strokeWidth="1.8" strokeLinecap="round" />
+          {/* NUR tepasidagi qarama-qarshi rangli '+' nishoni (Oq donada qora +, Qora donada oq +) */}
+          <g id="nur-top-cross-symbol">
+            <polygon
+              points="50,1.5 58,6 50,10.5 42,6"
+              fill={isWhite ? '#141416' : '#f8f8fa'}
+              stroke={metalTrim}
+              strokeWidth="0.9"
+            />
+            <line x1="50" y1="2.8" x2="50" y2="9.2" stroke={isWhite ? '#ffffff' : '#141416'} strokeWidth="1.8" strokeLinecap="round" />
+            <line x1="44" y1="6" x2="56" y2="6" stroke={isWhite ? '#ffffff' : '#141416'} strokeWidth="1.8" strokeLinecap="round" />
+            <circle cx="50" cy="6" r="1.2" fill={metalTrim} />
+          </g>
 
           {/* Taraluvchi Nur halqasi */}
           <circle cx="50" cy="6" r="5.5" fill="none" stroke={metalTrim} strokeWidth="0.8" opacity={0.7} strokeDasharray="1.5 2" />

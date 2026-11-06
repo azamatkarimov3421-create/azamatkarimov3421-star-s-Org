@@ -176,6 +176,61 @@ function createKingCrown(goldCrownMat: THREE.Material, pieceId: string): THREE.G
   return crownGroup;
 }
 
+// Nur donasi uchun maxsus 3D qarama-qarshi rangli '+' romb nishoni
+// Oq Nur figurasiga: Qora '+' nishon
+// Qora Nur figurasiga: Oq '+' nishon
+function createNurEmblem(isWhite: boolean, pieceId: string, contrastMat: THREE.Material, goldMat: THREE.Material): THREE.Group {
+  const emblemGroup = new THREE.Group();
+  emblemGroup.name = 'nurEmblem';
+
+  // 1. Asosiy dumaloq tepalik gardishi (Top Disc Plateau)
+  const discGeo = new THREE.CylinderGeometry(0.092, 0.096, 0.016, 24);
+  const disc = new THREE.Mesh(discGeo, contrastMat);
+  disc.position.y = 0.978;
+  disc.castShadow = true;
+  disc.receiveShadow = true;
+  disc.userData = { isNurEmblem: true, pieceId };
+  emblemGroup.add(disc);
+
+  // 2. Romb / Diamond asos (Chamfered Diamond)
+  const diamondGeo = new THREE.CylinderGeometry(0.065, 0.072, 0.012, 4);
+  diamondGeo.rotateY(Math.PI / 4);
+  const diamond = new THREE.Mesh(diamondGeo, contrastMat);
+  diamond.position.y = 0.988;
+  diamond.castShadow = true;
+  diamond.receiveShadow = true;
+  diamond.userData = { isNurEmblem: true, pieceId };
+  emblemGroup.add(diamond);
+
+  // 3. Markazdagi bo'rtib chiqqan '+' krest (Cross)
+  const vCrossGeo = new THREE.BoxGeometry(0.022, 0.014, 0.092);
+  const vCross = new THREE.Mesh(vCrossGeo, goldMat);
+  vCross.position.y = 0.996;
+  vCross.castShadow = true;
+  vCross.receiveShadow = true;
+  vCross.userData = { isNurEmblem: true, pieceId };
+  emblemGroup.add(vCross);
+
+  const hCrossGeo = new THREE.BoxGeometry(0.092, 0.014, 0.022);
+  const hCross = new THREE.Mesh(hCrossGeo, goldMat);
+  hCross.position.y = 0.996;
+  hCross.castShadow = true;
+  hCross.receiveShadow = true;
+  hCross.userData = { isNurEmblem: true, pieceId };
+  emblemGroup.add(hCross);
+
+  // 4. Markaziy yorqin olmos / gavhar (Center Jewel)
+  const centerJewelGeo = new THREE.OctahedronGeometry(0.016, 0);
+  const centerJewel = new THREE.Mesh(centerJewelGeo, goldMat);
+  centerJewel.position.y = 1.006;
+  centerJewel.castShadow = true;
+  centerJewel.receiveShadow = true;
+  centerJewel.userData = { isNurEmblem: true, pieceId };
+  emblemGroup.add(centerJewel);
+
+  return emblemGroup;
+}
+
 export default function Board3D({
   game,
   selectedSquare,
@@ -644,6 +699,13 @@ export default function Board3D({
           if (typeKey === 'king') {
             const crown = createKingCrown(goldCrownMat, piece.id);
             meshGroup.add(crown);
+          }
+
+          // Nur figurasiga tepasidagi qarama-qarshi rangli '+' (Oq donaga qora +, Qora donaga oq +)
+          if (typeKey === 'nur') {
+            const contrastMat = isWhite ? blackMat : whiteMat;
+            const nurEmblem = createNurEmblem(isWhite, piece.id, contrastMat, goldCrownMat);
+            meshGroup.add(nurEmblem);
           }
 
           const box = new THREE.Box3().setFromObject(meshGroup);

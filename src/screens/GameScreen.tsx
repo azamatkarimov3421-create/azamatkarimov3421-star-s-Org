@@ -71,7 +71,29 @@ export default function GameScreen({ onBack, onOpenSettings }: GameScreenProps) 
   const [showHistoryModal, setShowHistoryModal] = useState(false);
   const [showVsAiLevelModal, setShowVsAiLevelModal] = useState(false);
   const [showGameOverModal, setShowGameOverModal] = useState(true);
+  const [sideNotice, setSideNotice] = useState<string | null>(null);
   const userProfile = getUserProfile();
+
+  React.useEffect(() => {
+    if (sideNotice) {
+      const timer = setTimeout(() => {
+        setSideNotice(null);
+      }, 3500);
+      return () => clearTimeout(timer);
+    }
+  }, [sideNotice]);
+
+  const handleSwitchSides = () => {
+    if (gameMode === 'vsAI') {
+      const newAiColor = aiColor === 'white' ? 'black' : 'white';
+      dispatch({ type: 'SET_AI_COLOR', color: newAiColor });
+      dispatch({ type: 'SET_FLIPPED', flipped: newAiColor === 'white' });
+      setSideNotice(newAiColor === 'white' ? "Siz endi Qoralar tomonidasiz (Bot: Oqlar)" : "Siz endi Oqlar tomonidasiz (Bot: Qoralar)");
+    } else {
+      dispatch({ type: 'TOGGLE_FLIP' });
+      setSideNotice(isFlipped ? "Doska: Oqlar tomondan" : "Doska: Qoralar tomondan");
+    }
+  };
 
   // Android back swipe yoki tizim orqaga tugmasi bosilganda o'yin menyusini ochish
   React.useEffect(() => {
@@ -431,6 +453,16 @@ export default function GameScreen({ onBack, onOpenSettings }: GameScreenProps) 
         >
           <RotateCcwIcon size={24} />
         </button>
+
+        {/* Tomonni almashtirish (⇄ Oq / Qora) */}
+        <button
+          onClick={handleSwitchSides}
+          className="w-11 h-11 sm:w-13 sm:h-13 md:w-14 md:h-14 rounded-2xl bg-black/65 hover:bg-black/85 active:scale-95 border border-amber-500/40 text-amber-300 shadow-[0_12px_28px_rgba(0,0,0,0.75)] flex flex-col items-center justify-center gap-0.5 transition-all cursor-pointer backdrop-blur-md"
+          title="Tomonni almashtirish (Oq ⇄ Qora)"
+        >
+          <span className="text-base font-black leading-none">⇄</span>
+          <span className="text-[7.5px] font-bold text-amber-200 uppercase tracking-tighter">Oq/Qora</span>
+        </button>
       </div>
 
       {/* ── 2. O'NG TOMONDAGI SUZUVCHI TUGMALAR ── */}
@@ -483,6 +515,20 @@ export default function GameScreen({ onBack, onOpenSettings }: GameScreenProps) 
       </div>
 
       {/* ── 3. YUQORI HOLAT XABARNOMALARI (Floating Status Indicators) ── */}
+      {sideNotice && (
+        <div className="fixed top-5 left-1/2 -translate-x-1/2 z-50 max-w-sm w-[90%] px-4 py-2.5 rounded-2xl bg-[#1e1b18]/95 border border-amber-500/80 text-amber-200 font-bold text-xs shadow-2xl flex items-center justify-between gap-3 animate-fadeIn backdrop-blur-md">
+          <div className="flex items-center gap-2">
+            <span className="text-base">⇄</span>
+            <span>{sideNotice}</span>
+          </div>
+          <button
+            onClick={() => setSideNotice(null)}
+            className="w-6 h-6 rounded-lg bg-white/10 hover:bg-white/20 text-amber-300 flex items-center justify-center text-xs cursor-pointer"
+          >
+            ✕
+          </button>
+        </div>
+      )}
       {drawOfferNotice && (
         <div className="fixed top-5 left-1/2 -translate-x-1/2 z-50 max-w-sm w-[90%] px-4 py-2.5 rounded-2xl bg-[#1e1b18]/95 border border-sky-500/60 text-white font-bold text-xs shadow-2xl flex items-center justify-between gap-3 animate-fadeIn backdrop-blur-md">
           <div className="flex items-center gap-2">
@@ -700,6 +746,32 @@ export default function GameScreen({ onBack, onOpenSettings }: GameScreenProps) 
                   >
                     <PlayIcon size={18} className="fill-white" />
                     <span>Oʻyinni davom ettirish</span>
+                  </button>
+
+                  {/* Tomonni almashtirish (Oq / Qora) */}
+                  <button
+                    onClick={() => {
+                      setShowMenuModal(false);
+                      handleSwitchSides();
+                    }}
+                    className="w-full py-2.5 px-3.5 rounded-xl bg-amber-950/30 hover:bg-amber-900/50 border border-amber-600/40 text-amber-200 font-bold text-xs flex items-center justify-between cursor-pointer transition-all active:scale-95"
+                  >
+                    <div className="flex items-center gap-2.5">
+                      <span className="text-base">⇄</span>
+                      <div className="text-left">
+                        <div className="font-bold text-amber-200 text-xs">Tomonni almashtirish (Oq ⇄ Qora)</div>
+                        <div className="text-[10px] text-amber-300/70 font-normal">
+                          {gameMode === 'vsAI'
+                            ? aiColor === 'black'
+                              ? "Qoralar tomoniga oʻtish (Bot Oqlar boʻladi)"
+                              : "Oqlar tomoniga oʻtish (Bot Qoralar boʻladi)"
+                            : "Doskani 180° aylantirib qarash"}
+                        </div>
+                      </div>
+                    </div>
+                    <span className="text-sm font-mono font-bold text-amber-400">
+                      {gameMode === 'vsAI' ? (aiColor === 'black' ? "⚫ Qoralar" : "⚪ Oqlar") : "⟲"}
+                    </span>
                   </button>
 
                   {/* 2. Onlayn rejimida: Durang taklif qilish, Taslim bo'lish, O'yindan chiqish */}

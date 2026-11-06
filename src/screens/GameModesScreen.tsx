@@ -19,6 +19,7 @@ interface GameModesScreenProps {
   onSelectVsAI: () => void;
   onSelectLocal: () => void;
   onSelectOnline: () => void;
+  onOpenStandaloneClock?: () => void;
 }
 
 export default function GameModesScreen({
@@ -26,6 +27,7 @@ export default function GameModesScreen({
   onSelectVsAI,
   onSelectLocal,
   onSelectOnline,
+  onOpenStandaloneClock,
 }: GameModesScreenProps) {
   const modes = [
     {
@@ -51,6 +53,14 @@ export default function GameModesScreen({
       icon: <GlobeIcon size={26} className="text-[#5dade2]" />,
       action: onSelectOnline,
       badge: 'Real-time',
+    },
+    {
+      id: 'chessClock',
+      title: 'Mustaqil Shaxmat Soati',
+      desc: 'Haqiqiy doskada oʻynash uchun 2 kishilik soat va inkrement',
+      icon: <span className="text-2xl">⏱️</span>,
+      action: onOpenStandaloneClock || (() => {}),
+      badge: 'FIDE / DGT',
     },
     {
       id: 'tournaments',

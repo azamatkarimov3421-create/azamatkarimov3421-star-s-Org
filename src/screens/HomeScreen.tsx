@@ -17,7 +17,7 @@ import { useTranslation } from '../i18n/translations';
 import { getUserProfile, subscribeUserProfile, UserProfile } from '../store/userProfileStore';
 
 interface HomeScreenProps {
-  onStartVsAI: () => void;
+  onStartVsAI: (preferredColor?: 'white' | 'black' | 'random') => void;
   onStartLocal: () => void;
   onOpenOnline: () => void;
   onOpenBotVsBot: () => void;
@@ -25,6 +25,7 @@ interface HomeScreenProps {
   onOpenStats: () => void;
   onOpenSettings: () => void;
   onContinueGame?: () => void;
+  onOpenStandaloneClock?: () => void;
 }
 
 export default function HomeScreen({
@@ -36,10 +37,12 @@ export default function HomeScreen({
   onOpenStats,
   onOpenSettings,
   onContinueGame,
+  onOpenStandaloneClock,
 }: HomeScreenProps) {
   const { state, dispatch } = useGame();
   const { t } = useTranslation();
   const [profile, setProfile] = useState<UserProfile>(getUserProfile());
+  const [homeColorChoice, setHomeColorChoice] = useState<'white' | 'random' | 'black'>('white');
 
   const isLight =
     state.appTheme === 'light' ||
@@ -64,7 +67,7 @@ export default function HomeScreen({
       subtitle: t('mode_vs_ai_desc'),
       icon: <BotIcon size={22} className={isLight ? 'text-emerald-700' : 'text-[#4ade80]'} />,
       iconBg: isLight ? 'bg-emerald-50 border-emerald-200' : 'bg-[#183622] border-[#275535]',
-      action: onStartVsAI,
+      action: () => onStartVsAI(homeColorChoice),
     },
     {
       id: 'aiVsAi',
@@ -90,6 +93,15 @@ export default function HomeScreen({
       icon: <GlobeIcon size={22} className={isLight ? 'text-purple-700' : 'text-[#c084fc]'} />,
       iconBg: isLight ? 'bg-purple-50 border-purple-200' : 'bg-[#2a1d3d] border-[#442c62]',
       action: onOpenOnline,
+    },
+    {
+      id: 'chessClock',
+      title: 'Shaxmat Soati (Taymer)',
+      subtitle: 'Jonli doskada 2 kishi oʻynashi uchun soat',
+      icon: <span className="text-xl">⏱️</span>,
+      iconBg: isLight ? 'bg-amber-50 border-amber-200' : 'bg-[#332616] border-[#553c20]',
+      badge: 'FIDE/DGT',
+      action: onOpenStandaloneClock || (() => {}),
     },
     {
       id: 'rules',
@@ -409,13 +421,87 @@ export default function HomeScreen({
               </div>
             </div>
 
+            {/* Donalar Rangini Tanlash (Oqlar / Tasodifiy / Qoralar) */}
+            <div className="pt-0.5 space-y-1.5">
+              <div className="flex items-center justify-between px-0.5">
+                <span className={`text-[11px] font-black uppercase tracking-wider ${isLight ? 'text-zinc-600' : 'text-zinc-400'}`}>
+                  Donalar rangi:
+                </span>
+                <span className={`text-[11px] font-bold ${isLight ? 'text-emerald-700' : 'text-emerald-400'}`}>
+                  {homeColorChoice === 'white' ? 'Oqlar (1-yuradi)' : homeColorChoice === 'black' ? 'Qoralar (Bot 1-yuradi)' : 'Tasodifiy (50/50)'}
+                </span>
+              </div>
+
+              <div className="grid grid-cols-3 gap-2">
+                <button
+                  type="button"
+                  onClick={() => setHomeColorChoice('white')}
+                  className={`py-2 px-1.5 rounded-2xl border flex items-center justify-center gap-1.5 transition-all cursor-pointer ${
+                    homeColorChoice === 'white'
+                      ? isLight
+                        ? 'bg-emerald-50 border-emerald-600 text-emerald-950 font-black shadow-sm ring-1 ring-emerald-500'
+                        : 'bg-[#1b2b20] border-[#22c55e] text-white font-black shadow-[0_0_12px_rgba(34,197,94,0.25)] ring-1 ring-[#22c55e]'
+                      : isLight
+                      ? 'bg-zinc-50 border-zinc-200 text-zinc-600 hover:border-zinc-300'
+                      : 'bg-[#141b17] border-[#27372d] text-zinc-400 hover:border-[#384f3f]'
+                  }`}
+                  title="Oqlar bilan o'ynash"
+                >
+                  <span className="w-3.5 h-3.5 rounded-full bg-white border border-zinc-300 shadow-sm shrink-0" />
+                  <span className="text-xs font-bold">Oqlar</span>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => setHomeColorChoice('random')}
+                  className={`py-2 px-1.5 rounded-2xl border flex items-center justify-center gap-1.5 transition-all cursor-pointer ${
+                    homeColorChoice === 'random'
+                      ? isLight
+                        ? 'bg-emerald-50 border-emerald-600 text-emerald-950 font-black shadow-sm ring-1 ring-emerald-500'
+                        : 'bg-[#1b2b20] border-[#22c55e] text-white font-black shadow-[0_0_12px_rgba(34,197,94,0.25)] ring-1 ring-[#22c55e]'
+                      : isLight
+                      ? 'bg-zinc-50 border-zinc-200 text-zinc-600 hover:border-zinc-300'
+                      : 'bg-[#141b17] border-[#27372d] text-zinc-400 hover:border-[#384f3f]'
+                  }`}
+                  title="Tasodifiy rang"
+                >
+                  <span className="w-3.5 h-3.5 rounded-full bg-gradient-to-r from-white to-black border border-zinc-400 shadow-sm shrink-0" />
+                  <span className="text-xs font-bold">Tasodifiy</span>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => setHomeColorChoice('black')}
+                  className={`py-2 px-1.5 rounded-2xl border flex items-center justify-center gap-1.5 transition-all cursor-pointer ${
+                    homeColorChoice === 'black'
+                      ? isLight
+                        ? 'bg-emerald-50 border-emerald-600 text-emerald-950 font-black shadow-sm ring-1 ring-emerald-500'
+                        : 'bg-[#1b2b20] border-[#22c55e] text-white font-black shadow-[0_0_12px_rgba(34,197,94,0.25)] ring-1 ring-[#22c55e]'
+                      : isLight
+                      ? 'bg-zinc-50 border-zinc-200 text-zinc-600 hover:border-zinc-300'
+                      : 'bg-[#141b17] border-[#27372d] text-zinc-400 hover:border-[#384f3f]'
+                  }`}
+                  title="Qoralar bilan o'ynash"
+                >
+                  <span className="w-3.5 h-3.5 rounded-full bg-zinc-900 border border-zinc-500 shadow-sm shrink-0" />
+                  <span className="text-xs font-bold">Qoralar</span>
+                </button>
+              </div>
+            </div>
+
             {/* Katta Yashil O'yin Tugmasi */}
             <button
-              onClick={onStartVsAI}
+              onClick={() => onStartVsAI(homeColorChoice)}
               className="w-full py-4 px-4 rounded-2xl bg-gradient-to-b from-[#6cb83e] to-[#559b2d] hover:from-[#76c444] hover:to-[#5ea833] text-white font-black text-base flex items-center justify-center gap-2.5 shadow-[0_5px_0_#386b1c] active:translate-y-1 active:shadow-[0_1px_0_#386b1c] transition-all cursor-pointer mt-1"
             >
               <PlayIcon size={20} className="fill-white" />
-              <span>{t('play_vs_ai_big')}</span>
+              <span>
+                {homeColorChoice === 'black'
+                  ? "Qoralar bilan oʻynash"
+                  : homeColorChoice === 'white'
+                  ? "Oqlar bilan oʻynash"
+                  : "Oʻyinni boshlash"}
+              </span>
             </button>
 
             {/* Mualliflik ma'lumoti */}
@@ -437,7 +523,7 @@ export default function HomeScreen({
               {gameModes.map((mode) => (
                 <button
                   key={mode.id}
-                  onClick={mode.action}
+                  onClick={() => mode.action()}
                   className={`w-full p-3.5 sm:p-4 rounded-2xl border transition-all text-left flex items-center justify-between group active:scale-[0.99] cursor-pointer ${
                     isLight
                       ? 'bg-white/95 hover:bg-zinc-50 border-[#e2ddd3] hover:border-emerald-500/60 shadow-[0_4px_16px_rgba(0,0,0,0.04)]'

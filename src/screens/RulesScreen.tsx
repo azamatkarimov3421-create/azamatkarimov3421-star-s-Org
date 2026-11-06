@@ -119,11 +119,11 @@ export default function RulesScreen({ onBack }: RulesScreenProps) {
   }> = [
     {
       type: 'Nur',
-      name: 'NUR (Light) — Noyob Oʻzbek Donasi',
-      symbol: 'Nr',
+      name: 'NUR (Light) — Boshida «+» Belgili Oʻzbek Donasi',
+      symbol: 'Nr / ➕',
       value: '7 ball',
       points: 7,
-      desc: 'Muallif Nurfullo Nurmatov ixtirosi! Minora/mayak koʻrinishidagi dona. 4 ta toʻgʻri yoʻnalishda (↑, ↓, ←, →) 1, 2 yoki 3 katakka harakatlanadi. Eng muhimi: Yoʻlidagi oʻz va raqib donalari ustidan SAKRAB oʻta oladi va 3 katakkacha masofadagi raqib figurasini uradi!',
+      desc: 'Muallif Nurfullo Nurmatov ixtirosi! Minora/mayak shaklidagi maxsus figura. 3D koʻrinishida: Oq Nur boshida QORA «+», Qora Nur boshida esa OQ «+» romb nishoni bor. 4 ta toʻgʻri yoʻnalishda (↑, ↓, ←, →) 1, 2 yoki 3 katakka harakatlanadi. Eng muhimi: Yoʻlidagi oʻz va raqib donalari ustidan SAKRAB oʻta oladi va 3 katakkacha masofadagi raqib figurasini uradi!',
       diagramProps: {
         cols: 7,
         rows: 7,
@@ -166,11 +166,11 @@ export default function RulesScreen({ onBack }: RulesScreenProps) {
     },
     {
       type: 'King',
-      name: 'Shoh (King)',
-      symbol: 'Kp / K',
+      name: 'Shoh (King) — Oliy Oltin Toj',
+      symbol: 'Kp / 👑',
       value: 'Cheksiz (Bosh figura)',
       points: 99,
-      desc: 'Har qanday 8 yoʻnalishda 1 katakka yuradi va himoyasiz raqib figurasini urib oladi. Shah ostidagi katakka yura olmaydi. Oq Shoh E1, Qora Shoh E10 katagida joylashadi.',
+      desc: 'Maydonning oliy hukmdori. 3D koʻrinishida: Oq va Qora shohlar boshida hashamatli sargʻish-tillarang Oliy Qirollik toji (Royal Crown) mavjud. Har qanday 8 yoʻnalishda 1 katakka yuradi. 100 katakli maydonda 3 xil rokirovka (Qisqa, Oʻrta va Uzun) imkoniyatiga ega. Shah ostidagi katakka yura olmaydi.',
       diagramProps: {
         cols: 5,
         rows: 5,
@@ -577,6 +577,84 @@ export default function RulesScreen({ onBack }: RulesScreenProps) {
               «Piyoda 1 qiymatli, Ot 3 qiymatli, Fil 3 qiymatli, Rux 5 qiymatli,{' '}
               <strong className="text-amber-300">NUR 7 qiymatli kuchga</strong>, Farzin 9 qiymatli
               kuchga egadir.»
+            </div>
+
+            {/* ── 3D FOTOREALISTIK MAXSUS FIGURALAR ANNOTATSIYASI (SHOH VA NUR) ── */}
+            <div className="p-4 rounded-3xl bg-gradient-to-br from-[#1a231d] via-[#141b17] to-[#0f1412] border border-amber-500/40 shadow-2xl space-y-3.5">
+              <div className="flex items-center justify-between pb-2 border-b border-[#2b3d30]">
+                <div className="flex items-center gap-2">
+                  <span className="text-xl">✨</span>
+                  <div>
+                    <h3 className="text-sm font-black text-white">
+                      Noyob Donalar: Shoh & NUR (Maxsus Belgilar)
+                    </h3>
+                    <p className="text-[10px] text-zinc-400">
+                      Muallif Nurfullo Nurmatov modeli va rasmiy 3D belgilari
+                    </p>
+                  </div>
+                </div>
+                <span className="text-[10px] font-black uppercase px-2 py-0.5 rounded bg-amber-500/20 text-amber-400 border border-amber-500/30">
+                  3D & Rasmiy
+                </span>
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                {/* 1. SHOH (KING) ANNOTATSIYASI */}
+                <div className="p-3.5 rounded-2xl bg-[#18201a] border border-[#2b3d30] flex flex-col gap-2.5">
+                  <div className="flex items-center gap-2.5">
+                    <div className="w-12 h-12 rounded-xl bg-black/40 border border-amber-500/30 flex items-center justify-center p-1 relative overflow-hidden">
+                      <img src="/pieces/3d_king_white.png" alt="3D Shoh" className="w-full h-full object-contain" />
+                    </div>
+                    <div>
+                      <h4 className="text-xs font-black text-amber-300">1. Shoh (King) — Oliy Toj</h4>
+                      <span className="text-[10px] font-mono text-zinc-400">Har ikkala tomonda Oltin Toj</span>
+                    </div>
+                  </div>
+
+                  <div className="space-y-1.5 text-[11px] text-zinc-300">
+                    <div className="flex items-start gap-1.5">
+                      <span className="text-amber-400 font-bold shrink-0">👑 Toj:</span>
+                      <span>8 tishli sarg'ish-tillarang shohona toj (Oq va Qora shohlar boshida zar toj bilan maydonga tushadi).</span>
+                    </div>
+                    <div className="flex items-start gap-1.5">
+                      <span className="text-emerald-400 font-bold shrink-0">🏰 Rokirovka:</span>
+                      <span>100 katakda 3 xil rokirovka: Qisqa (2 katak), Oʻrta (3 katak) va Uzun (4 katak).</span>
+                    </div>
+                    <div className="flex items-start gap-1.5">
+                      <span className="text-red-400 font-bold shrink-0">🛡️ Qoida:</span>
+                      <span>Shoh zarba ostida qolsa, darhol himoyalanish yoki qochish shart. Mot qilinganda oʻyin tugaydi.</span>
+                    </div>
+                  </div>
+                </div>
+
+                {/* 2. NUR DONASI ANNOTATSIYASI */}
+                <div className="p-3.5 rounded-2xl bg-[#18201a] border border-[#2b3d30] flex flex-col gap-2.5">
+                  <div className="flex items-center gap-2.5">
+                    <div className="w-12 h-12 rounded-xl bg-black/40 border border-amber-500/30 flex items-center justify-center p-1 relative overflow-hidden">
+                      <img src="/pieces/3d_nur_white.png" alt="3D Nur" className="w-full h-full object-contain" />
+                    </div>
+                    <div>
+                      <h4 className="text-xs font-black text-amber-300">2. NUR — «+» Belgili Mayak</h4>
+                      <span className="text-[10px] font-mono text-zinc-400">Kontrast «+» Romb Nishoni</span>
+                    </div>
+                  </div>
+
+                  <div className="space-y-1.5 text-[11px] text-zinc-300">
+                    <div className="flex items-start gap-1.5">
+                      <span className="text-amber-400 font-bold shrink-0">➕ Belgisi:</span>
+                      <span>Oq Nur boshida <strong className="text-white bg-zinc-950 px-1 rounded">QORA «+»</strong>, Qora Nur boshida esa <strong className="text-zinc-950 bg-white px-1 rounded">OQ «+»</strong> romb nishoni bor.</span>
+                    </div>
+                    <div className="flex items-start gap-1.5">
+                      <span className="text-emerald-400 font-bold shrink-0">⚡ Sakrash:</span>
+                      <span>4 ta toʻgʻri yoʻnalishda (↑, ↓, ←, →) 1, 2 yoki 3 katakkacha harakatlanadi va toʻsiqlar ustidan SAKRAB oʻtadi!</span>
+                    </div>
+                    <div className="flex items-start gap-1.5">
+                      <span className="text-sky-400 font-bold shrink-0">⚔️ Kuchi:</span>
+                      <span>7 ballik kuchga ega — Rux (5) va Fil (3) dan ustun, faqat Farzin (9) dan keyingi 2-katta figura.</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
             </div>
 
             {/* Donalarni tanlash uchun gorizontal filtr tugmalari */}

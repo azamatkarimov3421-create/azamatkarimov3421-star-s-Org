@@ -26,6 +26,7 @@ import LeaderboardModal from './components/LeaderboardModal';
 import OnlineRoomModal from './components/OnlineRoomModal';
 import BotVsBotModal from './components/BotVsBotModal';
 import VsAiModal from './components/VsAiModal';
+import StandaloneChessClockModal from './components/StandaloneChessClockModal';
 import GameInviteModal from './components/GameInviteModal';
 import { GameInvitePayload } from './services/onlineService';
 
@@ -64,6 +65,8 @@ function AppContent() {
   const [showOnlineModal, setShowOnlineModal] = useState(false);
   const [showBotVsBotModal, setShowBotVsBotModal] = useState(false);
   const [showVsAiModal, setShowVsAiModal] = useState(false);
+  const [showStandaloneClock, setShowStandaloneClock] = useState(false);
+  const [vsAiInitialColor, setVsAiInitialColor] = useState<'white' | 'black'>('white');
   const [initialRoom, setInitialRoom] = useState<string>('');
   const [incomingInvite, setIncomingInvite] = useState<GameInvitePayload | null>(null);
 
@@ -229,7 +232,12 @@ function AppContent() {
   };
 
   // O'yin rejimlarini boshlash
-  const handleStartVsAI = () => {
+  const handleStartVsAI = (preferredColor?: 'white' | 'black' | 'random') => {
+    let finalColor: 'white' | 'black' = 'white';
+    if (preferredColor === 'black') finalColor = 'black';
+    else if (preferredColor === 'random') finalColor = Math.random() < 0.5 ? 'white' : 'black';
+    else finalColor = 'white';
+    setVsAiInitialColor(finalColor);
     setShowVsAiModal(true);
   };
 
@@ -327,6 +335,7 @@ function AppContent() {
           onOpenStats={() => navigateTo('profile')}
           onOpenSettings={() => navigateTo('settings')}
           onContinueGame={() => navigateTo('game')}
+          onOpenStandaloneClock={() => setShowStandaloneClock(true)}
         />
       )}
 
@@ -398,7 +407,11 @@ function AppContent() {
         onClose={() => setShowVsAiModal(false)}
         onStart={handleConfirmStartVsAI}
         initialDepth={state.aiDepth}
-        initialColor={state.isFlipped ? 'black' : 'white'}
+        initialColor={vsAiInitialColor}
+      />
+      <StandaloneChessClockModal
+        isOpen={showStandaloneClock}
+        onClose={() => setShowStandaloneClock(false)}
       />
       <GameInviteModal
         invite={incomingInvite}
