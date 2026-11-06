@@ -15,6 +15,7 @@ import { getBestMove, getBestMoveAsync } from '../ai/minimax';
 import { onlineManager } from '../services/onlineService';
 import { logger } from '../services/loggerService';
 import GameOverModal from '../components/GameOverModal';
+import PromotionModal from '../components/PromotionModal';
 import {
   ArrowLeftIcon,
   RotateCwIcon,
@@ -59,6 +60,7 @@ export default function GameScreen({ onBack, onOpenSettings }: GameScreenProps) 
     onlinePlayerColor,
     isFlipped,
     is3D,
+    cinemaMode,
     history,
     drawOfferState,
     drawOfferNotice,
@@ -451,7 +453,9 @@ export default function GameScreen({ onBack, onOpenSettings }: GameScreenProps) 
       <div className="absolute inset-0 bg-black/25 pointer-events-none z-0" />
 
       {/* ── 1. CHAP TOMONDAGI SUZUVCHI TUGMALAR (☰ Menyu, 📱 Yonbosh/Tik, ⟲ Doskani burish, ⇄ Oq/Qora) ── */}
-      <div className="absolute top-4 sm:top-8 landscape:top-1/2 landscape:-translate-y-1/2 left-[max(0.6rem,env(safe-area-inset-left))] z-40 flex flex-col gap-2 sm:gap-3 pointer-events-auto">
+      <div className={`absolute top-4 sm:top-8 landscape:top-1/2 landscape:-translate-y-1/2 left-[max(0.6rem,env(safe-area-inset-left))] z-40 flex flex-col gap-2 sm:gap-3 pointer-events-auto transition-opacity duration-300 ${
+        cinemaMode ? 'opacity-35 hover:opacity-100 active:opacity-100' : 'opacity-100'
+      }`}>
         {/* Menyuni ochish (☰ Hamburger) */}
         <button
           onClick={() => setShowMenuModal(true)}
@@ -492,7 +496,9 @@ export default function GameScreen({ onBack, onOpenSettings }: GameScreenProps) 
       </div>
 
       {/* ── 2. O'NG TOMONDAGI SUZUVCHI TUGMALAR ── */}
-      <div className="absolute top-4 sm:top-8 landscape:top-1/2 landscape:-translate-y-1/2 right-[max(0.6rem,env(safe-area-inset-right))] z-40 flex flex-col gap-2 sm:gap-3 pointer-events-auto">
+      <div className={`absolute top-4 sm:top-8 landscape:top-1/2 landscape:-translate-y-1/2 right-[max(0.6rem,env(safe-area-inset-right))] z-40 flex flex-col gap-2 sm:gap-3 pointer-events-auto transition-opacity duration-300 ${
+        cinemaMode ? 'opacity-35 hover:opacity-100 active:opacity-100' : 'opacity-100'
+      }`}>
         {gameMode === 'online' ? (
           <>
             {/* Onlayn: Durang taklif qilish */}
@@ -593,7 +599,13 @@ export default function GameScreen({ onBack, onOpenSettings }: GameScreenProps) 
 
       {/* ── 4. ASOSIY MAYDON: 10x10 SHAXMAT DOSQASI (To'liq markazda, to'siqsiz, 1 ga 1) ── */}
       <main className="relative z-10 w-full h-full flex items-center justify-center p-0 sm:p-2 overflow-hidden">
-        <div className={`w-full h-full flex items-center justify-center ${is3D ? 'max-w-6xl' : 'max-w-[min(96vw,92vh)] aspect-square'}`}>
+        <div className={`w-full h-full flex items-center justify-center ${
+          is3D
+            ? 'w-full h-full max-w-none'
+            : cinemaMode
+              ? 'max-w-[min(99vw,98vh)] aspect-square'
+              : 'max-w-[min(96vw,92vh)] aspect-square'
+        }`}>
           <Board />
         </div>
       </main>
@@ -724,6 +736,36 @@ export default function GameScreen({ onBack, onOpenSettings }: GameScreenProps) 
                   🎯 {AI_LEVEL_NAMES[aiDepth]}
                 </button>
               )}
+            </div>
+
+            {/* Kino Ko'rish Rejimi (Katta ekran) Tezkor Switch */}
+            <div className="bg-[#141210] p-3 rounded-2xl border border-[#2e261f] flex items-center justify-between">
+              <div className="flex items-center gap-2.5">
+                <span className="text-xl">🎬</span>
+                <div className="text-left">
+                  <div className="font-bold text-white text-xs flex items-center gap-1.5">
+                    <span>Kino koʻrish rejimi</span>
+                    <span className="px-1.5 py-0.2 rounded text-[9px] font-black uppercase tracking-wider bg-rose-500/20 text-rose-400 border border-rose-500/30">
+                      Katta ekran
+                    </span>
+                  </div>
+                  <div className="text-[10px] text-zinc-400 font-normal">
+                    {cinemaMode ? "Faol (Doska maksimal katta hajmda)" : "Oʻchiq (Standart oʻlcham)"}
+                  </div>
+                </div>
+              </div>
+              <button
+                onClick={() => dispatch({ type: 'TOGGLE_CINEMA_MODE' })}
+                className={`w-11 h-6 rounded-full transition-colors p-0.5 relative cursor-pointer ${
+                  cinemaMode ? 'bg-rose-500' : 'bg-zinc-700'
+                }`}
+              >
+                <div
+                  className={`w-5 h-5 rounded-full bg-white shadow-md transition-transform ${
+                    cinemaMode ? 'translate-x-5' : 'translate-x-0'
+                  }`}
+                />
+              </button>
             </div>
 
             {/* ── ASOSIY AMALLAR RO'YXATI ── */}
@@ -1134,7 +1176,10 @@ export default function GameScreen({ onBack, onOpenSettings }: GameScreenProps) 
         </div>
       )}
 
-      {/* ── 8. OʻYIN YAKUNI MODALI (G'alaba / Mag'lubiyat / Durang va Reyting hisob-kitobi) ── */}
+      {/* ── 8. DONANI AYLANTIRISH MODALI (Piyoda marraga yetganda chiqadi) ── */}
+      <PromotionModal />
+
+      {/* ── 9. OʻYIN YAKUNI MODALI (G'alaba / Mag'lubiyat / Durang va Reyting hisob-kitobi) ── */}
       <GameOverModal
         onExit={onBack}
         isOpen={showGameOverModal}

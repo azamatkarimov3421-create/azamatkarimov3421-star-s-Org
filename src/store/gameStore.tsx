@@ -54,6 +54,7 @@ export interface AppState {
   roomCode: string | null;
   onlinePlayerColor: 'white' | 'black' | null;
   is3D: boolean;                  // Kitobdagidek 3D fazoviy ko'rinish
+  cinemaMode: boolean;            // Kino ko'rish rejimi (katta ekran)
   drawOfferState: 'none' | 'sent' | 'received' | 'local_prompt';
   drawOfferNotice: string | null;
 }
@@ -97,6 +98,8 @@ type Action =
   | { type: 'SET_ONLINE_ROOM'; roomCode: string | null; myColor: 'white' | 'black' | null }
   | { type: 'TOGGLE_3D' }
   | { type: 'SET_3D'; enabled: boolean }
+  | { type: 'TOGGLE_CINEMA_MODE' }
+  | { type: 'SET_CINEMA_MODE'; enabled: boolean }
   | { type: 'SET_LANGUAGE'; language: AppLanguage }
   | { type: 'SET_APP_THEME'; theme: AppThemeMode };
 
@@ -230,6 +233,13 @@ export function createFreshAppState(): AppState {
         }
         localStorage.setItem('nur_chess_3d_v3', 'false');
         return false;
+      } catch {
+        return false;
+      }
+    })(),
+    cinemaMode: (() => {
+      try {
+        return localStorage.getItem('nur_chess_cinema_mode') === 'true';
       } catch {
         return false;
       }
@@ -690,6 +700,31 @@ function gameReducer(state: AppState, action: Action): AppState {
         localStorage.setItem('nur_chess_3d', String(next));
       } catch {}
       return { ...state, is3D: next };
+    }
+
+    case 'TOGGLE_CINEMA_MODE': {
+      const next = !state.cinemaMode;
+      try {
+        localStorage.setItem('nur_chess_cinema_mode', String(next));
+        if (next && !document.fullscreenElement) {
+          document.documentElement.requestFullscreen?.().catch(() => {});
+        } else if (!next && document.fullscreenElement) {
+          document.exitFullscreen?.().catch(() => {});
+        }
+      } catch {}
+      return { ...state, cinemaMode: next };
+    }
+
+    case 'SET_CINEMA_MODE': {
+      try {
+        localStorage.setItem('nur_chess_cinema_mode', String(action.enabled));
+        if (action.enabled && !document.fullscreenElement) {
+          document.documentElement.requestFullscreen?.().catch(() => {});
+        } else if (!action.enabled && document.fullscreenElement) {
+          document.exitFullscreen?.().catch(() => {});
+        }
+      } catch {}
+      return { ...state, cinemaMode: action.enabled };
     }
 
     case 'SET_3D': {

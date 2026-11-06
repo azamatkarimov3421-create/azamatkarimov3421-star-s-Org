@@ -1,5 +1,6 @@
 // =====================================================
 // NUR SHAXMAT 100 — Piyoda Aylantirish Modali (Royal Promotion)
+// Farzin, Nur, Rux, Fil, Ot — tanlash modali
 // =====================================================
 
 import React from 'react';
@@ -10,19 +11,20 @@ import { useTranslation } from '../i18n/translations';
 
 export default function PromotionModal() {
   const { state, dispatch } = useGame();
-  const { showPromotionFor, game, is3D } = state;
+  const { showPromotionFor, game, is3D, pendingMove } = state;
   const { t } = useTranslation();
 
   if (!showPromotionFor) return null;
 
-  const color: Color = game.currentTurn === 'white' ? 'white' : 'black';
+  // Qaysi rangdagi piyoda marraga yetganini aniqlash
+  const color: Color = pendingMove?.piece?.color || (game.currentTurn === 'white' ? 'white' : 'black');
 
-  const PROMOTION_PIECES: Array<{ type: PieceType; name: string; score: number; desc: string }> = [
-    { type: 'Queen', name: t('piece_queen'), score: 9, desc: t('desc_queen') },
-    { type: 'Nur', name: t('piece_nur'), score: 7, desc: t('desc_nur') },
-    { type: 'Rook', name: t('piece_rook'), score: 5, desc: t('desc_rook') },
-    { type: 'Bishop', name: t('piece_bishop'), score: 3, desc: t('desc_bishop') },
-    { type: 'Knight', name: t('piece_knight'), score: 3, desc: t('desc_knight') },
+  const PROMOTION_PIECES: Array<{ type: PieceType; name: string; score: number }> = [
+    { type: 'Queen', name: t('piece_queen') || 'Farzin', score: 9 },
+    { type: 'Nur', name: t('piece_nur') || 'Nur', score: 7 },
+    { type: 'Rook', name: t('piece_rook') || 'Rux', score: 5 },
+    { type: 'Bishop', name: t('piece_bishop') || 'Fil', score: 3 },
+    { type: 'Knight', name: t('piece_knight') || 'Ot', score: 3 },
   ];
 
   const handleSelect = (pieceType: PieceType) => {
@@ -30,8 +32,8 @@ export default function PromotionModal() {
   };
 
   return (
-    <div className="fixed inset-0 bg-black/85 backdrop-blur-md flex items-center justify-center z-50 p-4 animate-fadeIn">
-      <div className="relative max-w-lg w-full bg-gradient-to-b from-slate-900 via-slate-900 to-slate-950 rounded-3xl p-6 sm:p-8 shadow-[0_25px_60px_rgba(0,0,0,0.9)] border-2 border-amber-500/60 ring-1 ring-amber-400/30">
+    <div className="fixed inset-0 bg-black/85 backdrop-blur-md flex items-center justify-center z-[100] p-4 animate-fadeIn">
+      <div className="relative max-w-lg w-full bg-gradient-to-b from-slate-900 via-slate-900 to-slate-950 rounded-3xl p-6 sm:p-8 shadow-[0_25px_60px_rgba(0,0,0,0.95)] border-2 border-amber-500/60 ring-1 ring-amber-400/30">
         {/* Dekorativ nur effekti */}
         <div className="absolute -top-12 left-1/2 -translate-x-1/2 w-32 h-32 bg-amber-500/20 rounded-full blur-2xl pointer-events-none" />
 
@@ -41,34 +43,27 @@ export default function PromotionModal() {
             👑
           </span>
           <h2 className="text-2xl sm:text-3xl font-black text-transparent bg-clip-text bg-gradient-to-r from-amber-200 via-amber-400 to-yellow-500">
-            {t('promotion_title')}
+            {t('promotion_title') || 'Piyoda Marragacha Yetdi!'}
           </h2>
-          <p className="text-slate-400 text-xs sm:text-sm mt-1">
-            {t('promotion_desc')}
+          <p className="text-slate-300 text-xs sm:text-sm mt-1">
+            {t('promotion_desc') || 'Piyodani qaysi donaga aylantirasiz?'}
           </p>
         </div>
 
         {/* Donalar kartalari */}
         <div className="grid grid-cols-2 sm:grid-cols-5 gap-3">
-          {PROMOTION_PIECES.map(({ type, name, score, desc }) => {
+          {PROMOTION_PIECES.map(({ type, name, score }) => {
             const isNur = type === 'Nur';
             return (
               <button
                 key={type}
                 onClick={() => handleSelect(type)}
-                className={`group relative flex flex-col items-center justify-between p-3 rounded-2xl border transition-all duration-200 active:scale-95 ${
+                className={`group relative flex flex-col items-center justify-between p-3 rounded-2xl border transition-all duration-200 active:scale-95 cursor-pointer ${
                   isNur
-                    ? 'bg-gradient-to-b from-amber-500/20 to-amber-950/40 border-amber-400/60 hover:border-amber-300 hover:shadow-[0_0_20px_rgba(245,158,11,0.4)]'
-                    : 'bg-slate-800/60 border-slate-700/80 hover:border-slate-500 hover:bg-slate-800 hover:shadow-lg'
+                    ? 'bg-gradient-to-b from-amber-500/25 to-amber-950/50 border-amber-400/70 hover:border-amber-300 hover:shadow-[0_0_25px_rgba(245,158,11,0.5)]'
+                    : 'bg-slate-800/80 border-slate-700 hover:border-slate-400 hover:bg-slate-800 hover:shadow-lg'
                 }`}
               >
-                {/* Maxsus Nur nishoni */}
-                {isNur && (
-                  <span className="absolute -top-2 bg-gradient-to-r from-amber-400 to-yellow-300 text-slate-950 text-[9px] font-black px-1.5 py-0.2 rounded-full uppercase tracking-tighter shadow-sm">
-                    {t('badge_new')}
-                  </span>
-                )}
-
                 {/* Don ikonkasi */}
                 <div className="w-14 h-14 sm:w-16 sm:h-16 flex items-center justify-center my-1 group-hover:scale-110 transition-transform">
                   <PieceIcon type={type} color={color} size={54} is3D={is3D} />

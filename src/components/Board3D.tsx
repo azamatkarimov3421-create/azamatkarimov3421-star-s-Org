@@ -22,6 +22,7 @@ interface Board3DProps {
   frontRimTitle?: string;
   frontRimMoveText?: string;
   boardTheme?: BoardTheme;
+  cinemaMode?: boolean;
 }
 
 // Module-level GLTF model kesh (ilova ochilganda bir marta yuklanadi va qayta yuklanmaydi)
@@ -306,7 +307,11 @@ export default function Board3D({
   frontRimTitle,
   frontRimMoveText,
   boardTheme = 'classic',
+  cinemaMode = false,
 }: Board3DProps) {
+  const cinemaModeRef = useRef(cinemaMode);
+  cinemaModeRef.current = cinemaMode;
+  const updateCameraRef = useRef<((w: number, h: number) => void) | null>(null);
   const containerRef = useRef<HTMLDivElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [isLoaded, setIsLoaded] = useState(false);
@@ -557,7 +562,11 @@ export default function Board3D({
       // Responsive masofa va balandlik: telefonning tor vertikal ekranida (aspect < 0.94)
       // doskaning 10 ta ustuni va 1-10 raqamlari har doim to'liq ekranga sig'adi!
       // Qulay, keng va professional 61 darajali ko'rish burchagi
-      const baseDist = 18.6;
+      // Responsive masofa va burchak:
+      // Foydalanuvchi chizgan binafsha chiziqlar bo'yicha doska maksimal katta qilib o'rnatiladi!
+      // Cinema Mode (Kino ko'rish rejimi) yoqilganda esa doska butun ekranni 98% to'ldiradi!
+      const isCinema = !!cinemaModeRef.current;
+      const baseDist = isCinema ? 14.8 : 16.6;
       const lookAtY = 0.0;
       const lookAtZ = 0.22;
 
@@ -565,8 +574,8 @@ export default function Board3D({
       // Samsung A10 dan S26 gacha, Redmi, Honor va barcha telifonlarga 100% moslash
       const isLandscape = aspect > 1.15;
       const scaleFactor = isLandscape
-        ? Math.max(1.0, 1.70 / aspect)
-        : Math.max(1.0, 1.25 / aspect);
+        ? (isCinema ? Math.max(1.0, 1.48 / aspect) : Math.max(1.0, 1.58 / aspect))
+        : (isCinema ? Math.max(1.0, 1.04 / aspect) : Math.max(1.0, 1.12 / aspect));
 
       const camDist = baseDist * scaleFactor;
 
@@ -578,6 +587,7 @@ export default function Board3D({
       cameraRef.current.updateProjectionMatrix();
     };
 
+    updateCameraRef.current = updateCameraForAspect;
     updateCameraForAspect(width, height);
 
     // ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ YORUG'LIK (Yumshoq, ko'zni qamashtirmaydigan va yaltiramaydigan yoritish) ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬
@@ -772,8 +782,16 @@ export default function Board3D({
       canvas.removeEventListener('webglcontextrestored', handleContextRestored);
       if (animFrameRef.current) cancelAnimationFrame(animFrameRef.current);
       renderer.dispose();
+      updateCameraRef.current = null;
     };
   }, [createFrameTexture, createRimTexture]);
+
+  // Cinema Mode o'zgarganda darhol kamerani yangilash
+  useEffect(() => {
+    if (containerRef.current && updateCameraRef.current) {
+      updateCameraRef.current(containerRef.current.clientWidth, containerRef.current.clientHeight);
+    }
+  }, [cinemaMode]);
 
   // isFlipped o'zgarganda ramka koordinata teksturasini yangilash
   useEffect(() => {

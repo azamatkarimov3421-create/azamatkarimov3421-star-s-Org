@@ -83,6 +83,7 @@ export default function Board() {
     aiColor,
     aiDepth,
     aiThinking,
+    cinemaMode,
   } = state;
   const boardRef = useRef<HTMLDivElement>(null);
 
@@ -438,6 +439,7 @@ export default function Board() {
           frontRimTitle={frontRimTitle}
           frontRimMoveText={frontRimMoveText}
           boardTheme={boardTheme}
+          cinemaMode={cinemaMode}
         />
       </div>
     );

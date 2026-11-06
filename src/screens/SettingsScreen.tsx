@@ -90,7 +90,7 @@ function ToggleSwitch({
 
 export default function SettingsScreen({ onBack, onOpenRules }: SettingsScreenProps) {
   const { state, dispatch } = useGame();
-  const { boardTheme, soundEnabled, useNumericNotation, is3D, appTheme } = state;
+  const { boardTheme, soundEnabled, useNumericNotation, is3D, cinemaMode, appTheme } = state;
   const { t, lang: currentLang, setLanguage } = useTranslation();
 
   const [soundTheme, setSoundThemeState] = useState<SoundTheme>(getSoundTheme());
@@ -302,7 +302,35 @@ export default function SettingsScreen({ onBack, onOpenRules }: SettingsScreenPr
               />
             </div>
 
-            {/* 1.4 1–100 Raqamli Notatsiya */}
+                        {/* 1.4 Kino Koʻrish Rejimi (Katta Ekran / Cinema Mode) */}
+            <div className="p-4 flex items-center justify-between">
+              <div className="flex items-center gap-3 min-w-0 pr-3">
+                <div className={`w-9 h-9 rounded-xl flex items-center justify-center text-base border shrink-0 ${iconBox}`}>
+                  🎬
+                </div>
+                <div className="min-w-0">
+                  <div className="flex items-center gap-1.5">
+                    <span className={`font-bold text-sm truncate ${textTitle}`}>
+                      Kino Koʻrish Rejimi (Katta Ekran)
+                    </span>
+                    <span className="px-1.5 py-0.5 rounded text-[9px] font-black uppercase tracking-wider bg-rose-500/20 text-rose-400 border border-rose-500/30">
+                      CINEMA
+                    </span>
+                  </div>
+                  <p className={`text-[10px] sm:text-[11px] truncate ${textSub}`}>
+                    {cinemaMode ? 'Doska butun ekranni egallaydi, maksimal katta hajm' : 'Standart oʻlcham'}
+                  </p>
+                </div>
+              </div>
+              <ToggleSwitch
+                checked={cinemaMode}
+                onChange={() => dispatch({ type: 'TOGGLE_CINEMA_MODE' })}
+                activeColor="bg-rose-500"
+                isLight={isLight}
+              />
+            </div>
+
+            {/* 1.5 1–100 Raqamli Notatsiya */}
             <div className="p-4 flex items-center justify-between">
               <div className="flex items-center gap-3 min-w-0 pr-3">
                 <div className={`w-9 h-9 rounded-xl flex items-center justify-center text-xs font-mono font-black border shrink-0 ${iconBox}`}>

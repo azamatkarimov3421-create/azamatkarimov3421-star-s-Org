@@ -1,4 +1,4 @@
-// =====================================================
+﻿// =====================================================
 // NUR CHESS 100 — Multi-Language (i18n) Support
 // 5 Languages: Uzbek Latin, Uzbek Cyrillic, Russian, English, Karakalpak
 // =====================================================
@@ -194,9 +194,9 @@ export const TRANSLATIONS = {
     // Donani Aylantirish (PromotionModal)
     promotion_title: 'Piyoda Marragacha Yetdi!',
     promotion_desc: 'Piyodani qaysi donga aylantirasiz?',
-    piece_queen: 'Vazir',
+    piece_queen: 'Farzin',
     piece_nur: 'Nur',
-    piece_rook: 'Tura',
+    piece_rook: 'Rux',
     piece_bishop: 'Fil',
     piece_knight: 'Ot',
     desc_queen: 'Barcha yoʻnalishdagi eng kuchli dona',
@@ -467,9 +467,9 @@ export const TRANSLATIONS = {
     // Донани Айлантириш
     promotion_title: 'Пиёда Маррагача Етди!',
     promotion_desc: 'Пиёдани қайси донга айлантирасиз?',
-    piece_queen: 'Вазир',
+    piece_queen: 'Фарзин',
     piece_nur: 'Нур',
-    piece_rook: 'Тўра',
+    piece_rook: 'Рух',
     piece_bishop: 'Фил',
     piece_knight: 'От',
     desc_queen: 'Барча йўналишдаги энг кучли дона',
