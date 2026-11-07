@@ -26,6 +26,10 @@ interface HomeScreenProps {
   onOpenSettings: () => void;
   onContinueGame?: () => void;
   onOpenStandaloneClock?: () => void;
+  onOpenBotModal?: () => void;
+  webDeviceView?: 'notebook' | 'phone';
+  onSetWebDeviceView?: (view: 'notebook' | 'phone') => void;
+  isAndroidApk?: boolean;
 }
 
 export default function HomeScreen({
@@ -38,6 +42,10 @@ export default function HomeScreen({
   onOpenSettings,
   onContinueGame,
   onOpenStandaloneClock,
+  onOpenBotModal,
+  webDeviceView = 'notebook',
+  onSetWebDeviceView,
+  isAndroidApk = false,
 }: HomeScreenProps) {
   const { state, dispatch } = useGame();
   const { t } = useTranslation();
@@ -49,6 +57,8 @@ export default function HomeScreen({
     (state.appTheme === 'system' &&
       typeof window !== 'undefined' &&
       !window.matchMedia('(prefers-color-scheme: dark)').matches);
+
+    const isMobileSimulation = !isAndroidApk && webDeviceView === 'phone';
 
   const hasActiveMatch =
     (state.game.status === 'playing' || state.game.status === 'check') &&
@@ -67,7 +77,7 @@ export default function HomeScreen({
       subtitle: t('mode_vs_ai_desc'),
       icon: <BotIcon size={22} className={isLight ? 'text-emerald-700' : 'text-[#4ade80]'} />,
       iconBg: isLight ? 'bg-emerald-50 border-emerald-200' : 'bg-[#183622] border-[#275535]',
-      action: () => onStartVsAI(homeColorChoice),
+      action: onOpenBotModal || (() => onStartVsAI(homeColorChoice)),
     },
     {
       id: 'aiVsAi',
@@ -146,7 +156,38 @@ export default function HomeScreen({
             </div>
 
             {/* Desktop Navigatsiya Tugmalari */}
-            <nav className="hidden landscape:flex md:flex items-center gap-1.5 sm:gap-2.5">
+            <nav className={`${isMobileSimulation ? 'hidden' : 'hidden landscape:flex md:flex'} items-center gap-1.5 sm:gap-2.5`}>
+              {/* Sayt uchun Noutbuk / Telefon ko'rinish tanlagichi */}
+              {!isAndroidApk && onSetWebDeviceView && (
+                <div className={`flex items-center p-0.5 rounded-xl border mr-1.5 ${
+                  isLight ? 'bg-zinc-100 border-zinc-300' : 'bg-black/50 border-white/15'
+                }`}>
+                  <button
+                    onClick={() => onSetWebDeviceView('notebook')}
+                    className={`px-2.5 py-1 rounded-lg text-xs font-black flex items-center gap-1.5 transition-all cursor-pointer ${
+                      webDeviceView === 'notebook'
+                        ? 'bg-emerald-600 text-white shadow-sm'
+                        : isLight ? 'text-zinc-600 hover:text-zinc-950' : 'text-zinc-400 hover:text-white'
+                    }`}
+                    title="Noutbuk / Kompyuter ko'rinishi"
+                  >
+                    <span>💻</span>
+                    <span className="hidden xl:inline">Noutbuk</span>
+                  </button>
+                  <button
+                    onClick={() => onSetWebDeviceView('phone')}
+                    className={`px-2.5 py-1 rounded-lg text-xs font-black flex items-center gap-1.5 transition-all cursor-pointer ${
+                      webDeviceView === 'phone'
+                        ? 'bg-emerald-600 text-white shadow-sm'
+                        : isLight ? 'text-zinc-600 hover:text-zinc-950' : 'text-zinc-400 hover:text-white'
+                    }`}
+                    title="Telefon / Mobil ko'rinishi"
+                  >
+                    <span>📱</span>
+                    <span className="hidden xl:inline">Telefon</span>
+                  </button>
+                </div>
+              )}
               <button
                 onClick={() => {}}
                 className={`px-4 py-2 rounded-xl text-xs font-black flex items-center gap-2 transition-all cursor-pointer ${
@@ -229,7 +270,18 @@ export default function HomeScreen({
             </nav>
 
             {/* Mobil O'ng Blok: Profil va Sozlamalar */}
-            <div className="flex items-center gap-2 landscape:hidden md:hidden">
+            <div className={`flex items-center gap-2 ${isMobileSimulation ? 'flex' : 'landscape:hidden md:hidden'}`}>
+              {!isAndroidApk && onSetWebDeviceView && (
+                <button
+                  onClick={() => onSetWebDeviceView(webDeviceView === 'notebook' ? 'phone' : 'notebook')}
+                  className={`h-10 px-2 rounded-xl border flex items-center justify-center text-xs font-bold transition-all active:scale-95 cursor-pointer ${
+                    isLight ? 'bg-zinc-100 border-zinc-300 text-zinc-900' : 'bg-[#233027] border-[#2e4235] text-white'
+                  }`}
+                  title={webDeviceView === 'notebook' ? "Telefon ko'rinishi" : "Noutbuk ko'rinishi"}
+                >
+                  <span>{webDeviceView === 'notebook' ? '📱' : '💻'}</span>
+                </button>
+              )}
               <button
                 onClick={onOpenStats}
                 className={`h-10 px-2.5 rounded-xl border flex items-center gap-1.5 text-xs font-bold transition-all active:scale-95 cursor-pointer ${
@@ -280,9 +332,15 @@ export default function HomeScreen({
         </header>
 
         {/* ── 2. ASOSIY QISM (1-GA-1 DESKTOP GRID) ── */}
-        <main className="w-full max-w-6xl xl:max-w-7xl 2xl:max-w-[1480px] mx-auto px-3 sm:px-6 md:px-8 lg:px-10 py-3 md:py-6 lg:py-8 md:my-auto landscape:max-h-[520px]:py-1.5 landscape:max-h-[520px]:gap-3 landscape:max-h-[520px]:px-3 grid grid-cols-1 landscape:grid-cols-12 md:grid-cols-12 gap-4 md:gap-8 lg:gap-10 items-stretch flex-1 md:flex-initial landscape:max-h-[520px]:overflow-hidden md:overflow-visible">
+        <main className={`w-full ${
+  isMobileSimulation
+    ? 'max-w-md mx-auto grid grid-cols-1 gap-4 px-3 py-3 !my-0'
+    : 'max-w-6xl xl:max-w-7xl 2xl:max-w-[1480px] mx-auto md:my-auto grid grid-cols-1 landscape:grid-cols-12 md:grid-cols-12 gap-4 md:gap-8 lg:gap-10 px-3 sm:px-6 md:px-8 lg:px-10 py-3 md:py-6 lg:py-8 landscape:max-h-[520px]:py-1.5 landscape:max-h-[520px]:gap-3 landscape:max-h-[520px]:px-3 landscape:max-h-[520px]:overflow-hidden md:overflow-visible'
+} items-stretch flex-1 md:flex-initial`}>
           {/* Chap ustun: Boshlash va 3D/2D tanlov (md:col-span-5) */}
-          <div className={`w-full landscape:col-span-5 md:col-span-5 p-4 sm:p-6 md:p-8 lg:p-10 landscape:p-2.5 rounded-3xl md:rounded-[2.2rem] backdrop-blur-md border flex flex-col justify-between gap-3.5 landscape:gap-1.5 md:gap-6 transition-all ${
+          <div className={`w-full ${
+    isMobileSimulation ? '' : 'landscape:col-span-5 md:col-span-5'
+  } p-4 sm:p-6 md:p-8 lg:p-10 landscape:p-2.5 rounded-3xl md:rounded-[2.2rem] backdrop-blur-md border flex flex-col justify-between gap-3.5 landscape:gap-1.5 md:gap-6 transition-all ${
 
             isLight ? 'bg-white/80 border-white/60 shadow-[0_8px_32px_rgba(0,0,0,0.06)] backdrop-blur-2xl' : 'bg-white/[0.05] border-white/15 shadow-[0_12px_40px_rgba(0,0,0,0.45)] backdrop-blur-2xl'
           }`}>
@@ -505,7 +563,9 @@ export default function HomeScreen({
           </div>
 
           {/* O'ng ustun: O'yin Turlari Ro'yxati (md:col-span-7) */}
-          <div className="w-full landscape:col-span-7 md:col-span-7 flex flex-col gap-2.5 md:gap-3.5 landscape:gap-1">
+          <div className={`w-full ${
+    isMobileSimulation ? '' : 'landscape:col-span-7 md:col-span-7'
+  } flex flex-col gap-2.5 md:gap-3.5 landscape:gap-1`}>
             <div className="px-1 text-xs md:text-sm font-black uppercase tracking-wider flex items-center justify-between">
               <span className={isLight ? 'text-[#6b6760]' : 'text-[#9ca3af]'}>{t('game_modes_header')}</span>
             </div>

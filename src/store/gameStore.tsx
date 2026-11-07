@@ -199,7 +199,7 @@ export function createFreshAppState(): AppState {
     language: getAppLanguage(),
     appTheme: (() => {
       try {
-        const saved = localStorage.getItem('nur_chess_app_theme_v1') as AppThemeMode;
+        const saved = localStorage.getItem('nur_chess_app_theme_v2') as AppThemeMode;
         if (saved === 'light' || saved === 'dark' || saved === 'system') {
           return saved;
         }
@@ -756,7 +756,7 @@ function gameReducer(state: AppState, action: Action): AppState {
 
     case 'SET_APP_THEME': {
       try {
-        localStorage.setItem('nur_chess_app_theme_v1', action.theme);
+        localStorage.setItem('nur_chess_app_theme_v2', action.theme);
       } catch {}
       return { ...state, appTheme: action.theme };
     }

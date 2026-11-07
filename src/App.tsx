@@ -40,6 +40,27 @@ export type ScreenType =
   | 'achievements';
 
 function AppContent() {
+  const isAndroidApk = typeof window !== 'undefined' && Boolean(
+    (window as any).AndroidBridge ||
+    window.location.protocol === 'file:' ||
+    window.location.origin.includes('androidplatform.net') ||
+    (window.location.origin.includes('localhost') && navigator.userAgent.includes('wv'))
+  );
+
+  const [webDeviceView, setWebDeviceView] = useState<'notebook' | 'phone'>(() => {
+    try {
+      const saved = localStorage.getItem('nur_chess_web_device_view');
+      if (saved === 'notebook' || saved === 'phone') return saved;
+    } catch {}
+    return typeof window !== 'undefined' && window.innerWidth >= 1024 ? 'notebook' : 'phone';
+  });
+
+  const handleSetWebDeviceView = (view: 'notebook' | 'phone') => {
+    setWebDeviceView(view);
+    try {
+      localStorage.setItem('nur_chess_web_device_view', view);
+    } catch {}
+  };
   const { state, dispatch } = useGame();
   const { gameMode, roomCode } = state;
 
@@ -274,7 +295,10 @@ function AppContent() {
     if (preferredColor === 'black') finalColor = 'black';
     else if (preferredColor === 'random') finalColor = Math.random() < 0.5 ? 'white' : 'black';
     else finalColor = 'white';
-    setVsAiInitialColor(finalColor);
+    handleConfirmStartVsAI(state.aiDepth, finalColor);
+  };
+
+  const handleOpenBotModal = () => {
     setShowVsAiModal(true);
   };
 
@@ -360,6 +384,7 @@ function AppContent() {
       {/* Shaffoflik uchun mayin fon vinetkasi */}
       <div className={`fixed inset-0 pointer-events-none z-0 ${isLight ? 'bg-gradient-to-b from-white/75 via-white/55 to-white/80' : 'bg-gradient-to-b from-black/65 via-black/45 to-black/80'}`} />
 
+      <div className="relative z-10 flex-1 flex flex-col w-full">
       {/* ── 1. ASOSIY EKRAN ROUTER ─────────────────────────── */}
       {currentScreen === 'splash' && (
         <SplashScreen onStart={() => navigateTo('home')} />
@@ -376,6 +401,10 @@ function AppContent() {
           onOpenSettings={() => navigateTo('settings')}
           onContinueGame={() => navigateTo('game')}
           onOpenStandaloneClock={() => setShowStandaloneClock(true)}
+          onOpenBotModal={handleOpenBotModal}
+          webDeviceView={webDeviceView}
+          onSetWebDeviceView={handleSetWebDeviceView}
+          isAndroidApk={isAndroidApk}
         />
       )}
 
@@ -410,6 +439,8 @@ function AppContent() {
       {currentScreen === 'achievements' && (
         <AchievementsScreen onBack={() => navigateTo('profile')} />
       )}
+
+      </div>
 
       {/* ── 2. MOBIL PASTKI MENYU (BOTTOM NAVIGATION) ──────── */}
       {showBottomNav && (

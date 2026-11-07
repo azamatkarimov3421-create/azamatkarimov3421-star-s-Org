@@ -88,7 +88,7 @@ function createKingCrown(goldCrownMat: THREE.Material, pieceId: string): THREE.G
   const bandGeo = new THREE.CylinderGeometry(0.108, 0.116, 0.038, 24);
   const band = new THREE.Mesh(bandGeo, goldCrownMat);
   band.position.y = 0.925;
-  band.castShadow = true;
+  band.castShadow = false;
   band.receiveShadow = true;
   band.userData = { isCrown: true, pieceId };
   crownGroup.add(band);
@@ -98,7 +98,7 @@ function createKingCrown(goldCrownMat: THREE.Material, pieceId: string): THREE.G
   ringGeo.rotateX(Math.PI / 2);
   const ring = new THREE.Mesh(ringGeo, goldCrownMat);
   ring.position.y = 0.910;
-  ring.castShadow = true;
+  ring.castShadow = false;
   ring.receiveShadow = true;
   ring.userData = { isCrown: true, pieceId };
   crownGroup.add(ring);
@@ -119,14 +119,14 @@ function createKingCrown(goldCrownMat: THREE.Material, pieceId: string): THREE.G
     spike.rotation.y = -angle;
     spike.rotation.z = Math.cos(angle) * 0.16;
     spike.rotation.x = -Math.sin(angle) * 0.16;
-    spike.castShadow = true;
+    spike.castShadow = false;
     spike.receiveShadow = true;
     spike.userData = { isCrown: true, pieceId };
     crownGroup.add(spike);
 
     const pearl = new THREE.Mesh(pearlGeo, goldCrownMat);
     pearl.position.set(sx * 1.06, 1.006, sz * 1.06);
-    pearl.castShadow = true;
+    pearl.castShadow = false;
     pearl.receiveShadow = true;
     pearl.userData = { isCrown: true, pieceId };
     crownGroup.add(pearl);
@@ -195,7 +195,7 @@ function createNurCross(isWhite: boolean, pieceId: string, crossMat: THREE.Mater
   const vCrossGeo = new THREE.BoxGeometry(0.040, 0.026, 0.208);
   const vCross = new THREE.Mesh(vCrossGeo, crossMat);
   vCross.position.y = 0.976;
-  vCross.castShadow = true;
+  vCross.castShadow = false;
   vCross.receiveShadow = true;
   vCross.userData = { isNurEmblem: true, isCrown: true, pieceId };
   nurGroup.add(vCross);
@@ -204,7 +204,7 @@ function createNurCross(isWhite: boolean, pieceId: string, crossMat: THREE.Mater
   const hCrossGeo = new THREE.BoxGeometry(0.208, 0.026, 0.040);
   const hCross = new THREE.Mesh(hCrossGeo, crossMat);
   hCross.position.y = 0.976;
-  hCross.castShadow = true;
+  hCross.castShadow = false;
   hCross.receiveShadow = true;
   hCross.userData = { isNurEmblem: true, isCrown: true, pieceId };
   nurGroup.add(hCross);
@@ -213,7 +213,7 @@ function createNurCross(isWhite: boolean, pieceId: string, crossMat: THREE.Mater
   const coreGeo = new THREE.BoxGeometry(0.048, 0.028, 0.048);
   const core = new THREE.Mesh(coreGeo, crossMat);
   core.position.y = 0.977;
-  core.castShadow = true;
+  core.castShadow = false;
   core.receiveShadow = true;
   core.userData = { isNurEmblem: true, isCrown: true, pieceId };
   nurGroup.add(core);
@@ -243,7 +243,7 @@ function createQueenDiamond(isWhite: boolean, pieceId: string, nurWhiteMat: THRE
   baseBorderGeo.rotateY(Math.PI / 4);
   const baseBorder = new THREE.Mesh(baseBorderGeo, nurBlackMat);
   baseBorder.position.y = baseY;
-  baseBorder.castShadow = true;
+  baseBorder.castShadow = false;
   baseBorder.receiveShadow = true;
   baseBorder.userData = { isQueenDiamond: true, isCrown: true, pieceId };
   queenGroup.add(baseBorder);
@@ -253,7 +253,7 @@ function createQueenDiamond(isWhite: boolean, pieceId: string, nurWhiteMat: THRE
   pyrGeo.rotateY(Math.PI / 4);
   const pyr = new THREE.Mesh(pyrGeo, nurWhiteMat);
   pyr.position.y = baseY + h / 2;
-  pyr.castShadow = true;
+  pyr.castShadow = false;
   pyr.receiveShadow = true;
   pyr.userData = { isQueenDiamond: true, isCrown: true, pieceId };
   queenGroup.add(pyr);
@@ -274,7 +274,7 @@ function createQueenDiamond(isWhite: boolean, pieceId: string, nurWhiteMat: THRE
 
     // O'rtadagi nuqta
     rib.position.set(r * 0.5 * Math.cos(angle), baseY + h * 0.5, r * 0.5 * Math.sin(angle));
-    rib.castShadow = true;
+    rib.castShadow = false;
     rib.receiveShadow = true;
     rib.userData = { isQueenDiamond: true, isCrown: true, pieceId };
     queenGroup.add(rib);
@@ -285,7 +285,7 @@ function createQueenDiamond(isWhite: boolean, pieceId: string, nurWhiteMat: THRE
   apexGeo.rotateY(Math.PI / 4);
   const apexMesh = new THREE.Mesh(apexGeo, nurBlackMat);
   apexMesh.position.y = apexY - 0.001;
-  apexMesh.castShadow = true;
+  apexMesh.castShadow = false;
   apexMesh.receiveShadow = true;
   apexMesh.userData = { isQueenDiamond: true, isCrown: true, pieceId };
   queenGroup.add(apexMesh);
@@ -541,7 +541,7 @@ export default function Board3D({
       alpha: true, // Shaffof fon ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬Â orqa fonga tabiiy qo'shiladi!
       powerPreference: 'high-performance',
     });
-    const isMobile = typeof navigator !== 'undefined' && (/Android|iPhone|iPad|iPod|Mobile/i.test(navigator.userAgent) || window.innerWidth < 768);
+    const isMobile = typeof navigator !== 'undefined' && (/Android|iPhone|iPad|iPod|Mobile/i.test(navigator.userAgent) || Boolean((window as any).AndroidBridge) || ('ontouchstart' in window && window.innerWidth < 1024) || window.innerWidth < 768);
     renderer.setSize(width, height, false);
     canvas.style.width = "100%";
     canvas.style.height = "100%";

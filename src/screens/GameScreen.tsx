@@ -430,15 +430,6 @@ export default function GameScreen({ onBack, onOpenSettings }: GameScreenProps) 
           <MenuIcon size={24} />
         </button>
 
-        {/* Doskani aylantirish (⟲ Rotate / Flip) */}
-        <button
-          onClick={() => dispatch({ type: 'TOGGLE_FLIP' })}
-          className="w-10 h-10 sm:w-12 sm:h-12 rounded-2xl bg-white/[0.08] hover:bg-white/[0.18] active:scale-95 border border-white/20 shadow-[0_8px_32px_rgba(0,0,0,0.6)] backdrop-blur-2xl text-white shadow-[0_10px_24px_rgba(0,0,0,0.75)] flex items-center justify-center transition-all cursor-pointer backdrop-blur-md"
-          title={t('btn_flip')}
-        >
-          <RotateCcwIcon size={22} />
-        </button>
-
         {/* Tomonni almashtirish (⇄ Oq / Qora) */}
         <button
           onClick={handleSwitchSides}

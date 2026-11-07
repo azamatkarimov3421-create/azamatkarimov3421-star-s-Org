@@ -117,18 +117,18 @@ export default function SettingsScreen({ onBack, onOpenRules }: SettingsScreenPr
 
   // Ranglar sinfi (Light / Dark dinamik dizayn)
   const cardBg = isLight
-    ? 'bg-white/95 border-[#e2ddd3] shadow-[0_2px_8px_rgba(0,0,0,0.04)]'
+    ? 'bg-white border-slate-300 shadow-[0_4px_14px_rgba(0,0,0,0.06)] ring-1 ring-slate-200'
     : 'bg-[#201d19]/95 border-[#352f28] shadow-[0_4px_16px_rgba(0,0,0,0.45)]';
   const cardHover = isLight ? 'hover:bg-zinc-50' : 'hover:bg-[#282420]';
-  const textTitle = isLight ? 'text-[#1c1a17]' : 'text-white';
-  const textSub = isLight ? 'text-[#756f64]' : 'text-[#9b9893]';
-  const sectionTitle = isLight ? 'text-[#8c8577]' : 'text-[#a39b8d]';
+  const textTitle = isLight ? 'text-slate-950 font-black' : 'text-white';
+  const textSub = isLight ? 'text-slate-700 font-semibold' : 'text-[#9b9893]';
+  const sectionTitle = isLight ? 'text-slate-900 font-black' : 'text-[#a39b8d]';
   const iconBox = isLight
-    ? 'bg-[#f4efe6] border-[#e2ddd3] text-amber-700'
+    ? 'bg-amber-100 border-amber-300 text-amber-950'
     : 'bg-[#2a2520] border-[#3e372f] text-amber-400';
 
   return (
-    <div className={`min-h-screen w-full ${isLight ? 'bg-[#f6f4ee]' : 'bg-[#181614]'} flex flex-col font-sans select-none pb-16 transition-colors duration-200`}>
+    <div className={`min-h-screen w-full relative z-10 ${isLight ? 'bg-[#ede8df]' : 'bg-[#181614]'} flex flex-col font-sans select-none pb-16 transition-colors duration-200`}>
       {/* ── HEADER ── */}
       <header className={`sticky top-0 z-30 ${isLight ? 'bg-[#f6f4ee]/95 border-[#e2ddd3]' : 'bg-[#181614]/95 border-[#352f28]'} backdrop-blur-md border-b px-4 sm:px-6 py-3.5 flex items-center justify-between pt-[max(0.7rem,env(safe-area-inset-top))] transition-colors`}>
         <div className="flex items-center gap-3.5 max-w-xl landscape:max-w-5xl mx-auto w-full">
@@ -573,10 +573,10 @@ export default function SettingsScreen({ onBack, onOpenRules }: SettingsScreenPr
 
         {/* Versiya & Mualliflik Matni */}
         <div className="text-center pt-2 pb-6 select-none">
-          <div className={`text-xs font-mono font-bold ${isLight ? 'text-zinc-400' : 'text-zinc-500'}`}>
+          <div className={`text-xs font-mono font-bold ${isLight ? 'text-slate-600' : 'text-zinc-500'}`}>
             Nur Shaxmat 100 • v1.2.20
           </div>
-          <div className={`text-[10px] mt-0.5 ${isLight ? 'text-zinc-400' : 'text-zinc-600'}`}>
+          <div className={`text-[10px] mt-0.5 ${isLight ? 'text-slate-600' : 'text-zinc-600'}`}>
             Oʻzbekiston Milliy Shaxmati © 2026
           </div>
         </div>
