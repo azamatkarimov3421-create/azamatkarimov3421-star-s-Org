@@ -121,11 +121,11 @@ export default function HomeScreen({
   ];
 
   return (
-    <div className={`min-h-screen landscape:min-h-0 landscape:h-[100dvh] landscape:max-h-[100dvh] landscape:overflow-hidden w-full ${isLight ? 'bg-transparent text-[#1a1917]' : 'bg-transparent text-[#f1f1f1]'} flex flex-col font-sans select-none relative overflow-x-hidden transition-colors duration-200`}>
+    <div className={`min-h-screen landscape:max-h-[520px]:min-h-0 landscape:max-h-[520px]:h-[100dvh] landscape:max-h-[520px]:max-h-[100dvh] landscape:max-h-[520px]:overflow-hidden md:min-h-screen md:h-auto md:max-h-none md:overflow-visible w-full ${isLight ? 'bg-transparent text-[#1a1917]' : 'bg-transparent text-[#f1f1f1]'} flex flex-col font-sans select-none relative overflow-x-hidden transition-colors duration-200`}>
       {/* Fon qatlami (Desktopda va mobilida kontrast va silliq ko'rinish uchun) */}
       <div className={`absolute inset-0 pointer-events-none z-0 transition-opacity duration-200 ${isLight ? 'bg-gradient-to-b from-[#faf8f4]/80 via-[#f5f1e8]/70 to-[#eae4d5]/85' : 'hidden md:block bg-gradient-to-b from-[#0b100d]/85 via-[#0d1310]/75 to-[#0b100d]/90'}`} />
 
-      <div className="relative z-10 w-full flex flex-col justify-between min-h-screen landscape:min-h-0 landscape:h-full landscape:overflow-hidden">
+      <div className="relative z-10 w-full flex flex-col justify-between min-h-screen landscape:max-h-[520px]:min-h-0 landscape:max-h-[520px]:h-full landscape:max-h-[520px]:overflow-hidden md:min-h-screen md:h-auto md:overflow-visible">
         {/* ── 1. YUQORI HEADER (FLOATING GLASS NAVBAR) ── */}
         <header className="w-full max-w-6xl mx-auto px-3 sm:px-6 pt-2 sm:pt-6 landscape:pt-1 landscape:pb-0 landscape:px-3 shrink-0">
           <div className={`w-full rounded-2xl sm:rounded-3xl backdrop-blur-md px-3 sm:px-6 py-2.5 sm:py-3 landscape:py-1 landscape:px-3 flex items-center justify-between border transition-all ${
@@ -140,7 +140,7 @@ export default function HomeScreen({
                   NUR SHAXMAT <span className="text-[#d97706]">100</span>
                 </h1>
                 <p className={`text-[10px] font-bold tracking-wider uppercase ${isLight ? 'text-amber-700' : 'text-amber-400'}`}>
-                  V1.2.19 • OʻZBEK SHAXMATI (10X10)
+                  V1.2.20 • OʻZBEK SHAXMATI (10X10)
                 </p>
               </div>
             </div>
@@ -280,9 +280,9 @@ export default function HomeScreen({
         </header>
 
         {/* ── 2. ASOSIY QISM (1-GA-1 DESKTOP GRID) ── */}
-        <main className="w-full max-w-6xl mx-auto px-3 sm:px-6 py-3 md:py-8 landscape:py-1.5 landscape:gap-3 landscape:px-3 grid grid-cols-1 landscape:grid-cols-12 md:grid-cols-12 gap-4 md:gap-6 items-stretch flex-1 landscape:overflow-hidden">
+        <main className="w-full max-w-6xl mx-auto px-3 sm:px-6 py-3 md:py-8 landscape:max-h-[520px]:py-1.5 landscape:max-h-[520px]:gap-3 landscape:max-h-[520px]:px-3 grid grid-cols-1 landscape:grid-cols-12 md:grid-cols-12 gap-4 md:gap-6 items-start flex-1 landscape:max-h-[520px]:overflow-hidden md:overflow-visible">
           {/* Chap ustun: Boshlash va 3D/2D tanlov (md:col-span-5) */}
-          <div className={`w-full landscape:col-span-5 md:col-span-5 p-4 sm:p-6 landscape:p-2.5 rounded-3xl backdrop-blur-md border flex flex-col justify-between gap-3.5 landscape:gap-1.5 transition-all ${
+          <div className={`w-full landscape:col-span-5 md:col-span-5 p-4 sm:p-6 landscape:p-2.5 rounded-3xl backdrop-blur-md border flex flex-col justify-start gap-3.5 landscape:gap-1.5 md:gap-4 transition-all ${
 
             isLight ? 'bg-white/80 border-white/60 shadow-[0_8px_32px_rgba(0,0,0,0.06)] backdrop-blur-2xl' : 'bg-white/[0.05] border-white/15 shadow-[0_12px_40px_rgba(0,0,0,0.45)] backdrop-blur-2xl'
           }`}>

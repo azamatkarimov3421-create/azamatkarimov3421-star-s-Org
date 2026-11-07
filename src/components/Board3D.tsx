@@ -541,15 +541,16 @@ export default function Board3D({
       alpha: true, // Shaffof fon ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬Â orqa fonga tabiiy qo'shiladi!
       powerPreference: 'high-performance',
     });
+    const isMobile = typeof navigator !== 'undefined' && (/Android|iPhone|iPad|iPod|Mobile/i.test(navigator.userAgent) || window.innerWidth < 768);
     renderer.setSize(width, height, false);
     canvas.style.width = "100%";
     canvas.style.height = "100%";
-    renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, isMobile ? 1.25 : 2));
     renderer.setClearColor(0x000000, 0); // 100% shaffof fon
     renderer.toneMapping = THREE.ACESFilmicToneMapping;
     renderer.toneMappingExposure = 1.0;
     renderer.shadowMap.enabled = true;
-    renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+    renderer.shadowMap.type = isMobile ? THREE.PCFShadowMap : THREE.PCFSoftShadowMap;
     rendererRef.current = renderer;
 
     // Kamera: Responsive ko'rish masofasi va kengligi
@@ -579,7 +580,7 @@ export default function Board3D({
         lookAtZ = 0.75;
       } else {
         // Vertikal telefon: barcha 10 ta ustun (A-H) va raqamlar (1-10) to'liq va maksimal keng
-        baseDist = isCinema ? 42.0 : 48.0;
+        baseDist = isCinema ? 33.0 : 38.0;
         lookAtZ = 0.40;
       }
 
@@ -598,6 +599,16 @@ export default function Board3D({
 
     updateCameraRef.current = updateCameraForAspect;
     updateCameraForAspect(width, height);
+    if (typeof window !== 'undefined') {
+      (window as any).__BOARD3D = {
+        camera,
+        scene,
+        squareMeshesRef,
+        pieceMeshesMapRef,
+        getSquareFromPointer,
+        cameraRef
+      };
+    }
 
     // ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ YORUG'LIK (Yumshoq, ko'zni qamashtirmaydigan va yaltiramaydigan yoritish) ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬
     const amb = new THREE.AmbientLight(0xfff8ee, 0.56);
@@ -606,8 +617,8 @@ export default function Board3D({
     const key = new THREE.DirectionalLight(0xfffae8, 0.68);
     key.position.set(5, 22, 6);
     key.castShadow = true;
-    key.shadow.mapSize.width = 2048;
-    key.shadow.mapSize.height = 2048;
+    key.shadow.mapSize.width = 1024;
+    key.shadow.mapSize.height = 1024;
     key.shadow.camera.near = 0.5;
     key.shadow.camera.far = 40;
     const d = 9.0;
