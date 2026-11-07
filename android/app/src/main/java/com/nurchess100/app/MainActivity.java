@@ -440,13 +440,13 @@ public class MainActivity extends AppCompatActivity {
                     } catch (Exception ignored) {}
                 }
 
-                // 2. Agar live_web'da bo'lmasa, APK assets'dan olish (avval web/, keyin ildiz)
+                // 2. APK assets'dan olish (avval ildiz aktivlari, keyin web/)
                 if (is == null) {
                     try {
-                        is = getAssets().open("web/" + path);
+                        is = getAssets().open(path);
                     } catch (IOException e1) {
                         try {
-                            is = getAssets().open(path);
+                            is = getAssets().open("web/" + path);
                         } catch (IOException e2) {
                             Log.w("NurChess", "Asset not found: " + path);
                             return null;

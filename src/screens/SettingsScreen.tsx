@@ -76,7 +76,7 @@ function ToggleSwitch({
       aria-checked={checked}
       onClick={onChange}
       className={`relative inline-flex h-7 w-12 shrink-0 cursor-pointer rounded-full p-0.5 transition-colors duration-200 ease-in-out focus:outline-none active:scale-95 shadow-inner ${
-        checked ? (isLight ? 'bg-emerald-600' : activeColor) : (isLight ? 'bg-slate-300' : 'bg-[#2a382e]')
+        checked ? activeColor : isLight ? 'bg-zinc-300' : 'bg-[#38332c]'
       }`}
     >
       <span
@@ -118,19 +118,19 @@ export default function SettingsScreen({ onBack, onOpenRules }: SettingsScreenPr
   // Ranglar sinfi (Light / Dark dinamik dizayn)
   const cardBg = isLight
     ? 'bg-white border-2 border-slate-300 shadow-md ring-1 ring-slate-200/60'
-    : 'bg-[#151d18]/90 border border-[#2b4233] shadow-[0_12px_36px_rgba(0,0,0,0.65)] backdrop-blur-xl';
-  const cardHover = isLight ? 'hover:bg-slate-50' : 'hover:bg-[#1a251f]';
-  const textTitle = isLight ? 'text-slate-950 font-black' : 'text-white font-black';
-  const textSub = isLight ? 'text-slate-700 font-bold' : 'text-zinc-300 font-medium';
-  const sectionTitle = isLight ? 'text-slate-950 font-black tracking-wider' : 'text-[#4ade80] font-black tracking-wider';
+    : 'bg-[#201d19]/95 border-[#352f28] shadow-[0_4px_16px_rgba(0,0,0,0.45)]';
+  const cardHover = isLight ? 'hover:bg-slate-50' : 'hover:bg-[#282420]';
+  const textTitle = isLight ? 'text-slate-950 font-black' : 'text-white font-bold';
+  const textSub = isLight ? 'text-slate-700 font-semibold' : 'text-[#9b9893] font-medium';
+  const sectionTitle = isLight ? 'text-slate-950 font-black tracking-wider' : 'text-[#a39b8d] font-black uppercase tracking-wider';
   const iconBox = isLight
-    ? 'bg-slate-100 border-2 border-slate-300 text-slate-900 font-black shadow-xs'
-    : 'bg-[#1a261f] border border-[#2d4636] text-[#4ade80]';
+    ? 'bg-amber-100 border-amber-300 text-amber-950 font-bold'
+    : 'bg-[#2a2520] border-[#3e372f] text-amber-400';
 
   return (
-    <div className={`min-h-screen w-full relative z-10 ${isLight ? 'bg-[#f1f5f9]' : 'bg-[#0a0e0c]'} flex flex-col font-sans select-none pb-16 transition-colors duration-200`}>
+    <div className={`min-h-screen w-full relative z-10 ${isLight ? 'bg-[#ede8df]' : 'bg-[#181614]'} flex flex-col font-sans select-none pb-16 transition-colors duration-200`}>
       {/* ── HEADER ── */}
-      <header className={`sticky top-0 z-30 ${isLight ? 'bg-white/95 border-b-2 border-slate-300 shadow-xs' : 'bg-[#0e1410]/95 border-b border-[#24362a] backdrop-blur-md'} border-b px-4 sm:px-6 py-3.5 flex items-center justify-between pt-[max(0.7rem,env(safe-area-inset-top))] transition-colors`}>
+      <header className={`sticky top-0 z-30 ${isLight ? 'bg-[#f6f4ee]/95 border-[#e2ddd3]' : 'bg-[#181614]/95 border-[#352f28]'} backdrop-blur-md border-b px-4 sm:px-6 py-3.5 flex items-center justify-between pt-[max(0.7rem,env(safe-area-inset-top))] transition-colors`}>
         <div className="flex items-center gap-3.5 max-w-xl landscape:max-w-5xl mx-auto w-full">
           <button
             onClick={onBack}

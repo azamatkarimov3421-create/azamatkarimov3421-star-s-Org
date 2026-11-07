@@ -549,7 +549,7 @@ export default function Board3D({
     renderer.setSize(width, height, false);
     canvas.style.width = "100%";
     canvas.style.height = "100%";
-    renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, isMobile ? 1.15 : 1.75));
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, isMobile ? 1.25 : 1.75));
     renderer.setClearColor(0x000000, 0); // 100% shaffof fon
     renderer.toneMapping = THREE.ACESFilmicToneMapping;
     renderer.toneMappingExposure = 1.0;
@@ -753,10 +753,7 @@ export default function Board3D({
     // Render sikli
     const renderLoop = () => {
       animFrameRef.current = requestAnimationFrame(renderLoop);
-      if (renderFramesRef.current > 0) {
-        renderFramesRef.current--;
-        renderer.render(scene, camera);
-      }
+      renderer.render(scene, camera);
     };
     renderLoop();
 
