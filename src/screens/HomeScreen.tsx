@@ -125,10 +125,10 @@ export default function HomeScreen({
       {/* Fon qatlami (Desktopda va mobilida kontrast va silliq ko'rinish uchun) */}
       <div className={`absolute inset-0 pointer-events-none z-0 transition-opacity duration-200 ${isLight ? 'bg-gradient-to-b from-[#faf8f4]/80 via-[#f5f1e8]/70 to-[#eae4d5]/85' : 'hidden md:block bg-gradient-to-b from-[#0b100d]/85 via-[#0d1310]/75 to-[#0b100d]/90'}`} />
 
-      <div className="relative z-10 w-full flex flex-col justify-between min-h-screen landscape:max-h-[520px]:min-h-0 landscape:max-h-[520px]:h-full landscape:max-h-[520px]:overflow-hidden md:min-h-screen md:h-auto md:overflow-visible">
+      <div className="relative z-10 w-full flex flex-col justify-between md:justify-center min-h-screen landscape:max-h-[520px]:min-h-0 landscape:max-h-[520px]:h-full landscape:max-h-[520px]:overflow-hidden md:min-h-screen md:h-auto md:overflow-visible md:py-6">
         {/* ── 1. YUQORI HEADER (FLOATING GLASS NAVBAR) ── */}
-        <header className="w-full max-w-6xl mx-auto px-3 sm:px-6 pt-2 sm:pt-6 landscape:pt-1 landscape:pb-0 landscape:px-3 shrink-0">
-          <div className={`w-full rounded-2xl sm:rounded-3xl backdrop-blur-md px-3 sm:px-6 py-2.5 sm:py-3 landscape:py-1 landscape:px-3 flex items-center justify-between border transition-all ${
+        <header className="w-full max-w-6xl xl:max-w-7xl 2xl:max-w-[1440px] mx-auto px-3 sm:px-6 md:px-8 pt-2 sm:pt-6 md:pt-8 landscape:pt-1 landscape:pb-0 landscape:px-3 shrink-0">
+          <div className={`w-full rounded-2xl sm:rounded-3xl md:rounded-[2rem] backdrop-blur-md px-3 sm:px-6 md:px-8 py-2.5 sm:py-3 md:py-4 landscape:py-1 landscape:px-3 flex items-center justify-between border transition-all ${
 
             isLight ? 'bg-white/80 border-white/60 shadow-[0_8px_32px_rgba(0,0,0,0.06)] backdrop-blur-2xl' : 'bg-white/[0.06] border-white/15 shadow-[0_8px_32px_rgba(0,0,0,0.4)] backdrop-blur-2xl'
           }`}>
@@ -136,17 +136,17 @@ export default function HomeScreen({
             <div className="flex items-center gap-3">
               <NurLogo size={40} showGlow={!isLight} />
               <div>
-                <h1 className={`text-base sm:text-lg font-black tracking-wide leading-tight ${isLight ? 'text-[#1a1917]' : 'text-white'}`}>
+                <h1 className={`text-base sm:text-lg md:text-xl lg:text-2xl font-black tracking-wide leading-tight ${isLight ? 'text-[#1a1917]' : 'text-white'}`}>
                   NUR SHAXMAT <span className="text-[#d97706]">100</span>
                 </h1>
-                <p className={`text-[10px] font-bold tracking-wider uppercase ${isLight ? 'text-amber-700' : 'text-amber-400'}`}>
+                <p className={`text-[10px] md:text-xs font-bold tracking-wider uppercase ${isLight ? 'text-amber-700' : 'text-amber-400'}`}>
                   V1.2.20 • OʻZBEK SHAXMATI (10X10)
                 </p>
               </div>
             </div>
 
             {/* Desktop Navigatsiya Tugmalari */}
-            <nav className="hidden landscape:flex md:flex items-center gap-1.5 sm:gap-2">
+            <nav className="hidden landscape:flex md:flex items-center gap-1.5 sm:gap-2.5">
               <button
                 onClick={() => {}}
                 className={`px-4 py-2 rounded-xl text-xs font-black flex items-center gap-2 transition-all cursor-pointer ${
@@ -280,9 +280,9 @@ export default function HomeScreen({
         </header>
 
         {/* ── 2. ASOSIY QISM (1-GA-1 DESKTOP GRID) ── */}
-        <main className="w-full max-w-6xl mx-auto px-3 sm:px-6 py-3 md:py-8 landscape:max-h-[520px]:py-1.5 landscape:max-h-[520px]:gap-3 landscape:max-h-[520px]:px-3 grid grid-cols-1 landscape:grid-cols-12 md:grid-cols-12 gap-4 md:gap-6 items-start flex-1 landscape:max-h-[520px]:overflow-hidden md:overflow-visible">
+        <main className="w-full max-w-6xl xl:max-w-7xl 2xl:max-w-[1480px] mx-auto px-3 sm:px-6 md:px-8 lg:px-10 py-3 md:py-6 lg:py-8 md:my-auto landscape:max-h-[520px]:py-1.5 landscape:max-h-[520px]:gap-3 landscape:max-h-[520px]:px-3 grid grid-cols-1 landscape:grid-cols-12 md:grid-cols-12 gap-4 md:gap-8 lg:gap-10 items-stretch flex-1 md:flex-initial landscape:max-h-[520px]:overflow-hidden md:overflow-visible">
           {/* Chap ustun: Boshlash va 3D/2D tanlov (md:col-span-5) */}
-          <div className={`w-full landscape:col-span-5 md:col-span-5 p-4 sm:p-6 landscape:p-2.5 rounded-3xl backdrop-blur-md border flex flex-col justify-start gap-3.5 landscape:gap-1.5 md:gap-4 transition-all ${
+          <div className={`w-full landscape:col-span-5 md:col-span-5 p-4 sm:p-6 md:p-8 lg:p-10 landscape:p-2.5 rounded-3xl md:rounded-[2.2rem] backdrop-blur-md border flex flex-col justify-between gap-3.5 landscape:gap-1.5 md:gap-6 transition-all ${
 
             isLight ? 'bg-white/80 border-white/60 shadow-[0_8px_32px_rgba(0,0,0,0.06)] backdrop-blur-2xl' : 'bg-white/[0.05] border-white/15 shadow-[0_12px_40px_rgba(0,0,0,0.45)] backdrop-blur-2xl'
           }`}>
@@ -331,23 +331,23 @@ export default function HomeScreen({
             )}
 
             <div className="flex items-center gap-3.5">
-              <div className={`w-13 h-13 landscape:w-8 landscape:h-8 landscape:rounded-xl rounded-2xl border flex items-center justify-center shadow-inner shrink-0 ${
+              <div className={`w-13 h-13 md:w-16 md:h-16 lg:w-18 lg:h-18 landscape:w-8 landscape:h-8 landscape:rounded-xl rounded-2xl md:rounded-2xl border flex items-center justify-center shadow-inner shrink-0 ${
                 isLight ? 'bg-emerald-50 border-emerald-200 text-emerald-700' : 'bg-[#1e3827] border-[#285535] text-[#4ade80]'
               }`}>
-                <SwordsIcon size={26} className="landscape:w-4 landscape:h-4" />
+                <SwordsIcon size={26} className="landscape:w-4 landscape:h-4 md:w-8 md:h-8" />
               </div>
               <div>
-                <h2 className={`text-lg sm:text-xl landscape:text-sm font-black ${isLight ? 'text-[#1a1917]' : 'text-white'}`}>{t('start_new_game')}</h2>
-                <p className={`text-xs landscape:text-[10px] mt-0.5 ${isLight ? 'text-[#6b6760]' : 'text-[#9ca3af]'}`}>{t('game_motto_1')}</p>
+                <h2 className={`text-lg sm:text-xl md:text-2xl lg:text-3xl font-black ${isLight ? 'text-[#1a1917]' : 'text-white'}`}>{t('start_new_game')}</h2>
+                <p className={`text-xs md:text-sm landscape:text-[10px] mt-0.5 ${isLight ? 'text-[#6b6760]' : 'text-[#9ca3af]'}`}>{t('game_motto_1')}</p>
               </div>
             </div>
 
             {/* 3D va 2D Tanlagich (Yonma-yon 2 ta karta) */}
-            <div className="grid grid-cols-2 gap-2.5 sm:gap-3 landscape:gap-1.5 pt-1 landscape:pt-0">
+            <div className="grid grid-cols-2 gap-2.5 sm:gap-3 md:gap-4 landscape:gap-1.5 pt-1 landscape:pt-0">
               {/* 3D Fazoviy Doska */}
               <div
                 onClick={() => dispatch({ type: 'SET_3D', enabled: true })}
-                className={`cursor-pointer p-2.5 sm:p-3 landscape:p-1.5 landscape:rounded-xl rounded-2xl transition-all border-2 flex items-center justify-between gap-2 select-none ${
+                className={`cursor-pointer p-2.5 sm:p-3 md:p-5 lg:p-6 md:min-h-[84px] lg:min-h-[96px] landscape:p-1.5 landscape:rounded-xl rounded-2xl md:rounded-2xl transition-all border-2 flex items-center justify-between gap-2 md:gap-3 select-none ${
                   state.is3D
                     ? isLight
                       ? 'border-emerald-600 bg-emerald-50 shadow-[0_2px_12px_rgba(16,185,129,0.15)] ring-1 ring-emerald-500'
@@ -358,9 +358,9 @@ export default function HomeScreen({
                 }`}
               >
                 <div className="flex items-center gap-2 sm:gap-2.5 min-w-0">
-                  <span className="text-xl sm:text-2xl landscape:text-sm shrink-0">🎲</span>
+                  <span className="text-xl sm:text-2xl md:text-3xl landscape:text-sm shrink-0">🎲</span>
                   <div className="min-w-0">
-                    <div className={`text-[11px] sm:text-xs font-black flex items-center gap-1 flex-wrap ${isLight ? 'text-[#1a1917]' : 'text-white'}`}>
+                    <div className={`text-[11px] sm:text-xs md:text-sm lg:text-base font-black flex items-center gap-1.5 flex-wrap ${isLight ? 'text-[#1a1917]' : 'text-white'}`}>
                       <span>3D</span>
                       <span className={`text-[8.5px] font-bold px-1.5 py-0.2 rounded border ${
                         isLight ? 'bg-amber-100 text-amber-800 border-amber-300' : 'bg-amber-400/20 text-amber-300 border-amber-400/30'
@@ -386,7 +386,7 @@ export default function HomeScreen({
               {/* 2D Tekis Doska */}
               <div
                 onClick={() => dispatch({ type: 'SET_3D', enabled: false })}
-                className={`cursor-pointer p-3 rounded-2xl transition-all border-2 flex items-center justify-between gap-2 select-none ${
+                className={`cursor-pointer p-2.5 sm:p-3 md:p-4 lg:p-5 landscape:p-1.5 landscape:rounded-xl rounded-2xl md:rounded-2xl transition-all border-2 flex items-center justify-between gap-2 md:gap-3 select-none ${
                   !state.is3D
                     ? isLight
                       ? 'border-emerald-600 bg-emerald-50 shadow-[0_2px_12px_rgba(16,185,129,0.15)] ring-1 ring-emerald-500'
@@ -397,9 +397,9 @@ export default function HomeScreen({
                 }`}
               >
                 <div className="flex items-center gap-2 sm:gap-2.5 min-w-0">
-                  <span className="text-xl sm:text-2xl landscape:text-sm shrink-0">📐</span>
+                  <span className="text-xl sm:text-2xl md:text-3xl landscape:text-sm shrink-0">📐</span>
                   <div className="min-w-0">
-                    <div className={`text-[11px] sm:text-xs font-black ${isLight ? 'text-[#1a1917]' : 'text-white'}`}>
+                    <div className={`text-[11px] sm:text-xs md:text-sm lg:text-base font-black ${isLight ? 'text-[#1a1917]' : 'text-white'}`}>
                       2D
                     </div>
                     <div className={`text-[10px] sm:text-[11px] truncate ${isLight ? 'text-[#6b6760]' : 'text-[#9ca3af]'}`}>
@@ -419,21 +419,21 @@ export default function HomeScreen({
             </div>
 
             {/* Donalar Rangini Tanlash (Oqlar / Tasodifiy / Qoralar) */}
-            <div className="pt-0.5 space-y-1.5 landscape:space-y-0.5">
+            <div className="pt-0.5 space-y-1.5 md:space-y-2 landscape:space-y-0.5">
               <div className="flex items-center justify-between px-0.5">
-                <span className={`text-[11px] font-black uppercase tracking-wider ${isLight ? 'text-zinc-600' : 'text-zinc-400'}`}>
+                <span className={`text-[11px] md:text-xs font-black uppercase tracking-wider ${isLight ? 'text-zinc-600' : 'text-zinc-400'}`}>
                   Donalar rangi:
                 </span>
-                <span className={`text-[11px] font-bold ${isLight ? 'text-emerald-700' : 'text-emerald-400'}`}>
+                <span className={`text-[11px] md:text-xs font-bold ${isLight ? 'text-emerald-700' : 'text-emerald-400'}`}>
                   {homeColorChoice === 'white' ? 'Oqlar (1-yuradi)' : homeColorChoice === 'black' ? 'Qoralar (Bot 1-yuradi)' : 'Tasodifiy (50/50)'}
                 </span>
               </div>
 
-              <div className="grid grid-cols-3 gap-2">
+              <div className="grid grid-cols-3 gap-2 md:gap-3">
                 <button
                   type="button"
                   onClick={() => setHomeColorChoice('white')}
-                  className={`py-2 landscape:py-1 px-1.5 rounded-2xl landscape:rounded-xl border flex items-center justify-center gap-1.5 transition-all cursor-pointer landscape:text-[11px] ${
+                  className={`py-2 md:py-4 lg:py-4.5 px-1.5 md:px-4 rounded-2xl md:rounded-2xl border flex items-center justify-center gap-1.5 md:gap-2.5 transition-all cursor-pointer ${
                     homeColorChoice === 'white'
                       ? isLight
                         ? 'bg-emerald-50 border-emerald-600 text-emerald-950 font-black shadow-sm ring-1 ring-emerald-500'
@@ -443,13 +443,13 @@ export default function HomeScreen({
                   title="Oqlar bilan o'ynash"
                 >
                   <span className="w-3.5 h-3.5 rounded-full bg-white border border-zinc-300 shadow-sm shrink-0" />
-                  <span className="text-xs font-bold">Oqlar</span>
+                  <span className="text-xs md:text-sm font-bold">Oqlar</span>
                 </button>
 
                 <button
                   type="button"
                   onClick={() => setHomeColorChoice('random')}
-                  className={`py-2 px-1.5 rounded-2xl border flex items-center justify-center gap-1.5 transition-all cursor-pointer ${
+                  className={`py-2 md:py-4 lg:py-4.5 px-1.5 md:px-4 rounded-2xl md:rounded-2xl border flex items-center justify-center gap-1.5 md:gap-2.5 transition-all cursor-pointer ${
                     homeColorChoice === 'random'
                       ? isLight
                         ? 'bg-emerald-50 border-emerald-600 text-emerald-950 font-black shadow-sm ring-1 ring-emerald-500'
@@ -459,13 +459,13 @@ export default function HomeScreen({
                   title="Tasodifiy rang"
                 >
                   <span className="w-3.5 h-3.5 rounded-full bg-gradient-to-r from-white to-black border border-zinc-400 shadow-sm shrink-0" />
-                  <span className="text-xs font-bold">Tasodifiy</span>
+                  <span className="text-xs md:text-sm font-bold">Tasodifiy</span>
                 </button>
 
                 <button
                   type="button"
                   onClick={() => setHomeColorChoice('black')}
-                  className={`py-2 px-1.5 rounded-2xl border flex items-center justify-center gap-1.5 transition-all cursor-pointer ${
+                  className={`py-2 md:py-4 lg:py-4.5 px-1.5 md:px-4 rounded-2xl md:rounded-2xl border flex items-center justify-center gap-1.5 md:gap-2.5 transition-all cursor-pointer ${
                     homeColorChoice === 'black'
                       ? isLight
                         ? 'bg-emerald-50 border-emerald-600 text-emerald-950 font-black shadow-sm ring-1 ring-emerald-500'
@@ -475,7 +475,7 @@ export default function HomeScreen({
                   title="Qoralar bilan o'ynash"
                 >
                   <span className="w-3.5 h-3.5 rounded-full bg-zinc-900 border border-zinc-500 shadow-sm shrink-0" />
-                  <span className="text-xs font-bold">Qoralar</span>
+                  <span className="text-xs md:text-sm font-bold">Qoralar</span>
                 </button>
               </div>
             </div>
@@ -483,7 +483,7 @@ export default function HomeScreen({
             {/* Katta Yashil O'yin Tugmasi */}
             <button
               onClick={() => onStartVsAI(homeColorChoice)}
-              className="w-full py-3 sm:py-4 landscape:py-1.5 landscape:text-xs landscape:rounded-xl px-4 rounded-2xl bg-gradient-to-b from-[#6cb83e] to-[#559b2d] hover:from-[#76c444] hover:to-[#5ea833] text-white font-black text-base flex items-center justify-center gap-2.5 shadow-[0_5px_0_#386b1c] landscape:shadow-[0_2px_0_#386b1c] active:translate-y-1 active:shadow-[0_1px_0_#386b1c] transition-all cursor-pointer mt-1 landscape:mt-0.5"
+              className="w-full py-3 sm:py-4 md:py-5 lg:py-5.5 landscape:py-1.5 landscape:text-xs landscape:rounded-xl px-4 md:px-6 rounded-2xl md:rounded-2xl bg-gradient-to-b from-[#6cb83e] to-[#559b2d] hover:from-[#76c444] hover:to-[#5ea833] text-white font-black text-base md:text-xl lg:text-2xl flex items-center justify-center gap-3 shadow-[0_5px_0_#386b1c] md:shadow-[0_7px_0_#386b1c] landscape:shadow-[0_2px_0_#386b1c] active:translate-y-1 active:shadow-[0_1px_0_#386b1c] transition-all cursor-pointer mt-1 md:mt-3 landscape:mt-0.5"
             >
               <PlayIcon size={20} className="fill-white" />
               <span>
@@ -505,28 +505,28 @@ export default function HomeScreen({
           </div>
 
           {/* O'ng ustun: O'yin Turlari Ro'yxati (md:col-span-7) */}
-          <div className="w-full landscape:col-span-7 md:col-span-7 flex flex-col gap-2.5 landscape:gap-1">
-            <div className="px-1 text-xs font-black uppercase tracking-wider flex items-center justify-between">
+          <div className="w-full landscape:col-span-7 md:col-span-7 flex flex-col gap-2.5 md:gap-3.5 landscape:gap-1">
+            <div className="px-1 text-xs md:text-sm font-black uppercase tracking-wider flex items-center justify-between">
               <span className={isLight ? 'text-[#6b6760]' : 'text-[#9ca3af]'}>{t('game_modes_header')}</span>
             </div>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 landscape:grid-cols-2 gap-2.5 landscape:gap-1.5">
+            <div className="grid grid-cols-1 sm:grid-cols-2 landscape:grid-cols-2 gap-2.5 md:gap-3.5 lg:gap-4 landscape:gap-1.5">
               {gameModes.map((mode) => (
                 <button
                   key={mode.id}
                   onClick={() => mode.action()}
-                  className={`w-full p-3 sm:p-4 landscape:p-1.5 landscape:rounded-xl rounded-2xl border transition-all text-left flex items-center justify-between group active:scale-[0.99] cursor-pointer ${
+                  className={`w-full p-3 sm:p-4 md:p-5 lg:p-6 md:min-h-[82px] lg:min-h-[92px] landscape:p-1.5 landscape:rounded-xl rounded-2xl md:rounded-2xl border transition-all text-left flex items-center justify-between group active:scale-[0.99] cursor-pointer ${
                     isLight ? 'bg-white/75 hover:bg-white/95 border-white/60 hover:border-emerald-500/60 shadow-[0_4px_20px_rgba(0,0,0,0.03)] backdrop-blur-xl' : 'bg-white/[0.05] hover:bg-white/[0.09] border-white/10 hover:border-white/25 shadow-[0_8px_32px_rgba(0,0,0,0.35)] hover:shadow-[0_12px_40px_rgba(0,0,0,0.5)] backdrop-blur-2xl'
                   }`}
                 >
                   <div className="flex items-center gap-3 min-w-0">
-                    <div className={`w-11 h-11 landscape:w-7 landscape:h-7 landscape:rounded-lg rounded-2xl border flex items-center justify-center flex-shrink-0 group-hover:scale-105 transition-transform ${mode.iconBg}`}>
+                    <div className={`w-11 h-11 md:w-14 md:h-14 lg:w-16 lg:h-16 landscape:w-7 landscape:h-7 landscape:rounded-lg rounded-2xl md:rounded-2xl border flex items-center justify-center flex-shrink-0 group-hover:scale-105 transition-transform ${mode.iconBg}`}>
                       {mode.icon}
                     </div>
 
                     <div className="min-w-0">
                       <div className="flex items-center gap-1.5">
-                        <span className={`font-bold text-sm landscape:text-xs transition-colors truncate ${
+                        <span className={`font-bold text-sm md:text-base lg:text-lg landscape:text-xs transition-colors truncate ${
                           isLight
                             ? 'text-[#1a1917] group-hover:text-emerald-700'
                             : 'text-white group-hover:text-[#4ade80]'
@@ -543,7 +543,7 @@ export default function HomeScreen({
                           </span>
                         )}
                       </div>
-                      <p className={`text-xs landscape:text-[9.5px] mt-0.5 font-medium truncate ${
+                      <p className={`text-xs md:text-sm landscape:text-[9.5px] mt-0.5 font-medium truncate ${
                         isLight ? 'text-[#6b6760]' : 'text-[#9ca3af]'
                       }`}>
                         {mode.subtitle}
