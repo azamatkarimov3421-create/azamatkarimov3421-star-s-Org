@@ -342,7 +342,7 @@ export default function HomeScreen({
     isMobileSimulation ? '' : 'landscape:col-span-5 md:col-span-5'
   } p-4 sm:p-6 md:p-8 lg:p-10 landscape:p-2.5 rounded-3xl md:rounded-[2.2rem] backdrop-blur-md border flex flex-col justify-between gap-3.5 landscape:gap-1.5 md:gap-6 transition-all ${
 
-            isLight ? 'bg-white/80 border-white/60 shadow-[0_8px_32px_rgba(0,0,0,0.06)] backdrop-blur-2xl' : 'bg-white/[0.05] border-white/15 shadow-[0_12px_40px_rgba(0,0,0,0.45)] backdrop-blur-2xl'
+            isLight ? 'bg-white border-2 border-slate-300 shadow-xl' : 'bg-white/[0.05] border-white/15 shadow-[0_12px_40px_rgba(0,0,0,0.45)] backdrop-blur-2xl'
           }`}>
             {/* Faol O'yinni Davom Ettirish Kartasi (Resume Game Banner) */}
             {hasActiveMatch && (

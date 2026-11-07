@@ -3,14 +3,15 @@
 // Chess.com uslubidagi HUD, toza o'yinchi kartochkalari va vektorli boshqaruv
 // =====================================================
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useGame, clearActiveMatch } from '../store/gameStore';
 import Board from '../components/Board';
 import EvalBar from '../components/EvalBar';
 import GameStatusBar from '../components/GameStatusBar';
 import { ChessClock } from '../components/ChessClock';
 import MoveHistory from '../components/MoveHistory';
-import { getUserProfile } from '../store/userProfileStore';
+import { getUserProfile, deductRatingForHint } from '../store/userProfileStore';
+import { FILES } from '../engine/types';
 import { getBestMove, getBestMoveAsync } from '../ai/minimax';
 import { onlineManager } from '../services/onlineService';
 import { logger } from '../services/loggerService';
@@ -74,7 +75,7 @@ export default function GameScreen({ onBack, onOpenSettings }: GameScreenProps) 
   const [showVsAiLevelModal, setShowVsAiLevelModal] = useState(false);
   const [showGameOverModal, setShowGameOverModal] = useState(true);
   const [sideNotice, setSideNotice] = useState<string | null>(null);
-  const userProfile = getUserProfile();
+  const [userProfile, setUserProfile] = useState(() => getUserProfile());
 
   React.useEffect(() => {
     if (sideNotice) {
@@ -350,8 +351,23 @@ export default function GameScreen({ onBack, onOpenSettings }: GameScreenProps) 
       : t('mode_pvp_title');
 
   // Maslahat olish
+  const MAX_HINTS = 3;
+  const [hintsUsed, setHintsUsed] = useState(0);
+
+  // Yangi o'yin boshlanganda maslahat limitini 3 taga qayta tiklash
+  useEffect(() => {
+    if ((game.moveHistory?.length || 0) === 0) {
+      setHintsUsed(0);
+    }
+  }, [game.moveHistory?.length]);
+
   const handleGetHint = async () => {
     if (isGameOver || hintLoading) return;
+    if (hintsUsed >= MAX_HINTS) {
+      setSideNotice(`1 ta oʻyinda koʻpi bilan ${MAX_HINTS} ta maslahat olish mumkin!`);
+      return;
+    }
+
     setHintLoading(true);
 
     const hintTimeout = setTimeout(() => {
@@ -364,9 +380,21 @@ export default function GameScreen({ onBack, onOpenSettings }: GameScreenProps) 
       const best = await getBestMoveAsync(game, 2);
       if (best) {
         dispatch({ type: 'SET_HINT', move: best });
-        logger.logInfo('GAME_LOGIC', `Maslahat berildi: (${best.from.file},${best.from.rank}) -> (${best.to.file},${best.to.rank})`);
+        const nextUsed = hintsUsed + 1;
+        setHintsUsed(nextUsed);
+
+        // Daraja / reytingni sal-sal tushirish (-5 reyting)
+        deductRatingForHint(5);
+        setUserProfile(getUserProfile());
+
+        const remaining = MAX_HINTS - nextUsed;
+        const fromCoord = `${FILES[best.from.file]}${best.from.rank + 1}`;
+        const toCoord = `${FILES[best.to.file]}${best.to.rank + 1}`;
+        setSideNotice(`💡 Maslahat: ${fromCoord} ➔ ${toCoord} (-5 reyting, qoldi: ${remaining}/${MAX_HINTS})`);
+        logger.logInfo('GAME_LOGIC', `Maslahat berildi: ${fromCoord} -> ${toCoord}`);
       } else {
         logger.logWarn('GAME_LOGIC', "Ushbu holatda maslahat yurishi topilmadi.");
+        setSideNotice("Ushbu holatda maslahat yurishi topilmadi.");
       }
     } catch (e: any) {
       logger.logError('AI_ENGINE', 'Maslahat izlashda xatolik yuz berdi', e);
@@ -417,27 +445,26 @@ export default function GameScreen({ onBack, onOpenSettings }: GameScreenProps) 
       {/* Hashamatli xalqaro shaxmat studiyasi mayin vinetka foni */}
       <div className="absolute inset-0 bg-black/25 pointer-events-none z-0" />
 
-      {/* ── 1. CHAP TOMONDAGI SUZUVCHI TUGMALAR (☰ Menyu, 📱 Yonbosh/Tik, ⟲ Doskani burish, ⇄ Oq/Qora) ── */}
+      {/* ── 1. CHAP TOMONDAGI SUZUVCHI TUGMALAR (☰ Menyu, ⟲ Doskani burish) ── */}
       <div className={`absolute top-4 sm:top-8 landscape:top-1/2 landscape:-translate-y-1/2 left-[max(0.6rem,env(safe-area-inset-left))] z-40 flex flex-col gap-2 sm:gap-3 pointer-events-auto transition-opacity duration-300 ${
         cinemaMode ? 'opacity-35 hover:opacity-100 active:opacity-100' : 'opacity-100'
       }`}>
         {/* Menyuni ochish (☰ Hamburger) */}
         <button
           onClick={() => setShowMenuModal(true)}
-          className="w-10 h-10 sm:w-12 sm:h-12 rounded-2xl bg-white/[0.08] hover:bg-white/[0.18] active:scale-95 border border-white/20 shadow-[0_8px_32px_rgba(0,0,0,0.6)] backdrop-blur-2xl text-white shadow-[0_10px_24px_rgba(0,0,0,0.75)] flex items-center justify-center transition-all cursor-pointer backdrop-blur-md"
+          className="w-10 h-10 sm:w-12 sm:h-12 rounded-2xl bg-black/65 hover:bg-black/85 active:scale-95 border border-white/20 text-white shadow-[0_12px_28px_rgba(0,0,0,0.75)] flex items-center justify-center transition-all cursor-pointer backdrop-blur-md"
           title="Menyu"
         >
           <MenuIcon size={24} />
         </button>
 
-        {/* Tomonni almashtirish (⇄ Oq / Qora) */}
+        {/* Doskani 180° aylantirish (⟲ Yagona toza burish tugmasi) */}
         <button
-          onClick={handleSwitchSides}
-          className="w-10 h-10 sm:w-12 sm:h-12 rounded-2xl bg-amber-500/15 hover:bg-amber-500/25 active:scale-95 border border-amber-400/40 text-amber-300 shadow-[0_8px_32px_rgba(0,0,0,0.6)] backdrop-blur-2xl shadow-[0_10px_24px_rgba(0,0,0,0.75)] flex flex-col items-center justify-center gap-0.5 transition-all cursor-pointer backdrop-blur-md"
-          title="Tomonni almashtirish (Oq ⇄ Qora)"
+          onClick={() => dispatch({ type: 'TOGGLE_FLIP' })}
+          className="w-10 h-10 sm:w-12 sm:h-12 rounded-2xl bg-black/65 hover:bg-black/85 active:scale-95 border border-white/20 text-white shadow-[0_12px_28px_rgba(0,0,0,0.75)] flex items-center justify-center transition-all cursor-pointer backdrop-blur-md"
+          title="Doskani aylantirish (180°)"
         >
-          <span className="text-sm font-black leading-none">⇄</span>
-          <span className="text-[7px] font-bold text-amber-200 uppercase tracking-tighter">Oq/Qora</span>
+          <RotateCcwIcon size={22} />
         </button>
       </div>
 
@@ -479,15 +506,22 @@ export default function GameScreen({ onBack, onOpenSettings }: GameScreenProps) 
               <UndoIcon size={24} />
             </button>
 
-            {/* Maslahat olish (💡 Lightbulb Hint) */}
-            <button
-              onClick={handleGetHint}
-              disabled={isGameOver || hintLoading}
-              className="w-11 h-11 sm:w-13 sm:h-13 md:w-14 md:h-14 rounded-2xl bg-black/65 hover:bg-black/85 disabled:opacity-25 disabled:pointer-events-none active:scale-95 border border-white/20 text-amber-300 shadow-[0_12px_28px_rgba(0,0,0,0.75)] flex items-center justify-center transition-all cursor-pointer backdrop-blur-md"
-              title={t('btn_hint')}
-            >
-              <LightbulbIcon size={26} />
-            </button>
+            {/* Maslahat olish (💡 Sariq Chiroq - Max 3 ta) */}
+              <button
+                onClick={handleGetHint}
+                disabled={isGameOver || hintLoading || hintsUsed >= MAX_HINTS}
+                className={`w-11 h-11 sm:w-13 sm:h-13 md:w-14 md:h-14 rounded-2xl relative active:scale-95 border transition-all cursor-pointer backdrop-blur-md flex flex-col items-center justify-center ${
+                  hintsUsed >= MAX_HINTS
+                    ? 'bg-black/40 border-white/10 text-zinc-500 opacity-40 cursor-not-allowed'
+                    : 'bg-black/65 hover:bg-black/85 border-amber-400/50 text-amber-300 shadow-[0_12px_28px_rgba(0,0,0,0.75)]'
+                }`}
+                title={`Maslahat olish (Qoldi: {MAX_HINTS - hintsUsed}/{MAX_HINTS})`}
+              >
+                <LightbulbIcon size={22} />
+                <span className="text-[9px] font-black leading-none mt-0.5 text-amber-300">
+                  {MAX_HINTS - hintsUsed}/{MAX_HINTS}
+                </span>
+              </button>
           </>
         )}
       </div>

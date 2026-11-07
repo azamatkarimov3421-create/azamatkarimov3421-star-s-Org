@@ -326,6 +326,10 @@ export default function Board3D({
   const pieceMeshesMapRef = useRef<Map<string, THREE.Group>>(new Map());
   const highlightsGroupRef = useRef<THREE.Group | null>(null);
   const animFrameRef = useRef<number | null>(null);
+  const renderFramesRef = useRef<number>(60);
+  const requestRender = useCallback((frames = 30) => {
+    renderFramesRef.current = Math.max(renderFramesRef.current, frames);
+  }, []);
 
   // Pointer & Drag kuzatuvi
   const pointerStartRef = useRef<{
@@ -545,7 +549,7 @@ export default function Board3D({
     renderer.setSize(width, height, false);
     canvas.style.width = "100%";
     canvas.style.height = "100%";
-    renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, isMobile ? 1.25 : 2));
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, isMobile ? 1.15 : 1.75));
     renderer.setClearColor(0x000000, 0); // 100% shaffof fon
     renderer.toneMapping = THREE.ACESFilmicToneMapping;
     renderer.toneMappingExposure = 1.0;
@@ -617,8 +621,9 @@ export default function Board3D({
     const key = new THREE.DirectionalLight(0xfffae8, 0.68);
     key.position.set(5, 22, 6);
     key.castShadow = true;
-    key.shadow.mapSize.width = 1024;
-    key.shadow.mapSize.height = 1024;
+    const shadowMapDim = isMobile ? 512 : 1024;
+    key.shadow.mapSize.width = shadowMapDim;
+    key.shadow.mapSize.height = shadowMapDim;
     key.shadow.camera.near = 0.5;
     key.shadow.camera.far = 40;
     const d = 9.0;
@@ -656,6 +661,7 @@ export default function Board3D({
     // ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ DOSQA RAMKASI (Koordinatali asal-eman yog'ochi) ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬
     const currentTheme = boardTheme || 'classic';
     createFrameTexture(isFlipped, currentTheme).then((frameTex) => {
+      requestRender(30);
       if (destroyed) return;
       const frameGeo = new THREE.BoxGeometry(TOTAL_WIDTH, BOARD_THICKNESS, TOTAL_WIDTH);
       
@@ -747,7 +753,10 @@ export default function Board3D({
     // Render sikli
     const renderLoop = () => {
       animFrameRef.current = requestAnimationFrame(renderLoop);
-      renderer.render(scene, camera);
+      if (renderFramesRef.current > 0) {
+        renderFramesRef.current--;
+        renderer.render(scene, camera);
+      }
     };
     renderLoop();
 
@@ -759,6 +768,7 @@ export default function Board3D({
         if (w > 0 && h > 0 && cameraRef.current && rendererRef.current) {
           updateCameraForAspect(w, h);
           rendererRef.current.setSize(w, h, false);
+          requestRender(25);
           if (canvasRef.current) {
             canvasRef.current.style.width = "100%";
             canvasRef.current.style.height = "100%";
@@ -818,6 +828,7 @@ export default function Board3D({
   useEffect(() => {
     if (containerRef.current && updateCameraRef.current) {
       updateCameraRef.current(containerRef.current.clientWidth, containerRef.current.clientHeight);
+      requestRender(40);
     }
   }, [cinemaMode]);
 
@@ -1122,6 +1133,46 @@ export default function Board3D({
         }
       }
 
+      // 3.5 Maslahat harakati (💡 Hint: Sariq Chiroq)
+      if (hintMove) {
+        // Qaysi donani surish kerak (Oltin yaltiroq halqa)
+        const fromPos = getSquareWorldPos(hintMove.from.file, hintMove.from.rank, flipped);
+        const hintRingGeo = new THREE.RingGeometry(0.30, 0.44, 32);
+        const hintRingMat = new THREE.MeshBasicMaterial({
+          color: 0xf59e0b,
+          transparent: true,
+          opacity: 0.95,
+          side: THREE.DoubleSide,
+        });
+        const hintRing = new THREE.Mesh(hintRingGeo, hintRingMat);
+        hintRing.rotation.x = -Math.PI / 2;
+        hintRing.position.set(fromPos.x, 0.048, fromPos.z);
+        hlGroup.add(hintRing);
+
+        // Qayerga surish kerak (Oltin nishon diski)
+        const toPos = getSquareWorldPos(hintMove.to.file, hintMove.to.rank, flipped);
+        const toDiscGeo = new THREE.CircleGeometry(0.24, 32);
+        const toDiscMat = new THREE.MeshBasicMaterial({
+          color: 0xfbbf24,
+          transparent: true,
+          opacity: 0.90,
+          side: THREE.DoubleSide,
+        });
+        const toDisc = new THREE.Mesh(toDiscGeo, toDiscMat);
+        toDisc.rotation.x = -Math.PI / 2;
+        toDisc.position.set(toPos.x, 0.048, toPos.z);
+        hlGroup.add(toDisc);
+
+        // From dan To gacha yo'naltiruvchi oltin chiziq
+        const lineGeo = new THREE.BufferGeometry().setFromPoints([
+          new THREE.Vector3(fromPos.x, 0.048, fromPos.z),
+          new THREE.Vector3(toPos.x, 0.048, toPos.z),
+        ]);
+        const lineMat = new THREE.LineBasicMaterial({ color: 0xf59e0b, linewidth: 3 });
+        const hintLine = new THREE.Line(lineGeo, lineMat);
+        hlGroup.add(hintLine);
+      }
+
       // 4. Shoh xavf ostida (Check) bo'lsa ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬Â Shoh tagida qizil nurlanish
       if (game.isInCheck) {
         const kingColor = game.currentTurn;
@@ -1153,7 +1204,7 @@ export default function Board3D({
         }
       }
     }
-  }, [isLoaded, game.board, game.lastMove, game.isInCheck, game.currentTurn, selectedSquare, legalMoves, isFlipped, getSquareWorldPos]);
+  }, [isLoaded, game.board, game.lastMove, game.isInCheck, game.currentTurn, selectedSquare, legalMoves, hintMove, isFlipped, getSquareWorldPos]);
 
   // ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ KVADRATNI ANIQLASH (3D Dona Mesh'lari va Kataklar bo'yicha 100% ANIQ) ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬
   const getSquareFromPointer = useCallback(
@@ -1258,6 +1309,7 @@ export default function Board3D({
 
   // ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ FOYDALANUVCHI INTERAKTIV HARAKATLARI (Pointer Down / Move / Up) ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬
   const handlePointerDown = (e: React.PointerEvent) => {
+    requestRender(25);
     if (e.button !== 0 && e.pointerType === 'mouse') return;
 
     const sq = getSquareFromPointer(e.clientX, e.clientY);
@@ -1310,6 +1362,7 @@ export default function Board3D({
 
     // Drag jarayonida donaning qo'l bilan silliq harakatlanishi
     if (tracker.isDragging && tracker.mesh && tracker.plane) {
+      requestRender(10);
       const rect = canvasRef.current.getBoundingClientRect();
       const mouseX = ((e.clientX - rect.left) / rect.width) * 2 - 1;
       const mouseY = -((e.clientY - rect.top) / rect.height) * 2 + 1;
@@ -1327,6 +1380,7 @@ export default function Board3D({
   };
 
   const handlePointerUp = (e: React.PointerEvent) => {
+    requestRender(40);
     const tracker = pointerStartRef.current;
     pointerStartRef.current = null;
     if (!tracker) return;

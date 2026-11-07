@@ -408,3 +408,11 @@ export function saveRecentGame(game: Omit<RecentGame, 'id' | 'date'>): RecentGam
   }
 }
 
+
+
+export function deductRatingForHint(penalty = 5): UserProfile {
+  const profile = getUserProfile();
+  profile.rating = Math.max(100, (profile.rating || 1200) - penalty);
+  saveUserProfile(profile);
+  return profile;
+}
