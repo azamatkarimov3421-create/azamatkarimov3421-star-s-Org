@@ -627,10 +627,10 @@ export default function Board3D({
       let lookAtZ: number;
 
       if (isLandscape) {
-        baseDist = isCinema ? 14.2 : 15.6;
-        lookAtZ = 0.75;
+        baseDist = isCinema ? 16.2 : 17.0;
+        lookAtZ = 0.70;
       } else {
-        baseDist = isCinema ? 33.0 : 38.0;
+        baseDist = isCinema ? 36.5 : 39.0;
         lookAtZ = 0.40;
       }
 

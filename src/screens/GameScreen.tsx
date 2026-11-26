@@ -649,8 +649,8 @@ export default function GameScreen({ onBack, onOpenSettings, isAndroidApk = fals
           is3D
             ? 'w-full h-full max-w-none'
             : cinemaMode
-              ? 'max-w-[min(99vw,98vh)] aspect-square'
-              : 'max-w-[min(96vw,92vh)] aspect-square'
+              ? 'max-w-[min(94vw,88vh)] aspect-square'
+              : 'max-w-[min(92vw,84vh)] aspect-square'
         }`}>
           <Board />
         </div>
