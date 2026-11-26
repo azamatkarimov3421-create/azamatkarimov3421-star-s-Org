@@ -1,8 +1,6 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect } from 'react';
 import NurLogo from '../components/NurLogo';
 import { useGame } from '../store/gameStore';
-import { createInitialBoard } from '../engine/board';
-import { FILES, PieceType } from '../engine/types';
 import {
   GlobeIcon,
   SettingsIcon,
@@ -48,26 +46,6 @@ const DIFFICULTIES = [
   { depth: 4, label: 'Usta', elo: '2200' },
 ];
 
-const PIECE_3D_IMG: Record<PieceType, { white: string; black: string }> = {
-  King: { white: '/pieces/3d_king_white.png', black: '/pieces/3d_king_black.png' },
-  Queen: { white: '/pieces/3d_queen_white.png', black: '/pieces/3d_queen_black.png' },
-  Nur: { white: '/pieces/3d_nur_white.png', black: '/pieces/3d_nur_black.png' },
-  Rook: { white: '/pieces/3d_rook_white.png', black: '/pieces/3d_rook_black.png' },
-  Bishop: { white: '/pieces/3d_bishop_white.png', black: '/pieces/3d_bishop_black.png' },
-  Knight: { white: '/pieces/3d_knight_white.png', black: '/pieces/3d_knight_black.png' },
-  Pawn: { white: '/pieces/3d_pawn_white.png', black: '/pieces/3d_pawn_black.png' },
-};
-
-const PIECE_2D_IMG: Record<PieceType, { white: string; black: string }> = {
-  King: { white: '/pieces/wK.svg', black: '/pieces/bK.svg' },
-  Queen: { white: '/pieces/wQ.svg', black: '/pieces/bQ.svg' },
-  Nur: { white: '/pieces/wNur.svg', black: '/pieces/bNur.svg' },
-  Rook: { white: '/pieces/wR.svg', black: '/pieces/bR.svg' },
-  Bishop: { white: '/pieces/wB.svg', black: '/pieces/bB.svg' },
-  Knight: { white: '/pieces/wN.svg', black: '/pieces/bN.svg' },
-  Pawn: { white: '/pieces/wP.svg', black: '/pieces/bP.svg' },
-};
-
 export default function HomeScreen({
   onStartVsAI,
   onStartLocal,
@@ -96,9 +74,6 @@ export default function HomeScreen({
       !window.matchMedia('(prefers-color-scheme: dark)').matches);
 
   const isMobileSimulation = !isAndroidApk && webDeviceView === 'phone';
-  const showBlackBottom = homeColorChoice === 'black';
-
-  const initialBoard = useMemo(() => createInitialBoard(), []);
 
   const hasActiveMatch =
     state.gameMode !== 'aiVsAi' &&
@@ -129,9 +104,6 @@ export default function HomeScreen({
 
   const textMain = isLight ? 'text-stone-900' : 'text-white';
   const textMuted = isLight ? 'text-stone-600' : 'text-stone-300';
-
-  const rankOrder = showBlackBottom ? [0, 1, 2, 3, 4, 5, 6, 7, 8, 9] : [9, 8, 7, 6, 5, 4, 3, 2, 1, 0];
-  const fileOrder = showBlackBottom ? [9, 8, 7, 6, 5, 4, 3, 2, 1, 0] : [0, 1, 2, 3, 4, 5, 6, 7, 8, 9];
 
   return (
     <div
@@ -349,96 +321,73 @@ export default function HomeScreen({
                 </div>
               </div>
 
-              {/* Haqiqiy 10x10 Nur Doskasi (3D perspektiv yoki 2D tekis) */}
-              <div
-                className="w-full flex items-center justify-center py-0.5"
-                style={{ perspective: '950px' }}
-              >
-                <div
-                  className="w-full max-w-[330px] sm:max-w-[420px] rounded-2xl p-2 sm:p-2.5 shadow-[0_14px_32px_rgba(0,0,0,0.22)] border border-[#7c5333]/60 transition-transform duration-300 ease-out"
-                  style={{
-                    backgroundImage: "url('/textures/wood_frame.jpg')",
-                    backgroundSize: 'cover',
-                    backgroundColor: '#cfa774',
-                    transformStyle: 'preserve-3d',
-                    transform: state.is3D ? 'rotateX(16deg) scale(0.97)' : 'rotateX(0deg) scale(1)',
-                  }}
-                >
-                  {/* 10x10 kataklar panjarasi */}
-                  <div
-                    className="grid grid-cols-10 grid-rows-10 w-full aspect-square rounded-lg overflow-hidden border border-black/35 shadow-inner"
-                    style={{ transformStyle: 'preserve-3d' }}
-                  >
-                    {rankOrder.map((rankIdx) =>
-                      fileOrder.map((fileIdx) => {
-                        const isLightSq = (rankIdx + fileIdx) % 2 !== 0;
-                        const piece = initialBoard[rankIdx][fileIdx];
-                        const isNurHome =
-                          (fileIdx === 3 || fileIdx === 6) && (rankIdx === 0 || rankIdx === 9);
-                        const imgSrc = piece
-                          ? state.is3D
-                            ? PIECE_3D_IMG[piece.type][piece.color]
-                            : PIECE_2D_IMG[piece.type][piece.color]
-                          : null;
-
-                        return (
-                          <div
-                            key={`${rankIdx}-${fileIdx}`}
-                            className="relative flex items-center justify-center select-none"
-                            style={{
-                              transformStyle: 'preserve-3d',
-                              backgroundColor: isLightSq ? '#f1dfb8' : '#a8673e',
-                              backgroundImage: state.is3D
-                                ? `url('${isLightSq ? '/textures/wood_light_square.jpg' : '/textures/wood_dark_square.jpg'}')`
-                                : undefined,
-                              backgroundSize: 'cover',
-                              boxShadow: isNurHome
-                                ? 'inset 0 0 0 1.5px rgba(245, 158, 11, 0.72)'
-                                : undefined,
-                            }}
-                          >
-                            {imgSrc && (
-                              <img
-                                src={imgSrc}
-                                alt=""
-                                loading="eager"
-                                decoding="sync"
-                                draggable={false}
-                                className={`pointer-events-none object-contain transition-transform duration-300 ${
-                                  state.is3D ? 'w-[92%] h-[92%]' : 'w-[82%] h-[82%]'
-                                }`}
-                                style={{
-                                  transform: state.is3D
-                                    ? 'rotateX(-16deg) translateY(-10%)'
-                                    : undefined,
-                                  transformOrigin: 'bottom center',
-                                  filter: state.is3D
-                                    ? 'drop-shadow(0 3px 3px rgba(0,0,0,0.45))'
-                                    : 'drop-shadow(0 1px 1px rgba(0,0,0,0.22))',
-                                }}
-                              />
-                            )}
-                          </div>
-                        );
-                      })
-                    )}
+              {/* Shoh va Nur 3D / 2D Figuralari (Doskasiz toza ko'rinish) */}
+              <div className="w-full py-6 sm:py-10 flex items-center justify-center relative">
+                {state.is3D ? (
+                  <div className="relative flex items-end justify-center gap-4 sm:gap-7">
+                    {/* Tagidagi yumshoq 3D soya ellipsi */}
+                    <div
+                      className={`pointer-events-none absolute -bottom-3 w-64 sm:w-80 h-8 rounded-full blur-xl ${
+                        isLight ? 'bg-stone-900/20' : 'bg-black/65'
+                      }`}
+                    />
+                    <img
+                      src={
+                        homeColorChoice === 'black'
+                          ? '/pieces/3d_nur_black.png'
+                          : '/pieces/3d_nur_white.png'
+                      }
+                      alt="3D Nur"
+                      loading="eager"
+                      decoding="sync"
+                      draggable={false}
+                      className="relative z-10 h-44 sm:h-64 w-auto object-contain select-none transition-transform duration-300 hover:-translate-y-1.5"
+                      style={{
+                        filter: 'drop-shadow(0 20px 24px rgba(0,0,0,0.42))',
+                      }}
+                    />
+                    <img
+                      src={
+                        homeColorChoice === 'black'
+                          ? '/pieces/3d_king_black.png'
+                          : homeColorChoice === 'random'
+                          ? '/pieces/3d_king_black.png'
+                          : '/pieces/3d_king_white.png'
+                      }
+                      alt="3D Shoh"
+                      loading="eager"
+                      decoding="sync"
+                      draggable={false}
+                      className="relative z-10 h-48 sm:h-72 w-auto object-contain select-none transition-transform duration-300 hover:-translate-y-1.5"
+                      style={{
+                        filter: 'drop-shadow(0 22px 26px rgba(0,0,0,0.48))',
+                      }}
+                    />
                   </div>
-
-                  {/* Pastki ustun harflari (10 ta ustun: A..N E D M..H) */}
-                  <div className="grid grid-cols-10 mt-1 px-0.5">
-                    {fileOrder.map((fileIdx) => (
-                      <span
-                        key={fileIdx}
-                        style={{ textShadow: '0 1px 0 rgba(255,245,220,0.45)' }}
-                        className={`text-center font-mono text-[9px] sm:text-[10px] font-extrabold leading-none ${
-                          fileIdx === 3 || fileIdx === 6 ? 'text-[#5c2808]' : 'text-[#2b180c]/85'
-                        }`}
-                      >
-                        {FILES[fileIdx]}
-                      </span>
-                    ))}
+                ) : (
+                  <div className="relative flex items-end justify-center gap-6 sm:gap-10 py-4">
+                    <img
+                      src={homeColorChoice === 'black' ? '/pieces/bNur.svg' : '/pieces/wNur.svg'}
+                      alt="2D Nur"
+                      loading="eager"
+                      decoding="sync"
+                      draggable={false}
+                      className="h-36 sm:h-52 w-auto object-contain select-none drop-shadow-[0_10px_16px_rgba(0,0,0,0.28)]"
+                    />
+                    <img
+                      src={
+                        homeColorChoice === 'black' || homeColorChoice === 'random'
+                          ? '/pieces/bK.svg'
+                          : '/pieces/wK.svg'
+                      }
+                      alt="2D Shoh"
+                      loading="eager"
+                      decoding="sync"
+                      draggable={false}
+                      className="h-40 sm:h-56 w-auto object-contain select-none drop-shadow-[0_12px_18px_rgba(0,0,0,0.32)]"
+                    />
                   </div>
-                </div>
+                )}
               </div>
             </div>
           </div>

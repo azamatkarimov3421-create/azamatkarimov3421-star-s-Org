@@ -173,7 +173,7 @@ export function linkGoogleAccount(data: {
     googleId: data.googleId || data.id,
     isGoogleLinked: true,
     lastLoginAt: new Date().toISOString(),
-    rating: current.rating >= 1000 ? current.rating : 1200,
+    rating: typeof current.rating === 'number' && current.rating >= 100 ? current.rating : 1200,
     league: current.league && current.league !== 'Boshlangʻich liga' ? current.league : 'Bronza liga',
   };
   saveUserProfile(updated);
@@ -184,7 +184,7 @@ export function unlinkGoogleAccount(): UserProfile {
   const current = getUserProfile();
   const reset: UserProfile = {
     ...DEFAULT_GUEST_PROFILE,
-    rating: current.rating >= 1000 ? current.rating : 1200,
+    rating: typeof current.rating === 'number' && current.rating >= 100 ? current.rating : 1200,
     gamesPlayed: current.gamesPlayed,
     wins: current.wins,
     draws: current.draws,

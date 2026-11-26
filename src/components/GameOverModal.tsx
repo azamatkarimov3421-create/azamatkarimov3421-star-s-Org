@@ -95,16 +95,28 @@ export default function GameOverModal({ onExit, isOpen, onClose }: GameOverModal
         userResult = isWinnerPlayer ? 'win' : 'loss';
       }
 
-      const AI_LEVEL_RATINGS = [0, 1000, 1400, 1800, 2200];
+  const AI_LEVEL_RATINGS = [0, 1000, 1400, 1800, 2200];
       const oppRating = gameMode === 'online'
         ? (onlineManager.opponentRating || 1200)
-        : (AI_LEVEL_RATINGS[aiDepth] || 1400);
+        : gameMode === 'vsAI'
+        ? (AI_LEVEL_RATINGS[aiDepth] || 1400)
+        : 1200;
 
-      const updatedProfile = recordGameFinished(userResult, gameMode === 'online', oppRating);
-      setRatingInfo({
-        newRating: updatedProfile.rating,
-        delta: updatedProfile.deltaRating,
-      });
+      // Bir xil yakunlangan o'yin qayta modal ochilganda ikki marta yozilmasligi uchun kalit
+      const matchKey = `${gameMode}_${status}_${moveHistory.length}_${roomCode || 'local'}`;
+      if ((window as any).__nurLastRecordedMatchKey === matchKey) {
+        setSaved(true);
+        return;
+      }
+      (window as any).__nurLastRecordedMatchKey = matchKey;
+
+      if (gameMode === 'vsAI' || gameMode === 'online') {
+        const updatedProfile = recordGameFinished(userResult, gameMode === 'online', oppRating);
+        setRatingInfo({
+          newRating: updatedProfile.rating,
+          delta: updatedProfile.deltaRating,
+        });
+      }
 
       const opponentTitle = gameMode === 'vsAI'
         ? `Nur Bot (${aiDepth}-daraja)`

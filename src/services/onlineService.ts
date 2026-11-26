@@ -89,6 +89,11 @@ class OnlineManager {
 
   private myLobbyKey: string = '';
   private mySocialKey: string = '';
+  private isPairing: boolean = false;
+  private retryJoinTimer: ReturnType<typeof setInterval> | null = null;
+  private disconnectGraceTimer: ReturnType<typeof setTimeout> | null = null;
+  private socialPresenceTimer: ReturnType<typeof setTimeout> | null = null;
+  private lobbyPresenceTimer: ReturnType<typeof setTimeout> | null = null;
 
   public status: OnlineStatus = 'idle';
   public roomCode: string | null = null;
@@ -255,10 +260,14 @@ class OnlineManager {
   }
 
   private broadcastSocialPresence() {
-    const users = this.getOnlineUsers();
-    this.onlineUsersListeners.forEach((cb) => {
-      try { cb(users); } catch {}
-    });
+    if (this.socialPresenceTimer) return;
+    this.socialPresenceTimer = setTimeout(() => {
+      this.socialPresenceTimer = null;
+      const users = this.getOnlineUsers();
+      this.onlineUsersListeners.forEach((cb) => {
+        try { cb(users); } catch {}
+      });
+    }, 350);
   }
 
   /**
@@ -392,10 +401,14 @@ class OnlineManager {
   }
 
   private broadcastPresenceCounts() {
-    const counts = this.getRealPresenceCounts();
-    this.lobbyPresenceListeners.forEach((cb) => {
-      try { cb(counts); } catch {}
-    });
+    if (this.lobbyPresenceTimer) return;
+    this.lobbyPresenceTimer = setTimeout(() => {
+      this.lobbyPresenceTimer = null;
+      const counts = this.getRealPresenceCounts();
+      this.lobbyPresenceListeners.forEach((cb) => {
+        try { cb(counts); } catch {}
+      });
+    }, 350);
   }
 
   /**
@@ -429,6 +442,9 @@ class OnlineManager {
       timestamp: Date.now(),
     };
 
+    // Taklif yuboruvchi avval White sifatida xona ochib eshikni tayyorlaydi, keyin taklif jo'natadi
+    await this.createRoom(roomCode);
+
     if (this.socialChannel) {
       try {
         await this.socialChannel.send({
@@ -440,9 +456,6 @@ class OnlineManager {
         console.error('Taklif yuborishda xato:', e);
       }
     }
-
-    // Taklif yuboruvchi darhol White sifatida xona ochadi
-    await this.createRoom(roomCode);
 
     return { roomCode, inviteId };
   }
@@ -542,16 +555,27 @@ class OnlineManager {
           }
           const hasWhite = presences.some((p: any) => p && p.role === 'white');
           const hasBlack = presences.some((p: any) => p && p.role === 'black');
-          if (hasWhite && hasBlack && this.status !== 'connected') {
-            this.notifyStatus('connected', `${this.opponentName} xonaga ulandi!`);
+          if (hasWhite && hasBlack) {
+            if (this.disconnectGraceTimer) {
+              clearTimeout(this.disconnectGraceTimer);
+              this.disconnectGraceTimer = null;
+            }
+            if (this.status !== 'connected') {
+              this.notifyStatus('connected', `${this.opponentName} xonaga ulandi!`);
+            }
           }
         });
 
-        ch.on('presence', { event: 'leave' }, () => {
-          if (this.roomCode) {
-            this.notifyStatus('disconnected', `${this.opponentName} aloqadan uzildi`);
-            this.notifyMessage({ type: 'LEAVE' });
-          }
+        ch.on('presence', { event: 'leave' }, ({ key }: any) => {
+          if (!this.roomCode || (key && key !== 'black')) return;
+          if (this.disconnectGraceTimer) clearTimeout(this.disconnectGraceTimer);
+          this.disconnectGraceTimer = setTimeout(() => {
+            this.disconnectGraceTimer = null;
+            if (this.roomCode && this.channel === ch) {
+              this.notifyStatus('disconnected', `${this.opponentName} aloqadan uzildi`);
+              this.notifyMessage({ type: 'LEAVE' });
+            }
+          }, 5000);
         });
 
         ch.subscribe(async (status) => {
@@ -625,16 +649,27 @@ class OnlineManager {
           }
           const hasWhite = presences.some((p: any) => p && p.role === 'white');
           const hasBlack = presences.some((p: any) => p && p.role === 'black');
-          if (hasWhite && hasBlack && this.status !== 'connected') {
-            this.notifyStatus('connected', `${this.opponentName} bilan o'yin boshlandi!`);
+          if (hasWhite && hasBlack) {
+            if (this.disconnectGraceTimer) {
+              clearTimeout(this.disconnectGraceTimer);
+              this.disconnectGraceTimer = null;
+            }
+            if (this.status !== 'connected') {
+              this.notifyStatus('connected', `${this.opponentName} bilan o'yin boshlandi!`);
+            }
           }
         });
 
-        ch.on('presence', { event: 'leave' }, () => {
-          if (this.roomCode) {
-            this.notifyStatus('disconnected', `${this.opponentName} aloqadan uzildi`);
-            this.notifyMessage({ type: 'LEAVE' });
-          }
+        ch.on('presence', { event: 'leave' }, ({ key }: any) => {
+          if (!this.roomCode || (key && key !== 'white')) return;
+          if (this.disconnectGraceTimer) clearTimeout(this.disconnectGraceTimer);
+          this.disconnectGraceTimer = setTimeout(() => {
+            this.disconnectGraceTimer = null;
+            if (this.roomCode && this.channel === ch) {
+              this.notifyStatus('disconnected', `${this.opponentName} aloqadan uzildi`);
+              this.notifyMessage({ type: 'LEAVE' });
+            }
+          }, 5000);
         });
 
         ch.subscribe(async (status) => {
@@ -662,10 +697,14 @@ class OnlineManager {
             });
 
             let count = 0;
-            const retryJoin = setInterval(() => {
+            if (this.retryJoinTimer) clearInterval(this.retryJoinTimer);
+            this.retryJoinTimer = setInterval(() => {
               count++;
-              if (this.status === 'connected' || count >= 4) {
-                clearInterval(retryJoin);
+              if (this.status === 'connected' || count >= 4 || !this.channel) {
+                if (this.retryJoinTimer) {
+                  clearInterval(this.retryJoinTimer);
+                  this.retryJoinTimer = null;
+                }
                 return;
               }
               ch.send({
@@ -675,7 +714,7 @@ class OnlineManager {
               });
             }, 600);
 
-            this.notifyStatus('connected', 'Xonaga muvaffaqiyatli ulandingiz!');
+            this.notifyStatus('waiting', 'Host javobi kutilmoqda...');
             resolve();
           } else if (status === 'CHANNEL_ERROR' || status === 'TIMED_OUT') {
             this.notifyStatus('error', 'Xonaga ulanib boʻlmadi. Kodni tekshiring.');
@@ -760,7 +799,7 @@ class OnlineManager {
 
         // Presence yangilanganda mos vaqt toifasidagi kutayotgan raqibni aniqlash
         mCh.on('presence', { event: 'sync' }, async () => {
-          if (!this.isMatchmaking) return;
+          if (!this.isMatchmaking || this.isPairing) return;
           const state = mCh.presenceState();
           const presences = Object.values(state).flat() as any[];
           const opponents = presences.filter(
@@ -772,6 +811,7 @@ class OnlineManager {
             const opponent = opponents[0];
             // Deterministic matchmaker: kichikroq ID ga ega o'yinchi host bo'ladi
             if (clientId < opponent.id) {
+              this.isPairing = true;
               const matchedRoomCode = `${Math.floor(10000 + Math.random() * 90000)}`;
               this.opponentName = opponent.name || 'Raqib';
               if (typeof opponent.rating === 'number') this.opponentRating = opponent.rating;
@@ -832,6 +872,7 @@ class OnlineManager {
    */
   public stopMatchmaking() {
     this.isMatchmaking = false;
+    this.isPairing = false;
     if (this.matchChannel) {
       try {
         this.matchChannel.untrack();
@@ -872,6 +913,14 @@ class OnlineManager {
    */
   public disconnect() {
     this.stopMatchmaking();
+    if (this.retryJoinTimer) {
+      clearInterval(this.retryJoinTimer);
+      this.retryJoinTimer = null;
+    }
+    if (this.disconnectGraceTimer) {
+      clearTimeout(this.disconnectGraceTimer);
+      this.disconnectGraceTimer = null;
+    }
     if (this.channel) {
       const ch = this.channel;
       this.channel = null;
