@@ -35,6 +35,7 @@ import {
   StepForwardIcon,
   MenuIcon,
   ChessPawnIcon,
+  MaximizeIcon,
 } from '../components/Icons';
 import { PlayerCard } from '../components/CapturedPieces';
 import { useTranslation } from '../i18n/translations';
@@ -446,50 +447,48 @@ export default function GameScreen({ onBack, onOpenSettings, isAndroidApk = fals
       {/* Hashamatli xalqaro shaxmat studiyasi mayin vinetka foni */}
       <div className="absolute inset-0 bg-black/25 pointer-events-none z-0" />
 
-      {/* ── SAYT UCHUN QULAY SHAFFOF BURCHAK PANELLARI (Doska va 10-qator donalarini umuman to'smaydi!) ── */}
       {!isAndroidApk && !cinemaMode && (
         <>
-          <div className="hidden lg:flex fixed top-3.5 left-3.5 z-30 items-center gap-2 px-3 py-2 rounded-2xl bg-black/45 backdrop-blur-2xl border border-white/20 shadow-[inset_0_1px_0_rgba(255,255,255,0.22),0_12px_32px_rgba(0,0,0,0.55)] pointer-events-auto">
+          <div className="hidden lg:flex fixed top-3.5 left-3.5 z-30 items-center gap-2.5 px-3 py-1.5 rounded-xl nur-glass-nav pointer-events-auto">
             <button
               onClick={onBack}
-              className="px-2.5 py-1 rounded-xl bg-white/[0.10] hover:bg-white/[0.20] border border-white/15 text-xs font-bold text-white flex items-center gap-1.5 transition-all cursor-pointer"
-              title="Bosh sahifaga qaytish"
+              className="px-2 py-1 rounded-lg hover:bg-white/[0.08] text-xs font-medium text-zinc-200 hover:text-white flex items-center gap-1.5 transition-colors cursor-pointer"
             >
               <ArrowLeftIcon size={14} />
-              <span>Bosh sahifa</span>
+              <span>Chiqish</span>
             </button>
-            <div className="h-4 w-[1px] bg-white/15" />
-            <div className="flex items-center gap-1.5 px-1">
+            <div className="h-3.5 w-[1px] bg-white/10" />
+            <div className="flex items-center gap-2 px-1">
               <span
-                className={`w-2.5 h-2.5 rounded-full ${
+                className={`w-2.5 h-2.5 rounded-full border ${
                   currentTurn === 'white'
-                    ? 'bg-white shadow-[0_0_8px_rgba(255,255,255,0.9)]'
-                    : 'bg-zinc-900 border border-amber-400 shadow-[0_0_8px_rgba(251,191,36,0.5)]'
+                    ? 'bg-white border-zinc-300'
+                    : 'bg-zinc-900 border-zinc-500'
                 }`}
               />
-              <span className="text-xs font-black text-white">
-                {currentTurn === 'white' ? 'Oqlar' : 'Qoralar'}
+              <span className="text-xs font-medium text-zinc-100">
+                {currentTurn === 'white' ? 'Oqlar navbati' : 'Qoralar navbati'}
               </span>
-              <span className="text-[10.5px] font-mono font-bold text-amber-300 bg-amber-400/15 border border-amber-400/30 px-1.5 py-0.5 rounded-md">
-                #{Math.ceil((moveHistory.length || 0) / 2) || 1}
+              <span className="text-xs tabular-nums text-zinc-400">
+                · {Math.ceil((moveHistory.length || 0) / 2) || 1}-yurish
               </span>
             </div>
           </div>
 
-          <div className="hidden lg:flex fixed top-3.5 right-3.5 z-30 items-center gap-2 px-3 py-2 rounded-2xl bg-black/45 backdrop-blur-2xl border border-white/20 shadow-[inset_0_1px_0_rgba(255,255,255,0.22),0_12px_32px_rgba(0,0,0,0.55)] pointer-events-auto">
-            <div className="flex items-center p-0.5 rounded-xl bg-black/35 border border-white/15">
+          <div className="hidden lg:flex fixed top-3.5 right-3.5 z-30 items-center gap-2 px-2.5 py-1.5 rounded-xl nur-glass-nav pointer-events-auto">
+            <div className="flex items-center p-0.5 rounded-lg bg-black/35 border border-white/[0.06]">
               <button
                 onClick={() => dispatch({ type: 'SET_3D', enabled: true })}
-                className={`px-2.5 py-1 rounded-lg text-[11px] font-black transition-all cursor-pointer ${
-                  is3D ? 'bg-emerald-500 text-white shadow-sm' : 'text-zinc-300 hover:text-white'
+                className={`px-2.5 py-1 rounded-md text-xs transition-all cursor-pointer ${
+                  is3D ? 'bg-white/[0.14] text-white font-semibold' : 'text-zinc-400 hover:text-zinc-200 font-medium'
                 }`}
               >
                 3D
               </button>
               <button
                 onClick={() => dispatch({ type: 'SET_3D', enabled: false })}
-                className={`px-2.5 py-1 rounded-lg text-[11px] font-black transition-all cursor-pointer ${
-                  !is3D ? 'bg-emerald-500 text-white shadow-sm' : 'text-zinc-300 hover:text-white'
+                className={`px-2.5 py-1 rounded-md text-xs transition-all cursor-pointer ${
+                  !is3D ? 'bg-white/[0.14] text-white font-semibold' : 'text-zinc-400 hover:text-zinc-200 font-medium'
                 }`}
               >
                 2D
@@ -498,11 +497,11 @@ export default function GameScreen({ onBack, onOpenSettings, isAndroidApk = fals
 
             <button
               onClick={() => dispatch({ type: 'TOGGLE_CINEMA_MODE' })}
-              className="px-2.5 py-1 rounded-xl bg-white/[0.10] hover:bg-white/[0.20] border border-white/15 text-[11px] font-bold text-amber-200 flex items-center gap-1 transition-all cursor-pointer"
-              title="Katta ekran (Kino ko'rish rejimi)"
+              className="px-2.5 py-1 rounded-lg hover:bg-white/[0.08] text-xs font-medium text-zinc-200 hover:text-white flex items-center gap-1.5 transition-colors cursor-pointer"
+              title="Katta ekran"
             >
-              <span>🎬</span>
-              <span>Katta ekran</span>
+              <MaximizeIcon size={13} />
+              <span>Kengaytirish</span>
             </button>
           </div>
         </>

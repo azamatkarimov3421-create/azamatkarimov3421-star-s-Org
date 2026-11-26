@@ -1,68 +1,48 @@
-// =====================================================
-// NUR SHAXMAT 100 — AI Botlar Ro'yxati Modali (VsAiModal)
-// Chess.com uslubidagi vektorli va interaktiv botlar tanlovi
-// =====================================================
-
 import React, { useState } from 'react';
-import { BotIcon, PlayIcon, SwordsIcon } from './Icons';
+import { BotIcon, PlayIcon } from './Icons';
 import { useTranslation } from '../i18n/translations';
 
 export interface BotCharacter {
   depth: number;
   name: string;
-  titleKey: string;
-  subKey: string;
-  descKey: string;
+  levelLabel: string;
+  desc: string;
   rating: number;
-  avatar: string;
-  accentColor: string;
-  badgeColor: string;
+  initials: string;
 }
 
 export const BOT_ROSTER: BotCharacter[] = [
   {
     depth: 1,
-    name: 'Bot Sardor',
-    titleKey: 'ai_lvl_amateur',
-    subKey: 'ai_lvl_amateur_sub',
-    descKey: 'ai_lvl_amateur_desc',
+    name: 'Sardor',
+    levelLabel: 'Oson',
+    desc: 'Boshlovchilar va sokin mashq uchun',
     rating: 1000,
-    avatar: '🤖',
-    accentColor: 'border-emerald-500 bg-emerald-500/10 text-emerald-400',
-    badgeColor: 'bg-emerald-500/20 text-emerald-300 border-emerald-500/30',
+    initials: 'S',
   },
   {
     depth: 2,
-    name: 'Bot Temur',
-    titleKey: 'ai_lvl_experienced',
-    subKey: 'ai_lvl_experienced_sub',
-    descKey: 'ai_lvl_experienced_desc',
+    name: 'Temur',
+    levelLabel: 'Oʻrta',
+    desc: 'Muvozanatli pozitsion oʻyin',
     rating: 1400,
-    avatar: '⚡',
-    accentColor: 'border-blue-500 bg-blue-500/10 text-blue-400',
-    badgeColor: 'bg-blue-500/20 text-blue-300 border-blue-500/30',
+    initials: 'T',
   },
   {
     depth: 3,
-    name: 'Bot Alp Er Toʻnga',
-    titleKey: 'ai_lvl_master',
-    subKey: 'ai_lvl_master_sub',
-    descKey: 'ai_lvl_master_desc',
+    name: 'Alp Er Toʻnga',
+    levelLabel: 'Kuchli',
+    desc: 'Aniq taktik hisob va hujumkor uslub',
     rating: 1800,
-    avatar: '👑',
-    accentColor: 'border-purple-500 bg-purple-500/10 text-purple-400',
-    badgeColor: 'bg-purple-500/20 text-purple-300 border-purple-500/30',
+    initials: 'A',
   },
   {
     depth: 4,
-    name: 'Bot Al-Xorazmiy',
-    titleKey: 'ai_lvl_grandmaster',
-    subKey: 'ai_lvl_grandmaster_sub',
-    descKey: 'ai_lvl_grandmaster_desc',
+    name: 'Al-Xorazmiy',
+    levelLabel: 'Usta',
+    desc: 'Chuqur tahlil va yuqori aniqlik',
     rating: 2200,
-    avatar: '💎',
-    accentColor: 'border-amber-500 bg-amber-500/10 text-amber-400',
-    badgeColor: 'bg-amber-500/20 text-amber-300 border-amber-500/30',
+    initials: 'X',
   },
 ];
 
@@ -102,51 +82,45 @@ export default function VsAiModal({
   };
 
   return (
-    <div className="fixed inset-0 bg-black/55 backdrop-blur-md z-50 flex items-center justify-center p-3 sm:p-4 animate-fadeIn">
-      <div className="relative w-full max-w-lg landscape:max-w-2xl nur-glass-modal rounded-3xl p-4 sm:p-6 landscape:p-2.5 flex flex-col max-h-[96dvh] landscape:overflow-hidden text-[#f5f5f4]">
-        {/* ── 1. MODAL SARLAVHASI ──────────────────────────────── */}
-        <div className="flex items-center justify-between pb-3.5 landscape:pb-1 border-b border-[#2b3d30] shrink-0">
+    <div
+      onClick={(e) => {
+        if (e.target === e.currentTarget) onClose();
+      }}
+      className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-3 sm:p-4 animate-fadeIn"
+    >
+      <div className="relative w-full max-w-lg nur-glass-modal rounded-2xl p-5 sm:p-6 flex flex-col max-h-[94dvh] text-zinc-100">
+        {/* Sarlavha */}
+        <div className="flex items-center justify-between pb-4 border-b border-white/10 shrink-0">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 landscape:w-7 landscape:h-7 landscape:rounded-xl rounded-2xl bg-[#1e3827] border border-[#285535] flex items-center justify-center text-[#4ade80] shadow-inner shrink-0">
-              <BotIcon size={22} />
+            <div className="w-9 h-9 rounded-xl bg-white/[0.06] border border-white/10 flex items-center justify-center text-zinc-200 shrink-0">
+              <BotIcon size={19} />
             </div>
             <div>
-              <div className="flex items-center gap-2">
-                <h3 className="text-base sm:text-lg landscape:text-xs font-black text-white">
-                  {t('vsai_title')}
-                </h3>
-                <span className="text-[10px] font-black px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-400 border border-emerald-500/30">
-                  4 TA RAQIB
-                </span>
-              </div>
-              <p className="text-xs landscape:text-[9.5px] text-[#9ca3af]">
-                {t('vsai_subtitle')}
-              </p>
+              <h3 className="text-[16px] font-semibold text-zinc-100">Kompyuter bilan oʻyin</h3>
+              <p className="text-xs text-zinc-400">Raqib darajasi va donalar rangini tanlang</p>
             </div>
           </div>
 
           <button
             onClick={onClose}
-            className="w-8 h-8 rounded-xl bg-[#233027] hover:bg-[#2f4235] text-[#9ca3af] hover:text-white font-bold flex items-center justify-center text-sm transition-all cursor-pointer shrink-0"
+            className="w-8 h-8 rounded-lg bg-white/[0.06] hover:bg-white/[0.12] text-zinc-400 hover:text-white flex items-center justify-center text-sm transition-colors cursor-pointer shrink-0"
           >
             ✕
           </button>
         </div>
 
-        {/* ── 2. SCROLLABLE ASOSIY QISM ───────────────────────── */}
-        <div className="flex-1 overflow-y-auto py-3.5 landscape:py-1 space-y-4 landscape:space-y-1 pr-1">
-          {/* BOTLAR RO'YXATI */}
+        {/* Asosiy qism */}
+        <div className="flex-1 overflow-y-auto py-4 space-y-5">
+          {/* Raqib tanlovi */}
           <div className="space-y-2">
-            <div className="flex items-center justify-between px-1">
-              <span className="text-[11px] font-black text-[#9ca3af] uppercase tracking-wider">
-                {t('vsai_difficulty')}
-              </span>
-              <span className="text-xs text-[#4ade80] font-bold font-mono">
-                {currentBot.name} ({currentBot.rating} {t('rating_label')})
+            <div className="flex items-center justify-between">
+              <span className="text-xs font-medium text-zinc-400">Raqib</span>
+              <span className="text-xs text-zinc-400 tabular-nums">
+                {currentBot.name} · {currentBot.rating}
               </span>
             </div>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 landscape:grid-cols-2 gap-2">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
               {BOT_ROSTER.map((bot) => {
                 const isSelected = selectedDepth === bot.depth;
                 return (
@@ -154,49 +128,34 @@ export default function VsAiModal({
                     key={'bot-' + bot.depth}
                     type="button"
                     onClick={() => setSelectedDepth(bot.depth)}
-                    className={`w-full p-2.5 sm:p-3 landscape:p-1 landscape:rounded-xl rounded-2xl border text-left flex items-center gap-2.5 landscape:gap-1.5 transition-all cursor-pointer select-none relative ${
+                    className={`w-full p-3 rounded-xl border text-left flex items-center gap-3 transition-all cursor-pointer ${
                       isSelected
-                        ? 'bg-[#1b2b20] border-[#22c55e] shadow-[0_0_15px_rgba(34,197,94,0.2)] ring-1 ring-[#22c55e]'
-                        : 'bg-[#141b17] border-[#27372d] hover:border-[#384f3f] hover:bg-[#18211c]'
+                        ? 'bg-white/[0.11] border-white/30 text-white'
+                        : 'bg-white/[0.03] border-white/[0.07] hover:bg-white/[0.06] hover:border-white/15'
                     }`}
                   >
-                    {/* Bot Avatari */}
                     <div
-                      className={`w-10 h-10 sm:w-12 sm:h-12 landscape:w-7 landscape:h-7 landscape:rounded-lg rounded-2xl border flex items-center justify-center text-xl sm:text-2xl landscape:text-sm shadow-md shrink-0 ${
-                        isSelected ? bot.accentColor : 'bg-[#1d2720] border-[#2a3a2e]'
+                      className={`w-9 h-9 rounded-lg border flex items-center justify-center text-sm font-semibold shrink-0 ${
+                        isSelected
+                          ? 'bg-[#629924] border-[#73ad30] text-white'
+                          : 'bg-white/[0.06] border-white/10 text-zinc-300'
                       }`}
                     >
-                      {bot.avatar}
+                      {bot.initials}
                     </div>
 
-                    {/* Bot Ma'lumotlari */}
                     <div className="flex-1 min-w-0">
-                      <div className="flex items-center justify-between gap-1">
-                        <div className="flex items-center gap-1.5 min-w-0">
-                          <span className="text-sm font-black text-white truncate">
-                            {bot.name}
-                          </span>
-                          <span className={`text-[9px] font-bold px-1.5 py-0.2 rounded-md border ${bot.badgeColor}`}>
-                            {t(bot.titleKey)}
-                          </span>
-                        </div>
-                        <span className="text-xs font-mono font-bold text-amber-400 shrink-0">
-                          ⭐ {bot.rating}
+                      <div className="flex items-center justify-between gap-2">
+                        <span className="text-sm font-semibold text-zinc-100 truncate">
+                          {bot.name}
+                        </span>
+                        <span className="text-xs tabular-nums text-zinc-400 shrink-0">
+                          {bot.rating}
                         </span>
                       </div>
-
-                      <div className="text-[11px] text-[#9ca3af] mt-0.5 line-clamp-1 leading-snug">
-                        {t(bot.descKey)}
+                      <div className="text-xs text-zinc-400 truncate mt-0.5">
+                        {bot.levelLabel} · {bot.desc}
                       </div>
-                    </div>
-
-                    {/* Tanlanganlik nishoni (Radio) */}
-                    <div
-                      className={`w-5 h-5 rounded-full border-2 shrink-0 flex items-center justify-center transition-all ${
-                        isSelected ? 'border-[#22c55e] bg-[#22c55e]' : 'border-[#4b5563]'
-                      }`}
-                    >
-                      {isSelected && <span className="text-[10px] text-slate-950 font-black">✓</span>}
                     </div>
                   </button>
                 );
@@ -204,80 +163,59 @@ export default function VsAiModal({
             </div>
           </div>
 
-          {/* DONALAR RANGINI TANLASH (Oqlar / Tasodifiy / Qoralar) */}
-          <div>
-            <div className="flex items-center justify-between mb-2 px-1">
-              <span className="text-[11px] font-black text-[#9ca3af] uppercase tracking-wider">
-                {t('vsai_color_label')}
-              </span>
-              <span className="text-xs text-zinc-400 font-mono">
+          {/* Tomon tanlovi */}
+          <div className="space-y-2">
+            <div className="flex items-center justify-between">
+              <span className="text-xs font-medium text-zinc-400">{t('vsai_color_label')}</span>
+              <span className="text-xs text-zinc-400">
                 {colorChoice === 'white'
-                  ? t('vsai_first_move_white')
+                  ? 'Birinchi yurasiz'
                   : colorChoice === 'black'
-                  ? t('vsai_first_move_black')
-                  : t('vsai_random_desc')}
+                  ? 'Ikkinchi yurasiz'
+                  : 'Avtomatik'}
               </span>
             </div>
 
-            <div className="grid grid-cols-3 gap-2">
-              {/* Oqlar */}
-              <button
-                type="button"
-                onClick={() => setColorChoice('white')}
-                className={`py-2.5 px-2 rounded-2xl border flex flex-col items-center justify-center gap-1 transition-all cursor-pointer select-none ${
-                  colorChoice === 'white'
-                    ? 'bg-[#223627] border-[#22c55e] text-white shadow-[0_0_12px_rgba(34,197,94,0.25)] ring-1 ring-[#22c55e]'
-                    : 'bg-[#141b17] border-[#27372d] text-[#9ca3af] hover:border-[#3a5241]'
-                }`}
-              >
-                <span className="w-5 h-5 rounded-full bg-white shadow-[0_0_8px_rgba(255,255,255,0.7)]" />
-                <span className="text-xs font-black text-white">{t('vsai_color_white')}</span>
-                <span className="text-[9px] text-zinc-400">{t('vsai_white_desc')}</span>
-              </button>
-
-              {/* Tasodifiy (50/50) */}
-              <button
-                type="button"
-                onClick={() => setColorChoice('random')}
-                className={`py-2.5 px-2 rounded-2xl border flex flex-col items-center justify-center gap-1 transition-all cursor-pointer select-none ${
-                  colorChoice === 'random'
-                    ? 'bg-[#223627] border-[#22c55e] text-white shadow-[0_0_12px_rgba(34,197,94,0.25)] ring-1 ring-[#22c55e]'
-                    : 'bg-[#141b17] border-[#27372d] text-[#9ca3af] hover:border-[#3a5241]'
-                }`}
-              >
-                <span className="w-5 h-5 rounded-full bg-gradient-to-r from-white to-black border border-zinc-500 shadow-sm" />
-                <span className="text-xs font-black text-white">{t('vsai_color_random')}</span>
-                <span className="text-[9px] text-zinc-400">{t('vsai_random_desc')}</span>
-              </button>
-
-              {/* Qoralar */}
-              <button
-                type="button"
-                onClick={() => setColorChoice('black')}
-                className={`py-2.5 px-2 rounded-2xl border flex flex-col items-center justify-center gap-1 transition-all cursor-pointer select-none ${
-                  colorChoice === 'black'
-                    ? 'bg-[#223627] border-[#22c55e] text-white shadow-[0_0_12px_rgba(34,197,94,0.25)] ring-1 ring-[#22c55e]'
-                    : 'bg-[#141b17] border-[#27372d] text-[#9ca3af] hover:border-[#3a5241]'
-                }`}
-              >
-                <span className="w-5 h-5 rounded-full bg-[#111] border border-white/60 shadow-[0_0_6px_rgba(0,0,0,0.8)]" />
-                <span className="text-xs font-black text-white">{t('vsai_color_black')}</span>
-                <span className="text-[9px] text-zinc-400">{t('vsai_black_desc')}</span>
-              </button>
+            <div className="grid grid-cols-3 p-1 rounded-xl bg-black/35 border border-white/[0.06] gap-1">
+              {(
+                [
+                  { id: 'white', label: 'Oq', dot: 'bg-white border-zinc-300' },
+                  {
+                    id: 'random',
+                    label: 'Tasodifiy',
+                    dot: 'bg-gradient-to-r from-white to-zinc-900 border-zinc-400',
+                  },
+                  { id: 'black', label: 'Qora', dot: 'bg-zinc-900 border-zinc-500' },
+                ] as const
+              ).map((item) => (
+                <button
+                  key={item.id}
+                  type="button"
+                  onClick={() => setColorChoice(item.id)}
+                  className={`py-2.5 px-2 rounded-[9px] text-[13px] flex items-center justify-center gap-2 transition-all cursor-pointer ${
+                    colorChoice === item.id
+                      ? 'bg-white/[0.14] text-white font-semibold shadow-xs'
+                      : 'text-zinc-400 hover:text-zinc-200 font-medium'
+                  }`}
+                >
+                  <span className={`w-3 h-3 rounded-full border shrink-0 ${item.dot}`} />
+                  <span>{item.label}</span>
+                </button>
+              ))}
             </div>
           </div>
         </div>
 
-        {/* ── 3. ASOSIY BOSHLASH TUGMASI (STICKY BOTTOM) ───────── */}
-        <div className="pt-3 border-t border-[#2b3d30] shrink-0">
+        {/* Boshlash tugmasi */}
+        <div className="pt-3 border-t border-white/10 shrink-0">
           <button
             type="button"
             onClick={handleStartGame}
-            className="w-full py-2.5 sm:py-3.5 landscape:py-1.5 landscape:text-xs landscape:rounded-xl px-4 rounded-2xl bg-gradient-to-r from-[#22c55e] to-[#16a34a] hover:from-[#4ade80] hover:to-[#22c55e] text-slate-950 font-black text-sm sm:text-base flex items-center justify-center gap-2 shadow-[0_4px_15px_rgba(34,197,94,0.35)] active:scale-[0.99] transition-all cursor-pointer"
+            className="w-full py-3 px-4 rounded-xl bg-[#629924] hover:bg-[#56881f] text-white font-semibold text-sm flex items-center justify-center gap-2 transition-colors cursor-pointer"
           >
-            <PlayIcon size={20} className="fill-slate-950" />
+            <PlayIcon size={16} className="fill-white" />
             <span>
-              {t('vsai_start_btn')}: {currentBot.name} ({currentBot.rating})
+              Oʻyinni boshlash ({currentBot.name}, {currentBot.rating})
             </span>
           </button>
         </div>

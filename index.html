@@ -8,10 +8,18 @@
       name="viewport"
       content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover"
     />
-    <title>Nur Shaxmat 100 — O'zbek Shaxmati</title>
+    <title>Nur Shaxmat — 10×10</title>
     <meta
       name="description"
-      content="10x10 Nur Shaxmat 100 - O'zbekiston milliy shaxmati. Nur donasi va 3 xil rokirovka bilan."
+      content="10x10 Nur Shaxmat - O'zbekiston milliy shaxmati. Nur donasi va 3 xil rokirovka bilan."
+    />
+
+    <!-- Clean Inter UI Typography (Apple / Lichess / Linear standard) -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap"
+      rel="stylesheet"
     />
 
     <!-- Mobile APK & PWA Optimization -->
@@ -19,7 +27,7 @@
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
     <meta name="apple-mobile-web-app-title" content="Nur Shaxmat" />
-    <meta name="theme-color" content="#21201d" />
+    <meta name="theme-color" content="#18181b" />
     <link rel="manifest" href="/manifest.json" />
 
     <style>
@@ -27,14 +35,12 @@
         --board-size: min(calc(100vw - 16px), calc(100dvh - 195px), 480px);
         --board-size-3d: min(calc(100vw - 16px), calc(100dvh - 215px), 440px);
       }
-      /* Mobil telefonlar gorizontal (yonbosh) holatida: to'liq ekran bo'yicha tabiiy moslash */
       @media (orientation: landscape) and (max-height: 560px) {
         :root {
           --board-size: min(calc(100dvh - 16px), calc(100vw - 160px), 480px);
           --board-size-3d: min(calc(100dvh - 16px), calc(100vw - 160px), 480px);
         }
       }
-
       @media (min-width: 768px) {
         :root {
           --board-size: min(calc(100dvh - 145px), calc(100vw - 370px), 560px);
@@ -67,7 +73,7 @@
       }
     </style>
   </head>
-  <body class="overscroll-none select-none touch-manipulation">
+  <body class="overscroll-none select-none touch-manipulation antialiased">
     <div id="root"></div>
     <script type="module" src="/src/main.tsx"></script>
   </body>

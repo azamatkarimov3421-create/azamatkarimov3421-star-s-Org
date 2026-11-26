@@ -385,36 +385,18 @@ function AppContent() {
       data-platform={isAndroidApk ? 'apk' : 'web'}
       className={`min-h-screen ${
         isLight
-          ? 'bg-[#f3efe6] bg-[url("/desktop-bg-light.jpg")] text-[#1f1d1a]'
-          : 'bg-[#090e0c] bg-[url("/desktop-bg.jpg")] text-[#f5f5f4]'
+          ? 'bg-[#f4f3ef] bg-[url("/desktop-bg-light.jpg")] text-zinc-900'
+          : 'bg-[#161618] bg-[url("/desktop-bg.jpg")] text-zinc-100'
       } bg-cover bg-center bg-fixed flex flex-col font-sans select-none relative transition-colors duration-200`}
     >
-      {/* Billur shaffof vinetka va mayin yorug'lik nurlari (Saytda fon nafis ko'rinib turishi uchun) */}
+      {/* Neytral sokin fon qatlami (yashil va neon ranglarni silliqlashtiradi, haqiqiy grafit/oq tus beradi) */}
       <div
         className={`fixed inset-0 pointer-events-none z-0 ${
-          isAndroidApk
-            ? isLight
-              ? 'bg-gradient-to-b from-white/70 via-white/50 to-white/75'
-              : 'bg-gradient-to-b from-black/65 via-black/45 to-black/80'
-            : isLight
-            ? 'bg-gradient-to-b from-white/48 via-[#faf6ed]/32 to-[#eee6d6]/55'
-            : 'bg-gradient-to-b from-[#070d0a]/52 via-[#0c1611]/34 to-[#060b08]/64'
+          isLight
+            ? 'bg-[#f4f3ef]/72 backdrop-saturate-50'
+            : 'bg-[#161618]/74 backdrop-saturate-50'
         }`}
       />
-      {!isAndroidApk && (
-        <div className="fixed inset-0 pointer-events-none z-0 overflow-hidden">
-          <div
-            className={`absolute -top-28 -left-24 w-[420px] h-[420px] rounded-full blur-[110px] ${
-              isLight ? 'bg-amber-300/30' : 'bg-amber-500/14'
-            }`}
-          />
-          <div
-            className={`absolute -bottom-32 -right-24 w-[460px] h-[460px] rounded-full blur-[120px] ${
-              isLight ? 'bg-emerald-300/28' : 'bg-emerald-500/15'
-            }`}
-          />
-        </div>
-      )}
 
       <div className="relative z-10 flex-1 flex flex-col w-full">
       {/* ── 1. ASOSIY EKRAN ROUTER ─────────────────────────── */}

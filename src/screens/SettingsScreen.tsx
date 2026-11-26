@@ -16,6 +16,8 @@ import {
   BookOpenIcon,
   ChessPawnIcon,
   UserIcon,
+  CubeIcon,
+  MaximizeIcon,
 } from '../components/Icons';
 import {
   SoundTheme,
@@ -62,7 +64,7 @@ const MonitorIcon = ({ size = 18, className = '' }: { size?: number; className?:
 function ToggleSwitch({
   checked,
   onChange,
-  activeColor = 'bg-[#81b64c]',
+  activeColor = 'bg-[#629924]',
   isLight = false,
 }: {
   checked: boolean;
@@ -125,12 +127,12 @@ export default function SettingsScreen({ onBack, onOpenRules, isAndroidApk = fal
   const cardHover = !isAndroidApk
     ? isLight ? 'hover:bg-white/60' : 'hover:bg-white/[0.06]'
     : isLight ? 'hover:bg-slate-50' : 'hover:bg-[#282420]';
-  const textTitle = isLight ? 'text-slate-950 font-black' : 'text-white font-bold';
-  const textSub = isLight ? 'text-slate-700 font-semibold' : 'text-zinc-300/85 font-medium';
-  const sectionTitle = isLight ? 'text-slate-900 font-black tracking-wider' : 'text-amber-300/90 font-black uppercase tracking-wider';
+  const textTitle = isLight ? 'text-zinc-900 font-semibold' : 'text-zinc-100 font-semibold';
+  const textSub = isLight ? 'text-zinc-500 font-normal' : 'text-zinc-400 font-normal';
+  const sectionTitle = isLight ? 'text-zinc-500 font-semibold tracking-wide' : 'text-zinc-400 font-semibold uppercase tracking-wide';
   const iconBox = isLight
-    ? 'bg-amber-500/15 border-amber-400/50 text-amber-900 font-bold'
-    : 'bg-white/[0.08] border-white/15 text-amber-300';
+    ? 'bg-zinc-900/[0.04] border-zinc-900/[0.08] text-zinc-700'
+    : 'bg-white/[0.06] border-white/[0.08] text-zinc-200';
 
   return (
     <div className={`min-h-screen w-full relative z-10 ${!isAndroidApk ? 'bg-transparent' : isLight ? 'bg-[#ede8df]' : 'bg-[#181614]'} flex flex-col font-sans select-none pb-16 transition-colors duration-200`}>
@@ -197,56 +199,55 @@ export default function SettingsScreen({ onBack, onOpenRules, isAndroidApk = fal
 
               {/* 3 ta Rejim Tugmalari (Segmented Control) */}
               <div className={`grid grid-cols-3 p-1 rounded-xl border gap-1 ${
-                isLight ? 'bg-[#ede8df] border-[#ded7cb]' : 'bg-[#151311] border-[#2c2620]'
+                isLight ? 'bg-zinc-900/[0.05] border-zinc-900/[0.06]' : 'bg-black/35 border-white/[0.06]'
               }`}>
-                {/* Kunduzgi (Light) */}
                 <button
                   type="button"
                   onClick={() => dispatch({ type: 'SET_APP_THEME', theme: 'light' })}
-                  className={`py-2 px-2.5 rounded-lg text-xs font-black flex items-center justify-center gap-1.5 transition-all cursor-pointer ${
+                  className={`py-2 px-2.5 rounded-[9px] text-xs flex items-center justify-center gap-1.5 transition-all cursor-pointer ${
                     appTheme === 'light'
-                      ? 'bg-white text-amber-800 shadow-md ring-1 ring-black/5 scale-[1.02]'
+                      ? 'bg-white text-zinc-950 font-semibold shadow-xs'
                       : isLight
-                      ? 'text-zinc-600 hover:text-zinc-900'
-                      : 'text-zinc-400 hover:text-white'
+                      ? 'text-zinc-600 hover:text-zinc-950 font-medium'
+                      : 'text-zinc-400 hover:text-zinc-200 font-medium'
                   }`}
                 >
-                  <SunIcon size={14} className={appTheme === 'light' ? 'text-amber-500' : ''} />
-                  <span>☀️ Oddiy Oq (Kunduzgi)</span>
+                  <SunIcon size={14} />
+                  <span>Kunduzgi</span>
                 </button>
 
-                {/* Tungi (Dark) */}
                 <button
                   type="button"
                   onClick={() => dispatch({ type: 'SET_APP_THEME', theme: 'dark' })}
-                  className={`py-2 px-2.5 rounded-lg text-xs font-black flex items-center justify-center gap-1.5 transition-all cursor-pointer ${
+                  className={`py-2 px-2.5 rounded-[9px] text-xs flex items-center justify-center gap-1.5 transition-all cursor-pointer ${
                     appTheme === 'dark'
-                      ? 'bg-[#2f2a24] text-amber-300 shadow-md border border-[#483f34] scale-[1.02]'
+                      ? isLight
+                        ? 'bg-white text-zinc-950 font-semibold shadow-xs'
+                        : 'bg-white/[0.14] text-white font-semibold shadow-xs'
                       : isLight
-                      ? 'text-zinc-600 hover:text-zinc-900'
-                      : 'text-zinc-400 hover:text-white'
+                      ? 'text-zinc-600 hover:text-zinc-950 font-medium'
+                      : 'text-zinc-400 hover:text-zinc-200 font-medium'
                   }`}
                 >
-                  <MoonIcon size={14} className={appTheme === 'dark' ? 'text-amber-400' : ''} />
-                  <span>🌙 Qora Shisha (Tungi)</span>
+                  <MoonIcon size={14} />
+                  <span>Tungi</span>
                 </button>
 
-                {/* Tizim / Avto (System) */}
                 <button
                   type="button"
                   onClick={() => dispatch({ type: 'SET_APP_THEME', theme: 'system' })}
-                  className={`py-2 px-2.5 rounded-lg text-xs font-black flex items-center justify-center gap-1.5 transition-all cursor-pointer ${
+                  className={`py-2 px-2.5 rounded-[9px] text-xs flex items-center justify-center gap-1.5 transition-all cursor-pointer ${
                     appTheme === 'system'
                       ? isLight
-                        ? 'bg-white text-emerald-800 shadow-md ring-1 ring-black/5 scale-[1.02]'
-                        : 'bg-[#2f2a24] text-emerald-300 shadow-md border border-[#483f34] scale-[1.02]'
+                        ? 'bg-white text-zinc-950 font-semibold shadow-xs'
+                        : 'bg-white/[0.14] text-white font-semibold shadow-xs'
                       : isLight
-                      ? 'text-zinc-600 hover:text-zinc-900'
-                      : 'text-zinc-400 hover:text-white'
+                      ? 'text-zinc-600 hover:text-zinc-950 font-medium'
+                      : 'text-zinc-400 hover:text-zinc-200 font-medium'
                   }`}
                 >
-                  <MonitorIcon size={14} className={appTheme === 'system' ? 'text-emerald-500' : ''} />
-                  <span>💻 Avto (Tizim)</span>
+                  <MonitorIcon size={14} />
+                  <span>Tizim</span>
                 </button>
               </div>
             </div>
@@ -279,58 +280,46 @@ export default function SettingsScreen({ onBack, onOpenRules, isAndroidApk = fal
               </div>
             </button>
 
-            {/* 1.3 3D Fazoviy Doska (Kitobdagidek) */}
+            {/* 1.3 3D Fazoviy Doska */}
             <div className="p-4 flex items-center justify-between">
               <div className="flex items-center gap-3 min-w-0 pr-3">
-                <div className={`w-9 h-9 rounded-xl flex items-center justify-center text-base border shrink-0 ${iconBox}`}>
-                  🎲
+                <div className={`w-9 h-9 rounded-xl flex items-center justify-center border shrink-0 ${iconBox}`}>
+                  <CubeIcon size={18} />
                 </div>
                 <div className="min-w-0">
-                  <div className="flex items-center gap-1.5">
-                    <span className={`font-bold text-sm truncate ${textTitle}`}>
-                      3D Fazoviy Doska
-                    </span>
-                    <span className="px-1.5 py-0.5 rounded text-[9px] font-black uppercase tracking-wider bg-amber-500/20 text-amber-500 border border-amber-500/30">
-                      3D
-                    </span>
-                  </div>
-                  <p className={`text-[10px] sm:text-[11px] truncate ${textSub}`}>
-                    {is3D ? 'Haqiqiy yogʻoch taxta va tik turgan donalar' : 'Klassik 2D tekis doska'}
+                  <span className={`text-sm block truncate ${textTitle}`}>
+                    3D fazoviy doska
+                  </span>
+                  <p className={`text-xs truncate ${textSub}`}>
+                    {is3D ? 'Hajmli yogʻoch taxta va donalar' : 'Klassik 2D tekis koʻrinish'}
                   </p>
                 </div>
               </div>
               <ToggleSwitch
                 checked={is3D}
                 onChange={() => dispatch({ type: 'TOGGLE_3D' })}
-                activeColor="bg-amber-500"
                 isLight={isLight}
               />
             </div>
 
-                        {/* 1.4 Kino Koʻrish Rejimi (Katta Ekran / Cinema Mode) */}
+            {/* 1.4 Keng Ekran Rejimi */}
             <div className="p-4 flex items-center justify-between">
               <div className="flex items-center gap-3 min-w-0 pr-3">
-                <div className={`w-9 h-9 rounded-xl flex items-center justify-center text-base border shrink-0 ${iconBox}`}>
-                  🎬
+                <div className={`w-9 h-9 rounded-xl flex items-center justify-center border shrink-0 ${iconBox}`}>
+                  <MaximizeIcon size={17} />
                 </div>
                 <div className="min-w-0">
-                  <div className="flex items-center gap-1.5">
-                    <span className={`font-bold text-sm truncate ${textTitle}`}>
-                      Kino Koʻrish Rejimi (Katta Ekran)
-                    </span>
-                    <span className="px-1.5 py-0.5 rounded text-[9px] font-black uppercase tracking-wider bg-rose-500/20 text-rose-400 border border-rose-500/30">
-                      CINEMA
-                    </span>
-                  </div>
-                  <p className={`text-[10px] sm:text-[11px] truncate ${textSub}`}>
-                    {cinemaMode ? 'Doska butun ekranni egallaydi, maksimal katta hajm' : 'Standart oʻlcham'}
+                  <span className={`text-sm block truncate ${textTitle}`}>
+                    Katta ekran rejimi
+                  </span>
+                  <p className={`text-xs truncate ${textSub}`}>
+                    {cinemaMode ? 'Doska ekranni maksimal toʻldiradi' : 'Standart chegarali oʻlcham'}
                   </p>
                 </div>
               </div>
               <ToggleSwitch
                 checked={cinemaMode}
                 onChange={() => dispatch({ type: 'TOGGLE_CINEMA_MODE' })}
-                activeColor="bg-rose-500"
                 isLight={isLight}
               />
             </div>
