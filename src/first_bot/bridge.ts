@@ -5,6 +5,7 @@
 
 import { GameState, Move as ReactMove, PieceType } from '../engine/types';
 import { getAllLegalMovesFromState } from '../engine/gameLogic';
+import { getCastlingMoves } from '../engine/castling';
 // @ts-ignore
 import { Board, Piece } from './move_generator.js';
 // @ts-ignore
@@ -171,7 +172,7 @@ function getOrCreateWorker(): Worker | null {
 }
 
 export function getFirstBotMove(state: GameState, level: number = 2): ReactMove | null {
-  const legalMoves = getAllLegalMovesFromState(state);
+  const legalMoves = [...getAllLegalMovesFromState(state), ...getCastlingMoves(state)];
   if (legalMoves.length === 0) return null;
 
   try {
@@ -210,18 +211,24 @@ export async function getFirstBotMoveAsync(
   state: GameState,
   level: number = 2
 ): Promise<ReactMove | null> {
-  const legalMoves = getAllLegalMovesFromState(state);
+  const legalMoves = [...getAllLegalMovesFromState(state), ...getCastlingMoves(state)];
   if (legalMoves.length === 0) return null;
 
   // 1. Avvalo Web Worker orqali asosiy oqimni umuman band qilmasdan hisoblash
   const worker = getOrCreateWorker();
   if (worker) {
+    const workerTimeoutMs = level >= 4 ? 4200 : 2800;
     const workerMove = await new Promise<any>((resolve) => {
       const id = ++reqCounter;
       const timer = setTimeout(() => {
         pendingWorkerRequests.delete(id);
+        // Agar worker osilib qolsa, CPU ni band qilmasligi uchun qayta yaratamiz
+        if (aiWorkerInstance === worker) {
+          try { worker.terminate(); } catch {}
+          aiWorkerInstance = null;
+        }
         resolve(null);
-      }, 3200);
+      }, workerTimeoutMs);
       pendingWorkerRequests.set(id, { resolve, timer });
       worker.postMessage({ id, state, level });
     });
