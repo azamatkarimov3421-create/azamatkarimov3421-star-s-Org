@@ -357,7 +357,7 @@ export default function RulesScreen({ onBack }: RulesScreenProps) {
       symbol: 'p / P',
       value: '1 ball',
       points: 1,
-      desc: '100 katakli oʻzbek shaxmatining asosiy qoidasi: Oʻz hududida (2–5 qatorlar) xohishiga koʻra 1, 2 yoki 3 katak oldinga sakray oladi! Raqib hududida (6–10 qator) 1 katakdan yuradi. Diagonal boʻyicha 1 katakdagi raqibni uradi. 10-qatorga yetganda Farzin, Nur, Rux, Fil yoki Otga aylanadi.',
+      desc: '100 katakli oʻzbek shaxmatining rasmiy kitob qoidasi: Oʻz hududida (Oqlar: 2–5 qatorlar chegaragacha, Qoralar: 9–6 qatorlar chegaragacha) boʻsh kataklar boʻylab xohishiga koʻra 1, 2 yoki 3 katak oldinga siljiy oladi! Chegaradan va raqib hududida (6–10 qator) faqat 1 katakdan yuradi. Diagonal boʻyicha 1 katakdagi raqibni uradi, shuningdek 2 yoki 3 katak siljib yonidan kesib oʻtgan raqib piyodasini yoʻl-yoʻlakay (oʻtishda, masalan 6-qatordan 7-qatorga yoki 7 dan 8 ga) urib oladi. 10-qatorga yetganda Farzin, Nur, Rux, Fil yoki Otga aylanadi.',
       diagramProps: {
         cols: 6,
         rows: 6,
@@ -898,16 +898,52 @@ export default function RulesScreen({ onBack }: RulesScreenProps) {
               />
             </div>
 
-            {/* EN PASSANT VA AYLONISH */}
-            <div className="p-4 rounded-3xl bg-slate-900/85 border border-slate-800 shadow-sm space-y-2 text-xs">
-              <h4 className="font-bold text-slate-100 flex items-center gap-2">
-                <span>⚡</span> En Passant (Oʻtishda Urish) & Aylanish
+            {/* EN PASSANT VA AYLONISH (RASMLI DIAGRAMMA BILAN) */}
+            <div className="p-4 rounded-3xl bg-slate-900/90 border border-amber-500/30 shadow-md space-y-3 text-xs">
+              <h4 className="font-bold text-amber-300 text-sm flex items-center gap-2">
+                <span>⚡</span> Oʻtishda Urib Olish (En Passant: 6→7 va 7→8) & Aylanish
               </h4>
               <p className="text-slate-300 leading-relaxed">
-                Piyoda 2 yoki 3 katak sakrab raqib piyodasining yonidan oʻtsa, raqib keyingi yurishida uni diagonal boʻyicha oʻtishda urib olish huquqiga ega.
+                Rasmiy qoʻllanmaga koʻra, agar raqib piyodasi oʻz hududidan <strong>2 yoki 3 katak</strong> oldinga siljib, sizning piyodangiz hujum qilib turgan katak ustidan kesib oʻtsa (masalan, Oq piyoda <strong>6-qatorda (E6)</strong> turganda Qora piyoda <strong>D9→D6</strong> yoki <strong>D8→D6</strong> yursa), siz keyingi javob yurishidayoq piyodangizni <strong>6-qatordan 7-qatorga (E6:D7 e.p.)</strong> diagonal chiqarib, raqib piyodasini urib olishingiz mumkin! Xuddi shunday 7-qatordagi piyoda <strong>7→8</strong> ga (Qoralar esa <strong>5→4</strong> va <strong>4→3</strong> ga) oʻtishda urib oladi.
               </p>
-              <p className="text-slate-300 leading-relaxed">
-                Oq piyoda 10-qatorga, qora piyoda 1-qatorga chiqqanda oʻyinchining tanloviga koʻra Farzin, Nur, Rux, Fil yoki Otga aylanadi.
+
+              <BoardDiagram
+                cols={6}
+                rows={5}
+                fileLabels={['B', 'C', 'N', 'E', 'D', 'M']}
+                rankLabels={[9, 8, 7, 6, 5]}
+                startColIndex={1}
+                startRowIndex={4}
+                pieces={[
+                  { file: 4, rank: 5, type: 'Pawn', color: 'white' }, // E6 (6-qator)
+                  { file: 5, rank: 8, type: 'Pawn', color: 'black', isGhost: true }, // D9 (oldingi joyi)
+                  { file: 5, rank: 5, type: 'Pawn', color: 'black' }, // D6 (3 qadam tushgan joyi)
+                ]}
+                highlights={[
+                  { file: 5, rank: 6, type: 'capture', badge: 'E6:D7 e.p.' },
+                  { file: 5, rank: 5, type: 'jump', badge: 'Uriladi' },
+                ]}
+                arrows={[
+                  {
+                    from: { file: 5, rank: 8 },
+                    to: { file: 5, rank: 5 },
+                    color: '#ef4444',
+                    label: 'D9→D6',
+                  },
+                  {
+                    from: { file: 4, rank: 5 },
+                    to: { file: 5, rank: 6 },
+                    color: '#22c55e',
+                    curve: true,
+                    label: '6→7 urish!',
+                  },
+                ]}
+                caption="Yoʻl-yoʻlakay urib olish: Oq piyoda 6-qatordan 7-qatorga (E6:D7 e.p.) oʻtib D6 dagi piyodani oladi"
+                subCaption="Faqat raqib 2 yoki 3 katak siljigan yurishning oʻzidayoq javoban amalga oshiriladi."
+              />
+
+              <p className="text-slate-300 leading-relaxed pt-1 border-t border-slate-800">
+                Oq piyoda <strong>10-qatorga</strong>, qora piyoda <strong>1-qatorga</strong> yetganda oʻyinchining tanloviga koʻra <strong>Farzin, Nur, Rux, Fil yoki Otga</strong> aylanadi.
               </p>
             </div>
           </div>

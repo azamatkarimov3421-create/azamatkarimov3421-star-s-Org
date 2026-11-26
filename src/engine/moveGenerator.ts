@@ -1,5 +1,5 @@
 // =====================================================
-// NUR SHAXMAT 100 — Harakatlar generatori
+// NUR SHAXMAT 100 — Harakatlar generatori (Rasmiy Kitob Qoidalari)
 // =====================================================
 
 import { Board, Color, GameState, Move, Piece, Square, isOnBoard, squaresEqual } from './types';
@@ -11,7 +11,7 @@ function enemy(color: Color): Color {
   return color === 'white' ? 'black' : 'white';
 }
 
-// Surish harakatlari (Vazir, Tura, Fil uchun)
+// Surish harakatlari (Farzin, Rux, Fil uchun — bo'sh kataklar bo'ylab)
 function generateSlidingMoves(
   board: Board,
   from: Square,
@@ -39,7 +39,7 @@ function generateSlidingMoves(
   return moves;
 }
 
-// ── Don harakatlarini yaratish ───────────────────────
+// ── Donalar harakatlarini yaratish ───────────────────
 
 function generateKingMoves(board: Board, from: Square, piece: Piece): Move[] {
   const moves: Move[] = [];
@@ -91,9 +91,10 @@ function generateKnightMoves(board: Board, from: Square, piece: Piece): Move[] {
 }
 
 /**
- * NUR donasi harakatlari:
- * To'rt yo'nalishda 1, 2 yoki 3 kvadrat sakrash (ustidagi donlarni oshib o'tadi)
- * Qo'ngan joyda dushman donini yeydi
+ * NUR donasi harakatlari (Kitob bo'yicha):
+ * To'rt to'g'ri yo'nalishda (↑, ↓, ←, →) 1, 2 yoki 3 katakka sakrab yuradi.
+ * Yo'lidagi o'z va raqib donalari ustidan bemalol sakrab o'ta oladi.
+ * Qo'ngan katagidagi raqib donasini urib oladi (o'z donasi ustiga qo'na olmaydi).
  */
 function generateNurMoves(board: Board, from: Square, piece: Piece): Move[] {
   const moves: Move[] = [];
@@ -107,9 +108,9 @@ function generateNurMoves(board: Board, from: Square, piece: Piece): Move[] {
         moves.push({ from, to, piece });
       } else if (target.color !== piece.color) {
         moves.push({ from, to, piece, capturedPiece: target });
-        // Nur o'z va raqib donalari ustidan oshib o'tadi, to'xtamaydi
+        // Nur raqib donasi ustidan ham sakrab keyingi (2 yoki 3-chi) katakka o'ta oladi
       } else {
-        // O'z doni — bu kvadratga qo'nolmaydi, lekin ustidan sakrab o'tadi
+        // O'z donasi — bu katakka qo'nolmaydi, lekin ustidan sakrab o'tadi
         continue;
       }
     }
@@ -118,23 +119,28 @@ function generateNurMoves(board: Board, from: Square, piece: Piece): Move[] {
 }
 
 /**
- * Piyoda harakatlari:
- * - Boshlanish pozitsiyasidan (Oq: rank 1, Qora: rank 8) 1, 2, yoki 3 qadam
- * - Boshqa barcha holatlarda faqat 1 qadam
- * - Diagonal yeyish
- * - Yo'lda olish (En passant)
- * - Aylantirish (Rank 9/0 ga yetganda)
+ * Piyoda harakatlari (Nurfullo Nurmatov rasmiy qo'llanmasi bo'yicha):
+ * 1. O'z hududida (Oqlar: 2–5 qatorlar, ya'ni rank 1..4 chegaragacha; Qoralar: 9–6 qatorlar, ya'ni rank 8..5 chegaragacha)
+ *    bo'sh kataklar bo'ylab xohishiga ko'ra 1, 2 yoki 3 qadam oldinga siljiy oladi:
+ *    - Oqlar: 2-qatorda (rank 1) -> 1, 2 yoki 3 qadam (3, 4, 5-qatorgacha);
+ *             3-qatorda (rank 2) -> 1 yoki 2 qadam (4, 5-qatorgacha);
+ *             4-qatorda (rank 3) -> 1 qadam (5-qatorgacha).
+ *    - Qoralar: 9-qatorda (rank 8) -> 1, 2 yoki 3 qadam (8, 7, 6-qatorgacha);
+ *               8-qatorda (rank 7) -> 1 yoki 2 qadam (7, 6-qatorgacha);
+ *               7-qatorda (rank 6) -> 1 qadam (6-qatorgacha).
+ * 2. Chegaradan va raqib hududida (Oqlar 5-qatordan 6,7,8,9,10 ga; Qoralar 6-qatordan 5,4,3,2,1 ga) FAQAT 1 qadamdan yuradi.
+ * 3. Diagonal bo'yicha 1 qadam oldindagi raqib donasini urib oladi.
+ * 4. O'tishda urib olish (En Passant):
+ *    Raqib piyodasi 2 yoki 3 qadam oldinga siljib, o'zimizning piyodamiz hujum qilib turgan
+ *    katak ustidan sakrab (kesib) o'tsa (masalan: Oq piyoda 6-qatorda turganda Qora piyoda 9->6 yoki 8->6 yursa —
+ *    Oq piyoda 6 dan 7-qatorga diagonal o'tib urib oladi; yoki 7-qatorda turganda 9->6 / 9->7 yursa — 7 dan 8-qatorga o'tib urib oladi!),
+ *    navbatdagi javob yurishidayoq uni o'tishda urib olish mumkin.
+ * 5. Oxirgi qatorga (Oq: 10-qator, Qora: 1-qator) yetganda Farzin, Nur, Rux, Fil yoki Otga aylanadi.
  */
 function generatePawnMoves(board: Board, from: Square, piece: Piece, state: GameState): Move[] {
   const moves: Move[] = [];
   const dir = piece.color === 'white' ? 1 : -1;
 
-  // Nur Shaxmat 100 qoidasi:
-  // Piyoda o'z hududida (Oqlar: 1-5 qatorlar, ya'ni rank 1..4; Qoralar: 6-10 qatorlar, ya'ni rank 8..5)
-  // o'z hududi chegarasigacha xohishiga ko'ra 1, 2 yoki 3 qadam siljiy oladi!
-  // - Oqlar: rank 1 da 1-3 qadam (rank 2,3,4 gacha); rank 2 da 1-2 qadam (rank 3,4 gacha); rank 3 da 1 qadam (rank 4 gacha).
-  // - Qoralar: rank 8 da 1-3 qadam (rank 7,6,5 gacha); rank 7 da 1-2 qadam (rank 6,5 gacha); rank 6 da 1 qadam (rank 5 gacha).
-  // Raqib hududiga o'tgach (va chegaradan boshlab) FAQAT 1 qadamdan yuradi!
   let maxSteps = 1;
   if (piece.color === 'white') {
     if (from.rank >= 1 && from.rank <= 3) {
@@ -146,11 +152,11 @@ function generatePawnMoves(board: Board, from: Square, piece: Piece, state: Game
     }
   }
 
-  // Oldinga harakatlar
+  // Oldinga bo'sh kataklar bo'ylab siljish
   for (let steps = 1; steps <= maxSteps; steps++) {
     const to = { rank: from.rank + dir * steps, file: from.file };
     if (!isOnBoard(to)) break;
-    if (board[to.rank][to.file] !== null) break; // Bloklandi
+    if (board[to.rank][to.file] !== null) break; // Oldi to'silgan — ustidan sakrab o'ta olmaydi
     const isPromo = (piece.color === 'white' && to.rank === 9) ||
                     (piece.color === 'black' && to.rank === 0);
     if (isPromo) {
@@ -162,7 +168,15 @@ function generatePawnMoves(board: Board, from: Square, piece: Piece, state: Game
     }
   }
 
-  // Diagonal yeyish
+  // Yo'l-yo'lakay (o'tishda) urib olish kataklar ro'yxati (2 yoki 3 qadam sakrashda barcha kesib o'tilgan kataklar)
+  const epTargets: Square[] =
+    state.enPassantTargets && state.enPassantTargets.length > 0
+      ? state.enPassantTargets
+      : state.enPassantTarget
+      ? [state.enPassantTarget]
+      : [];
+
+  // Diagonal bo'yicha urish va O'tishda urib olish (En Passant)
   for (const df of [-1, 1]) {
     const to = { rank: from.rank + dir, file: from.file + df };
     if (!isOnBoard(to)) continue;
@@ -177,18 +191,18 @@ function generatePawnMoves(board: Board, from: Square, piece: Piece, state: Game
       } else {
         moves.push({ from, to, piece, capturedPiece: target });
       }
-    }
-
-    // Yo'lda olish (En passant)
-    if (state.enPassantTarget && squaresEqual(to, state.enPassantTarget)) {
-      const capSq = state.enPassantPawnSquare!;
-      const captured = board[capSq.rank][capSq.file];
-      if (captured && captured.color !== piece.color) {
+    } else if (!target && state.enPassantPawnSquare && epTargets.some(ep => squaresEqual(to, ep))) {
+      // O'tishda urib olish (En passant): maqsad katak bo'sh bo'lib, raqib piyodasi shu yo'lakdan sakrab o'tgan
+      const capSq = state.enPassantPawnSquare;
+      const captured = board[capSq.rank]?.[capSq.file];
+      if (captured && captured.type === 'Pawn' && captured.color !== piece.color) {
         moves.push({
-          from, to, piece,
+          from,
+          to,
+          piece,
           capturedPiece: captured,
           isEnPassant: true,
-          enPassantCaptureSquare: capSq
+          enPassantCaptureSquare: capSq,
         });
       }
     }
@@ -212,7 +226,7 @@ export function isSquareAttacked(board: Board, sq: Square, byColor: Color): bool
     }
   }
 
-  // Tura + Vazir (to'g'ri chiziq)
+  // Rux + Farzin (to'g'ri chiziq)
   for (const [dr, df] of [[1,0],[-1,0],[0,1],[0,-1]] as [number,number][]) {
     let r = sq.rank + dr, f = sq.file + df;
     while (r >= 0 && r <= 9 && f >= 0 && f <= 9) {
@@ -225,7 +239,7 @@ export function isSquareAttacked(board: Board, sq: Square, byColor: Color): bool
     }
   }
 
-  // Fil + Vazir (diagonal)
+  // Fil + Farzin (diagonal)
   for (const [dr, df] of [[1,1],[1,-1],[-1,1],[-1,-1]] as [number,number][]) {
     let r = sq.rank + dr, f = sq.file + df;
     while (r >= 0 && r <= 9 && f >= 0 && f <= 9) {
@@ -238,7 +252,7 @@ export function isSquareAttacked(board: Board, sq: Square, byColor: Color): bool
     }
   }
 
-  // Ot (L-shakl sakrash)
+  // Ot ("G" shaklida sakrash)
   for (const [dr, df] of [[2,1],[2,-1],[-2,1],[-2,-1],[1,2],[1,-2],[-1,2],[-1,-2]] as [number,number][]) {
     const r = sq.rank + dr, f = sq.file + df;
     if (r >= 0 && r <= 9 && f >= 0 && f <= 9) {
@@ -276,7 +290,7 @@ export function isInCheck(board: Board, color: Color): boolean {
   return isSquareAttacked(board, kingSquare, enemy(color));
 }
 
-// ── Soxta harakatni qo'llash (tekshirish uchun) ──────
+// ── Soxta harakatni qo'llash (qonuniylikni tekshirish uchun) ──────
 
 function applyMoveToBoard(board: Board, move: Move): Board {
   const newBoard = cloneBoard(board);
@@ -286,13 +300,13 @@ function applyMoveToBoard(board: Board, move: Move): Board {
     piece.type = move.promotionPiece;
   }
 
-  setPiece(newBoard, move.to, piece);
-  setPiece(newBoard, move.from, null);
-
-  // Yo'lda olish: yutib olingan piyodani o'chirish
+  // Yo'lda olish: avval yutib olingan piyodani o'chirish
   if (move.isEnPassant && move.enPassantCaptureSquare) {
     setPiece(newBoard, move.enPassantCaptureSquare, null);
   }
+
+  setPiece(newBoard, move.to, piece);
+  setPiece(newBoard, move.from, null);
 
   // Rokirovka: turani ham ko'chirish
   if (move.isCastling && move.rookFrom && move.rookTo) {

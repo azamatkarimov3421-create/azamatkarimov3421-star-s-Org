@@ -71,6 +71,7 @@ function AppContent() {
         const data = JSON.parse(raw);
         if (
           data &&
+          data.gameMode !== 'aiVsAi' &&
           data.game &&
           (data.game.status === 'playing' || data.game.status === 'check') &&
           (data.game.moveHistory?.length || 0) > 0

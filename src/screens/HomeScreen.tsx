@@ -61,6 +61,7 @@ export default function HomeScreen({
     const isMobileSimulation = !isAndroidApk && webDeviceView === 'phone';
 
   const hasActiveMatch =
+    state.gameMode !== 'aiVsAi' &&
     (state.game.status === 'playing' || state.game.status === 'check') &&
     (state.game.moveHistory?.length || 0) > 0;
 
@@ -150,7 +151,7 @@ export default function HomeScreen({
                   NUR SHAXMAT <span className="text-[#d97706]">100</span>
                 </h1>
                 <p className={`text-[10px] md:text-xs font-bold tracking-wider uppercase ${isLight ? 'text-amber-700' : 'text-amber-400'}`}>
-                  V1.2.20 • OʻZBEK SHAXMATI (10X10)
+                  V1.2.22 • OʻZBEK SHAXMATI (10X10)
                 </p>
               </div>
             </div>

@@ -40,7 +40,7 @@ export interface Move {
 }
 
 export interface CastlingRights {
-  whiteShort: boolean;   // 0-0: Shoh E1->C1, Tура A1->N1
+  whiteShort: boolean;   // 0-0: Shoh E1->C1, Tura A1->N1
   whiteMedium: boolean;  // -0-0-: Shoh E1->M1, Tura H1->D1
   whiteLong: boolean;    // 0-0-0: Shoh E1->G1, Tura H1->F1
   blackShort: boolean;
@@ -54,16 +54,17 @@ export interface GameState {
   board: Board;
   currentTurn: Color;
   castlingRights: CastlingRights;
-  enPassantTarget: Square | null;    // Yo'lda olish maqsadi
-  enPassantPawnSquare: Square | null; // Yo'lda olinadigan piyodaning o'rni
-  halfMoveClock: number;             // 50 ta harakatli qoida uchun
+  enPassantTarget: Square | null;      // Asosiy yo'lda olish maqsadi (oxirgi o'tilgan katak)
+  enPassantTargets?: Square[];         // 2 yoki 3 qadam sakralganda barcha o'tilgan kataklar (6->7, 7->8 va 5->4, 4->3)
+  enPassantPawnSquare: Square | null;  // Yo'lda olinadigan piyodaning haqiqiy turgan o'rni
+  halfMoveClock: number;               // 50 ta harakatli qoida uchun
   fullMoveNumber: number;
   capturedByWhite: Piece[];
   capturedByBlack: Piece[];
   moveHistory: Move[];
-  positionHistory: string[];         // Uch marta takrorlash uchun
+  positionHistory: string[];           // Uch marta takrorlash uchun
   status: GameStatus;
-  promotionPending: Square | null;   // Aylantirish kutilmoqda
+  promotionPending: Square | null;     // Aylantirish kutilmoqda
   lastMove: Move | null;
   isInCheck: boolean;
 }
@@ -83,7 +84,7 @@ export type GameStatus =
   | 'white_left'
   | 'black_left';
 
-// Don qiymatlari
+// Don qiymatlari (Kitob 55-bet: Piyoda=1, Ot=3, Fil=3, Rux=5, Nur=7, Farzin=9)
 export const PIECE_VALUES: Record<PieceType, number> = {
   King: 9999,
   Queen: 9,

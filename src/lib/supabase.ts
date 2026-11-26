@@ -5,7 +5,7 @@
 import { createClient, SupabaseClient } from '@supabase/supabase-js';
 
 // Vercel Integratsiyasi turli prefikslarni qo'llashi mumkin (VITE_, NEXT_PUBLIC_, h.k.)
-const env = import.meta.env as Record<string, string | undefined>;
+const env = ((import.meta as any)?.env || {}) as Record<string, string | undefined>;
 
 const DEFAULT_SUPABASE_URL = 'https://wxurybelmkfdcxdcmkgd.supabase.co';
 const DEFAULT_SUPABASE_ANON_KEY = 'sb_publishable_WbL1mIYUGwB_kSJFixaowA_F5tkwcHG';

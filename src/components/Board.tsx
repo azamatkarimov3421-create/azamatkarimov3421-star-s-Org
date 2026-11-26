@@ -685,29 +685,43 @@ export default function Board() {
                       </div>
                     )}
 
+                    {/* Yo'l-yo'lakay (En Passant) urib olinadigan raqib piyodasi katagi ogohlantirgichi */}
+                    {legalMoves.some((m) => m.isEnPassant && m.enPassantCaptureSquare && squaresEqual(m.enPassantCaptureSquare, sq)) && (
+                      <div className="absolute inset-0 bg-orange-500/35 ring-2 ring-inset ring-red-500/80 pointer-events-none z-[4]" />
+                    )}
+
                     {/* Bo'sh qonuniy kvadratning zamin yoritgichi (Landing Floor Glow) */}
-                    {isLegalTarget && !piece && (
+                    {isLegalTarget && !piece && !legalMove?.isEnPassant && (
                       <div className="absolute inset-0 bg-emerald-500/20 shadow-[inset_0_0_14px_rgba(16,185,129,0.45)] pointer-events-none z-[3]" />
                     )}
 
-                    {/* Qonuniy harakat nuqtasi / yeyish nishoni (Chess.com uslubidagi nozik va silliq) */}
+                    {/* En Passant bo'sh urish katagi zamin yoritgichi */}
+                    {isLegalTarget && legalMove?.isEnPassant && (
+                      <div className="absolute inset-0 bg-red-500/25 shadow-[inset_0_0_14px_rgba(239,68,68,0.55)] pointer-events-none z-[3]" />
+                    )}
+
+                    {/* Qonuniy harakat nuqtasi / yeyish nishoni (shu jumladan 6->7 / 7->8 En Passant!) */}
                     {isLegalTarget && (
                       <div
                         className="absolute inset-0 flex items-center justify-center pointer-events-none z-20"
                         style={is3D ? { transform: 'translateZ(6px)' } : undefined}
                       >
-                        {piece ? (
-                          // Yeyish nishoni: Nozik va o'tkir qizil doira
+                        {(piece || legalMove?.isEnPassant || legalMove?.capturedPiece) ? (
+                          // Yeyish nishoni: O'tkir qizil doira (En Passant da markaziy nuqta bilan)
                           is3D ? (
                             <div className="relative w-[92%] h-[92%] flex items-center justify-center">
                               <div className="absolute inset-0 rounded-xl bg-red-600/35 border-2 sm:border-[3px] border-red-400 shadow-[0_0_12px_rgba(239,68,68,0.85)]" />
                               <div className="w-[78%] h-[78%] rounded-full border-2 border-white/95 ring-2 ring-red-500 shadow-md" />
                             </div>
                           ) : (
-                            <div className="w-[88%] h-[88%] rounded-full border-[3px] sm:border-[4px] border-red-500/75 shadow-sm" />
+                            <div className="w-[88%] h-[88%] rounded-full border-[3px] sm:border-[4px] border-red-500/85 shadow-sm flex items-center justify-center">
+                              {legalMove?.isEnPassant && (
+                                <div className="w-2.5 h-2.5 sm:w-3 sm:h-3 rounded-full bg-red-500 ring-2 ring-white/80" />
+                              )}
+                            </div>
                           )
                         ) : (
-                          // Bo'sh kvadratga harakat nuqtasi: 2D da nozik zümrad doira, 3D da disk
+                          // Bo'sh kvadratga harakat nuqtasi
                           is3D ? (
                             <div className="relative flex items-center justify-center">
                               <div className="w-6 h-6 sm:w-7 sm:h-7 rounded-full border border-emerald-400/50 bg-emerald-400/20 absolute" />
@@ -716,7 +730,7 @@ export default function Board() {
                               </div>
                             </div>
                           ) : (
-                            <div className="w-3.5 h-3.5 sm:w-4 sm:h-4 rounded-full bg-[#10b981]/70 ring-2 ring-white/60 shadow-sm" />
+                            <div className="w-3.5 h-3.5 sm:w-4 sm:h-4 rounded-full bg-[#10b981]/80 ring-2 ring-white/65 shadow-sm" />
                           )
                         )}
                       </div>

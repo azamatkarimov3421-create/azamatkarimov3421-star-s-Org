@@ -1,9 +1,13 @@
 /**
- * NUR CHESS 100 - Move Generator va Qoidalar Dvigateli
+ * NUR CHESS 100 - Move Generator va Qoidalar Dvigateli (Rasmiy Kitob asosida)
+ * - 10x10 doska, NUR sakrashlari (1-3 katak)
+ * - Piyodalar o'z hududida (chegaragacha) 1-3 katak, raqib hududida 1 katak
+ * - To'liq 2 va 3 kataklik Yo'l-yo'lakay urib olish (En Passant: 6->7, 7->8 va 5->4, 4->3)
+ * - 3 xil Rokirovka (0-0, -0-0-, 0-0-0)
  */
 
 import {
-    FILES, WHITE, BLACK,
+    WHITE, BLACK,
     PIECE_PAWN, PIECE_KNIGHT, PIECE_BISHOP, PIECE_NUR, PIECE_ROOK, PIECE_QUEEN, PIECE_KING,
     coordToStr
 } from './board_constants.js';
@@ -16,13 +20,15 @@ export class Piece {
 }
 
 export class Move {
-    constructor(fromSq, toSq, piece, captured = null, promotion = null, castlingType = null) {
+    constructor(fromSq, toSq, piece, captured = null, promotion = null, castlingType = null, isEnPassant = false, epCaptureSq = null) {
         this.fromSq = fromSq; // [file, rank]
         this.toSq = toSq;     // [file, rank]
         this.piece = piece;
         this.captured = captured;
         this.promotion = promotion;
         this.castlingType = castlingType; // 'short', 'long', 'middle'
+        this.isEnPassant = isEnPassant;
+        this.epCaptureSq = epCaptureSq;   // [file, rank] of captured pawn
     }
 
     equals(other) {
@@ -33,7 +39,8 @@ export class Move {
             this.toSq[0] === other.toSq[0] &&
             this.toSq[1] === other.toSq[1] &&
             this.promotion === other.promotion &&
-            this.castlingType === other.castlingType
+            this.castlingType === other.castlingType &&
+            this.isEnPassant === other.isEnPassant
         );
     }
 
@@ -42,7 +49,8 @@ export class Move {
         const toStr = coordToStr(this.toSq[0], this.toSq[1]);
         const promo = this.promotion ? `=${this.promotion}` : '';
         const cstl = this.castlingType ? ` (${this.castlingType} castle)` : '';
-        return `${this.piece.type}:${fromStr}->${toStr}${promo}${cstl}`;
+        const ep = this.isEnPassant ? ' e.p.' : '';
+        return `${this.piece.type}:${fromStr}->${toStr}${promo}${cstl}${ep}`;
     }
 }
 
@@ -54,6 +62,9 @@ export class Board {
             [WHITE]: { K_moved: false, R_A_moved: false, R_H_moved: false, castled: false },
             [BLACK]: { K_moved: false, R_A_moved: false, R_H_moved: false, castled: false }
         };
+        this.enPassantTargets = []; // Array of [file, rank]
+        this.enPassantPawnSq = null; // [file, rank]
+        this.epHistory = [];
         this.moveHistory = [];
         this.setupInitialPosition();
     }
@@ -72,23 +83,15 @@ export class Board {
             PIECE_KNIGHT, PIECE_ROOK
         ];
 
-        // Rank 1 (Oqlar)
         for (let f = 0; f < 10; f++) {
             this.grid[0][f] = new Piece(WHITE, firstRank[f]);
-        }
-        // Rank 2 (Oq piyodalar)
-        for (let f = 0; f < 10; f++) {
             this.grid[1][f] = new Piece(WHITE, PIECE_PAWN);
-        }
-
-        // Rank 10 (Qoralar)
-        for (let f = 0; f < 10; f++) {
+            this.grid[8][f] = new Piece(BLACK, PIECE_PAWN);
             this.grid[9][f] = new Piece(BLACK, firstRank[f]);
         }
-        // Rank 9 (Qora piyodalar)
-        for (let f = 0; f < 10; f++) {
-            this.grid[8][f] = new Piece(BLACK, PIECE_PAWN);
-        }
+        this.enPassantTargets = [];
+        this.enPassantPawnSq = null;
+        this.epHistory = [];
     }
 
     isInside(f, r) {
@@ -111,9 +114,7 @@ export class Board {
         return null;
     }
 
-    // ================================================================
-    // 5. NUR FIGURASI YURISHLARI (getNurLegalMoves / getNurPseudoMoves)
-    // ================================================================
+    // 5. NUR FIGURASI YURISHLARI
     getNurPseudoMoves(f, r, color) {
         const moves = [];
         const piece = this.grid[r][f];
@@ -131,17 +132,13 @@ export class Board {
                     moves.push(new Move([f, r], [nf, nr], piece, null));
                 } else if (target.color !== color) {
                     moves.push(new Move([f, r], [nf, nr], piece, target));
-                } else {
-                    // O'z figurasi ustiga qo'na olmaydi, lekin undan sakrab keyingi katakka o'ta oladi
                 }
             }
         }
         return moves;
     }
 
-    // ================================================================
-    // 6. PIYODA YURISHLARI (1, 2 yoki 3 katak oldinga, promotion)
-    // ================================================================
+    // 6. PIYODA YURISHLARI (1-3 katak o'z hududida, En Passant, Promotion)
     getPawnPseudoMoves(f, r, color) {
         const moves = [];
         const piece = this.grid[r][f];
@@ -151,9 +148,6 @@ export class Board {
         const promotionRank = color === WHITE ? 9 : 0;
         const promoPieces = [PIECE_QUEEN, PIECE_NUR, PIECE_ROOK, PIECE_BISHOP, PIECE_KNIGHT];
 
-        // Nur Shaxmat 100 qoidasi:
-        // Piyoda o'z hududida chegaragacha xohishiga ko'ra 1, 2 yoki 3 katak yura oladi.
-        // Raqib hududiga o'tgach (va chegaradan boshlab) FAQAT 1 katakdan yuradi!
         let maxForward = 1;
         if (color === WHITE) {
             if (r >= 1 && r <= 3) {
@@ -169,7 +163,7 @@ export class Board {
         for (let dist = 1; dist <= maxForward; dist++) {
             const nr = r + direction * dist;
             if (!this.isInside(f, nr)) break;
-            if (this.grid[nr][f] !== null) break; // Yo'l to'silgan
+            if (this.grid[nr][f] !== null) break;
 
             if (nr === promotionRank) {
                 for (const promo of promoPieces) {
@@ -180,19 +174,28 @@ export class Board {
             }
         }
 
-        // Urish (diagonal)
+        // Diagonal urish va O'tishda urib olish (En Passant)
         for (const df of [-1, 1]) {
             const nf = f + df;
             const nr = r + direction;
-            if (this.isInside(nf, nr)) {
-                const target = this.grid[nr][nf];
-                if (target && target.color !== color) {
-                    if (nr === promotionRank) {
-                        for (const promo of promoPieces) {
-                            moves.push(new Move([f, r], [nf, nr], piece, target, promo));
-                        }
-                    } else {
-                        moves.push(new Move([f, r], [nf, nr], piece, target));
+            if (!this.isInside(nf, nr)) continue;
+
+            const target = this.grid[nr][nf];
+            if (target && target.color !== color) {
+                if (nr === promotionRank) {
+                    for (const promo of promoPieces) {
+                        moves.push(new Move([f, r], [nf, nr], piece, target, promo));
+                    }
+                } else {
+                    moves.push(new Move([f, r], [nf, nr], piece, target));
+                }
+            } else if (!target && this.enPassantPawnSq && this.enPassantTargets && this.enPassantTargets.length > 0) {
+                const isEp = this.enPassantTargets.some(ep => ep[0] === nf && ep[1] === nr);
+                if (isEp) {
+                    const [epF, epR] = this.enPassantPawnSq;
+                    const epPawn = this.grid[epR] ? this.grid[epR][epF] : null;
+                    if (epPawn && epPawn.color !== color && epPawn.type === PIECE_PAWN) {
+                        moves.push(new Move([f, r], [nf, nr], piece, epPawn, null, null, true, [epF, epR]));
                     }
                 }
             }
@@ -277,12 +280,7 @@ export class Board {
         return moves;
     }
 
-    // ================================================================
     // 7. ROKIROVKA — 3 XIL
-    // 1. Qisqa: Shoh E(4)->C(2), Rux A(0)->N(3)
-    // 2. Uzun: Shoh E(4)->G(8), Rux H(9)->F(7)
-    // 3. O'rta: Shoh E(4)->M(6), Rux H(9)->D(5)
-    // ================================================================
     getCastlingMoves(color) {
         const moves = [];
         const rights = this.castlingRights[color];
@@ -294,7 +292,7 @@ export class Board {
 
         if (this.isSquareAttacked(4, rank, color)) return moves;
 
-        // 1. Qisqa rokirovka
+        // 1. Qisqa rokirovka (0-0): E->C, Rux A->N
         if (!rights.R_A_moved) {
             const rookA = this.grid[rank][0];
             if (rookA && rookA.color === color && rookA.type === PIECE_ROOK) {
@@ -319,7 +317,7 @@ export class Board {
                 const gEmpty = this.grid[rank][8] === null;
 
                 if (dEmpty && mEmpty && fEmpty && gEmpty) {
-                    // 2. Uzun rokirovka: Shoh E(4)->G(8), Rux H(9)->F(7)
+                    // 2. Uzun rokirovka (0-0-0): Shoh E(4)->G(8), Rux H(9)->F(7)
                     if (!this.isSquareAttacked(5, rank, color) &&
                         !this.isSquareAttacked(6, rank, color) &&
                         !this.isSquareAttacked(7, rank, color) &&
@@ -327,7 +325,7 @@ export class Board {
                         moves.push(new Move([4, rank], [8, rank], king, null, null, 'long'));
                     }
 
-                    // 3. O'rta rokirovka: Shoh E(4)->M(6), Rux H(9)->D(5)
+                    // 3. O'rta rokirovka (-0-0-): Shoh E(4)->M(6), Rux H(9)->D(5)
                     if (!this.isSquareAttacked(5, rank, color) &&
                         !this.isSquareAttacked(6, rank, color)) {
                         moves.push(new Move([4, rank], [6, rank], king, null, null, 'middle'));
@@ -443,7 +441,16 @@ export class Board {
         const piece = this.grid[fr][ff];
         const color = piece.color;
 
+        // Save previous En Passant state for undoMove
+        this.epHistory.push({
+            targets: this.enPassantTargets,
+            pawnSq: this.enPassantPawnSq
+        });
         this.moveHistory.push(move);
+
+        // Reset En Passant for next turn unless current move is a 2-3 square pawn advance
+        this.enPassantTargets = [];
+        this.enPassantPawnSq = null;
 
         if (move.castlingType) {
             const rank = fr;
@@ -469,6 +476,10 @@ export class Board {
                 this.castlingRights[color].R_H_moved = true;
             }
         } else {
+            if (move.isEnPassant && move.epCaptureSq) {
+                this.grid[move.epCaptureSq[1]][move.epCaptureSq[0]] = null;
+            }
+
             this.grid[fr][ff] = null;
             if (move.promotion) {
                 this.grid[tr][tf] = new Piece(color, move.promotion);
@@ -476,7 +487,18 @@ export class Board {
                 this.grid[tr][tf] = piece;
             }
 
-            if (piece.type === PIECE_KING) {
+            if (piece.type === PIECE_PAWN) {
+                const rankDiff = Math.abs(tr - fr);
+                if (rankDiff >= 2) {
+                    const dir = color === WHITE ? 1 : -1;
+                    const newTargets = [];
+                    for (let step = 1; step < rankDiff; step++) {
+                        newTargets.push([ff, fr + dir * step]);
+                    }
+                    this.enPassantTargets = newTargets;
+                    this.enPassantPawnSq = [tf, tr];
+                }
+            } else if (piece.type === PIECE_KING) {
                 this.castlingRights[color].K_moved = true;
             } else if (piece.type === PIECE_ROOK) {
                 if (fr === 0 && ff === 0 && color === WHITE) this.castlingRights[WHITE].R_A_moved = true;
@@ -499,12 +521,20 @@ export class Board {
     undoMove(savedRights) {
         if (this.moveHistory.length === 0) return;
         const move = this.moveHistory.pop();
+        const prevEp = this.epHistory.pop();
         const [ff, fr] = move.fromSq;
         const [tf, tr] = move.toSq;
         const color = move.piece.color;
 
         this.turn = color;
         this.castlingRights = savedRights;
+        if (prevEp) {
+            this.enPassantTargets = prevEp.targets;
+            this.enPassantPawnSq = prevEp.pawnSq;
+        } else {
+            this.enPassantTargets = [];
+            this.enPassantPawnSq = null;
+        }
 
         if (move.castlingType) {
             const rank = fr;
@@ -523,6 +553,10 @@ export class Board {
                 this.grid[rank][5] = null;
                 this.grid[rank][9] = rook;
             }
+        } else if (move.isEnPassant && move.epCaptureSq) {
+            this.grid[tr][tf] = null;
+            this.grid[fr][ff] = move.piece;
+            this.grid[move.epCaptureSq[1]][move.epCaptureSq[0]] = move.captured;
         } else {
             this.grid[tr][tf] = move.captured;
             this.grid[fr][ff] = move.piece;

@@ -133,6 +133,10 @@ export function loadSavedActiveMatch(): SavedMatchSession | null {
     const raw = localStorage.getItem(ACTIVE_MATCH_KEY);
     if (!raw) return null;
     const data: SavedMatchSession = JSON.parse(raw);
+    if (data?.gameMode === 'aiVsAi') {
+      localStorage.removeItem(ACTIVE_MATCH_KEY);
+      return null;
+    }
     if (
       data &&
       data.game &&
@@ -140,7 +144,6 @@ export function loadSavedActiveMatch(): SavedMatchSession | null {
       Array.isArray(data.game.board) &&
       (data.game.moveHistory?.length || 0) > 0
     ) {
-      // 14 kundan eski bo'lmagan o'yinlarni tiklaymiz
       if (data.savedAt && Date.now() - data.savedAt > 14 * 24 * 3600 * 1000) {
         localStorage.removeItem(ACTIVE_MATCH_KEY);
         return null;
@@ -153,13 +156,22 @@ export function loadSavedActiveMatch(): SavedMatchSession | null {
 
 export function saveActiveMatch(state: AppState): void {
   try {
+    if (state.gameMode === 'aiVsAi') {
+      localStorage.removeItem(ACTIVE_MATCH_KEY);
+      return;
+    }
     if (
       (state.game.status === 'playing' || state.game.status === 'check') &&
       (state.game.moveHistory?.length || 0) > 0
     ) {
+      // Faqat oxirgi 12 ta holatni yengil qilib saqlaymiz (har yurishda JSON.stringify qotmasligi uchun!)
+      const compactHistory = (state.history || []).slice(-12).map((h) => ({
+        ...h,
+        positionHistory: [],
+      }));
       const session: SavedMatchSession = {
         game: state.game,
-        history: state.history || [],
+        history: compactHistory,
         gameMode: state.gameMode,
         aiColor: state.aiColor,
         aiDepth: state.aiDepth,
@@ -969,8 +981,12 @@ const GameContext = createContext<GameContextType | null>(null);
 export function GameProvider({ children }: { children: React.ReactNode }) {
   const [state, dispatch] = useReducer(gameReducer, undefined, createInitialAppState);
 
-  // O'yin davomida har bir yurish va holatni avtomatik xotiraga saqlash
+  // O'yin davomida faqat yurish bo'lganda yoki holat o'zgarganda saqlash (taymer har soniyada qotmasligi uchun!)
   useEffect(() => {
+    if (state.gameMode === 'aiVsAi') {
+      clearActiveMatch();
+      return;
+    }
     if (
       (state.game.status === 'playing' || state.game.status === 'check') &&
       (state.game.moveHistory?.length || 0) > 0
@@ -979,7 +995,7 @@ export function GameProvider({ children }: { children: React.ReactNode }) {
     } else if (state.game.status !== 'playing' && state.game.status !== 'check') {
       clearActiveMatch();
     }
-  }, [state]);
+  }, [state.game.moveHistory.length, state.game.status, state.gameMode]);
 
   // Telifon ekrani o'chganda (lock screen), boshqa ilovaga o'tganda yoki tab yopilganda zudlik bilan saqlash
   useEffect(() => {

@@ -67,7 +67,7 @@ export function evaluateBoard(board, aiLevel = 3) {
                     } else {
                         let isPassed = true;
                         for (let adjF = Math.max(0, f - 1); adjF <= Math.min(9, f + 1); adjF++) {
-                            if (blackPawnFiles[adjF] < r) {
+                            if (whitePawnFiles[adjF] < r && whitePawnFiles[adjF] > -1) {
                                 isPassed = false;
                                 break;
                             }

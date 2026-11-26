@@ -6,7 +6,7 @@ import React, { useState, useEffect } from 'react';
 import { useGame, clearActiveMatch } from '../store/gameStore';
 import { saveGameResult } from '../services/dbService';
 
-import { recordGameFinished, saveRecentGame, getRecentGames, RecentGame } from '../store/userProfileStore';
+import { recordGameFinished, saveRecentGame, getRecentGames, getUserProfile, RecentGame } from '../store/userProfileStore';
 import { onlineManager } from '../services/onlineService';
 import { useTranslation } from '../i18n/translations';
 
@@ -43,6 +43,12 @@ export default function GameOverModal({ onExit, isOpen, onClose }: GameOverModal
 
   useEffect(() => {
     if (status !== 'playing' && status !== 'check' && !saved) {
+      // Bot vs Bot (2 ta bot o'zaro o'ynaganda) natija hech qayerga yozib olinmaydi!
+      if (gameMode === 'aiVsAi') {
+        setSaved(true);
+        return;
+      }
+
       let winnerName = 'Durang';
       if (status === 'checkmate') {
         winnerName = game.currentTurn === 'white' ? 'Qora' : 'Oq';
@@ -52,65 +58,71 @@ export default function GameOverModal({ onExit, isOpen, onClose }: GameOverModal
         winnerName = 'Oq';
       }
 
-      const whiteName = gameMode === 'aiVsAi' ? `Oq Bot (D-${aiWhiteDepth})` : 'Oq O\'yinchi';
-      const blackName =
-        gameMode === 'aiVsAi'
-          ? `Qora Bot (D-${aiBlackDepth})`
+      const myProfile = getUserProfile();
+      const myName = myProfile.name || "O'yinchi";
+      const isPlayerWhite = gameMode === 'online' ? onlinePlayerColor === 'white' : gameMode === 'vsAI' ? aiColor !== 'white' : !state.isFlipped;
+
+      const whiteName =
+        gameMode === 'online'
+          ? isPlayerWhite ? myName : (onlineManager.opponentName || 'Raqib')
           : gameMode === 'vsAI'
-          ? `AI (Daraja: ${aiDepth})`
-          : 'Qora O\'yinchi';
+          ? isPlayerWhite ? myName : `Nur Bot (D-${aiDepth})`
+          : "Oq O'yinchi";
+
+      const blackName =
+        gameMode === 'online'
+          ? !isPlayerWhite ? myName : (onlineManager.opponentName || 'Raqib')
+          : gameMode === 'vsAI'
+          ? !isPlayerWhite ? myName : `Nur Bot (D-${aiDepth})`
+          : "Qora O'yinchi";
 
       saveGameResult({
         white_player: whiteName,
         black_player: blackName,
         winner: winnerName,
-        game_mode: gameMode === 'aiVsAi' ? 'Bot vs Bot' : gameMode === 'vsAI' ? 'vs AI' : gameMode === 'online' ? 'Online' : '2 Kishi',
+        game_mode: gameMode === 'vsAI' ? 'vs AI' : gameMode === 'online' ? 'Online' : '2 Kishi',
         total_moves: Math.ceil(moveHistory.length / 2),
         status,
       }).then(() => {
         setSaved(true);
       });
 
-      // Profil statistikasini faqat haqiqiy o'yinchi rejimlarida yangilash
-      if (gameMode !== 'aiVsAi') {
-        const isPlayerWhite = gameMode === 'online' ? onlinePlayerColor === 'white' : !state.isFlipped;
-        let userResult: 'win' | 'loss' | 'draw' = 'draw';
-        if (winnerName === 'Durang') {
-          userResult = 'draw';
-        } else {
-          const isWinnerPlayer = (winnerName === 'Oq' && isPlayerWhite) || (winnerName === 'Qora' && !isPlayerWhite);
-          userResult = isWinnerPlayer ? 'win' : 'loss';
-        }
-
-        const AI_LEVEL_RATINGS = [0, 1000, 1400, 1800, 2200];
-        const oppRating = gameMode === 'online'
-          ? (onlineManager.opponentRating || 1200)
-          : (AI_LEVEL_RATINGS[aiDepth] || 1400);
-
-        const updatedProfile = recordGameFinished(userResult, gameMode === 'online', oppRating);
-        setRatingInfo({
-          newRating: updatedProfile.rating,
-          delta: updatedProfile.deltaRating,
-        });
-
-        const opponentTitle = gameMode === 'vsAI'
-          ? `AI Bot (${aiDepth}-daraja)`
-          : gameMode === 'online'
-          ? `${onlineManager.opponentName || 'Raqib'} (${oppRating})`
-          : `Doʻst bilan (PVP)`;
-
-        const updated = saveRecentGame({
-          result: userResult,
-          opponent: opponentTitle,
-          gameMode,
-          myColor: isPlayerWhite ? 'white' : 'black',
-          totalMoves: Math.ceil(moveHistory.length / 2),
-          reason: status === 'checkmate' ? 'Mot' : status.includes('left') ? 'Raqib chiqib ketdi' : status.includes('resigned') ? 'Taslim' : status.includes('timeout') ? 'Vaqt' : 'Durang',
-        });
-        setRecentGames(updated);
+      let userResult: 'win' | 'loss' | 'draw' = 'draw';
+      if (winnerName === 'Durang') {
+        userResult = 'draw';
+      } else {
+        const isWinnerPlayer = (winnerName === 'Oq' && isPlayerWhite) || (winnerName === 'Qora' && !isPlayerWhite);
+        userResult = isWinnerPlayer ? 'win' : 'loss';
       }
+
+      const AI_LEVEL_RATINGS = [0, 1000, 1400, 1800, 2200];
+      const oppRating = gameMode === 'online'
+        ? (onlineManager.opponentRating || 1200)
+        : (AI_LEVEL_RATINGS[aiDepth] || 1400);
+
+      const updatedProfile = recordGameFinished(userResult, gameMode === 'online', oppRating);
+      setRatingInfo({
+        newRating: updatedProfile.rating,
+        delta: updatedProfile.deltaRating,
+      });
+
+      const opponentTitle = gameMode === 'vsAI'
+        ? `Nur Bot (${aiDepth}-daraja)`
+        : gameMode === 'online'
+        ? `${onlineManager.opponentName || 'Raqib'} (${oppRating})`
+        : `Doʻst bilan (PVP)`;
+
+      const updated = saveRecentGame({
+        result: userResult,
+        opponent: opponentTitle,
+        gameMode,
+        myColor: isPlayerWhite ? 'white' : 'black',
+        totalMoves: Math.ceil(moveHistory.length / 2),
+        reason: status === 'checkmate' ? 'Mot' : status.includes('left') ? 'Raqib chiqib ketdi' : status.includes('resigned') ? 'Taslim' : status.includes('timeout') ? 'Vaqt' : 'Durang',
+      });
+      setRecentGames(updated);
     }
-  }, [status, saved, game.currentTurn, gameMode, aiDepth, aiWhiteDepth, aiBlackDepth, moveHistory.length, onlinePlayerColor, state.isFlipped, roomCode]);
+  }, [status, saved, game.currentTurn, gameMode, aiColor, aiDepth, aiWhiteDepth, aiBlackDepth, moveHistory.length, onlinePlayerColor, state.isFlipped, roomCode]);
 
   // O'yin davom etayotgan bo'lsa yoki modal vaqtincha yopilgan bo'lsa
   if (status === 'playing' || status === 'check' || (isOpen !== undefined ? !isOpen : dismissed)) {
@@ -297,8 +309,8 @@ export default function GameOverModal({ onExit, isOpen, onClose }: GameOverModal
           </div>
         </div>
 
-        {/* Oxirgi 5 ta o'yin natijalari */}
-        {recentGames.length > 0 && (
+        {/* Oxirgi 5 ta o'yin natijalari (Bot vs Bot rejimida ko'rsatilmaydi) */}
+        {gameMode !== 'aiVsAi' && recentGames.length > 0 && (
           <div className="mb-4 landscape:hidden p-2.5 bg-[#181715] rounded-xl border border-[#383531]">
             <div className="text-[10px] text-[#9b9893] font-bold uppercase tracking-wider mb-1.5 flex items-center justify-between px-1">
               <span>{t('recent_games_label')}</span>

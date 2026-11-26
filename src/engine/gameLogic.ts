@@ -1,9 +1,9 @@
 // =====================================================
-// NUR SHAXMAT 100 — O'yin mantiqiy qoidalari
+// NUR SHAXMAT 100 — O'yin mantiqiy qoidalari (Kitob bo'yicha)
 // =====================================================
 
 import { GameState, Move, Piece, PieceType, Square, Color, squaresEqual } from './types';
-import { cloneBoard, getPiece, setPiece } from './board';
+import { setPiece } from './board';
 import { getAllLegalMoves, applyMoveToBoard, isInCheck, enemy, getLegalMoves, hasAnyLegalMove } from './moveGenerator';
 import { updateCastlingRights, getCastlingMoves } from './castling';
 import { generateMoveNotation } from './notation';
@@ -16,76 +16,123 @@ export function applyMove(state: GameState, move: Move): GameState {
   // Rokirovka huquqlarini yangilash
   const newCastlingRights = updateCastlingRights(state.castlingRights, move);
 
-  // Yo'lda olish maqsadini yangilash
+  // Yo'lda olish (En Passant) maqsadlarini yangilash:
+  // Piyoda 2 yoki 3 qadam oldinga siljiganda, u kesib o'tgan BARCHA oraliq kataklar
+  // (masalan Qora 9->6 yurganda 8- va 7-qator kataklari; Oq 2->5 yurganda 3- va 4-qator kataklari)
+  // raqib piyodasi tomonidan o'tishda urib olinishi mumkin!
   let newEnPassantTarget: Square | null = null;
+  let newEnPassantTargets: Square[] = [];
   let newEnPassantPawnSquare: Square | null = null;
 
   if (move.piece.type === 'Pawn') {
     const rankDiff = Math.abs(move.to.rank - move.from.rank);
     if (rankDiff >= 2) {
-      // Piyoda 2 yoki 3 qadam o'tdi — yo'lda olish mumkin
-      // Har bir o'tilgan kvadrat maqsad bo'lishi mumkin
-      // Faqat to'g'ridan-to'g'ri o'tib ketilgan kvadratlar
       const dir = move.piece.color === 'white' ? 1 : -1;
-      // Bir nechta maqsad: 2 qadam o'tganda — 1 maqsad, 3 qadam o'tganda — 2 maqsad
-      // Soddalik uchun oxirgi kvadrat oldidagini maqsad qilamiz
-      // En passant: dushman piyodasi maqsad kvadratda emas, raqib piyodaning yonida turadi
-      // Maqsad: piyodaning o'tib ketgan kvadrati (oxirgi harakatdan 1 qadam oldin)
-      newEnPassantTarget = { file: move.from.file, rank: move.to.rank - dir };
-      // Agar 3 qadam bo'lsa, yana bir maqsad
-      if (rankDiff === 3) {
-        // Ikki maqsad kvadrat bor, lekin faqat bittasini saqlaymiz
-        // (murakkablikdan qochish uchun oxirgisini saqlaymiz)
-        newEnPassantTarget = { file: move.from.file, rank: move.to.rank - dir };
+      for (let step = 1; step < rankDiff; step++) {
+        newEnPassantTargets.push({
+          file: move.from.file,
+          rank: move.from.rank + dir * step,
+        });
       }
+      newEnPassantTarget = newEnPassantTargets[newEnPassantTargets.length - 1] || null;
       newEnPassantPawnSquare = move.to;
     }
   }
 
-  // Yutib olingan donni qo'shish
+  // Yutib olingan donani qo'shish (oddiy urish hamda o'tishda urib olish uchun)
   const newCapturedByWhite = [...state.capturedByWhite];
   const newCapturedByBlack = [...state.capturedByBlack];
-  if (move.capturedPiece) {
+  const captured =
+    move.capturedPiece ||
+    (move.isEnPassant && move.enPassantCaptureSquare
+      ? state.board[move.enPassantCaptureSquare.rank]?.[move.enPassantCaptureSquare.file] || undefined
+      : undefined);
+
+  if (captured) {
     if (state.currentTurn === 'white') {
-      newCapturedByWhite.push(move.capturedPiece);
+      newCapturedByWhite.push(captured);
     } else {
-      newCapturedByBlack.push(move.capturedPiece);
+      newCapturedByBlack.push(captured);
     }
   }
 
-  // Aylantirish: darhol qo'llamiz (modal orqali)
+  // Aylantirish: darhol qo'llaymiz
   if (move.isPromotion && move.promotionPiece) {
     const promSquare = move.to;
     const promotedPiece: Piece = {
       ...move.piece,
       type: move.promotionPiece,
-      id: `${move.promotionPiece}-${move.piece.color}-promo-${Date.now()}`
+      id: `${move.promotionPiece}-${move.piece.color}-promo-${state.moveHistory.length}-${promSquare.file}`
     };
     setPiece(newBoard, promSquare, promotedPiece);
   }
 
   const nextTurn: Color = enemy(state.currentTurn);
-  const halfMoveClock = (move.piece.type === 'Pawn' || move.capturedPiece)
+  const halfMoveClock = (move.piece.type === 'Pawn' || captured)
     ? 0 : state.halfMoveClock + 1;
   const fullMoveNumber = state.currentTurn === 'black'
     ? state.fullMoveNumber + 1 : state.fullMoveNumber;
 
-  // Notatsiya
-  const notation = generateMoveNotation(state, move);
-  const moveWithNotation = { ...move, notation };
+  // Keyingi tomon shah ostida qolganini va yurishlari borligini tekshirish
+  const nextIsInCheck = isInCheck(newBoard, nextTurn);
 
-  const newMoveHistory = [...state.moveHistory, moveWithNotation];
-
-  // Pozitsiya xeshini hisoblash (uch marta takrorlash uchun)
-  const posHash = generatePositionHash(newBoard, nextTurn, newCastlingRights, newEnPassantTarget);
-  const newPositionHistory = [...state.positionHistory, posHash];
-
-  // Yangi holat
-  const newState: GameState = {
+  // Vaqtincha keyingi holat (qonuniy yurishlar bor-yo'qligini aniqlash uchun)
+  const tempState: GameState = {
     board: newBoard,
     currentTurn: nextTurn,
     castlingRights: newCastlingRights,
     enPassantTarget: newEnPassantTarget,
+    enPassantTargets: newEnPassantTargets,
+    enPassantPawnSquare: newEnPassantPawnSquare,
+    halfMoveClock,
+    fullMoveNumber,
+    capturedByWhite: newCapturedByWhite,
+    capturedByBlack: newCapturedByBlack,
+    moveHistory: state.moveHistory,
+    positionHistory: state.positionHistory,
+    status: 'playing',
+    promotionPending: null,
+    lastMove: move,
+    isInCheck: nextIsInCheck,
+  };
+
+  const hasMoves = hasAnyLegalMove(tempState) || getCastlingMoves(tempState).length > 0;
+  let finalStatus: GameState['status'] = 'playing';
+  if (!hasMoves) {
+    finalStatus = nextIsInCheck ? 'checkmate' : 'stalemate';
+  } else if (nextIsInCheck) {
+    finalStatus = 'check';
+  }
+
+  // Notatsiya (+ shah, X mot belgilari bilan)
+  let notation = generateMoveNotation(state, { ...move, capturedPiece: captured });
+  if (finalStatus === 'checkmate') {
+    notation += 'X';
+  } else if (nextIsInCheck) {
+    notation += '+';
+  }
+  const moveWithNotation: Move = { ...move, capturedPiece: captured, notation };
+  const newMoveHistory = [...state.moveHistory, moveWithNotation];
+
+  // Pozitsiya xeshini hisoblash (uch marta takrorlash uchun)
+  const posHash = generatePositionHash(newBoard, nextTurn, newCastlingRights, newEnPassantTargets);
+  const newPositionHistory = [...state.positionHistory, posHash];
+
+  if (finalStatus === 'playing' || finalStatus === 'check') {
+    const posCount = newPositionHistory.filter(h => h === posHash).length;
+    if (posCount >= 3) {
+      finalStatus = 'draw_repetition';
+    } else if (halfMoveClock >= 100) {
+      finalStatus = 'draw_50move';
+    }
+  }
+
+  return {
+    board: newBoard,
+    currentTurn: nextTurn,
+    castlingRights: newCastlingRights,
+    enPassantTarget: newEnPassantTarget,
+    enPassantTargets: newEnPassantTargets,
     enPassantPawnSquare: newEnPassantPawnSquare,
     halfMoveClock,
     fullMoveNumber,
@@ -93,41 +140,11 @@ export function applyMove(state: GameState, move: Move): GameState {
     capturedByBlack: newCapturedByBlack,
     moveHistory: newMoveHistory,
     positionHistory: newPositionHistory,
-    status: 'playing',
+    status: finalStatus,
     promotionPending: null,
     lastMove: moveWithNotation,
-    isInCheck: false,
+    isInCheck: nextIsInCheck,
   };
-
-  // O'yin holatini tekshirish
-  newState.isInCheck = isInCheck(newBoard, nextTurn);
-
-  // Uch marta takrorlash
-  const posCount = newPositionHistory.filter(h => h === posHash).length;
-  if (posCount >= 3) {
-    newState.status = 'draw_repetition';
-    return newState;
-  }
-
-  // 50 ta harakatli qoida
-  if (halfMoveClock >= 100) {
-    newState.status = 'draw_50move';
-    return newState;
-  }
-
-  // Shohmat va pat (Tezkor tekshiruv - barcha harakatlarni hisoblamasdan darhol qaytadi)
-  const hasMoves = hasAnyLegalMove(newState) || getCastlingMoves(newState).length > 0;
-  if (!hasMoves) {
-    if (newState.isInCheck) {
-      newState.status = 'checkmate';
-    } else {
-      newState.status = 'stalemate';
-    }
-  } else if (newState.isInCheck) {
-    newState.status = 'check';
-  }
-
-  return newState;
 }
 
 function getAllLegalMovesForState(state: GameState): Move[] {
@@ -152,7 +169,7 @@ export function generatePositionHash(
   board: GameState['board'],
   turn: Color,
   castling: GameState['castlingRights'],
-  enPassant: Square | null
+  enPassant: Square | Square[] | null
 ): string {
   let hash = turn[0];
   for (let r = 0; r < 10; r++) {
@@ -167,14 +184,19 @@ export function generatePositionHash(
   }
   const c = castling;
   hash += `${+c.whiteShort}${+c.whiteMedium}${+c.whiteLong}${+c.blackShort}${+c.blackMedium}${+c.blackLong}`;
-  if (enPassant) hash += `ep${enPassant.file}${enPassant.rank}`;
+  if (Array.isArray(enPassant)) {
+    for (const ep of enPassant) {
+      hash += `ep${ep.file}${ep.rank}`;
+    }
+  } else if (enPassant) {
+    hash += `ep${enPassant.file}${enPassant.rank}`;
+  }
   return hash;
 }
 
 // ── Moddiy balans ─────────────────────────────────────
 
 export function getMaterialBalance(state: GameState): number {
-  // Musbat = Oq ustunligi, Manfiy = Qora ustunligi
   const values: Partial<Record<PieceType, number>> = {
     Queen: 9, Nur: 7, Rook: 5, Bishop: 3, Knight: 3, Pawn: 1
   };
@@ -190,6 +212,6 @@ export function getMaterialBalance(state: GameState): number {
 
 // ── O'tgan harakatni bekor qilish ────────────────────
 
-export function undoMove(state: GameState, previousState: GameState): GameState {
+export function undoMove(_state: GameState, previousState: GameState): GameState {
   return previousState;
 }

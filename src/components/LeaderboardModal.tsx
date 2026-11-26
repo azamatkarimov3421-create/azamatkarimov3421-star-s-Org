@@ -3,7 +3,7 @@
 // =====================================================
 
 import React, { useEffect, useState, useMemo } from 'react';
-import { GameRecord, getGameHistory } from '../services/dbService';
+import { GameRecord, getGameHistory, isBotVsBotRecord } from '../services/dbService';
 import { isSupabaseConfigured } from '../lib/supabase';
 import { useTranslation } from '../i18n/translations';
 import { getUserProfile } from '../store/userProfileStore';
@@ -37,25 +37,30 @@ export default function LeaderboardModal({ isOpen, onClose }: LeaderboardModalPr
     }
   }, [isOpen]);
 
-  // Faqat g'alaba va mag'lubiyat bilan yakunlangan o'yinlar (duranglar butunlay chiqarib tashlanadi)
+  // Faqat g'alaba va mag'lubiyat bilan yakunlangan o'yinlar (duranglar va Bot vs Bot butunlay chiqarib tashlanadi)
   const wonLostMatches = useMemo(() => {
-    return history.filter((item) => item.winner === 'Oq' || item.winner === 'Qora');
+    return history.filter(
+      (item) =>
+        !isBotVsBotRecord(item) &&
+        (item.winner === 'Oq' || item.winner === 'Qora')
+    );
   }, [history]);
 
-  // Har bir o'yinchining Yutgan va Yutqazgan hisobi
+  // Har bir haqiqiy o'yinchining Yutgan va Yutqazgan hisobi (Botlar peshqadamlar jadvaliga kirmaydi!)
   const playerRankings = useMemo<PlayerStats[]>(() => {
     const statsMap: Record<string, { wins: number; losses: number }> = {};
+    const isBotName = (n: string) => /^(Oq Bot|Qora Bot|AI \(Daraja|Nur Bot)/i.test(n.trim());
 
     // 1. Bazadagi o'yinlardan yutgan va yutqazganlarni jamlash
     wonLostMatches.forEach((item) => {
       const winnerName = item.winner === 'Oq' ? item.white_player : item.black_player;
       const loserName = item.winner === 'Oq' ? item.black_player : item.white_player;
 
-      if (winnerName) {
+      if (winnerName && !isBotName(winnerName)) {
         if (!statsMap[winnerName]) statsMap[winnerName] = { wins: 0, losses: 0 };
         statsMap[winnerName].wins += 1;
       }
-      if (loserName) {
+      if (loserName && !isBotName(loserName)) {
         if (!statsMap[loserName]) statsMap[loserName] = { wins: 0, losses: 0 };
         statsMap[loserName].losses += 1;
       }
