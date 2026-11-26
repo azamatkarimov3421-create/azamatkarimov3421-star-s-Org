@@ -235,13 +235,7 @@ html.theme-light .nur-glass-card:hover {
   box-shadow: 0 24px 64px rgba(0, 0, 0, 0.65);
 }
 
-html.theme-light .nur-glass-modal {
-  background: rgba(255, 255, 255, 0.95);
-  backdrop-filter: blur(26px) saturate(140%);
-  -webkit-backdrop-filter: blur(26px) saturate(140%);
-  border: 1px solid rgba(24, 24, 27, 0.10);
-  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.14);
-}
+/* Modallar har doim yuqori kontrastli to'q grafit shisha ko'rinishida qoladi */
 
 [data-platform="apk"] .backdrop-blur-sm,
 [data-platform="apk"] .backdrop-blur-md,
