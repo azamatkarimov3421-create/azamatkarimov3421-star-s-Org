@@ -191,19 +191,17 @@ export default function HomeScreen({
                 </div>
               )}
 
-              {!isAndroidApk && (
-                <button
-                  onClick={toggleQuickTheme}
-                  className={`w-9 h-9 rounded-xl border flex items-center justify-center transition-colors cursor-pointer ${
-                    isLight
-                      ? 'bg-white/75 hover:bg-white border-black/10 text-stone-800'
-                      : 'bg-white/[0.08] hover:bg-white/[0.16] border-white/15 text-amber-300'
-                  }`}
-                  title={isLight ? 'Tungi rejim' : 'Kunduzgi rejim'}
-                >
-                  {isLight ? <MoonIcon size={16} /> : <SunIcon size={16} />}
-                </button>
-              )}
+              <button
+                onClick={toggleQuickTheme}
+                className={`w-9 h-9 rounded-xl border flex items-center justify-center transition-colors cursor-pointer ${
+                  isLight
+                    ? 'bg-white/75 hover:bg-white border-black/10 text-stone-800'
+                    : 'bg-white/[0.08] hover:bg-white/[0.16] border-white/15 text-amber-300'
+                }`}
+                title={isLight ? 'Tungi rejim' : 'Kunduzgi rejim'}
+              >
+                {isLight ? <MoonIcon size={16} /> : <SunIcon size={16} />}
+              </button>
 
               <button
                 onClick={onOpenStats}
@@ -374,28 +372,26 @@ export default function HomeScreen({
             {/* 1. Asosiy O'yin Karti (Kompyuter bilan) */}
             <div className="p-4 sm:p-5 rounded-[1.5rem] nur-glass-surface flex flex-col gap-3.5">
               {/* Daraja tanlash — 4 ta qulay tugma */}
-              {!isAndroidApk && (
-                <div className={`grid grid-cols-4 p-1 rounded-2xl gap-1 ${pillTrack}`}>
-                  {DIFFICULTIES.map((opt) => {
-                    const active = state.aiDepth === opt.depth;
-                    return (
-                      <button
-                        key={opt.depth}
-                        type="button"
-                        onClick={() => dispatch({ type: 'SET_AI_DEPTH', depth: opt.depth })}
-                        className={`py-2 px-1 rounded-xl flex flex-col items-center justify-center leading-tight transition-all cursor-pointer ${
-                          active ? pillActive : pillIdle
-                        }`}
-                      >
-                        <span className="text-[12.5px] font-semibold">{opt.label}</span>
-                        <span className="text-[10px] opacity-65 font-mono tabular-nums mt-0.5">
-                          {opt.elo}
-                        </span>
-                      </button>
-                    );
-                  })}
-                </div>
-              )}
+              <div className={`grid grid-cols-4 p-1 rounded-2xl gap-1 ${pillTrack}`}>
+                {DIFFICULTIES.map((opt) => {
+                  const active = state.aiDepth === opt.depth;
+                  return (
+                    <button
+                      key={opt.depth}
+                      type="button"
+                      onClick={() => dispatch({ type: 'SET_AI_DEPTH', depth: opt.depth })}
+                      className={`py-2 px-1 rounded-xl flex flex-col items-center justify-center leading-tight transition-all cursor-pointer ${
+                        active ? pillActive : pillIdle
+                      }`}
+                    >
+                      <span className="text-[12.5px] font-semibold">{opt.label}</span>
+                      <span className="text-[10px] opacity-65 font-mono tabular-nums mt-0.5">
+                        {opt.elo}
+                      </span>
+                    </button>
+                  );
+                })}
+              </div>
 
               {/* Katta O'ynash Tugmasi + Bot sozlamalari */}
               <div className="flex items-stretch gap-2.5">
