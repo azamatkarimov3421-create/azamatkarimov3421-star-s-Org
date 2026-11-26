@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import NurLogo from '../components/NurLogo';
+import HeroPieces3D from '../components/HeroPieces3D';
 import { useGame } from '../store/gameStore';
 import {
   GlobeIcon,
@@ -322,50 +323,11 @@ export default function HomeScreen({
               </div>
 
               {/* Shoh va Nur 3D / 2D Figuralari (Doskasiz toza ko'rinish) */}
-              <div className="w-full py-6 sm:py-10 flex items-center justify-center relative">
+              <div className="w-full py-2 sm:py-4 flex items-center justify-center relative">
                 {state.is3D ? (
-                  <div className="relative flex items-end justify-center gap-4 sm:gap-7">
-                    {/* Tagidagi yumshoq 3D soya ellipsi */}
-                    <div
-                      className={`pointer-events-none absolute -bottom-3 w-64 sm:w-80 h-8 rounded-full blur-xl ${
-                        isLight ? 'bg-stone-900/20' : 'bg-black/65'
-                      }`}
-                    />
-                    <img
-                      src={
-                        homeColorChoice === 'black'
-                          ? '/pieces/3d_nur_black.png'
-                          : '/pieces/3d_nur_white.png'
-                      }
-                      alt="3D Nur"
-                      loading="eager"
-                      decoding="sync"
-                      draggable={false}
-                      className="relative z-10 h-44 sm:h-64 w-auto object-contain select-none transition-transform duration-300 hover:-translate-y-1.5"
-                      style={{
-                        filter: 'drop-shadow(0 20px 24px rgba(0,0,0,0.42))',
-                      }}
-                    />
-                    <img
-                      src={
-                        homeColorChoice === 'black'
-                          ? '/pieces/3d_king_black.png'
-                          : homeColorChoice === 'random'
-                          ? '/pieces/3d_king_black.png'
-                          : '/pieces/3d_king_white.png'
-                      }
-                      alt="3D Shoh"
-                      loading="eager"
-                      decoding="sync"
-                      draggable={false}
-                      className="relative z-10 h-48 sm:h-72 w-auto object-contain select-none transition-transform duration-300 hover:-translate-y-1.5"
-                      style={{
-                        filter: 'drop-shadow(0 22px 26px rgba(0,0,0,0.48))',
-                      }}
-                    />
-                  </div>
+                  <HeroPieces3D colorChoice={homeColorChoice} isLight={isLight} />
                 ) : (
-                  <div className="relative flex items-end justify-center gap-6 sm:gap-10 py-4">
+                  <div className="relative flex items-end justify-center gap-6 sm:gap-10 py-6">
                     <img
                       src={homeColorChoice === 'black' ? '/pieces/bNur.svg' : '/pieces/wNur.svg'}
                       alt="2D Nur"
