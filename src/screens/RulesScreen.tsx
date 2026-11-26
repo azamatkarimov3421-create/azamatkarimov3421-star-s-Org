@@ -19,11 +19,12 @@ import { useGame } from '../store/gameStore';
 
 interface RulesScreenProps {
   onBack: () => void;
+  isAndroidApk?: boolean;
 }
 
 type TabKey = 'basic' | 'pieces' | 'special' | 'openings';
 
-export default function RulesScreen({ onBack }: RulesScreenProps) {
+export default function RulesScreen({ onBack, isAndroidApk = false }: RulesScreenProps) {
   const { state } = useGame();
   const { t } = useTranslation();
   const [activeTab, setActiveTab] = useState<TabKey>('basic');
@@ -392,9 +393,9 @@ export default function RulesScreen({ onBack }: RulesScreenProps) {
   ];
 
   return (
-    <div className={`min-h-screen w-full ${isLight ? 'bg-[#f5f2eb] text-[#1a1917]' : 'bg-[#262421] text-[#f1f1f1]'} flex flex-col font-sans select-none pb-14 max-w-md mx-auto sm:max-w-2xl landscape:max-w-5xl lg:max-w-5xl transition-colors duration-200`}>
+    <div className={`min-h-screen w-full ${!isAndroidApk ? 'bg-transparent' : isLight ? 'bg-[#f5f2eb]' : 'bg-[#262421]'} ${isLight ? 'text-[#1a1917]' : 'text-[#f5f5f4]'} flex flex-col font-sans select-none pb-14 max-w-md mx-auto sm:max-w-3xl landscape:max-w-5xl lg:max-w-5xl transition-colors duration-200`}>
       {/* ── YUQORI SIKLLIK HEADER ── */}
-      <header className={`sticky top-0 z-30 ${isLight ? 'bg-white/95 border-b border-[#e2ddd3]' : 'bg-[#21201d]/95 border-b border-[#383531]'} backdrop-blur-md px-4 py-3 flex items-center gap-3 pt-[max(0.7rem,env(safe-area-inset-top))] transition-colors`}>
+      <header className={`sticky top-0 z-30 ${!isAndroidApk ? 'nur-glass-nav rounded-b-2xl mx-2 sm:mx-4 mt-2' : isLight ? 'bg-white/95 border-b border-[#e2ddd3]' : 'bg-[#21201d]/95 border-b border-[#383531]'} px-4 py-3 flex items-center gap-3 pt-[max(0.7rem,env(safe-area-inset-top))] transition-colors`}>
         <button
           onClick={onBack}
           className={`w-9 h-9 rounded-xl ${isLight ? 'bg-zinc-100 hover:bg-zinc-200 text-zinc-700 hover:text-zinc-950 border border-zinc-200' : 'bg-[#383531] hover:bg-[#45423c] text-[#c3c2be] hover:text-white shadow-[0_2px_0_#21201d]'} flex items-center justify-center transition-all active:scale-95 cursor-pointer`}
@@ -418,7 +419,7 @@ export default function RulesScreen({ onBack }: RulesScreenProps) {
 
       {/* ── 4 TA SEGMENTLI TABLAR ── */}
       <div className="px-4 pt-3.5">
-        <div className={`grid grid-cols-4 ${isLight ? 'bg-white border-[#e2ddd3] shadow-sm' : 'bg-[#21201d] border-[#383531]'} p-1 rounded-xl border gap-1 text-[11px] font-bold transition-colors`}>
+        <div className={`grid grid-cols-4 ${!isAndroidApk ? 'nur-glass-surface' : isLight ? 'bg-white border-[#e2ddd3] shadow-sm' : 'bg-[#21201d] border-[#383531]'} p-1.5 rounded-2xl border gap-1 text-xs font-bold transition-colors`}>
           <button
             onClick={() => setActiveTab('basic')}
             className={`py-2 rounded-lg transition-all cursor-pointer ${

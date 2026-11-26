@@ -33,6 +33,7 @@ import {
 interface SettingsScreenProps {
   onBack: () => void;
   onOpenRules?: () => void;
+  isAndroidApk?: boolean;
 }
 
 // ── Qulay va Chiroyli SVG Ikonkalar ──
@@ -88,7 +89,7 @@ function ToggleSwitch({
   );
 }
 
-export default function SettingsScreen({ onBack, onOpenRules }: SettingsScreenProps) {
+export default function SettingsScreen({ onBack, onOpenRules, isAndroidApk = false }: SettingsScreenProps) {
   const { state, dispatch } = useGame();
   const { boardTheme, soundEnabled, useNumericNotation, is3D, cinemaMode, appTheme } = state;
   const { t, lang: currentLang, setLanguage } = useTranslation();
@@ -116,21 +117,25 @@ export default function SettingsScreen({ onBack, onOpenRules }: SettingsScreenPr
   const currentLangObj = SUPPORTED_LANGUAGES.find((l) => l.code === currentLang) || SUPPORTED_LANGUAGES[0];
 
   // Ranglar sinfi (Light / Dark dinamik dizayn)
-  const cardBg = isLight
+  const cardBg = !isAndroidApk
+    ? 'nur-glass-surface'
+    : isLight
     ? 'bg-white border-2 border-slate-300 shadow-md ring-1 ring-slate-200/60'
     : 'bg-[#201d19]/95 border-[#352f28] shadow-[0_4px_16px_rgba(0,0,0,0.45)]';
-  const cardHover = isLight ? 'hover:bg-slate-50' : 'hover:bg-[#282420]';
+  const cardHover = !isAndroidApk
+    ? isLight ? 'hover:bg-white/60' : 'hover:bg-white/[0.06]'
+    : isLight ? 'hover:bg-slate-50' : 'hover:bg-[#282420]';
   const textTitle = isLight ? 'text-slate-950 font-black' : 'text-white font-bold';
-  const textSub = isLight ? 'text-slate-700 font-semibold' : 'text-[#9b9893] font-medium';
-  const sectionTitle = isLight ? 'text-slate-950 font-black tracking-wider' : 'text-[#a39b8d] font-black uppercase tracking-wider';
+  const textSub = isLight ? 'text-slate-700 font-semibold' : 'text-zinc-300/85 font-medium';
+  const sectionTitle = isLight ? 'text-slate-900 font-black tracking-wider' : 'text-amber-300/90 font-black uppercase tracking-wider';
   const iconBox = isLight
-    ? 'bg-amber-100 border-amber-300 text-amber-950 font-bold'
-    : 'bg-[#2a2520] border-[#3e372f] text-amber-400';
+    ? 'bg-amber-500/15 border-amber-400/50 text-amber-900 font-bold'
+    : 'bg-white/[0.08] border-white/15 text-amber-300';
 
   return (
-    <div className={`min-h-screen w-full relative z-10 ${isLight ? 'bg-[#ede8df]' : 'bg-[#181614]'} flex flex-col font-sans select-none pb-16 transition-colors duration-200`}>
+    <div className={`min-h-screen w-full relative z-10 ${!isAndroidApk ? 'bg-transparent' : isLight ? 'bg-[#ede8df]' : 'bg-[#181614]'} flex flex-col font-sans select-none pb-16 transition-colors duration-200`}>
       {/* ── HEADER ── */}
-      <header className={`sticky top-0 z-30 ${isLight ? 'bg-[#f6f4ee]/95 border-[#e2ddd3]' : 'bg-[#181614]/95 border-[#352f28]'} backdrop-blur-md border-b px-4 sm:px-6 py-3.5 flex items-center justify-between pt-[max(0.7rem,env(safe-area-inset-top))] transition-colors`}>
+      <header className={`sticky top-0 z-30 ${!isAndroidApk ? 'nur-glass-nav border-b border-white/15' : isLight ? 'bg-[#f6f4ee]/95 border-b border-[#e2ddd3]' : 'bg-[#181614]/95 border-b border-[#352f28]'} px-4 sm:px-6 py-3.5 flex items-center justify-between pt-[max(0.7rem,env(safe-area-inset-top))] transition-colors`}>
         <div className="flex items-center gap-3.5 max-w-xl landscape:max-w-5xl mx-auto w-full">
           <button
             onClick={onBack}
@@ -155,7 +160,7 @@ export default function SettingsScreen({ onBack, onOpenRules }: SettingsScreenPr
       </header>
 
       {/* ── ASOSIY GURUHLANGAN SOZLAMALAR MAZMUNI ── */}
-      <main className="flex-1 max-w-xl landscape:max-w-5xl mx-auto w-full px-4 sm:px-6 py-4 landscape:py-3 grid grid-cols-1 landscape:grid-cols-2 gap-4 sm:gap-6">
+      <main className="flex-1 max-w-xl md:max-w-5xl landscape:max-w-5xl mx-auto w-full px-4 sm:px-6 py-5 landscape:py-3 grid grid-cols-1 md:grid-cols-2 landscape:grid-cols-2 gap-4 sm:gap-6">
 
         {/* ══════════════════════════════════════════════
             1-BO'LIM: KO'RINISH VA MAVZU (APPEARANCE & THEME)

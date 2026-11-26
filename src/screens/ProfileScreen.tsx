@@ -32,6 +32,7 @@ interface ProfileScreenProps {
   onOpenLeaderboard: () => void;
   onOpenFriends: () => void;
   onOpenSettings: () => void;
+  isAndroidApk?: boolean;
 }
 
 function formatUzbekDate(isoStr: string): string {
@@ -58,6 +59,7 @@ export default function ProfileScreen({
   onOpenLeaderboard,
   onOpenFriends,
   onOpenSettings,
+  isAndroidApk = false,
 }: ProfileScreenProps) {
   const { t } = useTranslation();
   const { state } = useGame();
@@ -73,11 +75,17 @@ export default function ProfileScreen({
       typeof window !== 'undefined' &&
       !window.matchMedia('(prefers-color-scheme: dark)').matches);
 
-  const cardBg = isLight
+  const cardBg = !isAndroidApk
+    ? `nur-glass-surface ${isLight ? 'text-[#1a1917]' : 'text-white'}`
+    : isLight
     ? 'bg-white border-[#e2ddd3] shadow-sm text-[#1a1917]'
     : 'bg-[#21201d] border-[#383531] shadow-md text-white';
 
-  const innerCardBg = isLight
+  const innerCardBg = !isAndroidApk
+    ? isLight
+      ? 'bg-white/60 border-black/10 text-[#1a1917]'
+      : 'bg-white/[0.06] border-white/15 text-white'
+    : isLight
     ? 'bg-[#f8f6f0] border-[#e2ddd3] text-[#1a1917]'
     : 'bg-[#181715] border-[#383531] text-white';
 
@@ -133,7 +141,7 @@ export default function ProfileScreen({
   };
 
   return (
-    <div className={`min-h-screen w-full ${isLight ? 'bg-[#f5f2eb] text-[#1a1917]' : 'bg-[#262421] text-[#f1f1f1]'} flex flex-col font-sans select-none pb-24 max-w-md mx-auto sm:max-w-2xl landscape:max-w-5xl lg:max-w-5xl transition-colors duration-200`}>
+    <div className={`min-h-screen w-full ${!isAndroidApk ? 'bg-transparent' : isLight ? 'bg-[#f5f2eb]' : 'bg-[#262421]'} ${isLight ? 'text-[#1a1917]' : 'text-[#f5f5f4]'} flex flex-col font-sans select-none pb-24 max-w-md mx-auto sm:max-w-3xl landscape:max-w-5xl lg:max-w-5xl transition-colors duration-200`}>
       {/* Muvaffaqiyat xabari (Toast) */}
       {successMsg && (
         <div className="fixed top-4 left-1/2 -translate-x-1/2 z-50 px-4 py-2.5 rounded-2xl bg-emerald-600 text-white font-bold text-xs shadow-2xl flex items-center gap-2 animate-fadeIn border border-emerald-400">
@@ -143,7 +151,7 @@ export default function ProfileScreen({
       )}
 
       {/* Header */}
-      <header className={`sticky top-0 z-30 ${isLight ? 'bg-white/95 border-b border-[#e2ddd3]' : 'bg-[#21201d]/95 border-b border-[#383531]'} backdrop-blur-md px-4 py-3 flex items-center justify-between pt-[max(0.7rem,env(safe-area-inset-top))] transition-colors`}>
+      <header className={`sticky top-0 z-30 ${!isAndroidApk ? 'nur-glass-nav rounded-b-2xl mx-2 sm:mx-4 mt-2' : isLight ? 'bg-white/95 border-b border-[#e2ddd3]' : 'bg-[#21201d]/95 border-b border-[#383531]'} px-4 py-3 flex items-center justify-between pt-[max(0.7rem,env(safe-area-inset-top))] transition-colors`}>
         <button
           onClick={onBack}
           className={`w-9 h-9 rounded-xl ${isLight ? 'bg-zinc-100 hover:bg-zinc-200 text-zinc-700 hover:text-zinc-950 border border-zinc-200' : 'bg-[#383531] hover:bg-[#45423c] text-[#c3c2be] hover:text-white shadow-[0_2px_0_#21201d]'} flex items-center justify-center transition-all active:scale-95`}
@@ -168,7 +176,7 @@ export default function ProfileScreen({
       <main className="flex-1 px-4 py-3 sm:py-4 space-y-4 landscape:space-y-0 landscape:grid landscape:grid-cols-2 landscape:gap-4">
         {/* AGAR GOOGLE ULANGAN BO'LMASA — FAQAT GOOGLE AKAUTDAN KIRISH VA RO'YXATDAN O'TISH */}
         {!profile.isGoogleLinked ? (
-          <div className={`p-6 sm:p-8 rounded-3xl ${isLight ? 'bg-white border border-[#e2ddd3] shadow-md' : 'bg-gradient-to-b from-[#2a2723] to-[#21201d] border border-[#81b64c]/40 shadow-2xl'} flex flex-col items-center text-center gap-4 animate-fadeIn`}>
+          <div className={`p-6 sm:p-8 rounded-3xl md:col-span-2 ${!isAndroidApk ? 'nur-glass-surface' : isLight ? 'bg-white border border-[#e2ddd3] shadow-md' : 'bg-gradient-to-b from-[#2a2723] to-[#21201d] border border-[#81b64c]/40 shadow-2xl'} flex flex-col items-center text-center gap-4 animate-fadeIn`}>
             <div className={`w-16 h-16 rounded-2xl ${isLight ? 'bg-emerald-50 border-2 border-emerald-500 text-emerald-700' : 'bg-[#233027] border-2 border-[#81b64c] text-white'} flex items-center justify-center font-black text-3xl shadow-inner`}>
               <GoogleIcon size={34} />
             </div>

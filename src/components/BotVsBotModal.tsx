@@ -56,8 +56,8 @@ export default function BotVsBotModal({
   };
 
   return (
-    <div className="fixed inset-0 bg-black/80 backdrop-blur-md z-50 flex items-center justify-center p-3 sm:p-4 animate-fadeIn">
-      <div className="relative w-full max-w-lg landscape:max-w-3xl bg-[#181c19] border border-[#2b3d30] rounded-3xl p-3 sm:p-6 landscape:p-2.5 shadow-2xl flex flex-col max-h-[96dvh] landscape:overflow-hidden text-[#f1f1f1]">
+    <div className="fixed inset-0 bg-black/55 backdrop-blur-md z-50 flex items-center justify-center p-3 sm:p-4 animate-fadeIn">
+      <div className="relative w-full max-w-lg landscape:max-w-3xl nur-glass-modal rounded-3xl p-4 sm:p-6 landscape:p-2.5 flex flex-col max-h-[96dvh] landscape:overflow-hidden text-[#f5f5f4]">
         {/* Sarlavha */}
         <div className="flex items-center justify-between pb-3.5 landscape:pb-1 border-b border-[#2b3d30]">
           <div className="flex items-center gap-3">

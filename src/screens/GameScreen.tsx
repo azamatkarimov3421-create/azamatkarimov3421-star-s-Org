@@ -42,9 +42,10 @@ import { useTranslation } from '../i18n/translations';
 interface GameScreenProps {
   onBack: () => void;
   onOpenSettings?: () => void;
+  isAndroidApk?: boolean;
 }
 
-export default function GameScreen({ onBack, onOpenSettings }: GameScreenProps) {
+export default function GameScreen({ onBack, onOpenSettings, isAndroidApk = false }: GameScreenProps) {
   const { state, dispatch } = useGame();
   const { t } = useTranslation();
   const {
@@ -445,26 +446,88 @@ export default function GameScreen({ onBack, onOpenSettings }: GameScreenProps) 
       {/* Hashamatli xalqaro shaxmat studiyasi mayin vinetka foni */}
       <div className="absolute inset-0 bg-black/25 pointer-events-none z-0" />
 
-      {/* ── 1. CHAP TOMONDAGI SUZUVCHI TUGMALAR (☰ Menyu, ⟲ Doskani burish) ── */}
-      <div className={`absolute top-4 sm:top-8 landscape:top-1/2 landscape:-translate-y-1/2 left-[max(0.6rem,env(safe-area-inset-left))] z-40 flex flex-col gap-2 sm:gap-3 pointer-events-auto transition-opacity duration-300 ${
-        cinemaMode ? 'opacity-35 hover:opacity-100 active:opacity-100' : 'opacity-100'
+      {/* ── SAYT UCHUN QULAY SHAFFOF BURCHAK PANELLARI (Doska va 10-qator donalarini umuman to'smaydi!) ── */}
+      {!isAndroidApk && !cinemaMode && (
+        <>
+          <div className="hidden lg:flex fixed top-3.5 left-3.5 z-30 items-center gap-2 px-3 py-2 rounded-2xl bg-black/45 backdrop-blur-2xl border border-white/20 shadow-[inset_0_1px_0_rgba(255,255,255,0.22),0_12px_32px_rgba(0,0,0,0.55)] pointer-events-auto">
+            <button
+              onClick={onBack}
+              className="px-2.5 py-1 rounded-xl bg-white/[0.10] hover:bg-white/[0.20] border border-white/15 text-xs font-bold text-white flex items-center gap-1.5 transition-all cursor-pointer"
+              title="Bosh sahifaga qaytish"
+            >
+              <ArrowLeftIcon size={14} />
+              <span>Bosh sahifa</span>
+            </button>
+            <div className="h-4 w-[1px] bg-white/15" />
+            <div className="flex items-center gap-1.5 px-1">
+              <span
+                className={`w-2.5 h-2.5 rounded-full ${
+                  currentTurn === 'white'
+                    ? 'bg-white shadow-[0_0_8px_rgba(255,255,255,0.9)]'
+                    : 'bg-zinc-900 border border-amber-400 shadow-[0_0_8px_rgba(251,191,36,0.5)]'
+                }`}
+              />
+              <span className="text-xs font-black text-white">
+                {currentTurn === 'white' ? 'Oqlar' : 'Qoralar'}
+              </span>
+              <span className="text-[10.5px] font-mono font-bold text-amber-300 bg-amber-400/15 border border-amber-400/30 px-1.5 py-0.5 rounded-md">
+                #{Math.ceil((moveHistory.length || 0) / 2) || 1}
+              </span>
+            </div>
+          </div>
+
+          <div className="hidden lg:flex fixed top-3.5 right-3.5 z-30 items-center gap-2 px-3 py-2 rounded-2xl bg-black/45 backdrop-blur-2xl border border-white/20 shadow-[inset_0_1px_0_rgba(255,255,255,0.22),0_12px_32px_rgba(0,0,0,0.55)] pointer-events-auto">
+            <div className="flex items-center p-0.5 rounded-xl bg-black/35 border border-white/15">
+              <button
+                onClick={() => dispatch({ type: 'SET_3D', enabled: true })}
+                className={`px-2.5 py-1 rounded-lg text-[11px] font-black transition-all cursor-pointer ${
+                  is3D ? 'bg-emerald-500 text-white shadow-sm' : 'text-zinc-300 hover:text-white'
+                }`}
+              >
+                3D
+              </button>
+              <button
+                onClick={() => dispatch({ type: 'SET_3D', enabled: false })}
+                className={`px-2.5 py-1 rounded-lg text-[11px] font-black transition-all cursor-pointer ${
+                  !is3D ? 'bg-emerald-500 text-white shadow-sm' : 'text-zinc-300 hover:text-white'
+                }`}
+              >
+                2D
+              </button>
+            </div>
+
+            <button
+              onClick={() => dispatch({ type: 'TOGGLE_CINEMA_MODE' })}
+              className="px-2.5 py-1 rounded-xl bg-white/[0.10] hover:bg-white/[0.20] border border-white/15 text-[11px] font-bold text-amber-200 flex items-center gap-1 transition-all cursor-pointer"
+              title="Katta ekran (Kino ko'rish rejimi)"
+            >
+              <span>🎬</span>
+              <span>Katta ekran</span>
+            </button>
+          </div>
+        </>
+      )}
+
+      {/* ── 1. CHAP TOMONDAGI SUZUVCHI BILLUR TUGMALAR (☰ Menyu, ⟲ Doskani burish) ── */}
+      <div className={`absolute top-4 sm:top-8 landscape:top-1/2 landscape:-translate-y-1/2 left-[max(0.6rem,env(safe-area-inset-left))] z-40 flex flex-col gap-2.5 sm:gap-3 pointer-events-auto transition-opacity duration-300 ${
+        cinemaMode ? 'opacity-40 hover:opacity-100 active:opacity-100' : 'opacity-100'
       }`}>
         {/* Menyuni ochish (☰ Hamburger) */}
         <button
           onClick={() => setShowMenuModal(true)}
-          className="w-10 h-10 sm:w-12 sm:h-12 rounded-2xl bg-black/65 hover:bg-black/85 active:scale-95 border border-white/20 text-white shadow-[0_12px_28px_rgba(0,0,0,0.75)] flex items-center justify-center transition-all cursor-pointer backdrop-blur-md"
-          title="Menyu"
+          className="w-11 h-11 sm:w-12 sm:h-12 rounded-2xl bg-white/[0.11] hover:bg-white/[0.20] active:scale-95 border border-white/25 text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.25),0_12px_28px_rgba(0,0,0,0.65)] flex items-center justify-center transition-all cursor-pointer backdrop-blur-xl"
+          title="Oʻyin menyusi"
         >
-          <MenuIcon size={24} />
+          <MenuIcon size={23} />
         </button>
 
         {/* Doskani 180° aylantirish (⟲ Yagona toza burish tugmasi) */}
         <button
           onClick={() => dispatch({ type: 'TOGGLE_FLIP' })}
-          className="w-10 h-10 sm:w-12 sm:h-12 rounded-2xl bg-black/65 hover:bg-black/85 active:scale-95 border border-white/20 text-white shadow-[0_12px_28px_rgba(0,0,0,0.75)] flex items-center justify-center transition-all cursor-pointer backdrop-blur-md"
+          className="w-11 h-11 sm:w-12 sm:h-12 rounded-2xl bg-white/[0.11] hover:bg-white/[0.20] active:scale-95 border border-white/25 text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.25),0_12px_28px_rgba(0,0,0,0.65)] flex items-center justify-center transition-all cursor-pointer backdrop-blur-xl"
           title="Doskani aylantirish (180°)"
         >
-          <RotateCcwIcon size={22} />
+          <RotateCcwIcon size={21} />
         </button>
       </div>
 
@@ -500,22 +563,22 @@ export default function GameScreen({ onBack, onOpenSettings }: GameScreenProps) 
             <button
               onClick={() => dispatch({ type: 'UNDO' })}
               disabled={history.length === 0 || isGameOver}
-              className="w-11 h-11 sm:w-13 sm:h-13 md:w-14 md:h-14 rounded-2xl bg-black/65 hover:bg-black/85 disabled:opacity-25 disabled:pointer-events-none active:scale-95 border border-white/20 text-white shadow-[0_12px_28px_rgba(0,0,0,0.75)] flex items-center justify-center transition-all cursor-pointer backdrop-blur-md"
+              className="w-11 h-11 sm:w-13 sm:h-13 md:w-13 md:h-13 rounded-2xl bg-white/[0.11] hover:bg-white/[0.20] disabled:opacity-25 disabled:pointer-events-none active:scale-95 border border-white/25 text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.25),0_12px_28px_rgba(0,0,0,0.65)] flex items-center justify-center transition-all cursor-pointer backdrop-blur-xl"
               title={t('btn_undo')}
             >
-              <UndoIcon size={24} />
+              <UndoIcon size={23} />
             </button>
 
             {/* Maslahat olish (💡 Sariq Chiroq - Max 3 ta) */}
               <button
                 onClick={handleGetHint}
                 disabled={isGameOver || hintLoading || hintsUsed >= MAX_HINTS}
-                className={`w-11 h-11 sm:w-13 sm:h-13 md:w-14 md:h-14 rounded-2xl relative active:scale-95 border transition-all cursor-pointer backdrop-blur-md flex flex-col items-center justify-center ${
+                className={`w-11 h-11 sm:w-13 sm:h-13 md:w-13 md:h-13 rounded-2xl relative active:scale-95 border transition-all cursor-pointer backdrop-blur-xl flex flex-col items-center justify-center ${
                   hintsUsed >= MAX_HINTS
-                    ? 'bg-black/40 border-white/10 text-zinc-500 opacity-40 cursor-not-allowed'
-                    : 'bg-black/65 hover:bg-black/85 border-amber-400/50 text-amber-300 shadow-[0_12px_28px_rgba(0,0,0,0.75)]'
+                    ? 'bg-black/35 border-white/10 text-zinc-500 opacity-40 cursor-not-allowed'
+                    : 'bg-amber-400/15 hover:bg-amber-400/25 border-amber-300/55 text-amber-300 shadow-[inset_0_1px_0_rgba(255,255,255,0.25),0_12px_28px_rgba(0,0,0,0.65)]'
                 }`}
-                title={`Maslahat olish (Qoldi: {MAX_HINTS - hintsUsed}/{MAX_HINTS})`}
+                title={`Maslahat olish (Qoldi: ${MAX_HINTS - hintsUsed}/${MAX_HINTS})`}
               >
                 <LightbulbIcon size={22} />
                 <span className="text-[9px] font-black leading-none mt-0.5 text-amber-300">
@@ -672,8 +735,8 @@ export default function GameScreen({ onBack, onOpenSettings }: GameScreenProps) 
 
       {/* ── 5. ASOSIY O'YIN MENYUSI MODALI (☰ Hamburger bosilganda ochiladi) ── */}
       {showMenuModal && (
-        <div className="fixed inset-0 bg-black/80 backdrop-blur-md z-50 flex items-center justify-center p-3 sm:p-4 animate-fadeIn">
-          <div className="relative w-full max-w-sm landscape:max-w-md bg-black/60 backdrop-blur-3xl border border-white/15 rounded-3xl p-3.5 sm:p-5 landscape:p-3 shadow-[0_24px_70px_rgba(0,0,0,0.85)] flex flex-col gap-3.5 landscape:gap-2 text-white max-h-[92dvh] overflow-y-auto">
+        <div className="fixed inset-0 bg-black/55 backdrop-blur-md z-50 flex items-center justify-center p-3 sm:p-4 animate-fadeIn">
+          <div className="relative w-full max-w-sm landscape:max-w-md nur-glass-modal rounded-3xl p-4 sm:p-5 landscape:p-3 flex flex-col gap-3.5 landscape:gap-2 text-white max-h-[92dvh] overflow-y-auto">
             {/* Modal Sarlavhasi */}
             <div className="flex items-center justify-between pb-3 border-b border-[#3e342a]">
               <div className="flex items-center gap-2">

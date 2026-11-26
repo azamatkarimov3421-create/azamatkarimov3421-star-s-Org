@@ -1,4 +1,4 @@
-/* NUR SHAXMAT 100 — Global stillar */
+/* NUR SHAXMAT 100 — Global stillar va Billur Shisha (Glassmorphism) Dizayn Tizimi */
 
 @tailwind base;
 @tailwind components;
@@ -6,12 +6,10 @@
 
 /* ── NUR CHESS 100 — KOMPYUTER VA MOBIL MOSLASHUVCHAN O'LCHAMLARI ── */
 :root {
-  /* Standart (Portrait - telefon vertikal turganda): header + opponent card + eval bar + board + player card to'liq sig'adi */
   --board-size: min(calc(100vw - 12px), calc(100dvh - 185px), 500px);
   --board-size-3d: min(calc(100vw - 12px), calc(100dvh - 195px), 500px);
 }
 
-/* Gorizontal va Yonboshcha (Landscape: telefon 90 gradusga burilganda yoki planshet/kompyuterda) */
 @media (orientation: landscape) {
   :root {
     --board-size: min(calc(100dvh - 20px), calc(100vw - 320px), 720px);
@@ -19,7 +17,6 @@
   }
 }
 
-/* Planshet va Noutbuklar (>= 768px): doska va yon panel yonma-yon sig'adi */
 @media (min-width: 768px) and (orientation: landscape) {
   :root {
     --board-size: min(calc(100dvh - 32px), calc(100vw - 360px), 760px);
@@ -27,7 +24,6 @@
   }
 }
 
-/* Standart va Katta Monitorlar (>= 1100px) */
 @media (min-width: 1100px) and (orientation: landscape) {
   :root {
     --board-size: min(calc(100dvh - 36px), calc(100vw - 420px), 840px);
@@ -35,7 +31,6 @@
   }
 }
 
-/* 2K va Keng Monitorlar (>= 1440px) */
 @media (min-width: 1440px) and (orientation: landscape) {
   :root {
     --board-size: min(calc(100dvh - 36px), calc(100vw - 460px), 920px);
@@ -46,7 +41,7 @@
 @layer base {
   html, body {
     @apply bg-gray-950 min-h-screen font-sans;
-    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    font-family: 'Inter', 'Segoe UI', system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
     touch-action: manipulation;
     -webkit-tap-highlight-color: transparent;
     -webkit-touch-callout: none;
@@ -62,7 +57,6 @@
 }
 
 @layer components {
-  /* Nur donasining yaltirash animatsiyasi */
   .nur-glow {
     animation: nur-pulse 2s ease-in-out infinite;
     filter: drop-shadow(0 0 6px #FFD700);
@@ -73,7 +67,6 @@
     50% { filter: drop-shadow(0 0 12px #FFD700) drop-shadow(0 0 20px #FFA500); }
   }
 
-  /* Qonuniy harakat nuqtalari */
   .legal-dot {
     animation: legal-appear 0.15s ease-out forwards;
   }
@@ -83,7 +76,6 @@
     to { transform: scale(1); opacity: 0.6; }
   }
 
-  /* Shoh shohda bo'lganda pulsa effekti */
   .check-pulse {
     animation: check-flash 0.5s ease-in-out infinite alternate;
   }
@@ -93,7 +85,6 @@
     to { box-shadow: inset 0 0 20px 5px rgba(255, 0, 0, 0.6); }
   }
 
-  /* Dosqa kvadratlari uchun parvoz animatsiyasi */
   .piece-hover {
     transition: transform 0.1s ease;
   }
@@ -101,14 +92,9 @@
     transform: translateY(-2px) scale(1.05);
   }
 
-  /* Shaxmat donasining kataklar bo'ylab silliq va qotmasdan siljish animatsiyasi (2D va 3D) */
   @keyframes piece-glide-2d {
-    0% {
-      transform: translate3d(var(--slide-x, 0), var(--slide-y, 0), 0);
-    }
-    100% {
-      transform: translate3d(0, 0, 0);
-    }
+    0% { transform: translate3d(var(--slide-x, 0), var(--slide-y, 0), 0); }
+    100% { transform: translate3d(0, 0, 0); }
   }
 
   @keyframes piece-glide-3d {
@@ -132,14 +118,13 @@
     will-change: transform;
   }
 
-  /* Fade in animatsiyasi */
   .animate-fadeIn {
-    animation: fadeIn 0.2s ease-out forwards;
+    animation: fadeIn 0.22s cubic-bezier(0.16, 1, 0.3, 1) forwards;
   }
 
   @keyframes fadeIn {
-    from { opacity: 0; transform: scale(0.96); }
-    to { opacity: 1; transform: scale(1); }
+    from { opacity: 0; transform: scale(0.97) translateY(4px); }
+    to { opacity: 1; transform: scale(1) translateY(0); }
   }
 
   .chess-board-box {
@@ -160,93 +145,143 @@
 /* Scroll bar stilizatsiyasi */
 ::-webkit-scrollbar {
   width: 6px;
+  height: 6px;
 }
 ::-webkit-scrollbar-track {
-  background: #1f2937;
+  background: rgba(15, 23, 18, 0.35);
 }
 ::-webkit-scrollbar-thumb {
-  background: #4b5563;
-  border-radius: 3px;
+  background: rgba(255, 255, 255, 0.22);
+  border-radius: 999px;
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: #6b7280;
+  background: rgba(255, 255, 255, 0.36);
 }
 
 /* Kunduzgi rejim (Light mode) global stillari */
 html.theme-light, body.theme-light {
-  background-color: #f5f2eb !important;
+  background-color: #f3efe6 !important;
   color: #1a1917 !important;
 }
 
 html.theme-light ::-webkit-scrollbar-track,
 body.theme-light ::-webkit-scrollbar-track {
-  background: #ece8df;
+  background: rgba(236, 232, 223, 0.5);
 }
 
 html.theme-light ::-webkit-scrollbar-thumb,
 body.theme-light ::-webkit-scrollbar-thumb {
-  background: #c5bfb2;
+  background: rgba(120, 113, 108, 0.35);
 }
 
-html.theme-light ::-webkit-scrollbar-thumb:hover,
-body.theme-light ::-webkit-scrollbar-thumb:hover {
-  background: #a9a295;
+/* ── BILLUR SHAFFOF SHISHA (LUXURY CRYSTAL GLASSMORPHISM) DIZAYN TIZIMI ── */
+.nur-glass-nav {
+  background: linear-gradient(135deg, rgba(22, 30, 26, 0.56) 0%, rgba(15, 21, 18, 0.44) 100%);
+  backdrop-filter: blur(24px) saturate(170%);
+  -webkit-backdrop-filter: blur(24px) saturate(170%);
+  border: 1px solid rgba(255, 255, 255, 0.20);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.20), 0 14px 38px rgba(0, 0, 0, 0.38);
 }
 
-
-
-
-/* ── SHAFFOF (GLASSMORPHISM) MAXSUS STIL QOIDALARI ── */
-.glass-card {
-  background: rgba(255, 255, 255, 0.05);
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
-  border: 1px solid rgba(255, 255, 255, 0.12);
-  box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+html.theme-light .nur-glass-nav {
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.74) 0%, rgba(252, 249, 243, 0.62) 100%);
+  backdrop-filter: blur(24px) saturate(160%);
+  -webkit-backdrop-filter: blur(24px) saturate(160%);
+  border: 1px solid rgba(255, 255, 255, 0.92);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.98), 0 12px 32px rgba(24, 24, 27, 0.08);
 }
 
-.glass-card-hover {
-  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+.nur-glass-surface {
+  background: linear-gradient(145deg, rgba(255, 255, 255, 0.11) 0%, rgba(255, 255, 255, 0.05) 55%, rgba(12, 18, 15, 0.32) 100%);
+  backdrop-filter: blur(24px) saturate(170%);
+  -webkit-backdrop-filter: blur(24px) saturate(170%);
+  border: 1px solid rgba(255, 255, 255, 0.20);
+  box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.22), 0 20px 50px rgba(0, 0, 0, 0.42);
 }
-.glass-card-hover:hover {
-  background: rgba(255, 255, 255, 0.09);
-  border-color: rgba(255, 255, 255, 0.25);
-  box-shadow: 0 12px 40px 0 rgba(0, 0, 0, 0.5);
+
+html.theme-light .nur-glass-surface {
+  background: linear-gradient(145deg, rgba(255, 255, 255, 0.78) 0%, rgba(255, 255, 255, 0.62) 100%);
+  backdrop-filter: blur(24px) saturate(160%);
+  -webkit-backdrop-filter: blur(24px) saturate(160%);
+  border: 1px solid rgba(255, 255, 255, 0.92);
+  box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.98), 0 18px 42px rgba(24, 24, 27, 0.08);
+}
+
+.nur-glass-card {
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.10) 0%, rgba(255, 255, 255, 0.04) 100%);
+  backdrop-filter: blur(20px) saturate(165%);
+  -webkit-backdrop-filter: blur(20px) saturate(165%);
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.16), 0 10px 28px rgba(0, 0, 0, 0.30);
+  transition: transform 0.22s cubic-bezier(0.16, 1, 0.3, 1), background 0.22s ease, border-color 0.22s ease, box-shadow 0.22s ease;
+}
+
+.nur-glass-card:hover {
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.15) 0%, rgba(255, 255, 255, 0.07) 100%);
+  border-color: rgba(74, 222, 128, 0.42);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.26), 0 16px 36px rgba(0, 0, 0, 0.42);
   transform: translateY(-2px);
 }
 
-.glass-modal {
-  background: rgba(12, 14, 13, 0.75);
-  backdrop-filter: blur(28px);
-  -webkit-backdrop-filter: blur(28px);
-  border: 1px solid rgba(255, 255, 255, 0.15);
-  box-shadow: 0 24px 64px 0 rgba(0, 0, 0, 0.85);
+html.theme-light .nur-glass-card {
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.76) 0%, rgba(255, 255, 255, 0.58) 100%);
+  backdrop-filter: blur(20px) saturate(155%);
+  -webkit-backdrop-filter: blur(20px) saturate(155%);
+  border: 1px solid rgba(255, 255, 255, 0.90);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.96), 0 8px 24px rgba(24, 24, 27, 0.06);
 }
 
-.glass-btn {
+html.theme-light .nur-glass-card:hover {
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.92) 0%, rgba(255, 255, 255, 0.78) 100%);
+  border-color: rgba(16, 185, 129, 0.50);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 1), 0 14px 32px rgba(16, 185, 129, 0.12);
+  transform: translateY(-2px);
+}
+
+.nur-glass-modal {
+  background: linear-gradient(155deg, rgba(24, 32, 28, 0.74) 0%, rgba(14, 19, 17, 0.82) 100%);
+  backdrop-filter: blur(30px) saturate(175%);
+  -webkit-backdrop-filter: blur(30px) saturate(175%);
+  border: 1px solid rgba(255, 255, 255, 0.22);
+  box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.22), 0 28px 70px rgba(0, 0, 0, 0.72);
+}
+
+html.theme-light .nur-glass-modal {
+  background: linear-gradient(155deg, rgba(255, 255, 255, 0.88) 0%, rgba(248, 244, 236, 0.92) 100%);
+  backdrop-filter: blur(30px) saturate(165%);
+  -webkit-backdrop-filter: blur(30px) saturate(165%);
+  border: 1px solid rgba(255, 255, 255, 0.95);
+  box-shadow: inset 0 1px 1px rgba(255, 255, 255, 1), 0 24px 60px rgba(15, 23, 42, 0.18);
+}
+
+.glass-card {
   background: rgba(255, 255, 255, 0.08);
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
-  border: 1px solid rgba(255, 255, 255, 0.18);
-  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.35);
-  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
-}
-.glass-btn:hover {
-  background: rgba(255, 255, 255, 0.16);
-  border-color: rgba(255, 255, 255, 0.28);
-  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.45);
+  backdrop-filter: blur(20px) saturate(165%);
+  -webkit-backdrop-filter: blur(20px) saturate(165%);
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.35);
 }
 
+.glass-modal {
+  background: rgba(15, 20, 18, 0.76);
+  backdrop-filter: blur(28px) saturate(170%);
+  -webkit-backdrop-filter: blur(28px) saturate(170%);
+  border: 1px solid rgba(255, 255, 255, 0.20);
+  box-shadow: 0 24px 64px 0 rgba(0, 0, 0, 0.80);
+}
 
-/* ── MOBIL VA ANDROIDDA SILLIQ 60 FPS ISHLASHI UCHUN BACKDROP-FILTER OPTIMIZATSIYASI ── */
-@media (max-width: 768px), (pointer: coarse) {
-  .backdrop-blur-sm,
-  .backdrop-blur-md,
-  .backdrop-blur-lg,
-  .backdrop-blur-xl,
-  .backdrop-blur-2xl,
-  .backdrop-blur-3xl {
-    backdrop-filter: none !important;
-    -webkit-backdrop-filter: none !important;
-  }
+/* Faqat Android APK ichida eski telefonlar qotmasligi uchun blur yengillashtiriladi;
+   Veb-saytda (data-platform="web") barcha noutbuk, planshet va telefonlarda to'liq billur shisha ishlaydi! */
+[data-platform="apk"] .backdrop-blur-sm,
+[data-platform="apk"] .backdrop-blur-md,
+[data-platform="apk"] .backdrop-blur-lg,
+[data-platform="apk"] .backdrop-blur-xl,
+[data-platform="apk"] .backdrop-blur-2xl,
+[data-platform="apk"] .backdrop-blur-3xl,
+[data-platform="apk"] .nur-glass-nav,
+[data-platform="apk"] .nur-glass-surface,
+[data-platform="apk"] .nur-glass-card,
+[data-platform="apk"] .nur-glass-modal {
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
 }

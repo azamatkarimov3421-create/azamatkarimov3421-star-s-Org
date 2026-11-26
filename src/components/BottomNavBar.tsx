@@ -13,9 +13,10 @@ export type TabType = 'home' | 'leaderboard' | 'profile';
 interface BottomNavBarProps {
   activeTab: TabType;
   onSelectTab: (tab: TabType) => void;
+  forceVisible?: boolean;
 }
 
-export default function BottomNavBar({ activeTab, onSelectTab }: BottomNavBarProps) {
+export default function BottomNavBar({ activeTab, onSelectTab, forceVisible = false }: BottomNavBarProps) {
   const { state } = useGame();
   const { t } = useTranslation();
 
@@ -32,9 +33,7 @@ export default function BottomNavBar({ activeTab, onSelectTab }: BottomNavBarPro
   ];
 
   return (
-    <nav className={`md:hidden landscape:hidden fixed bottom-0 left-0 right-0 z-40 backdrop-blur-md px-3 py-1.5 flex items-center justify-around pb-[max(0.6rem,env(safe-area-inset-bottom))] max-w-md mx-auto sm:max-w-none transition-colors duration-200 ${
-      isLight ? 'bg-white/80 border-t border-white/60 shadow-[0_-8px_32px_rgba(0,0,0,0.08)] backdrop-blur-2xl' : 'bg-black/45 border-t border-white/15 shadow-[0_-12px_40px_rgba(0,0,0,0.65)] backdrop-blur-2xl'
-    }`}>
+    <nav className={`${forceVisible ? 'flex bottom-3 max-w-[420px] rounded-2xl border' : 'md:hidden landscape:hidden flex bottom-0 max-w-md sm:max-w-none border-t'} fixed left-0 right-0 z-40 nur-glass-nav px-3 py-1.5 items-center justify-around pb-[max(0.55rem,env(safe-area-inset-bottom))] mx-auto transition-all duration-200`}>
       {tabs.map((tab) => {
         const isActive = activeTab === tab.id;
         return (
