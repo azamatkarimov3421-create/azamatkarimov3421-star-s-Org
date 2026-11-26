@@ -131,7 +131,7 @@ export default function SettingsScreen({ onBack, onOpenRules, isAndroidApk = fal
   const textSub = isLight ? 'text-zinc-500 font-normal' : 'text-zinc-400 font-normal';
   const sectionTitle = isLight ? 'text-stone-600 font-semibold tracking-wide' : 'text-amber-300/80 font-semibold uppercase tracking-wide';
   const iconBox = isLight
-    ? 'bg-amber-600/12 border-amber-600/25 text-amber-800'
+    ? 'bg-amber-600/10 border-amber-600/25 text-amber-800'
     : 'bg-amber-500/15 border-amber-400/25 text-amber-300';
 
   return (

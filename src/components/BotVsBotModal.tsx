@@ -226,7 +226,7 @@ export default function BotVsBotModal({
           <button
             type="button"
             onClick={handleStartGame}
-            className="w-full py-2.5 sm:py-3.5 landscape:py-1.5 landscape:text-xs landscape:rounded-xl px-4 rounded-2xl bg-gradient-to-r from-[#22c55e] to-[#16a34a] hover:from-[#4ade80] hover:to-[#22c55e] text-slate-950 font-black text-sm sm:text-base flex items-center justify-center gap-2 shadow-[0_4px_15px_rgba(34,197,94,0.35)] active:scale-[0.99] transition-all cursor-pointer"
+            className="w-full py-2.5 sm:py-3.5 landscape:py-1.5 landscape:text-xs landscape:rounded-xl px-4 rounded-2xl nur-cta-btn bg-gradient-to-b from-[#6ab832] to-[#48861c] hover:brightness-105 text-white font-semibold text-sm sm:text-base flex items-center justify-center gap-2 shadow-[0_4px_15px_rgba(34,197,94,0.35)] active:scale-[0.99] transition-all cursor-pointer"
           >
             <PlayIcon size={20} className="fill-slate-950" />
             <span>{t('bvb_start_btn')}</span>

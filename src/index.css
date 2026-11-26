@@ -1,4 +1,4 @@
-/* NUR SHAXMAT 100 — Royal Warm Walnut, Gold & Emerald Frosted Glass Design */
+/* NUR SHAXMAT 100 — Flagship Specular Liquid Glass & Royal Chess Aesthetic */
 
 @tailwind base;
 @tailwind components;
@@ -39,11 +39,11 @@
 
 @layer base {
   html, body {
-    background-color: #14110e;
+    background-color: #120f0c;
     color: #faf6ef;
     min-height: 100vh;
     font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-    letter-spacing: -0.01em;
+    letter-spacing: -0.011em;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
     touch-action: manipulation;
@@ -54,6 +54,11 @@
     overscroll-behavior: none;
   }
 
+  h1, h2, h3, .font-display {
+    font-family: 'Plus Jakarta Sans', 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+    letter-spacing: -0.022em;
+  }
+
   * {
     box-sizing: border-box;
     -webkit-tap-highlight-color: transparent;
@@ -62,7 +67,7 @@
 
 @layer components {
   .nur-glow {
-    filter: drop-shadow(0 0 8px rgba(245, 185, 65, 0.45));
+    filter: drop-shadow(0 0 10px rgba(245, 185, 65, 0.5));
   }
 
   .legal-dot {
@@ -117,11 +122,11 @@
   }
 
   .animate-fadeIn {
-    animation: fadeIn 0.18s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+    animation: fadeIn 0.2s cubic-bezier(0.16, 1, 0.3, 1) forwards;
   }
 
   @keyframes fadeIn {
-    from { opacity: 0; transform: scale(0.98) translateY(3px); }
+    from { opacity: 0; transform: scale(0.98) translateY(4px); }
     to { opacity: 1; transform: scale(1) translateY(0); }
   }
 
@@ -148,11 +153,11 @@
   background: transparent;
 }
 ::-webkit-scrollbar-thumb {
-  background: rgba(245, 185, 65, 0.22);
+  background: rgba(245, 185, 65, 0.24);
   border-radius: 999px;
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: rgba(245, 185, 65, 0.38);
+  background: rgba(245, 185, 65, 0.42);
 }
 
 html.theme-light, body.theme-light {
@@ -162,79 +167,178 @@ html.theme-light, body.theme-light {
 
 html.theme-light ::-webkit-scrollbar-thumb,
 body.theme-light ::-webkit-scrollbar-thumb {
-  background: rgba(120, 86, 48, 0.24);
+  background: rgba(135, 92, 42, 0.25);
 }
 
-/* ── ILIQ YONG'OQ, OLTIN VA ZUMRAD SHAFFOF SHISHA (ROYAL FROSTED GLASS) ── */
+/* ── FLAGSHIP SPECULAR LIQUID GLASS SURFACES (VisionOS + Royal Walnut/Gold) ── */
 .nur-glass-nav {
-  background: linear-gradient(135deg, rgba(30, 24, 19, 0.78) 0%, rgba(20, 17, 14, 0.72) 100%);
-  backdrop-filter: blur(22px) saturate(145%);
-  -webkit-backdrop-filter: blur(22px) saturate(145%);
-  border: 1px solid rgba(245, 185, 65, 0.20);
-  box-shadow: inset 0 1px 0 rgba(255, 245, 220, 0.12), 0 8px 28px rgba(0, 0, 0, 0.38);
+  background: linear-gradient(
+    135deg,
+    rgba(36, 29, 23, 0.72) 0%,
+    rgba(22, 18, 15, 0.64) 60%,
+    rgba(16, 22, 18, 0.68) 100%
+  );
+  backdrop-filter: blur(26px) saturate(165%);
+  -webkit-backdrop-filter: blur(26px) saturate(165%);
+  border: 1px solid rgba(255, 224, 158, 0.18);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 248, 230, 0.22),
+    inset 1px 0 0 rgba(255, 248, 230, 0.08),
+    0 12px 36px rgba(0, 0, 0, 0.42);
 }
 
 html.theme-light .nur-glass-nav {
-  background: linear-gradient(135deg, rgba(255, 252, 246, 0.86) 0%, rgba(248, 241, 229, 0.80) 100%);
-  backdrop-filter: blur(22px) saturate(140%);
-  -webkit-backdrop-filter: blur(22px) saturate(140%);
-  border: 1px solid rgba(180, 130, 60, 0.22);
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.95), 0 6px 22px rgba(80, 50, 20, 0.08);
+  background: linear-gradient(
+    135deg,
+    rgba(255, 253, 249, 0.84) 0%,
+    rgba(249, 243, 233, 0.74) 100%
+  );
+  backdrop-filter: blur(26px) saturate(160%);
+  -webkit-backdrop-filter: blur(26px) saturate(160%);
+  border: 1px solid rgba(255, 255, 255, 0.92);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 1),
+    0 10px 30px rgba(90, 58, 22, 0.08);
 }
 
 .nur-glass-surface {
-  background: linear-gradient(155deg, rgba(34, 28, 22, 0.78) 0%, rgba(22, 18, 15, 0.74) 100%);
-  backdrop-filter: blur(24px) saturate(145%);
-  -webkit-backdrop-filter: blur(24px) saturate(145%);
-  border: 1px solid rgba(245, 185, 65, 0.18);
-  box-shadow: inset 0 1px 0 rgba(255, 245, 220, 0.12), 0 16px 42px rgba(0, 0, 0, 0.44);
+  background: linear-gradient(
+    150deg,
+    rgba(40, 32, 25, 0.74) 0%,
+    rgba(24, 20, 16, 0.68) 55%,
+    rgba(18, 22, 18, 0.72) 100%
+  );
+  backdrop-filter: blur(28px) saturate(165%);
+  -webkit-backdrop-filter: blur(28px) saturate(165%);
+  border: 1px solid rgba(255, 224, 158, 0.19);
+  box-shadow:
+    inset 0 1px 1px rgba(255, 248, 230, 0.22),
+    inset 1px 0 0 rgba(255, 248, 230, 0.08),
+    0 22px 52px rgba(0, 0, 0, 0.50);
 }
 
 html.theme-light .nur-glass-surface {
-  background: linear-gradient(155deg, rgba(255, 252, 247, 0.88) 0%, rgba(249, 243, 232, 0.84) 100%);
-  backdrop-filter: blur(24px) saturate(140%);
-  -webkit-backdrop-filter: blur(24px) saturate(140%);
-  border: 1px solid rgba(180, 130, 60, 0.20);
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.96), 0 12px 32px rgba(80, 50, 20, 0.08);
+  background: linear-gradient(
+    150deg,
+    rgba(255, 253, 249, 0.88) 0%,
+    rgba(248, 242, 231, 0.80) 100%
+  );
+  backdrop-filter: blur(28px) saturate(155%);
+  -webkit-backdrop-filter: blur(28px) saturate(155%);
+  border: 1px solid rgba(255, 255, 255, 0.95);
+  box-shadow:
+    inset 0 1px 1px rgba(255, 255, 255, 1),
+    0 16px 40px rgba(90, 58, 22, 0.09);
 }
 
 .nur-glass-card {
-  background: linear-gradient(135deg, rgba(34, 28, 22, 0.72) 0%, rgba(24, 20, 16, 0.68) 100%);
-  backdrop-filter: blur(18px) saturate(140%);
-  -webkit-backdrop-filter: blur(18px) saturate(140%);
-  border: 1px solid rgba(255, 240, 210, 0.11);
-  box-shadow: inset 0 1px 0 rgba(255, 245, 220, 0.08), 0 6px 20px rgba(0, 0, 0, 0.28);
-  transition: background 0.18s ease, border-color 0.18s ease, transform 0.18s ease, box-shadow 0.18s ease;
+  position: relative;
+  overflow: hidden;
+  background: linear-gradient(
+    140deg,
+    rgba(38, 31, 24, 0.68) 0%,
+    rgba(24, 20, 17, 0.62) 100%
+  );
+  backdrop-filter: blur(22px) saturate(160%);
+  -webkit-backdrop-filter: blur(22px) saturate(160%);
+  border: 1px solid rgba(255, 235, 195, 0.14);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 248, 230, 0.14),
+    0 8px 24px rgba(0, 0, 0, 0.34);
+  transition: transform 0.22s cubic-bezier(0.16, 1, 0.3, 1), background 0.22s ease, border-color 0.22s ease, box-shadow 0.22s ease;
 }
 
 .nur-glass-card:hover {
-  background: linear-gradient(135deg, rgba(44, 36, 28, 0.84) 0%, rgba(30, 25, 20, 0.80) 100%);
-  border-color: rgba(245, 185, 65, 0.36);
-  box-shadow: inset 0 1px 0 rgba(255, 245, 220, 0.14), 0 10px 26px rgba(0, 0, 0, 0.38);
-  transform: translateY(-1.5px);
+  background: linear-gradient(
+    140deg,
+    rgba(50, 40, 31, 0.82) 0%,
+    rgba(31, 26, 21, 0.76) 100%
+  );
+  border-color: rgba(245, 185, 65, 0.42);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 248, 230, 0.24),
+    0 14px 32px rgba(0, 0, 0, 0.44),
+    0 0 24px rgba(245, 185, 65, 0.09);
+  transform: translateY(-2px);
 }
 
 html.theme-light .nur-glass-card {
-  background: linear-gradient(135deg, rgba(255, 253, 248, 0.86) 0%, rgba(248, 242, 232, 0.80) 100%);
-  backdrop-filter: blur(18px) saturate(140%);
-  -webkit-backdrop-filter: blur(18px) saturate(140%);
-  border: 1px solid rgba(180, 130, 60, 0.18);
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.96), 0 4px 16px rgba(80, 50, 20, 0.06);
+  background: linear-gradient(
+    140deg,
+    rgba(255, 253, 249, 0.86) 0%,
+    rgba(248, 242, 232, 0.78) 100%
+  );
+  backdrop-filter: blur(22px) saturate(155%);
+  -webkit-backdrop-filter: blur(22px) saturate(155%);
+  border: 1px solid rgba(255, 255, 255, 0.94);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 1),
+    0 6px 20px rgba(90, 58, 22, 0.07);
 }
 
 html.theme-light .nur-glass-card:hover {
-  background: linear-gradient(135deg, rgba(255, 255, 255, 0.96) 0%, rgba(252, 247, 238, 0.92) 100%);
-  border-color: rgba(217, 119, 6, 0.42);
-  box-shadow: 0 8px 22px rgba(180, 120, 40, 0.12);
-  transform: translateY(-1.5px);
+  background: linear-gradient(
+    140deg,
+    rgba(255, 255, 255, 0.96) 0%,
+    rgba(252, 247, 239, 0.90) 100%
+  );
+  border-color: rgba(217, 119, 6, 0.45);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 1),
+    0 12px 28px rgba(180, 120, 40, 0.13);
+  transform: translateY(-2px);
 }
 
 .nur-glass-modal {
-  background: linear-gradient(155deg, rgba(30, 24, 19, 0.94) 0%, rgba(20, 16, 13, 0.96) 100%);
-  backdrop-filter: blur(28px) saturate(145%);
-  -webkit-backdrop-filter: blur(28px) saturate(145%);
-  border: 1px solid rgba(245, 185, 65, 0.24);
-  box-shadow: inset 0 1px 0 rgba(255, 245, 220, 0.12), 0 24px 64px rgba(0, 0, 0, 0.72);
+  background: linear-gradient(
+    155deg,
+    rgba(32, 26, 20, 0.94) 0%,
+    rgba(20, 16, 13, 0.96) 100%
+  );
+  backdrop-filter: blur(32px) saturate(160%);
+  -webkit-backdrop-filter: blur(32px) saturate(160%);
+  border: 1px solid rgba(245, 185, 65, 0.26);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 248, 230, 0.18),
+    0 28px 72px rgba(0, 0, 0, 0.78);
+}
+
+/* Shimmer / Specular Highlight across Primary Play CTA */
+@keyframes cta-shine {
+  0% { transform: translateX(-140%) skewX(-20deg); }
+  35%, 100% { transform: translateX(260%) skewX(-20deg); }
+}
+
+.nur-cta-btn {
+  position: relative;
+  overflow: hidden;
+}
+
+.nur-cta-btn::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 45%;
+  height: 100%;
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    rgba(255, 255, 255, 0.24) 50%,
+    transparent 100%
+  );
+  animation: cta-shine 4.8s ease-in-out infinite;
+  pointer-events: none;
+}
+
+/* Subtle breathing ambient glow for website background */
+@keyframes aurora-float {
+  0%, 100% { transform: translate3d(0, 0, 0) scale(1); opacity: 0.75; }
+  50% { transform: translate3d(18px, -14px, 0) scale(1.06); opacity: 1; }
+}
+
+.nur-aurora-orb {
+  animation: aurora-float 11s ease-in-out infinite;
 }
 
 [data-platform="apk"] .backdrop-blur-sm,

@@ -76,7 +76,7 @@ export default function ProfileScreen({
       !window.matchMedia('(prefers-color-scheme: dark)').matches);
 
   const cardBg = !isAndroidApk
-    ? `nur-glass-surface ${isLight ? 'text-[#1a1917]' : 'text-white'}`
+    ? `nur-glass-surface rounded-[1.4rem] border ${isLight ? 'text-stone-900 border-amber-700/20' : 'text-[#faf6ef] border-amber-400/20'}`
     : isLight
     ? 'bg-white border-[#e2ddd3] shadow-sm text-[#1a1917]'
     : 'bg-[#21201d] border-[#383531] shadow-md text-white';
@@ -419,7 +419,7 @@ export default function ProfileScreen({
           {/* Yutuqlar */}
           <button
             onClick={onOpenAchievements}
-            className={`w-full p-3.5 rounded-2xl ${isLight ? 'bg-white hover:bg-zinc-50 border-[#e2ddd3]' : 'bg-[#21201d] hover:bg-[#282622] border-[#383531]'} border flex items-center justify-between text-left transition-all active:scale-[0.99] shadow-sm group cursor-pointer`}
+            className={`w-full p-3.5 rounded-2xl ${isLight ? 'nur-glass-card border-amber-700/20' : 'nur-glass-card border-amber-400/20'} border flex items-center justify-between text-left transition-all active:scale-[0.99] shadow-sm group cursor-pointer`}
           >
             <div className="flex items-center gap-3">
               <div className={`w-9 h-9 rounded-xl ${isLight ? 'bg-amber-50 border-amber-200' : 'bg-[#2a2824] border-[#3d3a34]'} border flex items-center justify-center text-[#f1c40f]`}>
@@ -435,7 +435,7 @@ export default function ProfileScreen({
           {/* Reyting / Peshqadamlar */}
           <button
             onClick={onOpenLeaderboard}
-            className={`w-full p-3.5 rounded-2xl ${isLight ? 'bg-white hover:bg-zinc-50 border-[#e2ddd3]' : 'bg-[#21201d] hover:bg-[#282622] border-[#383531]'} border flex items-center justify-between text-left transition-all active:scale-[0.99] shadow-sm group cursor-pointer`}
+            className={`w-full p-3.5 rounded-2xl ${isLight ? 'nur-glass-card border-amber-700/20' : 'nur-glass-card border-amber-400/20'} border flex items-center justify-between text-left transition-all active:scale-[0.99] shadow-sm group cursor-pointer`}
           >
             <div className="flex items-center gap-3">
               <div className={`w-9 h-9 rounded-xl ${isLight ? 'bg-sky-50 border-sky-200' : 'bg-[#2a2824] border-[#3d3a34]'} border flex items-center justify-center text-[#5dade2]`}>
@@ -451,7 +451,7 @@ export default function ProfileScreen({
           {/* Do'stlar */}
           <button
             onClick={onOpenFriends}
-            className={`w-full p-3.5 rounded-2xl ${isLight ? 'bg-white hover:bg-zinc-50 border-[#e2ddd3]' : 'bg-[#21201d] hover:bg-[#282622] border-[#383531]'} border flex items-center justify-between text-left transition-all active:scale-[0.99] shadow-sm group cursor-pointer`}
+            className={`w-full p-3.5 rounded-2xl ${isLight ? 'nur-glass-card border-amber-700/20' : 'nur-glass-card border-amber-400/20'} border flex items-center justify-between text-left transition-all active:scale-[0.99] shadow-sm group cursor-pointer`}
           >
             <div className="flex items-center gap-3">
               <div className={`w-9 h-9 rounded-xl ${isLight ? 'bg-zinc-100 border-zinc-200' : 'bg-[#2a2824] border-[#3d3a34]'} border flex items-center justify-center ${isLight ? 'text-zinc-700' : 'text-[#e0dfdc]'}`}>

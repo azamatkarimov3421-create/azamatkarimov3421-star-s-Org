@@ -449,46 +449,50 @@ export default function GameScreen({ onBack, onOpenSettings, isAndroidApk = fals
 
       {!isAndroidApk && !cinemaMode && (
         <>
-          <div className="hidden lg:flex fixed top-3.5 left-3.5 z-30 items-center gap-2.5 px-3 py-1.5 rounded-xl nur-glass-nav pointer-events-auto">
+          <div className="hidden lg:flex fixed top-4 left-4 z-30 items-center gap-2.5 px-3.5 py-2 rounded-2xl bg-[#1e1813]/70 backdrop-blur-2xl border border-amber-400/20 shadow-[inset_0_1px_0_rgba(255,248,230,0.18),0_14px_34px_rgba(0,0,0,0.5)] pointer-events-auto">
             <button
               onClick={onBack}
-              className="px-2 py-1 rounded-lg hover:bg-white/[0.08] text-xs font-medium text-zinc-200 hover:text-white flex items-center gap-1.5 transition-colors cursor-pointer"
+              className="px-2.5 py-1 rounded-xl bg-white/[0.08] hover:bg-white/[0.16] text-xs font-semibold text-amber-100 flex items-center gap-1.5 transition-colors cursor-pointer"
             >
               <ArrowLeftIcon size={14} />
               <span>Chiqish</span>
             </button>
-            <div className="h-3.5 w-[1px] bg-white/10" />
+            <div className="h-4 w-[1px] bg-white/10" />
             <div className="flex items-center gap-2 px-1">
               <span
                 className={`w-2.5 h-2.5 rounded-full border ${
                   currentTurn === 'white'
-                    ? 'bg-white border-zinc-300'
-                    : 'bg-zinc-900 border-zinc-500'
+                    ? 'bg-white border-amber-200 shadow-[0_0_8px_rgba(255,255,255,0.75)]'
+                    : 'bg-stone-900 border-amber-400 shadow-[0_0_8px_rgba(245,185,65,0.45)]'
                 }`}
               />
-              <span className="text-xs font-medium text-zinc-100">
+              <span className="text-xs font-semibold text-[#faf6ef]">
                 {currentTurn === 'white' ? 'Oqlar navbati' : 'Qoralar navbati'}
               </span>
-              <span className="text-xs tabular-nums text-zinc-400">
-                · {Math.ceil((moveHistory.length || 0) / 2) || 1}-yurish
+              <span className="text-xs font-bold tabular-nums px-2 py-0.5 rounded-lg bg-amber-400/15 text-amber-300 border border-amber-400/25">
+                {Math.ceil((moveHistory.length || 0) / 2) || 1}-yurish
               </span>
             </div>
           </div>
 
-          <div className="hidden lg:flex fixed top-3.5 right-3.5 z-30 items-center gap-2 px-2.5 py-1.5 rounded-xl nur-glass-nav pointer-events-auto">
-            <div className="flex items-center p-0.5 rounded-lg bg-black/35 border border-white/[0.06]">
+          <div className="hidden lg:flex fixed top-4 right-4 z-30 items-center gap-2 px-3 py-2 rounded-2xl bg-[#1e1813]/70 backdrop-blur-2xl border border-amber-400/20 shadow-[inset_0_1px_0_rgba(255,248,230,0.18),0_14px_34px_rgba(0,0,0,0.5)] pointer-events-auto">
+            <div className="flex items-center p-0.5 rounded-xl bg-black/40 border border-white/[0.08]">
               <button
                 onClick={() => dispatch({ type: 'SET_3D', enabled: true })}
-                className={`px-2.5 py-1 rounded-md text-xs transition-all cursor-pointer ${
-                  is3D ? 'bg-white/[0.14] text-white font-semibold' : 'text-zinc-400 hover:text-zinc-200 font-medium'
+                className={`px-2.5 py-1 rounded-[9px] text-xs transition-all cursor-pointer ${
+                  is3D
+                    ? 'bg-gradient-to-b from-[#45382b] to-[#32281f] text-amber-100 font-semibold border border-amber-400/35'
+                    : 'text-stone-400 hover:text-amber-100 font-medium'
                 }`}
               >
                 3D
               </button>
               <button
                 onClick={() => dispatch({ type: 'SET_3D', enabled: false })}
-                className={`px-2.5 py-1 rounded-md text-xs transition-all cursor-pointer ${
-                  !is3D ? 'bg-white/[0.14] text-white font-semibold' : 'text-zinc-400 hover:text-zinc-200 font-medium'
+                className={`px-2.5 py-1 rounded-[9px] text-xs transition-all cursor-pointer ${
+                  !is3D
+                    ? 'bg-gradient-to-b from-[#45382b] to-[#32281f] text-amber-100 font-semibold border border-amber-400/35'
+                    : 'text-stone-400 hover:text-amber-100 font-medium'
                 }`}
               >
                 2D
@@ -497,7 +501,7 @@ export default function GameScreen({ onBack, onOpenSettings, isAndroidApk = fals
 
             <button
               onClick={() => dispatch({ type: 'TOGGLE_CINEMA_MODE' })}
-              className="px-2.5 py-1 rounded-lg hover:bg-white/[0.08] text-xs font-medium text-zinc-200 hover:text-white flex items-center gap-1.5 transition-colors cursor-pointer"
+              className="px-2.5 py-1.5 rounded-xl bg-white/[0.07] hover:bg-white/[0.15] border border-white/10 text-xs font-medium text-amber-100 flex items-center gap-1.5 transition-colors cursor-pointer"
               title="Katta ekran"
             >
               <MaximizeIcon size={13} />
@@ -514,7 +518,7 @@ export default function GameScreen({ onBack, onOpenSettings, isAndroidApk = fals
         {/* Menyuni ochish (☰ Hamburger) */}
         <button
           onClick={() => setShowMenuModal(true)}
-          className="w-11 h-11 sm:w-12 sm:h-12 rounded-2xl bg-white/[0.11] hover:bg-white/[0.20] active:scale-95 border border-white/25 text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.25),0_12px_28px_rgba(0,0,0,0.65)] flex items-center justify-center transition-all cursor-pointer backdrop-blur-xl"
+          className="w-11 h-11 sm:w-12 sm:h-12 rounded-2xl bg-[#261f18]/75 hover:bg-[#352b22]/90 active:scale-95 border border-amber-300/30 text-[#faf6ef] shadow-[inset_0_1px_0_rgba(255,248,230,0.22),0_12px_28px_rgba(0,0,0,0.65)] flex items-center justify-center transition-all cursor-pointer backdrop-blur-xl"
           title="Oʻyin menyusi"
         >
           <MenuIcon size={23} />
@@ -523,7 +527,7 @@ export default function GameScreen({ onBack, onOpenSettings, isAndroidApk = fals
         {/* Doskani 180° aylantirish (⟲ Yagona toza burish tugmasi) */}
         <button
           onClick={() => dispatch({ type: 'TOGGLE_FLIP' })}
-          className="w-11 h-11 sm:w-12 sm:h-12 rounded-2xl bg-white/[0.11] hover:bg-white/[0.20] active:scale-95 border border-white/25 text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.25),0_12px_28px_rgba(0,0,0,0.65)] flex items-center justify-center transition-all cursor-pointer backdrop-blur-xl"
+          className="w-11 h-11 sm:w-12 sm:h-12 rounded-2xl bg-[#261f18]/75 hover:bg-[#352b22]/90 active:scale-95 border border-amber-300/30 text-[#faf6ef] shadow-[inset_0_1px_0_rgba(255,248,230,0.22),0_12px_28px_rgba(0,0,0,0.65)] flex items-center justify-center transition-all cursor-pointer backdrop-blur-xl"
           title="Doskani aylantirish (180°)"
         >
           <RotateCcwIcon size={21} />
@@ -562,7 +566,7 @@ export default function GameScreen({ onBack, onOpenSettings, isAndroidApk = fals
             <button
               onClick={() => dispatch({ type: 'UNDO' })}
               disabled={history.length === 0 || isGameOver}
-              className="w-11 h-11 sm:w-13 sm:h-13 md:w-13 md:h-13 rounded-2xl bg-white/[0.11] hover:bg-white/[0.20] disabled:opacity-25 disabled:pointer-events-none active:scale-95 border border-white/25 text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.25),0_12px_28px_rgba(0,0,0,0.65)] flex items-center justify-center transition-all cursor-pointer backdrop-blur-xl"
+              className="w-11 h-11 sm:w-13 sm:h-13 md:w-13 md:h-13 rounded-2xl bg-[#261f18]/75 hover:bg-[#352b22]/90 disabled:opacity-25 disabled:pointer-events-none active:scale-95 border border-amber-300/30 text-[#faf6ef] shadow-[inset_0_1px_0_rgba(255,248,230,0.22),0_12px_28px_rgba(0,0,0,0.65)] flex items-center justify-center transition-all cursor-pointer backdrop-blur-xl"
               title={t('btn_undo')}
             >
               <UndoIcon size={23} />
