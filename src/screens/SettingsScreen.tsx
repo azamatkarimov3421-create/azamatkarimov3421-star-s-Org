@@ -129,7 +129,9 @@ export default function SettingsScreen({ onBack, onOpenRules, isAndroidApk = fal
     : isLight ? 'hover:bg-slate-50' : 'hover:bg-[#282420]';
   const textTitle = isLight ? 'text-zinc-900 font-semibold' : 'text-zinc-100 font-semibold';
   const textSub = isLight ? 'text-zinc-500 font-normal' : 'text-zinc-400 font-normal';
-  const sectionTitle = isLight ? 'text-stone-600 font-semibold tracking-wide' : 'text-amber-300/80 font-semibold uppercase tracking-wide';
+  const sectionTitle = isLight
+    ? 'text-stone-800 bg-white/70 backdrop-blur-md border border-white/85 px-2.5 py-1 rounded-lg self-start shadow-xs font-bold tracking-wide'
+    : 'text-amber-300/90 font-semibold uppercase tracking-wide';
   const iconBox = isLight
     ? 'bg-amber-600/10 border-amber-600/25 text-amber-800'
     : 'bg-amber-500/15 border-amber-400/25 text-amber-300';
@@ -137,7 +139,7 @@ export default function SettingsScreen({ onBack, onOpenRules, isAndroidApk = fal
   return (
     <div className={`min-h-screen w-full relative z-10 ${!isAndroidApk ? 'bg-transparent' : isLight ? 'bg-[#ede8df]' : 'bg-[#181614]'} flex flex-col font-sans select-none pb-16 transition-colors duration-200`}>
       {/* ── HEADER ── */}
-      <header className={`sticky top-0 z-30 ${!isAndroidApk ? 'nur-glass-nav border-b border-white/15' : isLight ? 'bg-[#f6f4ee]/95 border-b border-[#e2ddd3]' : 'bg-[#181614]/95 border-b border-[#352f28]'} px-4 sm:px-6 py-3.5 flex items-center justify-between pt-[max(0.7rem,env(safe-area-inset-top))] transition-colors`}>
+      <header className={`sticky top-0 z-30 ${!isAndroidApk ? 'nur-glass-nav rounded-b-2xl mx-2 sm:mx-4 mt-2 max-w-5xl md:mx-auto md:w-[calc(100%-2rem)]' : isLight ? 'bg-[#f6f4ee]/95 border-b border-[#e2ddd3]' : 'bg-[#181614]/95 border-b border-[#352f28]'} px-4 sm:px-6 py-3 flex items-center justify-between pt-[max(0.7rem,env(safe-area-inset-top))] transition-colors`}>
         <div className="flex items-center gap-3.5 max-w-xl landscape:max-w-5xl mx-auto w-full">
           <button
             onClick={onBack}
@@ -566,12 +568,9 @@ export default function SettingsScreen({ onBack, onOpenRules, isAndroidApk = fal
         </section>
 
         {/* Versiya & Mualliflik Matni */}
-        <div className="text-center pt-2 pb-6 select-none">
-          <div className={`text-xs font-mono font-bold ${isLight ? 'text-slate-600' : 'text-zinc-500'}`}>
-            Nur Shaxmat 100 • v1.2.22
-          </div>
-          <div className={`text-[10px] mt-0.5 ${isLight ? 'text-slate-600' : 'text-zinc-600'}`}>
-            Oʻzbekiston Milliy Shaxmati © 2026
+        <div className="md:col-span-2 text-center pt-1 pb-6 select-none flex justify-center">
+          <div className={`px-4 py-1.5 rounded-full text-xs font-medium ${!isAndroidApk ? 'nur-glass-nav' : ''} ${isLight ? 'text-stone-700' : 'text-zinc-400'}`}>
+            Nur Shaxmat 100 • Oʻzbekiston Milliy Shaxmati
           </div>
         </div>
       </main>
@@ -712,12 +711,12 @@ export default function SettingsScreen({ onBack, onOpenRules, isAndroidApk = fal
 
       {/* 4. Biz Haqimizda Modali — Rasmiy Muallif, Patent va Kitob ma'lumotlari */}
       {showAboutModal && (
-        <div className="fixed inset-0 bg-black/85 backdrop-blur-md z-50 flex items-end sm:items-center justify-center p-0 sm:p-4 animate-fadeIn">
-          <div className="bg-slate-900 border-t sm:border border-slate-700/80 rounded-t-3xl sm:rounded-3xl p-5 sm:p-6 max-w-md w-full max-h-[90vh] overflow-y-auto space-y-4 pb-[max(1.5rem,env(safe-area-inset-bottom))] shadow-2xl">
+        <div className={`fixed inset-0 backdrop-blur-md z-50 flex items-end sm:items-center justify-center p-0 sm:p-4 animate-fadeIn ${isLight ? 'bg-black/40' : 'bg-black/85'}`}>
+          <div className={`border-t sm:border rounded-t-3xl sm:rounded-3xl p-5 sm:p-6 max-w-md w-full max-h-[90vh] overflow-y-auto space-y-4 pb-[max(1.5rem,env(safe-area-inset-bottom))] shadow-2xl ${isLight ? 'bg-white/75 border-black/[0.09]' : 'bg-slate-900 border-slate-700/80'}`}>
             {/* Yuqori Logotip va Sarlavha */}
             <div className="flex flex-col items-center text-center pt-1">
               <NurLogo size={84} showGlow={true} />
-              <h3 className="text-lg sm:text-xl font-black text-amber-300 mt-2">
+              <h3 className={`text-lg sm:text-xl font-black mt-2 ${isLight ? 'text-amber-700' : 'text-amber-300'}`}>
                 NUR CHESS 100
               </h3>
               <p className="text-[11px] font-bold text-amber-200/80 uppercase tracking-widest">
@@ -726,46 +725,46 @@ export default function SettingsScreen({ onBack, onOpenRules, isAndroidApk = fal
             </div>
 
             {/* Mualliflik va Patent Guvohnomasi */}
-            <div className="p-3.5 rounded-2xl bg-amber-500/10 border border-amber-500/30 space-y-1.5 text-left">
+            <div className={`p-3.5 rounded-2xl bg-amber-500/10 border space-y-1.5 text-left ${isLight ? 'border-amber-600/25' : 'border-amber-500/30'}`}>
               <div className="flex items-center gap-2">
                 <span className="text-base">📜</span>
-                <span className="text-xs font-black text-amber-300">
+                <span className={`text-xs font-black ${isLight ? 'text-amber-700' : 'text-amber-300'}`}>
                   Rasmiy Intellektual Mulk Guvohnomasi
                 </span>
               </div>
-              <p className="text-[11px] text-slate-300 leading-relaxed">
+              <p className={`text-[11px] leading-relaxed ${isLight ? 'text-stone-700' : 'text-slate-300'}`}>
                 Ўзбекистон Республикаси Муаллифлик ва турдош ҳуқуқларни ҳимоя қилиш жамияти (UzAvtor) томонидан депонентлаштирилган:
               </p>
               <div className="grid grid-cols-2 gap-1.5 pt-1 text-[10px] font-mono">
-                <div className="bg-slate-950/70 p-1.5 rounded-lg border border-slate-800">
-                  <span className="text-slate-400 block">Guvohnoma:</span>
-                  <span className="text-amber-400 font-black">№ 000-002-853</span>
+                <div className={`p-1.5 rounded-lg border ${isLight ? 'bg-white/75 border-black/[0.09]' : 'bg-slate-950/70 border-slate-800'}`}>
+                  <span className={`block ${isLight ? 'text-stone-500' : 'text-slate-400'}`}>Guvohnoma:</span>
+                  <span className={`font-black ${isLight ? 'text-amber-700' : 'text-amber-400'}`}>№ 000-002-853</span>
                 </div>
-                <div className="bg-slate-950/70 p-1.5 rounded-lg border border-slate-800">
-                  <span className="text-slate-400 block">Sana / Muddat:</span>
-                  <span className="text-slate-200 font-bold">09.12.2025–2030</span>
+                <div className={`p-1.5 rounded-lg border ${isLight ? 'bg-white/75 border-black/[0.09]' : 'bg-slate-950/70 border-slate-800'}`}>
+                  <span className={`block ${isLight ? 'text-stone-500' : 'text-slate-400'}`}>Sana / Muddat:</span>
+                  <span className={`font-bold ${isLight ? 'text-stone-900' : 'text-slate-200'}`}>09.12.2025–2030</span>
                 </div>
               </div>
-              <p className="text-[10px] text-emerald-400 font-semibold pt-1">
+              <p className={`text-[10px] font-semibold pt-1 ${isLight ? 'text-emerald-700' : 'text-emerald-400'}`}>
                 ✓ Xalqaro shaxmat federatsiyasi (FIDE) standartlariga toʻliq mos keladi.
               </p>
             </div>
 
             {/* Muallif Haqida */}
-            <div className="p-3.5 rounded-2xl bg-slate-950/80 border border-slate-800 space-y-2 text-left">
+            <div className={`p-3.5 rounded-2xl border space-y-2 text-left ${isLight ? 'bg-white/75 border-black/[0.09]' : 'bg-slate-950/80 border-slate-800'}`}>
               <div className="flex items-center gap-2">
                 <span className="text-base">👤</span>
-                <span className="text-xs font-black text-slate-100">
+                <span className={`text-xs font-black ${isLight ? 'text-stone-900' : 'text-slate-100'}`}>
                   Ixtirochi va Muallif Haqida
                 </span>
               </div>
-              <p className="text-xs font-black text-amber-400">
+              <p className={`text-xs font-black ${isLight ? 'text-amber-700' : 'text-amber-400'}`}>
                 Nurfullo NURMATOV
               </p>
-              <p className="text-[11px] text-slate-300 leading-relaxed">
-                Muallif 1970-yillardagi talabalik davridan boshlab 50 yillik izlanishlar va hayotiy tajribalar asosida 64 katakli shaxmatni 100 katakli formatga kengaytirib, yangi <strong className="text-amber-300">«Nur»</strong> donasi va 3 xil rokirovkaga ega mukammal oʻyin tizimini yaratdi.
+              <p className={`text-[11px] leading-relaxed ${isLight ? 'text-stone-700' : 'text-slate-300'}`}>
+                Muallif 1970-yillardagi talabalik davridan boshlab 50 yillik izlanishlar va hayotiy tajribalar asosida 64 katakli shaxmatni 100 katakli formatga kengaytirib, yangi <strong className={`${isLight ? 'text-amber-700' : 'text-amber-300'}`}>«Nur»</strong> donasi va 3 xil rokirovkaga ega mukammal oʻyin tizimini yaratdi.
               </p>
-              <div className="text-[10px] text-slate-400 border-t border-slate-800/80 pt-1.5 space-y-0.5">
+              <div className={`text-[10px] border-t pt-1.5 space-y-0.5 ${isLight ? 'text-stone-500 border-black/[0.09]' : 'text-slate-400 border-slate-800/80'}`}>
                 <div>• Oʻzbekiston Qishloq va Suv xoʻjaligi vazirliklari aʼlochisi medali</div>
                 <div>• Oʻzbekiston Respublikasi «Mehnat faxriysi»</div>
                 <div>• 28 yil «Navoiy Suvloyiha» davlat unitar korxonasi direktori</div>
@@ -773,23 +772,23 @@ export default function SettingsScreen({ onBack, onOpenRules, isAndroidApk = fal
             </div>
 
             {/* Ilmiy va Mutaxassislar Xulosalari */}
-            <div className="p-3.5 rounded-2xl bg-slate-950/80 border border-slate-800 space-y-1.5 text-left">
+            <div className={`p-3.5 rounded-2xl border space-y-1.5 text-left ${isLight ? 'bg-white/75 border-black/[0.09]' : 'bg-slate-950/80 border-slate-800'}`}>
               <div className="flex items-center gap-2">
                 <span className="text-base">🎓</span>
-                <span className="text-xs font-black text-slate-100">
+                <span className={`text-xs font-black ${isLight ? 'text-stone-900' : 'text-slate-100'}`}>
                   Rasmiy Ekspertiza va Ilmiy Xulosalar
                 </span>
               </div>
-              <ul className="text-[10px] text-slate-300 space-y-1 list-disc list-inside">
-                <li><strong className="text-slate-200">Prof. O. Ochilov</strong> — OʻzMU huzuridagi Nanotexnologiyalar markazi laboratoriya mudiri, f.-m.f.d.</li>
-                <li><strong className="text-slate-200">Prof. M. J. Abdullayev</strong> — BuxDU Sport nazariyasi va metodikasi mudiri, p.f.d. (DSc).</li>
-                <li><strong className="text-slate-200">I. I. Haydarov</strong> — Oʻzbekiston Shaxmat federatsiyasi Navoiy viloyati boʻlimi rahbari.</li>
-                <li><strong className="text-slate-200">Shaxmat ustalari:</strong> M. Xushmurodova, O. Karimova, N. Umurzoqova.</li>
+              <ul className={`text-[10px] space-y-1 list-disc list-inside ${isLight ? 'text-stone-700' : 'text-slate-300'}`}>
+                <li><strong className={`${isLight ? 'text-stone-900' : 'text-slate-200'}`}>Prof. O. Ochilov</strong> — OʻzMU huzuridagi Nanotexnologiyalar markazi laboratoriya mudiri, f.-m.f.d.</li>
+                <li><strong className={`${isLight ? 'text-stone-900' : 'text-slate-200'}`}>Prof. M. J. Abdullayev</strong> — BuxDU Sport nazariyasi va metodikasi mudiri, p.f.d. (DSc).</li>
+                <li><strong className={`${isLight ? 'text-stone-900' : 'text-slate-200'}`}>I. I. Haydarov</strong> — Oʻzbekiston Shaxmat federatsiyasi Navoiy viloyati boʻlimi rahbari.</li>
+                <li><strong className={`${isLight ? 'text-stone-900' : 'text-slate-200'}`}>Shaxmat ustalari:</strong> M. Xushmurodova, O. Karimova, N. Umurzoqova.</li>
               </ul>
             </div>
 
             {/* Nashriyot va Aloqa */}
-            <div className="p-3 rounded-2xl bg-slate-950/60 border border-slate-800 text-[10px] text-slate-400 text-left space-y-1">
+            <div className={`p-3 rounded-2xl border text-[10px] text-left space-y-1 ${isLight ? 'bg-white/75 border-black/[0.09] text-stone-500' : 'bg-slate-950/60 border-slate-800 text-slate-400'}`}>
               <div><strong>Kitob:</strong> «NUR CHESS 100» oʻquv-metodik qoʻllanmasi (56 bet), 2026 y.</div>
               <div><strong>ISBN:</strong> 978-9910-622-75-5 · «Texno Print Navoiy» nashriyoti.</div>
               <div><strong>Muallif bilan aloqa:</strong> (90) 665-58-44, (93) 665-58-44, (90) 717-44-54</div>
@@ -807,10 +806,10 @@ export default function SettingsScreen({ onBack, onOpenRules, isAndroidApk = fal
 
       {/* 5. Yordam Modali */}
       {showHelpModal && (
-        <div className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4 animate-fadeIn">
-          <div className="bg-slate-900 border border-slate-700 rounded-3xl p-6 max-w-sm w-full space-y-4 shadow-2xl">
-            <h3 className="text-base font-black text-amber-300">Yordam & Boshqaruv</h3>
-            <ul className="text-xs text-slate-300 space-y-2 list-disc list-inside">
+        <div className={`fixed inset-0 backdrop-blur-sm z-50 flex items-center justify-center p-4 animate-fadeIn ${isLight ? 'bg-black/40' : 'bg-black/80'}`}>
+          <div className={`border rounded-3xl p-6 max-w-sm w-full space-y-4 shadow-2xl ${isLight ? 'bg-white/75 border-black/[0.09]' : 'bg-slate-900 border-slate-700'}`}>
+            <h3 className={`text-base font-black ${isLight ? 'text-amber-700' : 'text-amber-300'}`}>Yordam & Boshqaruv</h3>
+            <ul className={`text-xs space-y-2 list-disc list-inside ${isLight ? 'text-stone-700' : 'text-slate-300'}`}>
               <li>Donani tanlash uchun uning ustiga bosing, soʻng yashil katakka bosing.</li>
               <li>Donani sudrab olib borib ham tashlashingiz mumkin.</li>
               <li>P2P Onlayn oʻyinda xona kodini doʻstingizga ulashasiz.</li>
@@ -818,7 +817,7 @@ export default function SettingsScreen({ onBack, onOpenRules, isAndroidApk = fal
             </ul>
             <button
               onClick={() => setShowHelpModal(false)}
-              className="w-full py-2 bg-slate-800 text-slate-300 rounded-xl text-xs font-bold cursor-pointer"
+              className={`w-full py-2 rounded-xl text-xs font-bold cursor-pointer ${isLight ? 'bg-black/[0.06] text-stone-700' : 'bg-slate-800 text-slate-300'}`}
             >
               Yopish
             </button>

@@ -6,6 +6,7 @@
 import React, { useState } from 'react';
 import { BotIcon, SwordsIcon, PlayIcon } from './Icons';
 import { useTranslation } from '../i18n/translations';
+import { useGame } from '../store/gameStore';
 
 interface BotVsBotModalProps {
   isOpen: boolean;
@@ -32,6 +33,9 @@ export default function BotVsBotModal({
   initialSpeed = 2000,
 }: BotVsBotModalProps) {
   const { t } = useTranslation();
+  const { state } = useGame();
+  const isLight =
+    state.appTheme === 'light' || (state.appTheme === 'system' && typeof window !== 'undefined' && !window.matchMedia('(prefers-color-scheme: dark)').matches);
   const [whiteDepth, setWhiteDepth] = useState<number>(initialWhiteDepth);
   const [blackDepth, setBlackDepth] = useState<number>(initialBlackDepth);
   const [speed, setSpeed] = useState<number>(initialSpeed);
@@ -57,26 +61,26 @@ export default function BotVsBotModal({
 
   return (
     <div className="fixed inset-0 bg-black/55 backdrop-blur-md z-50 flex items-center justify-center p-3 sm:p-4 animate-fadeIn">
-      <div className="relative w-full max-w-lg landscape:max-w-3xl nur-glass-modal rounded-3xl p-4 sm:p-6 landscape:p-2.5 flex flex-col max-h-[96dvh] landscape:overflow-hidden text-[#f5f5f4]">
+      <div className={`relative w-full max-w-lg landscape:max-w-3xl nur-glass-modal rounded-3xl p-4 sm:p-6 landscape:p-2.5 flex flex-col max-h-[96dvh] landscape:overflow-hidden ${isLight ? 'text-stone-900' : 'text-[#f5f5f4]'}`}>
         {/* Sarlavha */}
-        <div className="flex items-center justify-between pb-3.5 landscape:pb-1 border-b border-[#2b3d30]">
+        <div className={`flex items-center justify-between pb-3.5 landscape:pb-1 border-b ${isLight ? 'border-black/[0.09]' : 'border-[#2b3d30]'}`}>
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 landscape:w-7 landscape:h-7 landscape:rounded-xl rounded-2xl bg-[#1e3827] border border-[#285535] flex items-center justify-center text-[#4ade80] shadow-inner shrink-0">
+            <div className={`w-10 h-10 landscape:w-7 landscape:h-7 landscape:rounded-xl rounded-2xl border flex items-center justify-center text-[#4ade80] shadow-inner shrink-0 ${isLight ? 'bg-[#5b992e]/15 border-black/[0.09]' : 'bg-[#1e3827] border-[#285535]'}`}>
               <SwordsIcon size={22} />
             </div>
             <div>
               <div className="flex items-center gap-2">
-                <h3 className="text-base sm:text-lg landscape:text-xs font-black text-white">{t('bvb_title')}</h3>
-                <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-amber-400/20 text-amber-300 border border-amber-400/30">
+                <h3 className={`text-base sm:text-lg landscape:text-xs font-black ${isLight ? 'text-stone-900' : 'text-white'}`}>{t('bvb_title')}</h3>
+                <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full bg-amber-400/20 border ${isLight ? 'text-amber-700 border-amber-600/25' : 'text-amber-300 border-amber-400/30'}`}>
                   AVTOMAT
                 </span>
               </div>
-              <p className="text-xs landscape:text-[9.5px] text-[#9ca3af]">{t('bvb_subtitle')}</p>
+              <p className={`text-xs landscape:text-[9.5px] ${isLight ? 'text-stone-500' : 'text-[#9ca3af]'}`}>{t('bvb_subtitle')}</p>
             </div>
           </div>
           <button
             onClick={onClose}
-            className="w-8 h-8 rounded-xl bg-[#233027] hover:bg-[#2f4235] text-[#9ca3af] hover:text-white font-bold flex items-center justify-center text-sm transition-all cursor-pointer"
+            className={`w-8 h-8 rounded-xl font-bold flex items-center justify-center text-sm transition-all cursor-pointer ${isLight ? 'bg-black/[0.06] hover:bg-black/10 text-stone-500 hover:text-stone-900' : 'bg-[#233027] hover:bg-[#2f4235] text-[#9ca3af] hover:text-white'}`}
           >
             ✕
           </button>
@@ -90,7 +94,7 @@ export default function BotVsBotModal({
             <div className="flex items-center justify-between mb-2">
               <div className="flex items-center gap-2">
                 <span className="w-3 h-3 rounded-full bg-white shadow-[0_0_8px_rgba(255,255,255,0.8)]" />
-                <span className="text-xs font-black text-white uppercase tracking-wider">{t('bvb_white_level')}</span>
+                <span className={`text-xs font-black uppercase tracking-wider ${isLight ? 'text-stone-900' : 'text-white'}`}>{t('bvb_white_level')}</span>
               </div>
               <span className="text-xs text-[#4ade80] font-bold font-mono">
                 {localizedAiLevels.find((l) => l.depth === whiteDepth)?.label} (D-{whiteDepth})
@@ -106,12 +110,12 @@ export default function BotVsBotModal({
                     onClick={() => setWhiteDepth(lvl.depth)}
                     className={`p-2 landscape:p-0.5 rounded-2xl landscape:rounded-xl border text-center transition-all flex flex-col items-center justify-center gap-0.5 cursor-pointer select-none ${
                       isSelected
-                        ? 'bg-[#1e3827] border-[#22c55e] text-white shadow-[0_0_12px_rgba(34,197,94,0.3)] ring-1 ring-[#22c55e]'
-                        : 'bg-[#141b17] border-[#27372d] text-[#9ca3af] hover:border-[#3a5241]'
+                        ? (isLight ? 'bg-emerald-50/95 border-[#5b992e] text-stone-900 shadow-sm ring-1 ring-[#5b992e]' : 'bg-[#1e3827] border-[#22c55e] text-white shadow-[0_0_12px_rgba(34,197,94,0.3)] ring-1 ring-[#22c55e]')
+                        : (isLight ? 'bg-black/[0.04] border-black/[0.08] text-stone-700 hover:bg-white/80' : 'bg-[#141b17] border-[#27372d] text-[#9ca3af] hover:border-[#3a5241]')
                     }`}
                   >
                     <span className="text-xs font-black">{lvl.label}</span>
-                    <span className="text-[10px] text-zinc-400 font-mono">{lvl.sub}</span>
+                    <span className={`text-[10px] font-mono ${isLight ? 'text-stone-500' : 'text-zinc-400'}`}>{lvl.sub}</span>
                   </button>
                 );
               })}
@@ -123,9 +127,9 @@ export default function BotVsBotModal({
             <div className="flex items-center justify-between mb-2">
               <div className="flex items-center gap-2">
                 <span className="w-3 h-3 rounded-full bg-[#383531] border border-white/60 shadow-[0_0_6px_rgba(0,0,0,0.8)]" />
-                <span className="text-xs font-black text-white uppercase tracking-wider">{t('bvb_black_level')}</span>
+                <span className={`text-xs font-black uppercase tracking-wider ${isLight ? 'text-stone-900' : 'text-white'}`}>{t('bvb_black_level')}</span>
               </div>
-              <span className="text-xs text-amber-400 font-bold font-mono">
+              <span className={`text-xs font-bold font-mono ${isLight ? 'text-amber-700' : 'text-amber-400'}`}>
                 {localizedAiLevels.find((l) => l.depth === blackDepth)?.label} (D-{blackDepth})
               </span>
             </div>
@@ -139,12 +143,12 @@ export default function BotVsBotModal({
                     onClick={() => setBlackDepth(lvl.depth)}
                     className={`p-2.5 rounded-2xl border text-center transition-all flex flex-col items-center justify-center gap-1 cursor-pointer select-none ${
                       isSelected
-                        ? 'bg-[#332616] border-amber-500 text-white shadow-[0_0_12px_rgba(245,158,11,0.3)] ring-1 ring-amber-500'
-                        : 'bg-[#141b17] border-[#27372d] text-[#9ca3af] hover:border-[#3a5241]'
+                        ? (isLight ? 'bg-amber-50/95 border-amber-500 text-stone-900 shadow-sm ring-1 ring-amber-500' : 'bg-[#332616] border-amber-500 text-white shadow-[0_0_12px_rgba(245,158,11,0.3)] ring-1 ring-amber-500')
+                        : (isLight ? 'bg-black/[0.04] border-black/[0.08] text-stone-700 hover:bg-white/80' : 'bg-[#141b17] border-[#27372d] text-[#9ca3af] hover:border-[#3a5241]')
                     }`}
                   >
                     <span className="text-xs font-black">{lvl.label}</span>
-                    <span className="text-[10px] text-zinc-400 font-mono">{lvl.sub}</span>
+                    <span className={`text-[10px] font-mono ${isLight ? 'text-stone-500' : 'text-zinc-400'}`}>{lvl.sub}</span>
                   </button>
                 );
               })}
@@ -155,8 +159,8 @@ export default function BotVsBotModal({
           {/* 3. O'yin Tezligi (Yurishlar oralig'i) */}
           <div>
             <div className="flex items-center justify-between mb-2">
-              <span className="text-xs font-black text-white uppercase tracking-wider">{t('bvb_speed_label')}</span>
-              <span className="text-xs text-zinc-400 font-mono">
+              <span className={`text-xs font-black uppercase tracking-wider ${isLight ? 'text-stone-900' : 'text-white'}`}>{t('bvb_speed_label')}</span>
+              <span className={`text-xs font-mono ${isLight ? 'text-stone-500' : 'text-zinc-400'}`}>
                 ⏱️ {speed >= 1000 ? `${speed / 1000} ${t('bvb_seconds')}` : `${speed} ms`}
               </span>
             </div>
@@ -170,13 +174,13 @@ export default function BotVsBotModal({
                     onClick={() => setSpeed(opt.ms)}
                     className={`p-2.5 rounded-2xl border text-center transition-all flex flex-col items-center justify-center gap-1 cursor-pointer select-none ${
                       isSelected
-                        ? 'bg-[#1a282f] border-sky-400 text-white shadow-[0_0_12px_rgba(56,189,248,0.25)] ring-1 ring-sky-400'
-                        : 'bg-[#141b17] border-[#27372d] text-[#9ca3af] hover:border-[#3a5241]'
+                        ? (isLight ? 'bg-sky-50/95 border-sky-500 text-stone-900 shadow-sm ring-1 ring-sky-500' : 'bg-[#1a282f] border-sky-400 text-white shadow-[0_0_12px_rgba(56,189,248,0.25)] ring-1 ring-sky-400')
+                        : (isLight ? 'bg-black/[0.04] border-black/[0.08] text-stone-700 hover:bg-white/80' : 'bg-[#141b17] border-[#27372d] text-[#9ca3af] hover:border-[#3a5241]')
                     }`}
                   >
                     <span className="text-base">{opt.icon}</span>
                     <span className="text-xs font-bold">{opt.label}</span>
-                    <span className="text-[9.5px] text-zinc-400">{opt.desc}</span>
+                    <span className={`text-[9.5px] ${isLight ? 'text-stone-500' : 'text-zinc-400'}`}>{opt.desc}</span>
                   </button>
                 );
               })}
@@ -184,8 +188,8 @@ export default function BotVsBotModal({
           </div>
 
           {/* Tezkor Shablonlar (Presets) */}
-          <div className="p-2.5 landscape:p-1 rounded-2xl landscape:rounded-xl bg-[#141b17] border border-[#27372d] flex items-center justify-between text-xs landscape:text-[10px]">
-            <span className="text-zinc-400 font-medium">{t('bvb_preset_label')}</span>
+          <div className={`p-2.5 landscape:p-1 rounded-2xl landscape:rounded-xl border flex items-center justify-between text-xs landscape:text-[10px] ${isLight ? 'bg-white/75 border-black/[0.09]' : 'bg-[#141b17] border-[#27372d]'}`}>
+            <span className={`font-medium ${isLight ? 'text-stone-500' : 'text-zinc-400'}`}>{t('bvb_preset_label')}</span>
             <div className="flex items-center gap-1.5">
               <button
                 type="button"
@@ -193,7 +197,7 @@ export default function BotVsBotModal({
                   setWhiteDepth(2);
                   setBlackDepth(2);
                 }}
-                className="px-2 py-1 rounded-lg bg-[#233027] hover:bg-[#2e4235] text-white text-[11px] font-bold cursor-pointer"
+                className={`px-2 py-1 rounded-lg text-[11px] font-bold cursor-pointer ${isLight ? 'bg-black/[0.06] hover:bg-black/10 text-stone-900' : 'bg-[#233027] hover:bg-[#2e4235] text-white'}`}
               >
                 {t('bvb_preset_equal')}
               </button>
@@ -203,7 +207,7 @@ export default function BotVsBotModal({
                   setWhiteDepth(3);
                   setBlackDepth(3);
                 }}
-                className="px-2 py-1 rounded-lg bg-[#233027] hover:bg-[#2e4235] text-purple-300 text-[11px] font-bold cursor-pointer"
+                className={`px-2 py-1 rounded-lg text-[11px] font-bold cursor-pointer ${isLight ? 'bg-black/[0.06] hover:bg-black/10 text-purple-700' : 'bg-[#233027] hover:bg-[#2e4235] text-purple-300'}`}
               >
                 {t('bvb_preset_master')}
               </button>
@@ -213,7 +217,7 @@ export default function BotVsBotModal({
                   setWhiteDepth(1);
                   setBlackDepth(4);
                 }}
-                className="px-2 py-1 rounded-lg bg-[#233027] hover:bg-[#2e4235] text-amber-300 text-[11px] font-bold cursor-pointer"
+                className={`px-2 py-1 rounded-lg text-[11px] font-bold cursor-pointer ${isLight ? 'bg-black/[0.06] hover:bg-black/10 text-amber-700' : 'bg-[#233027] hover:bg-[#2e4235] text-amber-300'}`}
               >
                 {t('bvb_preset_test')}
               </button>
@@ -222,11 +226,11 @@ export default function BotVsBotModal({
         </div>
 
         {/* Start Tugmasi */}
-        <div className="pt-3 border-t border-[#2b3d30]">
+        <div className={`pt-3 border-t ${isLight ? 'border-black/[0.09]' : 'border-[#2b3d30]'}`}>
           <button
             type="button"
             onClick={handleStartGame}
-            className="w-full py-2.5 sm:py-3.5 landscape:py-1.5 landscape:text-xs landscape:rounded-xl px-4 rounded-2xl nur-cta-btn bg-gradient-to-b from-[#6ab832] to-[#48861c] hover:brightness-105 text-white font-semibold text-sm sm:text-base flex items-center justify-center gap-2 shadow-[0_4px_15px_rgba(34,197,94,0.35)] active:scale-[0.99] transition-all cursor-pointer"
+            className={`w-full py-2.5 sm:py-3.5 landscape:py-1.5 landscape:text-xs landscape:rounded-xl px-4 rounded-2xl nur-cta-btn bg-gradient-to-b from-[#6ab832] to-[#48861c] hover:brightness-105 font-semibold text-sm sm:text-base flex items-center justify-center gap-2 shadow-[0_4px_15px_rgba(34,197,94,0.35)] active:scale-[0.99] transition-all cursor-pointer ${isLight ? 'text-stone-900' : 'text-white'}`}
           >
             <PlayIcon size={20} className="fill-slate-950" />
             <span>{t('bvb_start_btn')}</span>

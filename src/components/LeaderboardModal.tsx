@@ -6,6 +6,7 @@ import React, { useEffect, useState, useMemo } from 'react';
 import { GameRecord, getGameHistory, isBotVsBotRecord } from '../services/dbService';
 import { isSupabaseConfigured } from '../lib/supabase';
 import { useTranslation } from '../i18n/translations';
+import { useGame } from '../store/gameStore';
 import { getUserProfile } from '../store/userProfileStore';
 
 interface LeaderboardModalProps {
@@ -23,6 +24,9 @@ interface PlayerStats {
 
 export default function LeaderboardModal({ isOpen, onClose }: LeaderboardModalProps) {
   const { t } = useTranslation();
+  const { state } = useGame();
+  const isLight =
+    state.appTheme === 'light' || (state.appTheme === 'system' && typeof window !== 'undefined' && !window.matchMedia('(prefers-color-scheme: dark)').matches);
   const [history, setHistory] = useState<GameRecord[]>([]);
   const [loading, setLoading] = useState(false);
   const [activeTab, setActiveTab] = useState<'players' | 'matches'>('players');
@@ -101,11 +105,11 @@ export default function LeaderboardModal({ isOpen, onClose }: LeaderboardModalPr
 
   return (
     <div className="fixed inset-0 bg-black/55 backdrop-blur-md flex items-center justify-center z-50 p-4 animate-fadeIn font-sans">
-      <div className="relative max-w-xl w-full nur-glass-modal rounded-3xl p-4 sm:p-6 landscape:p-3 max-h-[92dvh] flex flex-col overflow-hidden text-white">
+      <div className={`relative max-w-xl w-full nur-glass-modal rounded-3xl p-4 sm:p-6 landscape:p-3 max-h-[92dvh] flex flex-col overflow-hidden ${isLight ? 'text-stone-900' : 'text-white'}`}>
         {/* Yopish tugmasi */}
         <button
           onClick={onClose}
-          className="absolute top-4 right-4 w-8 h-8 rounded-full bg-slate-800 hover:bg-slate-700 text-slate-300 flex items-center justify-center font-bold text-sm transition-colors cursor-pointer"
+          className={`absolute top-4 right-4 w-8 h-8 rounded-full flex items-center justify-center font-bold text-sm transition-colors cursor-pointer ${isLight ? 'bg-black/[0.06] hover:bg-black/10 text-stone-700' : 'bg-slate-800 hover:bg-slate-700 text-slate-300'}`}
         >
           ✕
         </button>
@@ -113,12 +117,12 @@ export default function LeaderboardModal({ isOpen, onClose }: LeaderboardModalPr
         {/* Sarlavha */}
         <div className="flex items-center justify-between mb-4 pr-6">
           <div className="flex items-center gap-3">
-            <div className="w-11 h-11 rounded-2xl bg-amber-500/20 border border-amber-500/40 flex items-center justify-center text-2xl shadow-inner shrink-0">
+            <div className={`w-11 h-11 rounded-2xl bg-amber-500/20 border flex items-center justify-center text-2xl shadow-inner shrink-0 ${isLight ? 'border-amber-600/25' : 'border-amber-500/40'}`}>
               🏆
             </div>
             <div>
-              <h3 className="text-xl font-black text-slate-100">Peshqadamlar Jadvali</h3>
-              <p className="text-slate-400 text-xs">Faqat gʻalaba va magʻlubiyatlar hisobi</p>
+              <h3 className={`text-xl font-black ${isLight ? 'text-stone-900' : 'text-slate-100'}`}>Peshqadamlar Jadvali</h3>
+              <p className={`text-xs ${isLight ? 'text-stone-500' : 'text-slate-400'}`}>Faqat gʻalaba va magʻlubiyatlar hisobi</p>
             </div>
           </div>
           <span
@@ -133,13 +137,13 @@ export default function LeaderboardModal({ isOpen, onClose }: LeaderboardModalPr
         </div>
 
         {/* Tablar (Peshqadamlar / O'yinlar) */}
-        <div className="flex bg-slate-950/80 p-1 rounded-2xl border border-slate-800 mb-4">
+        <div className={`flex p-1 rounded-2xl border mb-4 ${isLight ? 'bg-white/75 border-black/[0.09]' : 'bg-slate-950/80 border-slate-800'}`}>
           <button
             onClick={() => setActiveTab('players')}
             className={`flex-1 py-2 rounded-xl font-black text-xs flex items-center justify-center gap-1.5 transition-all cursor-pointer ${
               activeTab === 'players'
                 ? 'bg-amber-500 text-slate-950 shadow-md'
-                : 'text-slate-400 hover:text-white'
+                : (isLight ? 'text-stone-600 hover:text-stone-900' : 'text-slate-400 hover:text-white')
             }`}
           >
             <span>👑 Peshqadam Oʻyinchilar</span>
@@ -149,7 +153,7 @@ export default function LeaderboardModal({ isOpen, onClose }: LeaderboardModalPr
             className={`flex-1 py-2 rounded-xl font-black text-xs flex items-center justify-center gap-1.5 transition-all cursor-pointer ${
               activeTab === 'matches'
                 ? 'bg-amber-500 text-slate-950 shadow-md'
-                : 'text-slate-400 hover:text-white'
+                : (isLight ? 'text-stone-600 hover:text-stone-900' : 'text-slate-400 hover:text-white')
             }`}
           >
             <span>📜 Oʻyinlar Tarixi</span>
@@ -159,17 +163,17 @@ export default function LeaderboardModal({ isOpen, onClose }: LeaderboardModalPr
         {/* Asosiy Tarkib */}
         <div className="flex-1 overflow-y-auto space-y-2 pr-1">
           {loading ? (
-            <div className="text-center py-12 text-slate-400 text-xs">
+            <div className={`text-center py-12 text-xs ${isLight ? 'text-stone-500' : 'text-slate-400'}`}>
               <span className="w-5 h-5 border-2 border-amber-400 border-t-transparent rounded-full inline-block animate-spin mr-2" />
               Yuklanmoqda...
             </div>
           ) : activeTab === 'players' ? (
             /* TAB 1: PESHQADAM O'YINCHILAR JADVALI (FAQAT YUTGAN VA YUTQAZGAN) */
             playerRankings.length === 0 ? (
-              <div className="text-center py-12 text-slate-500 text-xs space-y-2">
+              <div className={`text-center py-12 text-xs space-y-2 ${isLight ? 'text-stone-500' : 'text-slate-500'}`}>
                 <div className="text-3xl">♟️</div>
                 <div>Hozircha natijalar mavjud emas.</div>
-                <p className="text-[11px] text-slate-600">Oʻyin oʻynab, birinchi gʻalabangizni qoʻlga kiriting!</p>
+                <p className={`text-[11px] ${isLight ? 'text-stone-600' : 'text-slate-600'}`}>Oʻyin oʻynab, birinchi gʻalabangizni qoʻlga kiriting!</p>
               </div>
             ) : (
               <div className="space-y-2">
@@ -184,20 +188,20 @@ export default function LeaderboardModal({ isOpen, onClose }: LeaderboardModalPr
                       className={`flex items-center justify-between p-3 rounded-2xl border transition-colors ${
                         isTop3
                           ? 'bg-gradient-to-r from-amber-500/10 via-slate-950 to-slate-950 border-amber-500/30'
-                          : 'bg-slate-950/70 border-slate-800/80'
+                          : (isLight ? 'bg-white/70 border-black/[0.08]' : 'bg-slate-950/70 border-slate-800/80')
                       }`}
                     >
                       {/* Chap: O'rin va Ism */}
                       <div className="flex items-center gap-3 min-w-0">
-                        <span className="font-black text-sm w-7 text-center shrink-0 text-amber-400">
+                        <span className={`font-black text-sm w-7 text-center shrink-0 ${isLight ? 'text-amber-700' : 'text-amber-400'}`}>
                           {rankIcon}
                         </span>
                         <div className="min-w-0">
-                          <div className="font-black text-sm text-white truncate flex items-center gap-1.5">
+                          <div className={`font-black text-sm truncate flex items-center gap-1.5 ${isLight ? 'text-stone-900' : 'text-white'}`}>
                             <span>{player.name}</span>
                           </div>
-                          <div className="text-[10px] text-slate-400 font-medium">
-                            Jami bahslar: <span className="text-slate-200 font-bold">{player.total} ta</span>
+                          <div className={`text-[10px] font-medium ${isLight ? 'text-stone-500' : 'text-slate-400'}`}>
+                            Jami bahslar: <span className={`font-bold ${isLight ? 'text-stone-900' : 'text-slate-200'}`}>{player.total} ta</span>
                           </div>
                         </div>
                       </div>
@@ -205,13 +209,13 @@ export default function LeaderboardModal({ isOpen, onClose }: LeaderboardModalPr
                       {/* O'ng: FAQAT Yutgan va Yutqazgan */}
                       <div className="flex items-center gap-2 shrink-0">
                         {/* Yutgan */}
-                        <div className="flex flex-col items-center px-2.5 py-1 rounded-xl bg-emerald-950/60 border border-emerald-500/30 text-emerald-400">
+                        <div className={`flex flex-col items-center px-2.5 py-1 rounded-xl border ${isLight ? 'bg-emerald-500/15 border-emerald-600/25 text-emerald-700' : 'bg-emerald-950/60 border-emerald-500/30 text-emerald-400'}`}>
                           <span className="text-[9px] font-bold uppercase tracking-wider">Yutgan</span>
                           <span className="text-xs font-black font-mono">{player.wins}</span>
                         </div>
 
                         {/* Yutqazgan */}
-                        <div className="flex flex-col items-center px-2.5 py-1 rounded-xl bg-red-950/60 border border-red-500/30 text-red-400">
+                        <div className={`flex flex-col items-center px-2.5 py-1 rounded-xl border border-red-500/30 ${isLight ? 'bg-red-500/10 text-red-600' : 'bg-red-950/60 text-red-400'}`}>
                           <span className="text-[9px] font-bold uppercase tracking-wider">Yutqazgan</span>
                           <span className="text-xs font-black font-mono">{player.losses}</span>
                         </div>
@@ -224,7 +228,7 @@ export default function LeaderboardModal({ isOpen, onClose }: LeaderboardModalPr
           ) : (
             /* TAB 2: O'YINLAR NATIJALARI (FAQAT YUTGAN VA YUTQAZGAN) */
             wonLostMatches.length === 0 ? (
-              <div className="text-center py-12 text-slate-500 text-xs space-y-2">
+              <div className={`text-center py-12 text-xs space-y-2 ${isLight ? 'text-stone-500' : 'text-slate-500'}`}>
                 <div className="text-3xl">📜</div>
                 <div>Gʻalaba yoki magʻlubiyat bilan yakunlangan oʻyinlar yoʻq.</div>
               </div>
@@ -243,28 +247,28 @@ export default function LeaderboardModal({ isOpen, onClose }: LeaderboardModalPr
                   return (
                     <div
                       key={item.id || idx}
-                      className="p-3 bg-slate-950/70 rounded-2xl border border-slate-800/80 text-xs space-y-2"
+                      className={`p-3 rounded-2xl border text-xs space-y-2 ${isLight ? 'bg-white/75 border-black/[0.09]' : 'bg-slate-950/70 border-slate-800/80'}`}
                     >
                       <div className="flex items-center justify-between">
                         <div className="flex items-center gap-2 min-w-0">
                           {/* Yutgan */}
-                          <span className="px-2 py-0.5 rounded-lg bg-emerald-950/70 border border-emerald-500/40 text-emerald-300 font-extrabold text-[11px] flex items-center gap-1">
+                          <span className={`px-2 py-0.5 rounded-lg border font-extrabold text-[11px] flex items-center gap-1 ${isLight ? 'bg-emerald-500/15 border-emerald-600/25 text-emerald-700' : 'bg-emerald-950/70 border-emerald-500/40 text-emerald-300'}`}>
                             <span>✓</span>
-                            <span>Yutgan: <strong className="text-white">{winnerName}</strong></span>
+                            <span>Yutgan: <strong className={`${isLight ? 'text-stone-900' : 'text-white'}`}>{winnerName}</strong></span>
                           </span>
                         </div>
 
-                        <span className="text-[10px] text-slate-500 font-mono">{dateStr}</span>
+                        <span className={`text-[10px] font-mono ${isLight ? 'text-stone-500' : 'text-slate-500'}`}>{dateStr}</span>
                       </div>
 
-                      <div className="flex items-center justify-between text-[11px] text-slate-400 pt-1 border-t border-slate-800/50">
+                      <div className={`flex items-center justify-between text-[11px] pt-1 border-t ${isLight ? 'text-stone-500 border-black/[0.09]' : 'text-slate-400 border-slate-800/50'}`}>
                         {/* Yutqazgan */}
-                        <div className="flex items-center gap-1 text-red-400">
+                        <div className={`flex items-center gap-1 ${isLight ? 'text-red-600' : 'text-red-400'}`}>
                           <span>✕</span>
-                          <span>Yutqazgan: <strong className="text-slate-300">{loserName}</strong></span>
+                          <span>Yutqazgan: <strong className={`${isLight ? 'text-stone-700' : 'text-slate-300'}`}>{loserName}</strong></span>
                         </div>
 
-                        <div className="text-[10px] text-slate-500">
+                        <div className={`text-[10px] ${isLight ? 'text-stone-500' : 'text-slate-500'}`}>
                           {item.game_mode} • {item.total_moves} ta yurish
                         </div>
                       </div>
@@ -277,7 +281,7 @@ export default function LeaderboardModal({ isOpen, onClose }: LeaderboardModalPr
         </div>
 
         {/* Pastki eslatma */}
-        <div className="mt-4 pt-3 border-t border-slate-800/80 flex items-center justify-between text-slate-400 text-[11px]">
+        <div className={`mt-4 pt-3 border-t flex items-center justify-between text-[11px] ${isLight ? 'border-black/[0.09] text-stone-500' : 'border-slate-800/80 text-slate-400'}`}>
           <span>
             {activeTab === 'players'
               ? `Jami oʻyinchilar: ${playerRankings.length}`
@@ -285,7 +289,7 @@ export default function LeaderboardModal({ isOpen, onClose }: LeaderboardModalPr
           </span>
           <button
             onClick={onClose}
-            className="px-4 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-200 font-bold rounded-xl text-xs transition-colors cursor-pointer"
+            className={`px-4 py-1.5 font-bold rounded-xl text-xs transition-colors cursor-pointer ${isLight ? 'bg-black/[0.06] hover:bg-black/10 text-stone-900' : 'bg-slate-800 hover:bg-slate-700 text-slate-200'}`}
           >
             Yopish
           </button>

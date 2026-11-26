@@ -211,12 +211,13 @@ export function createFreshAppState(): AppState {
     language: getAppLanguage(),
     appTheme: (() => {
       try {
-        const saved = localStorage.getItem('nur_chess_app_theme_v2') as AppThemeMode;
+        const saved = localStorage.getItem('nur_chess_app_theme_v3') as AppThemeMode;
         if (saved === 'light' || saved === 'dark' || saved === 'system') {
           return saved;
         }
       } catch {}
-      return 'dark';
+      // Birinchi kirgan foydalanuvchi uchun har doim Kunduzgi (shaffof och) rejim ochiladi
+      return 'light';
     })(),
     gameMode: 'pvp',
     aiColor: 'black',
@@ -768,7 +769,7 @@ function gameReducer(state: AppState, action: Action): AppState {
 
     case 'SET_APP_THEME': {
       try {
-        localStorage.setItem('nur_chess_app_theme_v2', action.theme);
+        localStorage.setItem('nur_chess_app_theme_v3', action.theme);
       } catch {}
       return { ...state, appTheme: action.theme };
     }

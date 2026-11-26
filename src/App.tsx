@@ -385,33 +385,18 @@ function AppContent() {
       data-platform={isAndroidApk ? 'apk' : 'web'}
       className={`min-h-screen ${
         isLight
-          ? 'bg-[#f3ede2] bg-[url("/desktop-bg-light.jpg")] text-stone-900'
-          : 'bg-[#14110e] bg-[url("/desktop-bg.jpg")] text-[#faf6ef]'
+          ? 'bg-[#edeae2] bg-[url("/desktop-bg-light.jpg")] text-stone-900'
+          : 'bg-[#101412] bg-[url("/desktop-bg.jpg")] text-stone-100'
       } bg-cover bg-center bg-fixed flex flex-col font-sans select-none relative transition-colors duration-200`}
     >
-      {/* Iliq yong'oq va qaymoq shisha qatlami + atmosferik nurlar (Sayt uchun) */}
+      {/* Orqa fondagi shaxmat stoli shaffof shisha ostidan tiniq va mayin ko'rinishi uchun yengil vinetka */}
       <div
         className={`fixed inset-0 pointer-events-none z-0 ${
           isLight
-            ? 'bg-gradient-to-b from-[#faf6ee]/60 via-[#f4ede0]/45 to-[#ebe1cf]/70'
-            : 'bg-gradient-to-b from-[#14110e]/55 via-[#171310]/40 to-[#0f0c0a]/70'
+            ? 'bg-gradient-to-b from-white/25 via-white/10 to-stone-900/15'
+            : 'bg-gradient-to-b from-black/35 via-black/20 to-black/55'
         }`}
       />
-      {!isAndroidApk && (
-        <div className="fixed inset-0 pointer-events-none z-0 overflow-hidden">
-          <div
-            className={`nur-aurora-orb absolute -top-28 -left-20 w-[480px] h-[480px] rounded-full blur-[120px] ${
-              isLight ? 'bg-amber-300/30' : 'bg-amber-500/15'
-            }`}
-          />
-          <div
-            className={`nur-aurora-orb absolute -bottom-32 -right-20 w-[520px] h-[520px] rounded-full blur-[130px] ${
-              isLight ? 'bg-emerald-300/25' : 'bg-emerald-500/15'
-            }`}
-            style={{ animationDelay: '-5.5s' }}
-          />
-        </div>
-      )}
 
       <div className="relative z-10 flex-1 flex flex-col w-full">
       {/* ── 1. ASOSIY EKRAN ROUTER ─────────────────────────── */}

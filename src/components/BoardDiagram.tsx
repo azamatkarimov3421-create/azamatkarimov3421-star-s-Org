@@ -6,6 +6,7 @@
 import React from 'react';
 import PieceIcon from './PieceIcon';
 import { PieceType, FILES } from '../engine/types';
+import { useGame } from '../store/gameStore';
 
 export interface DiagramPiece {
   file: number; // 0-based column index
@@ -66,6 +67,13 @@ export default function BoardDiagram({
   size = 'md',
   className = '',
 }: BoardDiagramProps) {
+  const { state } = useGame();
+  const isLightTheme =
+    state.appTheme === 'light' ||
+    (state.appTheme === 'system' &&
+      typeof window !== 'undefined' &&
+      !window.matchMedia('(prefers-color-scheme: dark)').matches);
+
   // Standart ustun va qator nomlari
   const effectiveFiles =
     fileLabels ||
@@ -372,15 +380,28 @@ export default function BoardDiagram({
 
       {/* Rasm tagidagi izoh / sarlavha */}
       {(caption || subCaption) && (
-        <div className="w-full mt-2 px-1 text-center">
+        <div
+          className={`w-full mt-2.5 px-3 py-2 rounded-xl text-center border ${
+            isLightTheme
+              ? 'bg-white/75 border-black/[0.08]'
+              : 'bg-black/30 border-white/10'
+          }`}
+        >
           {caption && (
-            <p className="text-xs font-bold text-amber-300/95 leading-tight flex items-center justify-center gap-1">
-              <span>📷</span>
-              <span>{caption}</span>
+            <p
+              className={`text-xs font-bold leading-tight ${
+                isLightTheme ? 'text-stone-900' : 'text-amber-300'
+              }`}
+            >
+              {caption}
             </p>
           )}
           {subCaption && (
-            <p className="text-[10px] text-slate-400 mt-0.5 leading-snug">
+            <p
+              className={`text-[11px] mt-1 leading-snug ${
+                isLightTheme ? 'text-stone-700 font-medium' : 'text-slate-300'
+              }`}
+            >
               {subCaption}
             </p>
           )}

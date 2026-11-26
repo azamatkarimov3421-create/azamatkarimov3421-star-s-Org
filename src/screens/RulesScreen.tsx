@@ -471,32 +471,32 @@ export default function RulesScreen({ onBack, isAndroidApk = false }: RulesScree
         {activeTab === 'basic' && (
           <div className="space-y-3.5 animate-fadeIn">
             {/* Hero Card */}
-            <div className="p-4 rounded-3xl bg-gradient-to-br from-[#2a221a]/90 via-[#201a14]/90 to-[#17120e]/95 backdrop-blur-xl border border-amber-400/30 text-[#faf6ef] shadow-xl space-y-3">
-              <div className="w-full py-3 rounded-2xl bg-black/30 border border-amber-400/20 flex items-center justify-center gap-4">
+            <div className={`p-4 rounded-3xl backdrop-blur-xl border shadow-xl space-y-3 ${isLight ? 'bg-white/75 border-black/[0.09] text-stone-900' : 'p-4 rounded-3xl bg-gradient-to-br from-[#2a221a]/90 via-[#201a14]/90 to-[#17120e]/95 backdrop-blur-xl border border-amber-400/30 text-[#faf6ef] shadow-xl space-y-3'}`}>
+              <div className={`w-full py-3 rounded-2xl border flex items-center justify-center gap-4 ${isLight ? 'bg-black/[0.045] border-amber-600/25' : 'bg-black/30 border-amber-400/20'}`}>
                 <NurLogo size={60} showGlow={true} />
                 <div>
-                  <div className="text-xs font-black uppercase text-amber-400">10×10 Dosqa</div>
-                  <div className="text-base font-black text-slate-100">100 Kvadratlik Arena</div>
-                  <div className="text-[10px] text-slate-400">20 tadan jami 40 dona</div>
+                  <div className={`text-xs font-black uppercase ${isLight ? 'text-amber-700' : 'text-amber-400'}`}>10×10 Dosqa</div>
+                  <div className={`text-base font-black ${isLight ? 'text-stone-900' : 'text-slate-100'}`}>100 Kvadratlik Arena</div>
+                  <div className={`text-[10px] ${isLight ? 'text-stone-500' : 'text-slate-400'}`}>20 tadan jami 40 dona</div>
                 </div>
               </div>
 
-              <p className="text-xs text-slate-300 leading-relaxed">
+              <p className={`text-xs leading-relaxed ${isLight ? 'text-stone-700' : 'text-slate-300'}`}>
                 <strong>NUR CHESS 100</strong> — 1970-yillardan boshlab ixtirochi{' '}
-                <span className="text-amber-300 font-bold">Nurfullo Nurmatov</span> tomonidan ishlab
+                <span className={`font-bold ${isLight ? 'text-amber-700' : 'text-amber-300'}`}>Nurfullo Nurmatov</span> tomonidan ishlab
                 chiqilgan va UzAvtor davlat patenti (№ 000-002-853) bilan tasdiqlangan yangi Oʻzbek
                 milliy shaxmatidir.
               </p>
             </div>
 
             {/* RASM 1: 10x10 Boshlang'ich joylashuv ko'rgazmali doskasi */}
-            <div className="p-4 rounded-3xl nur-glass-surface backdrop-blur-xl border border-amber-400/20 text-[#faf6ef] shadow-xl space-y-3">
-              <div className="flex items-center justify-between pb-1 border-b border-white/10">
-                <h3 className="text-sm font-black text-amber-300 flex items-center gap-2">
+            <div className={`p-4 rounded-3xl nur-glass-surface backdrop-blur-xl border shadow-xl space-y-3 ${isLight ? 'border-amber-600/25 text-stone-900' : 'border-amber-400/20 text-[#faf6ef]'}`}>
+              <div className={`flex items-center justify-between pb-1 border-b ${isLight ? 'border-black/[0.09]' : 'border-white/10'}`}>
+                <h3 className={`text-sm font-black flex items-center gap-2 ${isLight ? 'text-amber-800' : 'text-amber-300'}`}>
                   <span>♟️</span>
                   <span>10x10 Dosqa va Donalarning Boshlangʻich Safi</span>
                 </h3>
-                <span className="text-[10px] font-mono text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded border border-emerald-500/30">
+                <span className={`text-[10px] font-mono px-2 py-0.5 rounded border ${isLight ? 'bg-emerald-500/15 text-emerald-800 border-emerald-600/30 font-bold' : 'bg-emerald-500/10 text-emerald-400 border-emerald-500/30'}`}>
                   40 Dona
                 </span>
               </div>
@@ -511,7 +511,7 @@ export default function RulesScreen({ onBack, isAndroidApk = false }: RulesScree
                 subCaption="N1 va M1 kataklarida oʻzgacha «NUR» donalari, D1 da Farzin, E1 da Shoh joylashgan."
               />
 
-              <div className="p-2.5 rounded-xl bg-black/30 border border-amber-400/20 font-mono text-[11px] text-amber-300 space-y-1 mt-2">
+              <div className={`p-3 rounded-xl border font-mono text-[11px] space-y-1 mt-2 ${isLight ? 'bg-white/75 border-black/[0.08] text-stone-800 font-medium' : 'bg-black/30 border-amber-400/20 text-amber-300'}`}>
                 <div>• Gorizontal ustunlar: A, B, C, N, E, D, M, F, G, H</div>
                 <div>• N1: Shoh yonidagi NUR | M1: Farzin yonidagi NUR</div>
                 <div>• Oq Shoh E1 (qora katakda), Oq Farzin D1 (oq katakda)</div>
@@ -519,23 +519,23 @@ export default function RulesScreen({ onBack, isAndroidApk = false }: RulesScree
             </div>
 
             {/* RASM 2: 1-100 Raqamli Notatsiya Diagrammasi */}
-            <div className="rounded-2xl nur-glass-surface backdrop-blur-xl border border-amber-400/20 text-[#faf6ef] overflow-hidden shadow-sm">
+            <div className={`rounded-2xl nur-glass-surface backdrop-blur-xl border overflow-hidden shadow-sm ${isLight ? 'border-amber-600/25 text-stone-900' : 'border-amber-400/20 text-[#faf6ef]'}`}>
               <button
                 onClick={() => toggleAccordion('notation')}
-                className="w-full p-3.5 flex items-center justify-between text-left font-bold text-xs sm:text-sm text-slate-200"
+                className={`w-full p-3.5 flex items-center justify-between text-left font-bold text-xs sm:text-sm ${isLight ? 'text-stone-900' : 'text-slate-200'}`}
               >
                 <div className="flex items-center gap-2">
                   <span className="text-base">🔢</span>
                   <span>1–100 Raqamli Notatsiya Xaritasi (Rasm)</span>
                 </div>
-                <span className="text-slate-500 font-mono text-xs">
+                <span className={`font-mono text-xs ${isLight ? 'text-stone-500' : 'text-slate-500'}`}>
                   {openAccordions.notation ? '▲' : '▼'}
                 </span>
               </button>
 
               {openAccordions.notation && (
-                <div className="px-4 pb-4 text-xs text-slate-300 border-t border-white/10/60 pt-3 space-y-3">
-                  <p className="text-slate-400 leading-relaxed">
+                <div className={`px-4 pb-4 text-xs border-t pt-3 space-y-3 ${isLight ? 'text-stone-700 border-black/[0.08]' : 'text-slate-300 border-white/10'}`}>
+                  <p className={`leading-relaxed ${isLight ? 'text-stone-500' : 'text-slate-400'}`}>
                     Har bir harakatni aniq va qulay yozib borish uchun har bir katak 1 dan 100 gacha raqamlangan:
                   </p>
 
@@ -552,13 +552,13 @@ export default function RulesScreen({ onBack, isAndroidApk = false }: RulesScree
             </div>
 
             {/* O'yin Maqsadi va Shohmat */}
-            <div className="p-4 rounded-3xl nur-glass-surface backdrop-blur-xl border border-amber-400/20 text-[#faf6ef] shadow-sm space-y-2">
-              <h3 className="text-xs font-black text-amber-300 flex items-center gap-2">
+            <div className={`p-4 rounded-3xl nur-glass-surface backdrop-blur-xl border shadow-sm space-y-2 ${isLight ? 'border-amber-600/25 text-stone-900' : 'border-amber-400/20 text-[#faf6ef]'}`}>
+              <h3 className={`text-xs font-black flex items-center gap-2 ${isLight ? 'text-amber-700' : 'text-amber-300'}`}>
                 <span>👑</span>
                 <span>Oʻyin Maqsadi va Shohmat</span>
               </h3>
-              <p className="text-xs text-slate-300 leading-relaxed">
-                Asosiy maqsad — raqib Shohiga zarba berib <strong className="text-amber-300">mot</strong> qilishdir.
+              <p className={`text-xs leading-relaxed ${isLight ? 'text-stone-700' : 'text-slate-300'}`}>
+                Asosiy maqsad — raqib Shohiga zarba berib <strong className={`${isLight ? 'text-amber-700' : 'text-amber-300'}`}>mot</strong> qilishdir.
                 Agar Shoh hujum ostida boʻlib, qochishga boʻsh katak boʻlmasa, hujum qilgan donani urib olish imkoni boʻlmasa va zarbani boshqa figura bilan toʻsib boʻlmasa — bu Shohmat boʻlib, oʻyin gʻalaba bilan yakunlanadi.
               </p>
             </div>
@@ -571,82 +571,82 @@ export default function RulesScreen({ onBack, isAndroidApk = false }: RulesScree
         {activeTab === 'pieces' && (
           <div className="space-y-4 animate-fadeIn">
             {/* Rasmiy ballar jadvali bloki */}
-            <div className="p-3.5 rounded-2xl bg-amber-500/10 border border-amber-500/30 text-xs text-slate-300 leading-relaxed">
-              <strong className="text-amber-300 block mb-1">
+            <div className={`p-3.5 rounded-2xl bg-amber-500/10 border text-xs leading-relaxed ${isLight ? 'border-amber-600/25 text-stone-700' : 'border-amber-500/30 text-slate-300'}`}>
+              <strong className={`block mb-1 ${isLight ? 'text-amber-700' : 'text-amber-300'}`}>
                 Qoʻllanma 55-bet: Donalarning Rasmiy Qiymati:
               </strong>
               «Piyoda 1 qiymatli, Ot 3 qiymatli, Fil 3 qiymatli, Rux 5 qiymatli,{' '}
-              <strong className="text-amber-300">NUR 7 qiymatli kuchga</strong>, Farzin 9 qiymatli
+              <strong className={`${isLight ? 'text-amber-700' : 'text-amber-300'}`}>NUR 7 qiymatli kuchga</strong>, Farzin 9 qiymatli
               kuchga egadir.»
             </div>
 
             {/* ── 3D FOTOREALISTIK MAXSUS FIGURALAR ANNOTATSIYASI (SHOH VA NUR) ── */}
-            <div className="p-4 rounded-3xl bg-gradient-to-br from-[#1a231d] via-[#141b17] to-[#0f1412] border border-amber-500/40 shadow-2xl space-y-3.5">
-              <div className="flex items-center justify-between pb-2 border-b border-[#2b3d30]">
+            <div className={`p-4 rounded-3xl bg-gradient-to-br from-[#1a231d] via-[#141b17] to-[#0f1412] border shadow-2xl space-y-3.5 ${isLight ? 'border-amber-600/25' : 'border-amber-500/40'}`}>
+              <div className={`flex items-center justify-between pb-2 border-b ${isLight ? 'border-black/[0.09]' : 'border-[#2b3d30]'}`}>
                 <div className="flex items-center gap-2">
                   <span className="text-xl">✨</span>
                   <div>
-                    <h3 className="text-sm font-black text-white">
+                    <h3 className={`text-sm font-black ${isLight ? 'text-stone-900' : 'text-white'}`}>
                       Noyob Donalar: Shoh & NUR (Maxsus Belgilar)
                     </h3>
-                    <p className="text-[10px] text-zinc-400">
+                    <p className={`text-[10px] ${isLight ? 'text-stone-500' : 'text-zinc-400'}`}>
                       Muallif Nurfullo Nurmatov modeli va rasmiy 3D belgilari
                     </p>
                   </div>
                 </div>
-                <span className="text-[10px] font-black uppercase px-2 py-0.5 rounded bg-amber-500/20 text-amber-400 border border-amber-500/30">
+                <span className={`text-[10px] font-black uppercase px-2 py-0.5 rounded bg-amber-500/20 border ${isLight ? 'text-amber-700 border-amber-600/25' : 'text-amber-400 border-amber-500/30'}`}>
                   3D & Rasmiy
                 </span>
               </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 {/* 1. SHOH (KING) ANNOTATSIYASI */}
-                <div className="p-3.5 rounded-2xl bg-[#18201a] border border-[#2b3d30] flex flex-col gap-2.5">
+                <div className={`p-3.5 rounded-2xl border flex flex-col gap-2.5 ${isLight ? 'bg-white/75 border-black/[0.09]' : 'bg-[#18201a] border-[#2b3d30]'}`}>
                   <div className="flex items-center gap-2.5">
-                    <div className="w-12 h-12 rounded-xl bg-black/40 border border-amber-500/30 flex items-center justify-center p-1 relative overflow-hidden">
+                    <div className={`w-12 h-12 rounded-xl border flex items-center justify-center p-1 relative overflow-hidden ${isLight ? 'bg-black/[0.045] border-amber-600/25' : 'bg-black/40 border-amber-500/30'}`}>
                       <img src="/pieces/3d_king_white.png" alt="3D Shoh" className="w-full h-full object-contain" />
                     </div>
                     <div>
-                      <h4 className="text-xs font-black text-amber-300">1. Shoh (King) — Oliy Toj</h4>
-                      <span className="text-[10px] font-mono text-zinc-400">Har ikkala tomonda Oltin Toj</span>
+                      <h4 className={`text-xs font-black ${isLight ? 'text-amber-700' : 'text-amber-300'}`}>1. Shoh (King) — Oliy Toj</h4>
+                      <span className={`text-[10px] font-mono ${isLight ? 'text-stone-500' : 'text-zinc-400'}`}>Har ikkala tomonda Oltin Toj</span>
                     </div>
                   </div>
 
-                  <div className="space-y-1.5 text-[11px] text-zinc-300">
+                  <div className={`space-y-1.5 text-[11px] ${isLight ? 'text-stone-700' : 'text-zinc-300'}`}>
                     <div className="flex items-start gap-1.5">
-                      <span className="text-amber-400 font-bold shrink-0">👑 Toj:</span>
+                      <span className={`font-bold shrink-0 ${isLight ? 'text-amber-700' : 'text-amber-400'}`}>👑 Toj:</span>
                       <span>8 tishli sarg'ish-tillarang shohona toj (Oq va Qora shohlar boshida zar toj bilan maydonga tushadi).</span>
                     </div>
                     <div className="flex items-start gap-1.5">
-                      <span className="text-emerald-400 font-bold shrink-0">🏰 Rokirovka:</span>
+                      <span className={`font-bold shrink-0 ${isLight ? 'text-emerald-700' : 'text-emerald-400'}`}>🏰 Rokirovka:</span>
                       <span>100 katakda 3 xil rokirovka: Qisqa (2 katak), Oʻrta (3 katak) va Uzun (4 katak).</span>
                     </div>
                     <div className="flex items-start gap-1.5">
-                      <span className="text-red-400 font-bold shrink-0">🛡️ Qoida:</span>
+                      <span className={`font-bold shrink-0 ${isLight ? 'text-red-600' : 'text-red-400'}`}>🛡️ Qoida:</span>
                       <span>Shoh zarba ostida qolsa, darhol himoyalanish yoki qochish shart. Mot qilinganda oʻyin tugaydi.</span>
                     </div>
                   </div>
                 </div>
 
                 {/* 2. NUR DONASI ANNOTATSIYASI */}
-                <div className="p-3.5 rounded-2xl bg-[#18201a] border border-[#2b3d30] flex flex-col gap-2.5">
+                <div className={`p-3.5 rounded-2xl border flex flex-col gap-2.5 ${isLight ? 'bg-white/75 border-black/[0.09]' : 'bg-[#18201a] border-[#2b3d30]'}`}>
                   <div className="flex items-center gap-2.5">
-                    <div className="w-12 h-12 rounded-xl bg-black/40 border border-amber-500/30 flex items-center justify-center p-1 relative overflow-hidden">
+                    <div className={`w-12 h-12 rounded-xl border flex items-center justify-center p-1 relative overflow-hidden ${isLight ? 'bg-black/[0.045] border-amber-600/25' : 'bg-black/40 border-amber-500/30'}`}>
                       <img src="/pieces/3d_nur_white.png" alt="3D Nur" className="w-full h-full object-contain" />
                     </div>
                     <div>
-                      <h4 className="text-xs font-black text-amber-300">2. NUR — «+» Belgili Mayak</h4>
-                      <span className="text-[10px] font-mono text-zinc-400">Kontrast «+» Romb Nishoni</span>
+                      <h4 className={`text-xs font-black ${isLight ? 'text-amber-700' : 'text-amber-300'}`}>2. NUR — «+» Belgili Mayak</h4>
+                      <span className={`text-[10px] font-mono ${isLight ? 'text-stone-500' : 'text-zinc-400'}`}>Kontrast «+» Romb Nishoni</span>
                     </div>
                   </div>
 
-                  <div className="space-y-1.5 text-[11px] text-zinc-300">
+                  <div className={`space-y-1.5 text-[11px] ${isLight ? 'text-stone-700' : 'text-zinc-300'}`}>
                     <div className="flex items-start gap-1.5">
-                      <span className="text-amber-400 font-bold shrink-0">➕ Belgisi:</span>
+                      <span className={`font-bold shrink-0 ${isLight ? 'text-amber-700' : 'text-amber-400'}`}>➕ Belgisi:</span>
                       <span>Oq Nur boshida <strong className="text-white bg-zinc-950 px-1 rounded">QORA «+»</strong>, Qora Nur boshida esa <strong className="text-zinc-950 bg-white px-1 rounded">OQ «+»</strong> romb nishoni bor.</span>
                     </div>
                     <div className="flex items-start gap-1.5">
-                      <span className="text-emerald-400 font-bold shrink-0">⚡ Sakrash:</span>
+                      <span className={`font-bold shrink-0 ${isLight ? 'text-emerald-700' : 'text-emerald-400'}`}>⚡ Sakrash:</span>
                       <span>4 ta toʻgʻri yoʻnalishda (↑, ↓, ←, →) 1, 2 yoki 3 katakkacha harakatlanadi va toʻsiqlar ustidan SAKRAB oʻtadi!</span>
                     </div>
                     <div className="flex items-start gap-1.5">
@@ -667,7 +667,7 @@ export default function RulesScreen({ onBack, isAndroidApk = false }: RulesScree
                   className={`px-2.5 py-1.5 rounded-xl text-xs font-bold shrink-0 flex items-center gap-1.5 transition-all ${
                     selectedPieceIndex === idx
                       ? 'bg-amber-500 text-slate-950 font-black shadow-md scale-105'
-                      : 'bg-slate-900 text-slate-300 border border-white/10 hover:bg-slate-800'
+                      : (isLight ? 'bg-white/75 text-stone-700 border border-black/[0.08] hover:bg-white' : 'bg-slate-900 text-slate-300 border border-white/10 hover:bg-slate-800')
                   }`}
                 >
                   <PieceIcon type={p.type} color="white" size={18} />
@@ -680,20 +680,20 @@ export default function RulesScreen({ onBack, isAndroidApk = false }: RulesScree
             {(() => {
               const currentPiece = PIECE_LESSONS[selectedPieceIndex];
               return (
-                <div className="p-4 rounded-3xl nur-glass-surface backdrop-blur-xl border border-amber-400/40 text-[#faf6ef] shadow-2xl space-y-3.5">
-                  <div className="flex items-center justify-between pb-2 border-b border-white/10">
+                <div className={`p-4 rounded-3xl nur-glass-surface backdrop-blur-xl border shadow-2xl space-y-3.5 ${isLight ? 'border-amber-600/25 text-stone-900' : 'border-amber-400/40 text-[#faf6ef]'}`}>
+                  <div className={`flex items-center justify-between pb-2 border-b ${isLight ? 'border-black/[0.09]' : 'border-white/10'}`}>
                     <div className="flex items-center gap-2.5">
-                      <div className="w-10 h-10 rounded-xl bg-black/30 border border-amber-400/20 flex items-center justify-center p-1">
+                      <div className={`w-10 h-10 rounded-xl border flex items-center justify-center p-1 ${isLight ? 'bg-black/[0.045] border-amber-600/25' : 'bg-black/30 border-amber-400/20'}`}>
                         <PieceIcon type={currentPiece.type} color="white" size={32} />
                       </div>
                       <div>
-                        <h3 className="text-sm font-black text-white">{currentPiece.name}</h3>
-                        <span className="text-[10px] font-mono text-slate-400">
+                        <h3 className={`text-sm font-black ${isLight ? 'text-stone-900' : 'text-white'}`}>{currentPiece.name}</h3>
+                        <span className={`text-[10px] font-mono ${isLight ? 'text-stone-500' : 'text-slate-400'}`}>
                           Belgisi: {currentPiece.symbol}
                         </span>
                       </div>
                     </div>
-                    <span className="text-xs font-mono font-black px-2.5 py-1 rounded-lg bg-amber-500/20 text-amber-300 border border-amber-500/40">
+                    <span className={`text-xs font-mono font-black px-2.5 py-1 rounded-lg bg-amber-500/20 border ${isLight ? 'text-amber-700 border-amber-600/25' : 'text-amber-300 border-amber-500/40'}`}>
                       {currentPiece.value}
                     </span>
                   </div>
@@ -704,7 +704,7 @@ export default function RulesScreen({ onBack, isAndroidApk = false }: RulesScree
                   </div>
 
                   {/* Tavsif */}
-                  <div className="p-3 rounded-2xl bg-black/30 border border-white/10 text-xs text-slate-300 leading-relaxed">
+                  <div className={`p-3 rounded-2xl border text-xs leading-relaxed ${isLight ? 'bg-black/[0.045] border-black/[0.09] text-stone-700' : 'bg-black/30 border-white/10 text-slate-300'}`}>
                     {currentPiece.desc}
                   </div>
                 </div>
@@ -713,7 +713,7 @@ export default function RulesScreen({ onBack, isAndroidApk = false }: RulesScree
 
             {/* Boshqa barcha figuralarning tezkor ro'yxati */}
             <div className="space-y-2 pt-2">
-              <h4 className="text-xs font-bold text-slate-400 uppercase tracking-wider px-1">
+              <h4 className={`text-xs font-bold uppercase tracking-wider px-1 ${isLight ? 'text-stone-500' : 'text-slate-400'}`}>
                 Barcha 7 ta figura koʻrinishi:
               </h4>
               {PIECE_LESSONS.map((item, idx) => (
@@ -722,22 +722,21 @@ export default function RulesScreen({ onBack, isAndroidApk = false }: RulesScree
                   onClick={() => setSelectedPieceIndex(idx)}
                   className={`p-3 rounded-2xl border transition-all cursor-pointer flex items-center justify-between ${
                     selectedPieceIndex === idx
-                      ? 'bg-slate-900 border-amber-500/60 ring-1 ring-amber-500/30'
-                      : 'bg-slate-950/70 border-white/10/80 hover:bg-slate-900'
+                      ? (isLight ? 'bg-white/95 border-amber-500/60 ring-1 ring-amber-500/25 shadow-sm' : 'bg-slate-900 border-amber-500/60 ring-1 ring-amber-500/30') : (isLight ? 'bg-white/60 border-black/[0.08] hover:bg-white/90' : 'bg-slate-950/70 border-white/15 hover:bg-slate-900')
                   }`}
                 >
                   <div className="flex items-center gap-3">
-                    <div className="w-9 h-9 rounded-xl bg-slate-900 border border-white/10 flex items-center justify-center p-1">
+                    <div className={`w-9 h-9 rounded-xl border flex items-center justify-center p-1 ${isLight ? 'bg-white/75 border-black/[0.09]' : 'bg-slate-900 border-white/10'}`}>
                       <PieceIcon type={item.type} color="white" size={28} />
                     </div>
                     <div>
-                      <div className="text-xs font-bold text-slate-100">{item.name}</div>
-                      <div className="text-[10px] text-slate-400 font-mono">
+                      <div className={`text-xs font-bold ${isLight ? 'text-stone-900' : 'text-slate-100'}`}>{item.name}</div>
+                      <div className={`text-[10px] font-mono ${isLight ? 'text-stone-500' : 'text-slate-400'}`}>
                         {item.symbol} · {item.value}
                       </div>
                     </div>
                   </div>
-                  <span className="text-xs text-amber-400 font-bold">Rasmini koʻrish →</span>
+                  <span className={`text-xs font-bold ${isLight ? 'text-amber-700' : 'text-amber-400'}`}>Rasmini koʻrish →</span>
                 </div>
               ))}
             </div>
@@ -749,31 +748,31 @@ export default function RulesScreen({ onBack, isAndroidApk = false }: RulesScree
         ══════════════════════════════════════════════════════════════ */}
         {activeTab === 'special' && (
           <div className="space-y-4 animate-fadeIn">
-            <div className="p-4 rounded-3xl nur-glass-surface backdrop-blur-xl border border-amber-400/30 text-[#faf6ef] shadow-xl space-y-3">
-              <div className="flex items-center gap-2.5 pb-2 border-b border-white/10">
+            <div className={`p-4 rounded-3xl nur-glass-surface backdrop-blur-xl border shadow-xl space-y-3 ${isLight ? 'border-amber-600/25 text-stone-900' : 'border-amber-400/30 text-[#faf6ef]'}`}>
+              <div className={`flex items-center gap-2.5 pb-2 border-b ${isLight ? 'border-black/[0.09]' : 'border-white/10'}`}>
                 <span className="text-2xl">🏰</span>
                 <div>
-                  <h3 className="text-sm font-black text-amber-300">
+                  <h3 className={`text-sm font-black ${isLight ? 'text-amber-700' : 'text-amber-300'}`}>
                     3 Xil Rokirovka Tizimi (Rasmli)
                   </h3>
-                  <p className="text-[11px] text-slate-400">
+                  <p className={`text-[11px] ${isLight ? 'text-stone-500' : 'text-slate-400'}`}>
                     Kitob 27–30-betlar: Qisqa, Oʻrta va Uzun rokirovka
                   </p>
                 </div>
               </div>
 
-              <p className="text-xs text-slate-300 leading-relaxed">
+              <p className={`text-xs leading-relaxed ${isLight ? 'text-stone-700' : 'text-slate-300'}`}>
                 100 katakli shaxmatda har bir tomon bir partiyada bir marta Shoh va Ruxni birgalikda surish orqali rokirovka qilishi mumkin:
               </p>
             </div>
 
             {/* 1. QISQA ROKIROVKA RASMI (0-0) */}
-            <div className="p-4 rounded-3xl nur-glass-surface backdrop-blur-xl border border-amber-400/20 text-[#faf6ef] shadow-md space-y-3">
+            <div className={`p-4 rounded-3xl nur-glass-surface backdrop-blur-xl border shadow-md space-y-3 ${isLight ? 'border-amber-600/25 text-stone-900' : 'border-amber-400/20 text-[#faf6ef]'}`}>
               <div className="flex items-center justify-between">
-                <h4 className="font-bold text-amber-400 text-xs sm:text-sm">
+                <h4 className={`font-bold text-xs sm:text-sm ${isLight ? 'text-amber-700' : 'text-amber-400'}`}>
                   1. Qisqa Rokirovka (0-0) — Chap qanotga
                 </h4>
-                <span className="text-[10px] font-mono bg-slate-950 px-2 py-0.5 rounded text-slate-400">
+                <span className={`text-[10px] font-mono px-2 py-0.5 rounded ${isLight ? 'bg-white/75 text-stone-500' : 'bg-slate-950 text-slate-400'}`}>
                   Shoh C1, Rux N1
                 </span>
               </div>
@@ -812,12 +811,12 @@ export default function RulesScreen({ onBack, isAndroidApk = false }: RulesScree
             </div>
 
             {/* 2. O'RTA ROKIROVKA RASMI (-0-0-) */}
-            <div className="p-4 rounded-3xl nur-glass-surface backdrop-blur-xl border border-amber-400/30 text-[#faf6ef] shadow-md space-y-3">
+            <div className={`p-4 rounded-3xl nur-glass-surface backdrop-blur-xl border shadow-md space-y-3 ${isLight ? 'border-amber-600/25 text-stone-900' : 'border-amber-400/30 text-[#faf6ef]'}`}>
               <div className="flex items-center justify-between">
-                <h4 className="font-bold text-amber-300 text-xs sm:text-sm">
+                <h4 className={`font-bold text-xs sm:text-sm ${isLight ? 'text-amber-700' : 'text-amber-300'}`}>
                   2. Oʻrta Rokirovka (-0-0-) — Maxsus Oʻzbekcha
                 </h4>
-                <span className="text-[10px] font-mono bg-amber-500/20 text-amber-300 px-2 py-0.5 rounded">
+                <span className={`text-[10px] font-mono bg-amber-500/20 px-2 py-0.5 rounded ${isLight ? 'text-amber-700' : 'text-amber-300'}`}>
                   Shoh M1, Rux D1
                 </span>
               </div>
@@ -856,12 +855,12 @@ export default function RulesScreen({ onBack, isAndroidApk = false }: RulesScree
             </div>
 
             {/* 3. UZUN ROKIROVKA RASMI (0-0-0) */}
-            <div className="p-4 rounded-3xl nur-glass-surface backdrop-blur-xl border border-amber-400/20 text-[#faf6ef] shadow-md space-y-3">
+            <div className={`p-4 rounded-3xl nur-glass-surface backdrop-blur-xl border shadow-md space-y-3 ${isLight ? 'border-amber-600/25 text-stone-900' : 'border-amber-400/20 text-[#faf6ef]'}`}>
               <div className="flex items-center justify-between">
-                <h4 className="font-bold text-amber-400 text-xs sm:text-sm">
+                <h4 className={`font-bold text-xs sm:text-sm ${isLight ? 'text-amber-700' : 'text-amber-400'}`}>
                   3. Uzun Rokirovka (0-0-0) — Oʻng qanotga
                 </h4>
-                <span className="text-[10px] font-mono bg-slate-950 px-2 py-0.5 rounded text-slate-400">
+                <span className={`text-[10px] font-mono px-2 py-0.5 rounded ${isLight ? 'bg-white/75 text-stone-500' : 'bg-slate-950 text-slate-400'}`}>
                   Shoh G1, Rux F1
                 </span>
               </div>
@@ -900,11 +899,11 @@ export default function RulesScreen({ onBack, isAndroidApk = false }: RulesScree
             </div>
 
             {/* EN PASSANT VA AYLONISH (RASMLI DIAGRAMMA BILAN) */}
-            <div className="p-4 rounded-3xl nur-glass-surface backdrop-blur-xl border border-amber-400/30 text-[#faf6ef] shadow-md space-y-3 text-xs">
-              <h4 className="font-bold text-amber-300 text-sm flex items-center gap-2">
+            <div className={`p-4 rounded-3xl nur-glass-surface backdrop-blur-xl border shadow-md space-y-3 text-xs ${isLight ? 'border-amber-600/25 text-stone-900' : 'border-amber-400/30 text-[#faf6ef]'}`}>
+              <h4 className={`font-bold text-sm flex items-center gap-2 ${isLight ? 'text-amber-700' : 'text-amber-300'}`}>
                 <span>⚡</span> Oʻtishda Urib Olish (En Passant: 6→7 va 7→8) & Aylanish
               </h4>
-              <p className="text-slate-300 leading-relaxed">
+              <p className={`leading-relaxed ${isLight ? 'text-stone-700' : 'text-slate-300'}`}>
                 Rasmiy qoʻllanmaga koʻra, agar raqib piyodasi oʻz hududidan <strong>2 yoki 3 katak</strong> oldinga siljib, sizning piyodangiz hujum qilib turgan katak ustidan kesib oʻtsa (masalan, Oq piyoda <strong>6-qatorda (E6)</strong> turganda Qora piyoda <strong>D9→D6</strong> yoki <strong>D8→D6</strong> yursa), siz keyingi javob yurishidayoq piyodangizni <strong>6-qatordan 7-qatorga (E6:D7 e.p.)</strong> diagonal chiqarib, raqib piyodasini urib olishingiz mumkin! Xuddi shunday 7-qatordagi piyoda <strong>7→8</strong> ga (Qoralar esa <strong>5→4</strong> va <strong>4→3</strong> ga) oʻtishda urib oladi.
               </p>
 
@@ -943,7 +942,7 @@ export default function RulesScreen({ onBack, isAndroidApk = false }: RulesScree
                 subCaption="Faqat raqib 2 yoki 3 katak siljigan yurishning oʻzidayoq javoban amalga oshiriladi."
               />
 
-              <p className="text-slate-300 leading-relaxed pt-1 border-t border-white/10">
+              <p className={`leading-relaxed pt-1 border-t ${isLight ? 'text-stone-700 border-black/[0.09]' : 'text-slate-300 border-white/10'}`}>
                 Oq piyoda <strong>10-qatorga</strong>, qora piyoda <strong>1-qatorga</strong> yetganda oʻyinchining tanloviga koʻra <strong>Farzin, Nur, Rux, Fil yoki Otga</strong> aylanadi.
               </p>
             </div>
@@ -956,19 +955,19 @@ export default function RulesScreen({ onBack, isAndroidApk = false }: RulesScree
         {activeTab === 'openings' && (
           <div className="space-y-4 animate-fadeIn">
             {/* 1. O'ZBEKCHA HIMOYA DEBYUTI */}
-            <div className="p-4 rounded-3xl bg-gradient-to-br from-amber-500/20 via-[#231d17]/90 to-[#18130f]/95 backdrop-blur-xl border border-amber-400/30 text-[#faf6ef] shadow-xl space-y-3">
-              <div className="flex items-center justify-between pb-1 border-b border-white/10">
-                <h4 className="font-black text-amber-300 text-sm">
+            <div className={`p-4 rounded-3xl backdrop-blur-xl border shadow-xl space-y-3 ${isLight ? 'bg-white/75 border-black/[0.09] text-stone-900' : 'p-4 rounded-3xl bg-gradient-to-br from-amber-500/20 via-[#231d17]/90 to-[#18130f]/95 backdrop-blur-xl border border-amber-400/30 text-[#faf6ef] shadow-xl space-y-3'}`}>
+              <div className={`flex items-center justify-between pb-1 border-b ${isLight ? 'border-black/[0.09]' : 'border-white/10'}`}>
+                <h4 className={`font-black text-sm ${isLight ? 'text-amber-700' : 'text-amber-300'}`}>
                   «Oʻzbekcha Himoya» Debyuti
                 </h4>
-                <span className="text-[10px] text-amber-400 font-mono">Qoʻllanma 51-bet</span>
+                <span className={`text-[10px] font-mono ${isLight ? 'text-amber-700' : 'text-amber-400'}`}>Qoʻllanma 51-bet</span>
               </div>
 
-              <p className="text-xs text-slate-300 leading-relaxed">
+              <p className={`text-xs leading-relaxed ${isLight ? 'text-stone-700' : 'text-slate-300'}`}>
                 Muallif Nurfullo Nurmatov tomonidan tavsiya etilgan maxsus strategik himoya:
               </p>
 
-              <div className="p-2.5 rounded-xl bg-black/35 border border-amber-400/25 font-mono text-xs text-amber-300 space-y-0.5">
+              <div className={`p-2.5 rounded-xl border font-mono text-xs space-y-0.5 ${isLight ? 'bg-black/[0.045] border-amber-600/25 text-amber-700' : 'bg-black/35 border-amber-400/25 text-amber-300'}`}>
                 <div>1. m5 m6</div>
                 <div>2. n5 n6</div>
                 <div>3. Кf3 Кf8</div>
@@ -1022,15 +1021,15 @@ export default function RulesScreen({ onBack, isAndroidApk = false }: RulesScree
             </div>
 
             {/* 2. BOLALARCHA 3 YURISHDA MOT RASMI */}
-            <div className="p-4 rounded-3xl nur-glass-surface backdrop-blur-xl border border-amber-400/20 text-[#faf6ef] shadow-sm space-y-3">
-              <div className="flex items-center justify-between pb-1 border-b border-white/10">
-                <h4 className="font-black text-slate-100 text-sm">
+            <div className={`p-4 rounded-3xl nur-glass-surface backdrop-blur-xl border shadow-sm space-y-3 ${isLight ? 'border-amber-600/25 text-stone-900' : 'border-amber-400/20 text-[#faf6ef]'}`}>
+              <div className={`flex items-center justify-between pb-1 border-b ${isLight ? 'border-black/[0.09]' : 'border-white/10'}`}>
+                <h4 className={`font-black text-sm ${isLight ? 'text-stone-900' : 'text-slate-100'}`}>
                   Bolalarcha 3 Yurishda Mot (Tezkor Mat)
                 </h4>
-                <span className="text-[10px] text-slate-400 font-mono">Qoʻllanma 55-bet</span>
+                <span className={`text-[10px] font-mono ${isLight ? 'text-stone-500' : 'text-slate-400'}`}>Qoʻllanma 55-bet</span>
               </div>
 
-              <div className="p-2.5 rounded-xl bg-black/30 border border-amber-400/20 font-mono text-xs text-emerald-400 space-y-0.5">
+              <div className={`p-2.5 rounded-xl border font-mono text-xs space-y-0.5 ${isLight ? 'bg-black/[0.045] border-amber-600/25 text-emerald-700' : 'bg-black/30 border-amber-400/20 text-emerald-400'}`}>
                 <div>1. Nr n4  Kf8</div>
                 <div>2. Nre4  e8</div>
                 <div>3. Nr:e7X (Qoralar mot boʻldi!)</div>
@@ -1067,15 +1066,15 @@ export default function RulesScreen({ onBack, isAndroidApk = false }: RulesScree
             </div>
 
             {/* 3. FARZINNI YUTIB OLISH KOMBINATSIYASI RASMI */}
-            <div className="p-4 rounded-3xl nur-glass-surface backdrop-blur-xl border border-amber-400/20 text-[#faf6ef] shadow-sm space-y-3">
-              <div className="flex items-center justify-between pb-1 border-b border-white/10">
-                <h4 className="font-black text-slate-100 text-sm">
+            <div className={`p-4 rounded-3xl nur-glass-surface backdrop-blur-xl border shadow-sm space-y-3 ${isLight ? 'border-amber-600/25 text-stone-900' : 'border-amber-400/20 text-[#faf6ef]'}`}>
+              <div className={`flex items-center justify-between pb-1 border-b ${isLight ? 'border-black/[0.09]' : 'border-white/10'}`}>
+                <h4 className={`font-black text-sm ${isLight ? 'text-stone-900' : 'text-slate-100'}`}>
                   Farzinni Yutib Olish Kombinatsiyasi
                 </h4>
-                <span className="text-[10px] text-slate-400 font-mono">Qoʻllanma 55-bet</span>
+                <span className={`text-[10px] font-mono ${isLight ? 'text-stone-500' : 'text-slate-400'}`}>Qoʻllanma 55-bet</span>
               </div>
 
-              <div className="p-2.5 rounded-xl bg-black/30 border border-amber-400/20 font-mono text-xs text-cyan-400 space-y-0.5">
+              <div className={`p-2.5 rounded-xl border font-mono text-xs space-y-0.5 ${isLight ? 'bg-black/[0.045] border-amber-600/25 text-sky-700' : 'bg-black/30 border-amber-400/20 text-cyan-400'}`}>
                 <div>1. Nr m4  Kc8</div>
                 <div>2. Nrd4  d8</div>
                 <div>3. Nr d7  Ф d7</div>
@@ -1111,8 +1110,8 @@ export default function RulesScreen({ onBack, isAndroidApk = false }: RulesScree
             </div>
 
             {/* Mualliflik va Patent guvohnomasi */}
-            <div className="p-3.5 rounded-2xl bg-black/30 border border-amber-400/20 text-[10px] text-slate-400 space-y-1">
-              <div className="text-slate-200 font-bold">NUR CHESS 100 — Oʻzbek Shaxmati</div>
+            <div className={`p-3.5 rounded-2xl border text-[10px] space-y-1 ${isLight ? 'bg-black/[0.045] border-amber-600/25 text-stone-500' : 'bg-black/30 border-amber-400/20 text-slate-400'}`}>
+              <div className={`font-bold ${isLight ? 'text-stone-900' : 'text-slate-200'}`}>NUR CHESS 100 — Oʻzbek Shaxmati</div>
               <div>
                 Mualliflik guvohnomasi: <strong>UzAvtor № 000-002-853</strong> (09.12.2025).
               </div>
