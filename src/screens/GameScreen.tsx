@@ -740,7 +740,7 @@ export default function GameScreen({ onBack, onOpenSettings, isAndroidApk = fals
           }}
           className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-3 sm:p-4 animate-fadeIn"
         >
-          <div className="relative w-full max-w-sm landscape:max-w-md bg-[#1a1a1e]/95 backdrop-blur-2xl border border-white/10 rounded-2xl p-4 sm:p-5 landscape:p-3.5 shadow-[0_24px_64px_rgba(0,0,0,0.75)] flex flex-col gap-3 landscape:gap-2 text-zinc-100 max-h-[92dvh] overflow-y-auto">
+          <div className="relative w-full max-w-sm landscape:max-w-md bg-[#1e1915]/95 backdrop-blur-2xl border border-amber-400/20 rounded-2xl p-4 sm:p-5 landscape:p-3.5 shadow-[0_24px_64px_rgba(0,0,0,0.75)] flex flex-col gap-3 landscape:gap-2 text-zinc-100 max-h-[92dvh] overflow-y-auto">
             {/* Modal Sarlavhasi */}
             <div className="flex items-center justify-between pb-3 border-b border-white/10">
               <div className="flex items-center gap-2.5">
@@ -833,7 +833,7 @@ export default function GameScreen({ onBack, onOpenSettings, isAndroidApk = fals
                       setShowMenuModal(false);
                       dispatch({ type: 'NEW_GAME' });
                     }}
-                    className="w-full py-2.5 px-4 rounded-xl bg-[#629924] hover:bg-[#56881f] text-white font-semibold text-xs sm:text-sm flex items-center justify-center gap-2 cursor-pointer transition-colors"
+                    className="w-full py-2.5 px-4 rounded-xl bg-gradient-to-b from-[#66b130] to-[#4e8e21] hover:brightness-105 text-white font-semibold text-xs sm:text-sm flex items-center justify-center gap-2 cursor-pointer transition-colors"
                   >
                     <RotateCwIcon size={16} />
                     <span>Yangi oʻyin boshlash</span>

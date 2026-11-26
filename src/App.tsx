@@ -385,16 +385,16 @@ function AppContent() {
       data-platform={isAndroidApk ? 'apk' : 'web'}
       className={`min-h-screen ${
         isLight
-          ? 'bg-[#f4f3ef] bg-[url("/desktop-bg-light.jpg")] text-zinc-900'
-          : 'bg-[#161618] bg-[url("/desktop-bg.jpg")] text-zinc-100'
+          ? 'bg-[#f3ede2] bg-[url("/desktop-bg-light.jpg")] text-stone-900'
+          : 'bg-[#14110e] bg-[url("/desktop-bg.jpg")] text-[#faf6ef]'
       } bg-cover bg-center bg-fixed flex flex-col font-sans select-none relative transition-colors duration-200`}
     >
-      {/* Neytral sokin fon qatlami (yashil va neon ranglarni silliqlashtiradi, haqiqiy grafit/oq tus beradi) */}
+      {/* Iliq yong'oq va qaymoq shisha qatlami (fondagi shaxmat tasviri jonli va uyg'un ko'rinadi) */}
       <div
         className={`fixed inset-0 pointer-events-none z-0 ${
           isLight
-            ? 'bg-[#f4f3ef]/72 backdrop-saturate-50'
-            : 'bg-[#161618]/74 backdrop-saturate-50'
+            ? 'bg-gradient-to-b from-[#faf6ee]/68 via-[#f4ede0]/52 to-[#ebe1cf]/72'
+            : 'bg-gradient-to-b from-[#14110e]/64 via-[#171310]/48 to-[#0f0c0a]/76'
         }`}
       />
 

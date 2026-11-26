@@ -91,17 +91,15 @@ export default function HomeScreen({
     dispatch({ type: 'SET_APP_THEME', theme: isLight ? 'dark' : 'light' });
   };
 
-  // Barcha kartalarda yagona sokin, jiddiy neytral ikonka uslubi (rang-barang sun'iy kamalak yo'q)
-  const neutralIconBox = isLight
-    ? 'bg-zinc-900/[0.04] border-zinc-900/[0.08] text-zinc-700 group-hover:bg-zinc-900/[0.07] group-hover:text-zinc-950'
-    : 'bg-white/[0.06] border-white/[0.08] text-zinc-200 group-hover:bg-white/[0.10] group-hover:text-white';
-
   const gameModes = [
     {
       id: 'vsAI',
       title: 'Kompyuter bilan',
       subtitle: 'Darajani tanlab yakka oʻynash',
       icon: <BotIcon size={20} />,
+      iconTone: isLight
+        ? 'bg-emerald-600/12 border-emerald-600/25 text-emerald-700'
+        : 'bg-emerald-500/15 border-emerald-400/25 text-emerald-300',
       action: onOpenBotModal || (() => onStartVsAI(homeColorChoice)),
     },
     {
@@ -109,6 +107,9 @@ export default function HomeScreen({
       title: 'Avtomat tahlil',
       subtitle: 'Kompyuterlar oʻzaro partiyasi',
       icon: <CpuIcon size={20} />,
+      iconTone: isLight
+        ? 'bg-amber-600/12 border-amber-600/25 text-amber-700'
+        : 'bg-amber-500/15 border-amber-400/25 text-amber-300',
       action: onOpenBotVsBot,
     },
     {
@@ -116,6 +117,9 @@ export default function HomeScreen({
       title: 'Ikki oʻyinchi',
       subtitle: 'Bitta qurilmada navbatma-navbat',
       icon: <UsersIcon size={20} />,
+      iconTone: isLight
+        ? 'bg-sky-600/12 border-sky-600/25 text-sky-700'
+        : 'bg-sky-500/15 border-sky-400/25 text-sky-300',
       action: onStartLocal,
     },
     {
@@ -123,6 +127,9 @@ export default function HomeScreen({
       title: 'Onlayn oʻyin',
       subtitle: 'Doʻstlar yoki xona kodi orqali',
       icon: <GlobeIcon size={20} />,
+      iconTone: isLight
+        ? 'bg-indigo-600/12 border-indigo-600/25 text-indigo-700'
+        : 'bg-indigo-500/15 border-indigo-400/25 text-indigo-300',
       action: onOpenOnline,
     },
     {
@@ -130,6 +137,9 @@ export default function HomeScreen({
       title: 'Shaxmat soati',
       subtitle: 'Jonli doska uchun taymer',
       icon: <ClockIcon size={20} />,
+      iconTone: isLight
+        ? 'bg-orange-600/12 border-orange-600/25 text-orange-700'
+        : 'bg-orange-500/15 border-orange-400/25 text-orange-300',
       action: onOpenStandaloneClock || (() => {}),
     },
     {
@@ -137,27 +147,29 @@ export default function HomeScreen({
       title: 'Qoidalar va qoʻllanma',
       subtitle: '10×10 doska va yurish tartibi',
       icon: <BookOpenIcon size={20} />,
+      iconTone: isLight
+        ? 'bg-amber-700/12 border-amber-700/25 text-amber-800'
+        : 'bg-yellow-500/15 border-yellow-400/25 text-yellow-300',
       action: onOpenRules,
     },
   ];
 
-  // Segmented control helper classes (Apple / Lichess style)
   const segTrack = isLight
-    ? 'bg-zinc-900/[0.05] border border-zinc-900/[0.06]'
-    : 'bg-black/35 border border-white/[0.06]';
+    ? 'bg-amber-950/[0.06] border border-amber-950/[0.08]'
+    : 'bg-black/35 border border-white/[0.08]';
 
   const segActive = isLight
-    ? 'bg-white text-zinc-950 shadow-[0_1px_3px_rgba(0,0,0,0.10)] font-semibold'
-    : 'bg-white/[0.14] text-white shadow-[0_1px_3px_rgba(0,0,0,0.35)] font-semibold';
+    ? 'bg-white text-stone-900 shadow-sm font-semibold border border-amber-700/20'
+    : 'bg-[#362c22] text-amber-100 shadow-sm font-semibold border border-amber-400/35';
 
   const segIdle = isLight
-    ? 'text-zinc-600 hover:text-zinc-900 font-medium'
-    : 'text-zinc-400 hover:text-zinc-200 font-medium';
+    ? 'text-stone-600 hover:text-stone-900 font-medium'
+    : 'text-stone-400 hover:text-amber-100 font-medium';
 
   return (
     <div
       className={`min-h-screen landscape:max-h-[520px]:min-h-0 landscape:max-h-[520px]:h-[100dvh] landscape:max-h-[520px]:max-h-[100dvh] landscape:max-h-[520px]:overflow-hidden md:min-h-screen md:h-auto md:max-h-none md:overflow-visible w-full ${
-        isLight ? 'bg-transparent text-zinc-900' : 'bg-transparent text-zinc-100'
+        isLight ? 'bg-transparent text-stone-900' : 'bg-transparent text-[#faf6ef]'
       } flex flex-col font-sans select-none relative overflow-x-hidden transition-colors duration-200`}
     >
       <div
@@ -167,27 +179,29 @@ export default function HomeScreen({
       >
         {/* ── 1. YUQORI NAVIGATSIYA PANELI ── */}
         <header className="w-full max-w-6xl xl:max-w-[1240px] mx-auto px-3 sm:px-6 md:px-8 pt-2.5 sm:pt-4 md:pt-5 max-md:landscape:pt-1.5 shrink-0">
-          <div className="w-full rounded-2xl nur-glass-nav px-4 sm:px-5 py-2.5 max-md:landscape:py-1.5 flex items-center justify-between">
+          <div className="w-full rounded-2xl nur-glass-nav px-3.5 sm:px-5 py-2.5 max-md:landscape:py-1.5 flex items-center justify-between gap-2">
             {/* Brend */}
-            <div className="flex items-center gap-3 min-w-0">
-              <NurLogo size={34} showGlow={false} />
-              <div className="flex items-baseline gap-2 min-w-0">
-                <span
-                  className={`text-[16px] sm:text-[17px] font-semibold tracking-tight truncate ${
-                    isLight ? 'text-zinc-950' : 'text-zinc-100'
-                  }`}
-                >
-                  Nur Shaxmat
-                </span>
-                <span
-                  className={`text-xs font-medium px-1.5 py-0.5 rounded-md ${
-                    isLight
-                      ? 'bg-zinc-900/[0.06] text-zinc-600'
-                      : 'bg-white/[0.08] text-zinc-400'
-                  }`}
-                >
-                  10×10
-                </span>
+            <div className="flex items-center gap-2.5 min-w-0">
+              <NurLogo size={36} showGlow={!isLight} />
+              <div className="min-w-0">
+                <div className="flex items-baseline gap-1.5">
+                  <span
+                    className={`text-[15px] sm:text-[17px] font-bold tracking-tight truncate ${
+                      isLight ? 'text-stone-950' : 'text-[#faf6ef]'
+                    }`}
+                  >
+                    Nur Shaxmat
+                  </span>
+                  <span
+                    className={`text-[11px] font-bold px-1.5 py-0.5 rounded-md ${
+                      isLight
+                        ? 'bg-amber-600/15 text-amber-800'
+                        : 'bg-amber-500/20 text-amber-300'
+                    }`}
+                  >
+                    100
+                  </span>
+                </div>
               </div>
             </div>
 
@@ -226,8 +240,8 @@ export default function HomeScreen({
                 onClick={() => {}}
                 className={`px-3 py-1.5 rounded-lg text-[13px] font-semibold transition-colors cursor-pointer ${
                   isLight
-                    ? 'bg-zinc-900/[0.07] text-zinc-950'
-                    : 'bg-white/[0.10] text-white'
+                    ? 'bg-emerald-600/12 text-emerald-800'
+                    : 'bg-emerald-500/18 text-emerald-300 border border-emerald-400/25'
                 }`}
               >
                 {t('nav_game')}
@@ -237,8 +251,8 @@ export default function HomeScreen({
                 onClick={onOpenRules}
                 className={`px-3 py-1.5 rounded-lg text-[13px] font-medium transition-colors cursor-pointer ${
                   isLight
-                    ? 'text-zinc-600 hover:text-zinc-950 hover:bg-zinc-900/[0.05]'
-                    : 'text-zinc-300 hover:text-white hover:bg-white/[0.06]'
+                    ? 'text-stone-700 hover:text-stone-950 hover:bg-amber-950/[0.06]'
+                    : 'text-stone-300 hover:text-amber-100 hover:bg-white/[0.07]'
                 }`}
               >
                 {t('nav_rules')}
@@ -248,8 +262,8 @@ export default function HomeScreen({
                 onClick={onOpenLeaderboard || onOpenStats}
                 className={`px-3 py-1.5 rounded-lg text-[13px] font-medium transition-colors cursor-pointer ${
                   isLight
-                    ? 'text-zinc-600 hover:text-zinc-950 hover:bg-zinc-900/[0.05]'
-                    : 'text-zinc-300 hover:text-white hover:bg-white/[0.06]'
+                    ? 'text-stone-700 hover:text-stone-950 hover:bg-amber-950/[0.06]'
+                    : 'text-stone-300 hover:text-amber-100 hover:bg-white/[0.07]'
                 }`}
               >
                 Jadval
@@ -259,22 +273,22 @@ export default function HomeScreen({
                 onClick={onOpenSettings}
                 className={`px-3 py-1.5 rounded-lg text-[13px] font-medium transition-colors cursor-pointer ${
                   isLight
-                    ? 'text-zinc-600 hover:text-zinc-950 hover:bg-zinc-900/[0.05]'
-                    : 'text-zinc-300 hover:text-white hover:bg-white/[0.06]'
+                    ? 'text-stone-700 hover:text-stone-950 hover:bg-amber-950/[0.06]'
+                    : 'text-stone-300 hover:text-amber-100 hover:bg-white/[0.07]'
                 }`}
               >
                 {t('nav_settings')}
               </button>
 
-              <div className={`h-4 w-[1px] mx-1 ${isLight ? 'bg-zinc-900/10' : 'bg-white/10'}`} />
+              <div className={`h-4 w-[1px] mx-1 ${isLight ? 'bg-stone-900/15' : 'bg-white/15'}`} />
 
               {!isAndroidApk && (
                 <button
                   onClick={toggleQuickTheme}
                   className={`w-8 h-8 rounded-lg flex items-center justify-center transition-colors cursor-pointer ${
                     isLight
-                      ? 'text-zinc-600 hover:text-zinc-950 hover:bg-zinc-900/[0.06]'
-                      : 'text-zinc-300 hover:text-white hover:bg-white/[0.08]'
+                      ? 'text-amber-700 hover:bg-amber-500/15'
+                      : 'text-amber-300 hover:bg-white/[0.08]'
                   }`}
                   title={isLight ? 'Tungi rejim' : 'Kunduzgi rejim'}
                 >
@@ -287,8 +301,8 @@ export default function HomeScreen({
                   onClick={onOpenStats}
                   className={`ml-1 pl-2 pr-3 py-1.5 rounded-xl text-[13px] font-medium transition-colors flex items-center gap-2 cursor-pointer border ${
                     isLight
-                      ? 'bg-white hover:bg-zinc-50 border-zinc-200 text-zinc-900'
-                      : 'bg-white/[0.07] hover:bg-white/[0.12] border-white/10 text-zinc-100'
+                      ? 'bg-white hover:bg-amber-50/70 border-amber-700/20 text-stone-900'
+                      : 'bg-white/[0.07] hover:bg-white/[0.12] border-amber-400/25 text-[#faf6ef]'
                   }`}
                   title={t('nav_profile')}
                 >
@@ -303,17 +317,17 @@ export default function HomeScreen({
                     <GoogleIcon size={15} />
                   )}
                   <span className="max-w-[110px] truncate">{profile.name}</span>
-                  <span className={`text-xs tabular-nums ${isLight ? 'text-zinc-500' : 'text-zinc-400'}`}>
+                  <span className={`text-xs font-semibold tabular-nums ${isLight ? 'text-amber-700' : 'text-amber-300'}`}>
                     {profile.rating}
                   </span>
                 </button>
               ) : (
                 <button
                   onClick={onOpenStats}
-                  className={`ml-1 px-3.5 py-1.5 rounded-xl text-[13px] font-medium whitespace-nowrap flex items-center gap-2 transition-colors cursor-pointer border ${
+                  className={`ml-1 px-3.5 py-1.5 rounded-xl text-[13px] font-semibold whitespace-nowrap flex items-center gap-2 transition-all cursor-pointer ${
                     isLight
-                      ? 'bg-white hover:bg-zinc-50 border-zinc-300 text-zinc-900 shadow-xs'
-                      : 'bg-white/[0.10] hover:bg-white/[0.16] border-white/15 text-white'
+                      ? 'bg-amber-500 hover:bg-amber-600 text-white shadow-xs'
+                      : 'bg-gradient-to-r from-amber-500 to-amber-600 hover:brightness-105 text-stone-950 shadow-sm'
                   }`}
                 >
                   <GoogleIcon size={14} />
@@ -324,21 +338,20 @@ export default function HomeScreen({
 
             {/* Mobil O'ng Tugmalar */}
             <div
-              className={`flex items-center gap-1.5 ${
+              className={`flex items-center gap-1.5 shrink-0 ${
                 isMobileSimulation ? 'flex' : 'landscape:hidden md:hidden'
               }`}
             >
               {!isAndroidApk && onSetWebDeviceView && (
                 <button
                   onClick={() => onSetWebDeviceView(webDeviceView === 'notebook' ? 'phone' : 'notebook')}
-                  className={`h-8 px-2.5 rounded-lg border flex items-center gap-1.5 text-xs font-medium transition-colors cursor-pointer ${
+                  className={`h-8 px-2 rounded-lg border flex items-center gap-1 text-xs font-medium transition-colors cursor-pointer ${
                     isLight
-                      ? 'bg-white border-zinc-200 text-zinc-800'
-                      : 'bg-white/[0.08] border-white/10 text-zinc-200'
+                      ? 'bg-white/90 border-amber-800/20 text-stone-800'
+                      : 'bg-white/[0.08] border-white/15 text-stone-200'
                   }`}
                 >
                   {webDeviceView === 'notebook' ? <SmartphoneIcon size={14} /> : <MonitorIcon size={14} />}
-                  {isMobileSimulation && <span>Keng</span>}
                 </button>
               )}
 
@@ -347,8 +360,8 @@ export default function HomeScreen({
                   onClick={toggleQuickTheme}
                   className={`w-8 h-8 rounded-lg border flex items-center justify-center transition-colors cursor-pointer ${
                     isLight
-                      ? 'bg-white border-zinc-200 text-zinc-700'
-                      : 'bg-white/[0.08] border-white/10 text-zinc-200'
+                      ? 'bg-white/90 border-amber-800/20 text-amber-700'
+                      : 'bg-white/[0.08] border-white/15 text-amber-300'
                   }`}
                 >
                   {isLight ? <MoonIcon size={15} /> : <SunIcon size={15} />}
@@ -359,12 +372,12 @@ export default function HomeScreen({
                 onClick={onOpenStats}
                 className={`h-8 px-2.5 rounded-lg border flex items-center gap-1.5 text-xs font-medium transition-colors cursor-pointer ${
                   isLight
-                    ? 'bg-white border-zinc-200 text-zinc-800'
-                    : 'bg-white/[0.08] border-white/10 text-zinc-200'
+                    ? 'bg-white/90 border-amber-800/20 text-stone-800'
+                    : 'bg-white/[0.08] border-white/15 text-stone-200'
                 }`}
               >
                 <GoogleIcon size={13} />
-                <span className="max-w-[68px] truncate">
+                <span className="max-w-[58px] truncate">
                   {profile.isGoogleLinked ? profile.name : 'Kirish'}
                 </span>
               </button>
@@ -373,8 +386,8 @@ export default function HomeScreen({
                 onClick={onOpenSettings}
                 className={`w-8 h-8 rounded-lg border flex items-center justify-center transition-colors cursor-pointer ${
                   isLight
-                    ? 'bg-white border-zinc-200 text-zinc-700'
-                    : 'bg-white/[0.08] border-white/10 text-zinc-200'
+                    ? 'bg-white/90 border-amber-800/20 text-stone-700'
+                    : 'bg-white/[0.08] border-white/15 text-stone-200'
                 }`}
               >
                 <SettingsIcon size={16} />
@@ -395,19 +408,20 @@ export default function HomeScreen({
           <div
             className={`w-full ${
               isMobileSimulation ? '' : 'landscape:col-span-5 md:col-span-5'
-            } p-5 sm:p-6 max-md:landscape:p-3 rounded-2xl nur-glass-surface flex flex-col justify-between gap-4 max-md:landscape:gap-2`}
+            } p-4 sm:p-6 max-md:landscape:p-3 rounded-2xl nur-glass-surface flex flex-col justify-between gap-4 max-md:landscape:gap-2`}
           >
-            {/* Tugallanmagan o'yin banneri */}
             {hasActiveMatch && (
               <div
                 className={`w-full p-3.5 rounded-xl border flex items-center justify-between gap-3 ${
                   isLight
-                    ? 'bg-[#629924]/10 border-[#629924]/30 text-zinc-900'
-                    : 'bg-[#629924]/15 border-[#73ad30]/35 text-zinc-100'
+                    ? 'bg-emerald-600/10 border-emerald-600/30 text-stone-900'
+                    : 'bg-emerald-500/15 border-emerald-400/35 text-[#faf6ef]'
                 }`}
               >
                 <div className="min-w-0">
-                  <div className="text-[11px] font-medium opacity-75">Faol partiya</div>
+                  <div className={`text-[11px] font-semibold ${isLight ? 'text-emerald-700' : 'text-emerald-300'}`}>
+                    Faol partiya
+                  </div>
                   <div className="text-sm font-semibold truncate">
                     {state.gameMode === 'vsAI'
                       ? 'Kompyuter bilan'
@@ -420,7 +434,7 @@ export default function HomeScreen({
                 </div>
                 <button
                   onClick={onContinueGame}
-                  className="px-3 py-1.5 rounded-lg bg-[#629924] hover:bg-[#56881f] text-white font-medium text-xs flex items-center gap-1 cursor-pointer shrink-0 transition-colors"
+                  className="px-3 py-1.5 rounded-lg bg-[#5ca429] hover:bg-[#4e8f21] text-white font-semibold text-xs flex items-center gap-1 cursor-pointer shrink-0 transition-colors"
                 >
                   <span>Davom etish</span>
                   <ChevronRightIcon size={14} />
@@ -428,27 +442,26 @@ export default function HomeScreen({
               </div>
             )}
 
-            {/* Sarlavha */}
             <div>
               <h2
-                className={`text-lg sm:text-[19px] font-semibold tracking-tight ${
-                  isLight ? 'text-zinc-950' : 'text-zinc-100'
+                className={`text-lg sm:text-[19px] font-bold tracking-tight ${
+                  isLight ? 'text-stone-950' : 'text-[#faf6ef]'
                 }`}
               >
                 Yangi oʻyin
               </h2>
-              <p className={`text-[13px] mt-0.5 ${isLight ? 'text-zinc-500' : 'text-zinc-400'}`}>
-                 Doska koʻrinishi va raqib darajasini tanlang
+              <p className={`text-[13px] mt-0.5 ${isLight ? 'text-stone-600' : 'text-stone-400'}`}>
+                Doska koʻrinishi va raqib darajasini tanlang
               </p>
             </div>
 
-            {/* 1. Doska Ko'rinishi (3D / 2D Segmented Control) */}
+            {/* 1. Doska Ko'rinishi */}
             <div className="space-y-1.5">
-              <div className="flex items-center justify-between">
-                <span className={`text-xs font-medium ${isLight ? 'text-zinc-600' : 'text-zinc-400'}`}>
+              <div className="flex items-center justify-between gap-2">
+                <span className={`text-xs font-medium ${isLight ? 'text-stone-600' : 'text-stone-400'}`}>
                   Doska koʻrinishi
                 </span>
-                <span className={`text-xs ${isLight ? 'text-zinc-500' : 'text-zinc-400'}`}>
+                <span className={`text-xs truncate ${isLight ? 'text-amber-700' : 'text-amber-300/90'}`}>
                   {state.is3D ? 'Fazoviy hajmli' : 'Klassik tekis'}
                 </span>
               </div>
@@ -476,14 +489,14 @@ export default function HomeScreen({
               </div>
             </div>
 
-            {/* 2. Qiyinchilik Darajasi (4-bosqichli toza segment) */}
+            {/* 2. Qiyinchilik Darajasi */}
             {!isAndroidApk && (
               <div className="space-y-1.5 max-md:landscape:hidden">
-                <div className="flex items-center justify-between">
-                  <span className={`text-xs font-medium ${isLight ? 'text-zinc-600' : 'text-zinc-400'}`}>
+                <div className="flex items-center justify-between gap-2">
+                  <span className={`text-xs font-medium ${isLight ? 'text-stone-600' : 'text-stone-400'}`}>
                     Qiyinchilik darajasi
                   </span>
-                  <span className={`text-xs tabular-nums ${isLight ? 'text-zinc-500' : 'text-zinc-400'}`}>
+                  <span className={`text-xs font-medium tabular-nums ${isLight ? 'text-amber-700' : 'text-amber-300/90'}`}>
                     Reyting {DIFFICULTY_OPTIONS.find((d) => d.depth === state.aiDepth)?.elo || '1400'}
                   </span>
                 </div>
@@ -493,7 +506,7 @@ export default function HomeScreen({
                       key={opt.depth}
                       type="button"
                       onClick={() => dispatch({ type: 'SET_AI_DEPTH', depth: opt.depth })}
-                      className={`py-2 px-2 rounded-[9px] text-xs transition-all cursor-pointer text-center ${
+                      className={`py-2 px-1.5 rounded-[9px] text-xs transition-all cursor-pointer text-center ${
                         state.aiDepth === opt.depth ? segActive : segIdle
                       }`}
                     >
@@ -506,28 +519,28 @@ export default function HomeScreen({
 
             {/* 3. Donalar Rangi */}
             <div className="space-y-1.5">
-              <div className="flex items-center justify-between">
-                <span className={`text-xs font-medium ${isLight ? 'text-zinc-600' : 'text-zinc-400'}`}>
+              <div className="flex items-center justify-between gap-2">
+                <span className={`text-xs font-medium ${isLight ? 'text-stone-600' : 'text-stone-400'}`}>
                   Sizning tomoningiz
                 </span>
-                <span className={`text-xs ${isLight ? 'text-zinc-500' : 'text-zinc-400'}`}>
+                <span className={`text-xs truncate ${isLight ? 'text-emerald-700' : 'text-emerald-300/90'}`}>
                   {homeColorChoice === 'white'
                     ? 'Birinchi yurasiz'
                     : homeColorChoice === 'black'
                     ? 'Ikkinchi yurasiz'
-                    : 'Avtomatik tanlov'}
+                    : 'Avtomatik'}
                 </span>
               </div>
               <div className={`grid grid-cols-3 p-1 rounded-xl gap-1 ${segTrack}`}>
                 {(
                   [
-                    { id: 'white', label: 'Oq', dot: 'bg-white border-zinc-300' },
+                    { id: 'white', label: 'Oq', dot: 'bg-white border-stone-300' },
                     {
                       id: 'random',
                       label: 'Tasodifiy',
-                      dot: 'bg-gradient-to-r from-white to-zinc-900 border-zinc-400',
+                      dot: 'bg-gradient-to-r from-white to-stone-900 border-stone-400',
                     },
-                    { id: 'black', label: 'Qora', dot: 'bg-zinc-900 border-zinc-500' },
+                    { id: 'black', label: 'Qora', dot: 'bg-stone-900 border-stone-500' },
                   ] as const
                 ).map((item) => (
                   <button
@@ -545,10 +558,10 @@ export default function HomeScreen({
               </div>
             </div>
 
-            {/* Asosiy Boshlash Tugmasi (Lichess / Chess.com vazmin tabiiy yashil) */}
+            {/* Asosiy Boshlash Tugmasi */}
             <button
               onClick={() => onStartVsAI(homeColorChoice)}
-              className="w-full py-3.5 max-md:landscape:py-2 px-5 rounded-xl bg-[#629924] hover:bg-[#56881f] active:scale-[0.99] text-white font-semibold text-[15px] flex items-center justify-center gap-2 shadow-[0_2px_10px_rgba(0,0,0,0.22)] transition-all cursor-pointer mt-1"
+              className="w-full py-3.5 max-md:landscape:py-2 px-5 rounded-xl bg-gradient-to-b from-[#66b130] to-[#4e8e21] hover:brightness-105 active:scale-[0.99] text-white font-semibold text-[15px] flex items-center justify-center gap-2 shadow-[0_6px_20px_rgba(78,142,33,0.32)] transition-all cursor-pointer mt-1"
             >
               <PlayIcon size={16} className="fill-white" />
               <span>Oʻyinni boshlash</span>
@@ -570,7 +583,7 @@ export default function HomeScreen({
                 >
                   <div className="flex items-center gap-3.5 min-w-0">
                     <div
-                      className={`w-10 h-10 md:w-11 md:h-11 max-md:landscape:w-8 max-md:landscape:h-8 rounded-xl border flex items-center justify-center shrink-0 transition-colors ${neutralIconBox}`}
+                      className={`w-10 h-10 md:w-11 md:h-11 max-md:landscape:w-8 max-md:landscape:h-8 rounded-xl border flex items-center justify-center shrink-0 transition-transform group-hover:scale-105 ${mode.iconTone}`}
                     >
                       {mode.icon}
                     </div>
@@ -578,14 +591,14 @@ export default function HomeScreen({
                     <div className="min-w-0">
                       <div
                         className={`font-semibold text-[14.5px] md:text-[15px] leading-snug truncate ${
-                          isLight ? 'text-zinc-900' : 'text-zinc-100'
+                          isLight ? 'text-stone-900' : 'text-[#faf6ef]'
                         }`}
                       >
                         {mode.title}
                       </div>
                       <p
                         className={`text-[12.5px] mt-0.5 truncate ${
-                          isLight ? 'text-zinc-500' : 'text-zinc-400'
+                          isLight ? 'text-stone-500' : 'text-stone-400'
                         }`}
                       >
                         {mode.subtitle}
@@ -596,7 +609,7 @@ export default function HomeScreen({
                   <ChevronRightIcon
                     size={16}
                     className={`shrink-0 ml-2 transition-transform group-hover:translate-x-0.5 max-md:landscape:hidden ${
-                      isLight ? 'text-zinc-400 group-hover:text-zinc-700' : 'text-zinc-500 group-hover:text-zinc-200'
+                      isLight ? 'text-stone-400 group-hover:text-amber-700' : 'text-stone-500 group-hover:text-amber-300'
                     }`}
                   />
                 </button>
@@ -609,21 +622,25 @@ export default function HomeScreen({
               >
                 <div className="flex items-center gap-3.5 min-w-0">
                   <div
-                    className={`w-10 h-10 md:w-11 md:h-11 max-md:landscape:w-8 max-md:landscape:h-8 rounded-xl border flex items-center justify-center shrink-0 transition-colors ${neutralIconBox}`}
+                    className={`w-10 h-10 md:w-11 md:h-11 max-md:landscape:w-8 max-md:landscape:h-8 rounded-xl border flex items-center justify-center shrink-0 transition-transform group-hover:scale-105 ${
+                      isLight
+                        ? 'bg-rose-600/12 border-rose-600/25 text-rose-700'
+                        : 'bg-rose-500/15 border-rose-400/25 text-rose-300'
+                    }`}
                   >
                     <TrophyIcon size={20} />
                   </div>
                   <div className="min-w-0">
                     <div
                       className={`font-semibold text-[14.5px] md:text-[15px] leading-snug ${
-                        isLight ? 'text-zinc-900' : 'text-zinc-100'
+                        isLight ? 'text-stone-900' : 'text-[#faf6ef]'
                       }`}
                     >
                       Profil va statistika
                     </div>
                     <p
                       className={`text-[12.5px] mt-0.5 truncate ${
-                        isLight ? 'text-zinc-500' : 'text-zinc-400'
+                        isLight ? 'text-stone-500' : 'text-stone-400'
                       }`}
                     >
                       Shaxsiy reyting, yutuqlar va oʻyinlar tarixi
@@ -631,27 +648,38 @@ export default function HomeScreen({
                   </div>
                 </div>
 
-                <div className="flex items-center gap-4 max-md:landscape:hidden shrink-0">
-                  <div className="text-right">
-                    <div className={`text-[11px] ${isLight ? 'text-zinc-500' : 'text-zinc-400'}`}>
+                <div className="flex items-center gap-3 max-md:landscape:hidden shrink-0">
+                  <div
+                    className={`px-3 py-1 rounded-lg border text-right ${
+                      isLight
+                        ? 'bg-amber-500/10 border-amber-600/20'
+                        : 'bg-amber-500/10 border-amber-400/20'
+                    }`}
+                  >
+                    <div className={`text-[10px] ${isLight ? 'text-stone-500' : 'text-stone-400'}`}>
                       Reyting
                     </div>
                     <div
-                      className={`text-sm font-semibold tabular-nums ${
-                        isLight ? 'text-zinc-900' : 'text-zinc-100'
+                      className={`text-sm font-bold tabular-nums ${
+                        isLight ? 'text-amber-800' : 'text-amber-300'
                       }`}
                     >
                       {profile.rating}
                     </div>
                   </div>
-                  <div className={`h-6 w-[1px] ${isLight ? 'bg-zinc-900/10' : 'bg-white/10'}`} />
-                  <div className="text-right">
-                    <div className={`text-[11px] ${isLight ? 'text-zinc-500' : 'text-zinc-400'}`}>
+                  <div
+                    className={`px-3 py-1 rounded-lg border text-right ${
+                      isLight
+                        ? 'bg-emerald-500/10 border-emerald-600/20'
+                        : 'bg-emerald-500/10 border-emerald-400/20'
+                    }`}
+                  >
+                    <div className={`text-[10px] ${isLight ? 'text-stone-500' : 'text-stone-400'}`}>
                       Gʻalabalar
                     </div>
                     <div
-                      className={`text-sm font-semibold tabular-nums ${
-                        isLight ? 'text-zinc-900' : 'text-zinc-100'
+                      className={`text-sm font-bold tabular-nums ${
+                        isLight ? 'text-emerald-800' : 'text-emerald-300'
                       }`}
                     >
                       {profile.wins}
@@ -660,7 +688,7 @@ export default function HomeScreen({
                   <ChevronRightIcon
                     size={16}
                     className={`transition-transform group-hover:translate-x-0.5 ${
-                      isLight ? 'text-zinc-400 group-hover:text-zinc-700' : 'text-zinc-500 group-hover:text-zinc-200'
+                      isLight ? 'text-stone-400 group-hover:text-amber-700' : 'text-stone-500 group-hover:text-amber-300'
                     }`}
                   />
                 </div>
@@ -671,10 +699,10 @@ export default function HomeScreen({
 
         {/* Pastki minimal ma'lumot satri */}
         <footer className="w-full max-w-6xl xl:max-w-[1240px] mx-auto px-4 sm:px-8 py-3 max-md:landscape:hidden flex items-center justify-between text-xs">
-          <span className={isLight ? 'text-zinc-500' : 'text-zinc-500'}>
-            Nur Shaxmat · Muallif: Nurfullo Nurmatov
+          <span className={isLight ? 'text-stone-500' : 'text-stone-400'}>
+            Nur Shaxmat 100 · Muallif: Nurfullo Nurmatov
           </span>
-          <span className={`tabular-nums ${isLight ? 'text-zinc-400' : 'text-zinc-500'}`}>
+          <span className={`tabular-nums ${isLight ? 'text-stone-500' : 'text-stone-400'}`}>
             v1.2.22
           </span>
         </footer>

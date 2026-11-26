@@ -129,10 +129,10 @@ export default function SettingsScreen({ onBack, onOpenRules, isAndroidApk = fal
     : isLight ? 'hover:bg-slate-50' : 'hover:bg-[#282420]';
   const textTitle = isLight ? 'text-zinc-900 font-semibold' : 'text-zinc-100 font-semibold';
   const textSub = isLight ? 'text-zinc-500 font-normal' : 'text-zinc-400 font-normal';
-  const sectionTitle = isLight ? 'text-zinc-500 font-semibold tracking-wide' : 'text-zinc-400 font-semibold uppercase tracking-wide';
+  const sectionTitle = isLight ? 'text-stone-600 font-semibold tracking-wide' : 'text-amber-300/80 font-semibold uppercase tracking-wide';
   const iconBox = isLight
-    ? 'bg-zinc-900/[0.04] border-zinc-900/[0.08] text-zinc-700'
-    : 'bg-white/[0.06] border-white/[0.08] text-zinc-200';
+    ? 'bg-amber-600/12 border-amber-600/25 text-amber-800'
+    : 'bg-amber-500/15 border-amber-400/25 text-amber-300';
 
   return (
     <div className={`min-h-screen w-full relative z-10 ${!isAndroidApk ? 'bg-transparent' : isLight ? 'bg-[#ede8df]' : 'bg-[#181614]'} flex flex-col font-sans select-none pb-16 transition-colors duration-200`}>
